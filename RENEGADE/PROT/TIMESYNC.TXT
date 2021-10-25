@@ -1,0 +1,49 @@
+Document:    ZMODEM time synchronization
+Date:        03-16-95
+Version:     2.0
+Author:      Peter Mandrella <pm@daisy.de>
+
+
+
+ZMODEM Time Synchronization
+---------------------------
+
+PD Zmodem enhances the Zmodem standard by the feature of synchronizing
+the receiver's system clock to the sender's clock. To accomplish this,
+PD-Zmodem introduces a new ZRINIT flag:
+
+#define TIMESYNC 01000      /* Receiver requests time synchronization */
+
+When the sender detects this flag, it sends a file named "$time$.t"
+with its system date as file date and the difference between local
+time and UTC as file contents. The file need not to be transmitted
+at once, but it may be inserted at any point during a batch transfer.
+Though, the file's time must be determined as shortly before the
+transmission as possible, and only one "$time$.t" file may be sent
+during one Zmodem batch.
+
+The UTC offset is calculated in minutes. If the local time is four
+hours and 30 minutes before UTC, the time offset is -(4*60+30) =
+-270. The time offset is stored in the file as a decimal string with
+a trailing CR+LF. If the sender doesn't know its time zone, the file
+must be empty (zero bytes length).
+
+It is recommended to implement time synchonization as an option. The
+receiver should request time synchronization only if the option is
+enabled. If the receiver requests time synchronization but the sender
+did not enable it, the request should be ignored. If the receiver did
+not request time synchronization and receives a file named "$time$.t",
+then it should be treated as a normal file.
+
+It is up to the implementation if a real file "$time$.t" is created
+on either side, or if it is handled as a virtual file.
+
+The way of transferring a file instead of a new header for time syn-
+chronization was chosen for two reasons: It can be implemented without
+crucial changes to the Zmodem protocol, and it doesn't need much of
+additional error handling.
+
+
+NOTE: The current PD-Zmodem version does not support the Time-Zone
+      feature but always sends empty "$time$.t" files.
+
