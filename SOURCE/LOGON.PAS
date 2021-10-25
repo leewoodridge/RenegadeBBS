@@ -1,5 +1,8 @@
 {$A+,B-,D+,E-,F+,I-,L+,N-,O+,R-,S+,V-}
-
+{
+disabled forgotpw question for cosysop+
+won't prompt for sysoppw if blank
+}
 UNIT Logon;
 
 INTERFACE
@@ -423,7 +426,8 @@ BEGIN
     Inc(Tries);
     IF (Tries >= General.MaxLogonTries) THEN
     BEGIN
-      IF (General.NewUserToggles[20] = 0) OR (General.ForgotPWQuestion = '') OR (ThisUser.ForgotPWAnswer = '') THEN
+      IF (General.NewUserToggles[20] = 0) OR (General.ForgotPWQuestion = '') OR (ThisUser.ForgotPWAnswer = '') OR 
+         (CoSysOp) THEN
         HangUp := TRUE
       ELSE
       BEGIN
@@ -456,7 +460,7 @@ BEGIN
   END;
   IF (Ok) THEN
     lStatus_Screen(General.Curwindow,'',FALSE,S);
-  IF ((AACS(General.Spw)) AND (Ok) AND (InCom) AND (NOT HangUp)) THEN
+  IF ((AACS(General.SPW)) AND (General.SysOpPW <> '') AND (Ok) AND (InCom) AND (NOT HangUp)) THEN
   BEGIN
     (*
     Prompt(FString.SysOpPrompt);
@@ -880,7 +884,7 @@ BEGIN
   CLS;
   Print(Centre(VerLine(1)));
   Print(Centre(VerLine(2)));
-  Print(Centre(VerLine(3)));
+  {Print(Centre(VerLine(3)));}
   PrintF('PRELOGON');
   IF (ACSUser) THEN
   BEGIN
