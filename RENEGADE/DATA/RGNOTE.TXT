@@ -1,0 +1,187 @@
+$Internal_Use_Only
+^8This is for internal use only^0
+%PA
+$
+
+$Only_Change_Locally
+^8This can only be changed locally^0
+%PA
+$
+
+$Invalid_Menu_Number
+^8Invalid menu number!^0
+%PA
+$
+
+$Minimum_Baud_Logon_PW
+You must be using at least %M7 baud to call this BBS.
+$
+
+$Minimum_Baud_Logon_High_Low_Time_PW
+Hours for those using less than %M7 baud are from %H3 to %H4.
+$
+
+$Minimum_Baud_Logon_High_Low_Time_No_PW
+NOTE: Callers at less than %M7 baud are restricted to the
+      following hours ONLY: %H3 to %H4.
+$
+
+$Logon_Event_Restricted_1
+%LFRestricted: Only certain users allowed online at this time.
+$
+
+$Logon_Event_Restricted_2
+%LFThis time window allows certain other users to get online.
+Please call back later, after it has ended.
+$
+
+$Name_Not_Found
+%LFName not found in user list.
+$
+
+$Illegal_Logon
+^8Invalid Login!
+$
+
+$Logon_Node_ACS
+You don't have the required ACS to logon to this node.
+$
+
+$Locked_Out
+You have been locked out of the BBS by the SysOp.
+$
+
+$Logged_On_Another_Node
+You are already logged in on another node.
+$
+
+$Incorrect_Birth_Date
+You entered an incorrect birthdate.
+$
+
+$Insufficient_Logon_Credits
+You have insufficient credits for online time.
+$
+
+$Logon_Once_Per_Day
+You can only log on once per day.
+$
+
+$Logon_Calls_Allowed_Per_Day
+You can only log on %CA times per day.
+$
+
+$Logon_Time_Allowed_Per_Day_Or_Call
+You can only logon for %T1 minutes per %CD.
+$
+
+$Logon_Minutes_Left_In_Bank
+However, you have %TB minutes left in your Time Bank.
+$
+
+$Logon_Minutes_Left_In_Bank_Time_Left
+In your account: %TB  Time left online: %TL
+$
+
+$Logon_Bank_Hangup
+Hanging up...
+$
+
+$Logon_Attempt_IEMSI_Negotiation
+Attempting IEMSI negotiation ... @
+$
+
+$Logon_IEMSI_Negotiation_Success
+success.
+
+$Logon_IEMSI_Negotiation_Failed
+failure.
+
+$Logon_Attempt_Detect_Emulation
+Attempting to detect emulation ... @
+$
+
+$Logon_RIP_Detected
+RIP
+$
+
+$Logon_ANSI_Detect_Other
+/ANSI
+$
+
+$Logon_ANSI_Detect
+ANSI
+$
+
+$Logon_Avatar_Detect_Other
+/Avatar
+$
+
+$Logon_Avatar_Detect
+Avatar
+$
+
+$Logon_Emulation_Detected
+ detected.
+$
+
+$Shuttle_Logon_Validation_Status
+You have not been validated yet.
+$
+
+$Logon_Closed_BBS
+This BBS is currently not accepting new users, hanging up ... @
+$
+
+$Node_Activity_Waiting_One
+Waiting For Logon
+$
+
+$Node_Activity_Waiting_Two
+-
+$
+
+$Node_Activity_Logging_On
+Logging on
+$
+
+$Node_Activity_New_User_Logging_On
+New user logging on
+$
+
+$Node_Activity_Miscellaneous
+Miscellaneous
+$
+
+$New_User_Password_Invalid
+^8Invalid Password!
+$
+
+$New_User_Password_Attempt_Exceeded
+You have exceeded the maximum new user logon attempts, hanging up.
+$
+
+$New_User_Record_Saving
+Saving your information ... @
+$
+
+$New_User_Record_Saved
+^9Saved!
+$
+
+$New_User_Application_Letter
+You must now send a new user application letter to the SysOp.
+%PA
+$
+
+$New_User_In_Response_To_Subj
+New User Application
+$
+
+$Aborted
+^8Aborted!
+$
+
+$Saved
+^9Saved!
+$
