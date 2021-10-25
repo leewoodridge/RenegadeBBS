@@ -1,0 +1,18 @@
+[0m  [1;30mДДДДДДДДДДДДДДДДДДДДДДДДДДДДДДДДДДДДДДДДДДДДДДДДДДДДДДДДДДДДДДДДДДДДДДДДДДДД[0m
+[17C[1mRENEGADE BBS INTERNAL DOS EMULATOR COMMAND LIST[0m
+  [1;30mДДДДДДДДДДДДДДДДДДДДДДДДДДДДДДДДДДДДДДДДДДДДДДДДДДДДДДДДДДДДДДДДДДДДДДДДДДДД[0m
+  [1mARC [30m/[37m ZIP[0m[4C[1m [0mCompress Archive[5C[1mMCI[0m[11CMCI Display
+  [1mCD [30m/[37m CHDIR[0m[4CChange Directory[5C[1mMKDIR [30m/[37m MD[0m[4CCreate Directory
+  [1mCLS[0m[11CClear Screen[9C[1mMOVE[0m[10CMove Files
+  [1mCONVERT [30m/[37m CVT[30m [0mConvert Archive[6C[1mRMDIR [30m/[37m RD [0m[3CRemove Directory
+  [1mCOPY[0m[10CCopy Files[1;30m  [37m [0m[8C[1mRECEIVE [0m[5C Upload Files
+  [1mDEL[0m[11CDelete Files[9C[1mRENAME [30m/[37m REN [0m Rename Files Or Directories
+  [1mDIR[0m[11CDirectory Listing[4C[1mSEND[0m[10CDownload Files
+  [1mDIRSIZE[0m[7CSize Of Directory[3C[1m TYPE[0m[10CView Text File
+  [1mDISKFREE[0m[6CFree Space On Disk [1m  UNARC [30m/[37m UNZIP[30m [0mDecompress Archive
+  [1mEDIT[0m[10CEdit Text File[7C[1mVER[0m[11CDOS Emulator Version Info
+  [1mEXIT[0m[10CExit DOS Emulator    [1mVIEW [0m[9CView Archive Contents
+  [1mEXT[0m[10C[1m [0mExecute External Cmd [1mX:[0m[12CChange Drive
+  [1mHELP [30m/[37m ?[0m[6CCommand List
+  [1;30mДДДДДДДДДДДДДДДДДДДДДДДДДДДДДДДДДДДДДДДДДДДДДДДДДДДДДДДДДДДДДДДДДДДДДДДДДДДД[0m
+[0m

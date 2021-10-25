@@ -1,0 +1,38 @@
+[2J[0m[1;30mÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄ
+[A[64CÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄ[0m
+[1m[24CRENEGAGE BBS SYSOP COMMAND KEYS[0m
+[1;30mÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄ
+[A[64CÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄ[0m
+ [1;30mALT+B[0m  toggle beep-after-end[1;35m???[0m[10C[1;30mALT+N
+[A[47C[0m  Next SysOp Window
+ [1;30mALT+C[0m  Enter/Exit Chat[19C[1;30mALT+O[0m  Toggle Confere
+[A[63Cnce System[1;35m???[0m
+ [1;30mALT+D[0m  Dump Screen To File[15C[1;30mALT+P[0m  Print File
+[A[59C To User
+ [1;30mALT+E[0m  Edit User W/ Pause[16C[1;30mALT+Q[0m  Disable Cha
+[A[60Ct Paging
+ [1;30mALT+F[0m  Generate Fake Line Noise[10C[1;30mALT+R[0m  Show 
+[A[54CChat Request Reason
+ [1;30mALT+G[0m  toggle logging options [1;35m???[0m[8C[1;30mALT+
+[A[46CS[0m  Toggle SysOp Window
+ [1;30mALT+H[0m  Hangup Immediately[16C[1;30mALT+T[0m  Top/Bottom 
+[A[60CSysOp Window
+ [1;30mALT+I[0m  Toggle User Input[17C[1;30mALT+U[0m  Toggle Remot
+[A[61Ce Display
+ [1;30mALT+J[0m  Jump To DOS[23C[1;30mALT+V[0m  Validate User
+ [1;30mALT+K[0m  Hangup User W/ HANGUP# File[7C[1;30mALT+W[0m  Edi
+[A[52Ct User Invisibly
+ [1;30mALT+L[0m  Toggle Local Display[14C[1;30mALT+Z[0m  Wake Up S
+[A[58Cleeping User[1;35mwording[0m
+ [1;30mALT+M[0m  Temporary SysOp Access[12C[1;30mALT+#[0m  Execute
+[A[56C GLOBAT#.BAT
+ [1;30mALT++[0m  Add 5 Minutes To User      [7C[1;30mALT+-[0m  Sub
+[A[52Ctract 5 Minutes From User
+
+ [1;30mCTRL+HOME[0m  SysOp Command Help[12C[1;30mALT+F1-F5 [0mChan
+[A[56Cge SysOp Window
+ [1;30mCTRL+SYSRQ[0m Fake System Error[13C[1;30mSCRLCK[0m [3CTogg
+[A[56Cle Chat Availability
+[1;30mÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄ
+[A[64CÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄ[0m
+[0m

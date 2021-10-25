@@ -1,0 +1,16 @@
+[0m [1;30mÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄ
+[0m  Press [1mENTER[0m to get a blank line and press "[1m/[0m"
+[5Cand one of the following command keys.
+    
+  [4C[1mA[0m Abort Message      [1mC[0m Clear Message
+  [4C[1mD[0m Delete Line        [1mF[0m File Attach
+  [4C[1mI[0m Insert Line        [1mL[0m List Message
+  [4C[1mM[0m MCI Codes          [1mO[0m Color Help
+  [4C[1mP[0m Replace String     [1mQ[0m Quote Message
+  [4C[1mR[0m Delete Last Line   [1mS[0m Save Message
+  [4C[1mT[0m Title Change       [1mU[0m Upload Message
+  [4C[1mZ[0m Replace Line
+
+[6C[1m<CR>[0m Continue Message
+ [1;30mÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄ
+[0m

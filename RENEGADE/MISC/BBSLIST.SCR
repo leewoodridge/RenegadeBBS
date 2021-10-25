@@ -1,0 +1,36 @@
+;
+; This is an example of a bbslist template.
+; 
+; Anything after a semicolon is considered a comment and is ignored.
+; Anything That doesn't begin with a [ is ignored.
+;
+; [1]: BBS Name
+; [2]: Sysop Name
+; [3]: Telnet Url
+; [4]: Website {not implantted}
+; [5]: BBS Phone Number
+; [6]: BBS Software Used
+; [7]: Speed of the BBS
+; [8]: Description
+; [9]: {not implentated}
+
+; Format to use the script.
+; [1-9]:Question to show user?
+; a b cd   e
+;a= begining bracket
+;b= which question to ask
+;c= ending bracket
+;d= collon
+;e= Question to ask user. Pipe code allow'd in questions.
+
+;  if you want to ask the questions in a certain order change the order.
+;  if you don't want to ask a question then leave out a number.
+;
+
+[1]:|09Enter the Name of BBS|07: |05
+;[2]:|09What is the Sysop of this BBS name|07:|05
+[3]:%LF|09What is the Telnet Address of the BBS|07: |05
+;[5]:|09What is the BBS Phone Number of the BBS|07:|05
+[6]:%LF|09What Software does this BBS use|07: |05
+;[7]:|09What is the Speed of the BBS |07(14400,56700,Telnet)|07:|05
+;[8]:|09Enter a small description of the BBS 60 Chars Max.|07:|05
