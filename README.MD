@@ -1,6 +1,10 @@
 # Renegade Bulletin Board System
 Copyright (c) 1991-2021 The Renegade Development Team ─ Cott Lang, Patrick Spence, Gary Hall, Jeff Herrings, T.J. McMillen, Chris Hoppman, Lee Palmer, and Lee Woodridge.
 #
+
+  * Implemented CoSysOp max mail waiting configuration option
+  * a bunch of work on chat, see chat.pas for more info
+  * INT moved clear_eol + ansig to COMMON
   * INT OneLiners tolower func moved to common
   * OneLiners filenames now ONELH ONELM ONELT
   * OneLiner strings in RGLNG
