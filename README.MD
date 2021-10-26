@@ -1,6 +1,10 @@
 # Renegade Bulletin Board System
 Copyright (c) 1991-2021 The Renegade Development Team ─ Cott Lang, Patrick Spence, Gary Hall, Jeff Herrings, T.J. McMillen, Chris Hoppman, Lee Palmer, and Lee Woodridge.
 #
+  * INT OneLiners tolower func moved to common
+  * OneLiners filenames now ONELH ONELM ONELT
+  * OneLiner strings in RGLNG
+  * OneLiners see anonymous posters name now anonpubread ACS instead of SysOp
   * Teleconf strings in lang file instead of node config menu
   * Removed syscfg and and fileareaeditor strings from lang
   * Removed MCIs that were added for sysconfig/fae
