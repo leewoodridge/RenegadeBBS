@@ -461,6 +461,8 @@ VAR
   MQArea,                   {  }
   VQArea: Boolean;          {  }
 
+PROCEDURE Clear_EOL; { ANSI Clear to end of line }
+PROCEDURE ANSIG(X,Y: Byte); { ANSI go to position }
 FUNCTION ToLower(S: STRING): STRING; { Convert string to lowercase } { LeeW: Moved from OneLiner }
 PROCEDURE Toggle(VAR TheVar: Boolean); { Toggles a boolean } { LeeW: Added }
 FUNCTION GetC(c: Byte): STRING;
@@ -664,6 +666,27 @@ USES
   SpawnO,
   SysOp12,
   Vote;
+
+PROCEDURE Clear_EOL;
+BEGIN
+  IF (NOT OkAvatar) THEN
+    SerialOut(#27'[K')
+  ELSE
+    SerialOut(^V^G);
+  IF (WantOut) THEN
+    ClrEOL;
+END;
+
+PROCEDURE ANSIG(X,Y: Byte);
+BEGIN
+  IF (ComPortSpeed > 0) THEN
+    IF (OkAvatar) THEN
+      SerialOut(^V^H+Chr(Y)+Chr(X))
+    ELSE
+      SerialOut(#27+'['+IntToStr(Y)+';'+IntToStr(X)+'H');
+  IF (WantOut) THEN
+    GoToXY(X,Y);
+END;
 
 FUNCTION ToLower(S: STRING): STRING;
 VAR
@@ -4770,7 +4793,7 @@ BEGIN
                   '7' : Add := ShowOnOff(NOT (Novice IN ACFlags));
                   '8' : IF (ForUsr > 0) THEN
                           Add := 'Forwarded - '+IntToStr(ForUsr)
-                        ELSE IF (Nomail IN ACFlags) THEN
+                        ELSE IF (NoMail IN ACFlags) THEN
                           Add := 'Closed'
                         ELSE
                           Add := 'Open';

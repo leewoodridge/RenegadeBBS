@@ -22,10 +22,9 @@ USES
   Crt,
   Dos,
   TimeFunc,
-  LineChat,
+  Chat,
   SysOp2G,
-  SysOp3,
-  SplitCha;
+  SysOp3;
 
 CONST
   SYSKEY_LENGTH = 1269;

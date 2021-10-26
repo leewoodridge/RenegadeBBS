@@ -22,17 +22,15 @@
 PROGRAM Renegade;
 
 USES
-  OverLay,
-{ OvrUMB,}
-  Crt,
-  Dos,
   Boot,
   Common,
   Common1,
+  CRT,
+  DOS,
   Events,
   File0,
-  File7,
   File13,
+  File7,
   Logon,
   Mail0,
   Maint,
@@ -41,28 +39,23 @@ USES
   MsgPack,
   MyIO,
   NewUsers,
-  OffLine,
-  Oneliner,
+  Offline,
+  {OneLiner,}
+  Overlay,
   TimeFunc,
-  WfCMenu;
+  WFCMenu;
 
-{$O MsgPack   } {$O Common1   } {$O Common2   } {$O Common3   } {$O Boot      }
-{$O WfcMenu   } {$O Timefunc  } {$O Sysop1    } {$O Sysop2    } {$O Offline   }
-{$O Sysop2j   } {$O Sysop2a   } {$O Sysop2b   } {$O Sysop2c   } {$O Sysop2d   }
-{$O Sysop2e   } {$O Sysop2f   } {$O Sysop2l   } {$O Sysop2g   } {$O Sysop2i   }
-{$O Sysop2h   } {$O File4     } {$O Sysop2k   } {$O Sysop3    } {$O Sysop4    }
-{$O Sysop6    } {$O Sysop7    } {$O Sysop7m   } {$O Sysop8    } {$O Sysop2m   }
-{$O Sysop9    } {$O Sysop10   } {$O Sysop11   } {$O Mail0     } {$O Mail1     }
-{$O Email     } {$O Mail2     } {$O Mail3     } {$O Vote      } {$O Nodelist  }
-{$O Mail4     } {$O Arcview   } {$O File0     } {$O File1     } {$O File2     }
-{$O File5     } {$O File6     } {$O File8     } {$O MultNode  } {$O Script    }
-{$O File9     } {$O File10    } {$O File11    } {$O File12    } {$O File13    }
-{$O File14    } {$O Archive1  } {$O Archive2  } {$O Archive3  } {$O Logon     }
-{$O Maint     } {$O NewUsers  } {$O TimeBank  } {$O Bulletin  } {$O MiscUser  }
-{$O ShortMsg  } {$O CUser     } {$O Doors     } {$O ExecBat   } {$O Automsg   }
-{$O MyIO      } {$O Menus2    } {$O Menus3    } {$O LineChat  } {$O Stats      }
-{$O Events    } {$O BBSList   } {$O Common4   } {$O File7     } {$O SplitCha  }
-{$O Sysop2o   } {$O Sysop5   }  {$O SysOp12   } {$O Oneliner  }
+{$O Archive1  } {$O Archive2  } {$O Archive3  } {$O ArcView   } {$O AutoMsg   } {$O BBSList   } {$O Boot      } {$O Bulletin  }
+{$O CUser     } {$O Chat      } {$O Common1   } {$O Common2   } {$O Common3   } {$O Common4   } {$O Doors     } {$O EMail     }
+{$O Events    } {$O ExecBat   } {$O File0     } {$O File1     } {$O File2     } {$O File4     } {$O File5     } {$O File6     }
+{$O File7     } {$O File8     } {$O File9     } {$O File10    } {$O File11    } {$O File12    } {$O File13    } {$O File14    }
+{$O Logon     } {$O Mail0     } {$O Mail1     } {$O Mail2     } {$O Mail3     } {$O Mail4     } {$O Maint     } {$O Menus2    }
+{$O Menus3    } {$O MiscUser  } {$O MsgPack   } {$O MultNode  } {$O MyIO      } {$O NewUsers  } {$O Nodelist  } {$O Offline   }
+{$O OneLiner  } {$O Script    } {$O ShortMsg  } {$O Stats     } {$O SysOp1    } {$O SysOp2    } {$O SysOp2A   } {$O SysOp2B   }
+{$O SysOp2C   } {$O SysOp2D   } {$O SysOp2E   } {$O SysOp2F   } {$O SysOp2G   } {$O SysOp2H   } {$O SysOp2I   } {$O SysOp2J   }
+{$O SysOp2K   } {$O SysOp2L   } {$O SysOp2M   } {$O SysOp2O   } {$O SysOp3    } {$O SysOp4    } {$O SysOp5    } {$O SysOp6    }
+{$O SysOp7    } {$O SysOp7M   } {$O SysOp8    } {$O SysOp9    } {$O SysOp10   } {$O SysOp11   } {$O SysOp12   } {$O TimeBank  }
+{$O TimeFunc  } {$O Vote      } {$O WFCMenu   }
 
 CONST
   NeedToHangUp: Boolean = FALSE;

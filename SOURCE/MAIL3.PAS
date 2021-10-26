@@ -1,5 +1,7 @@
 {$A+,B-,D+,E-,F+,I-,L+,N-,O+,R-,S+,V-}
-
+{
+10/25/2021 added cosysop max waiting check
+}
 UNIT Mail3;
 
 INTERFACE
@@ -162,7 +164,9 @@ BEGIN
       Print('^8The mailbox for this user is closed!^0');
       ForwardOk := FALSE;
     END
-    ELSE IF (User.Waiting >= General.MaxWaiting) AND (NOT CoSysOp) THEN
+    ELSE IF ((NOT AACS1(User,UNum,General.CSOP)) AND (User.Waiting >= General.MaxWaiting)) OR
+			((AACS1(User,UNum,General.CSOP)) AND (User.Waiting >= General.CSMaxWaiting))
+			AND (NOT CoSysOp) THEN { LeeW: Added CoSysOp max waiting check }
     BEGIN
       NL;
       Print('^8The mailbox for this user is full!^0');

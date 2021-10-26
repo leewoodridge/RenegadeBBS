@@ -64,7 +64,7 @@ USES
   OneLiner,
   Script,
   Stats,
-  LineChat,
+  Chat,
   Sysop1,
   Sysop2,
   SysOp2G,

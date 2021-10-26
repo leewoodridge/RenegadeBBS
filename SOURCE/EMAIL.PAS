@@ -1,5 +1,7 @@
 {$A+,B-,D+,E-,F+,I-,L+,N-,O+,R-,S+,V-}
-
+{ Lee Woodridge
+ 10/18/2021	- Added CoSysOp max mail waiting check
+}
 UNIT EMail;
 
 INTERFACE
@@ -80,7 +82,9 @@ VAR
       Exit;
     END;
     LoadURec(User,UNum1);
-    IF (User.Waiting >= General.MaxWaiting) OR (NoMail IN User.ACFlags) AND (NOT CoSysOp) THEN
+	IF ((NOT AACS1(User,UNum,General.CSOP)) AND (User.Waiting >= General.MaxWaiting)) OR
+	   ((AACS1(User,UNum1,General.CSOP)) AND (User.Waiting >= General.CSMaxWaiting)) OR
+	   (NoMail IN User.ACFlags) AND (NOT CoSysOp) THEN { LeeW: Added CoSysOp max waiting check }
     BEGIN
       UNum1 := 0;
       { Print(FString.CantEmail); }
@@ -208,19 +212,19 @@ BEGIN
   IF ((REmail IN ThisUser.ACFlags) OR (NOT AACS(General.NormPrivPost))) AND (NOT CoSysOp) THEN
   BEGIN
     NL;
-    Print('^8Your access privledges do not include sending private messages!^0');
+    Print('^7Your access privledges do not include sending private messages!^1');
     EmailOk := FALSE;
   END
   ELSE IF ((PrivatePostsToday >= General.MaxPrivPost) AND (NOT CoSysOp)) THEN
   BEGIN
     NL;
-    Print('^8You have already sent the maximum private messages allowed per day!^0');
+    Print('^7You have already sent the maximum private messages allowed per day!^1');
     EmailOk := FALSE;
   END
   ELSE IF (AccountBalance < General.CreditEmail) AND (General.CreditEmail > 0) AND (NOT (FNoCredits IN ThisUser.ACFlags)) THEN
   BEGIN
     NL;
-    Print('^8Insufficient account balance to send private messages!^0');
+    Print('^7Insufficient account balance to send private messages!^1');
     EmailOk := FALSE;
   END;
 
@@ -295,7 +299,7 @@ BEGIN
       Print('(2) Send to all system users.');
       Print('(3) Send private messages to a list of users.');
       NL;
-      Prt('Your choice [^11^2-^13^2,^1Q^2=^1Quit^2]: ');
+      Prt('Your choice [^51^4-^53^4,^5Q^4=^5Quit^4]: ');
       OneK(Cmd,'Q123',TRUE,TRUE);
     END;
     CASE Cmd OF
@@ -436,38 +440,40 @@ BEGIN
     IF ((REmail IN ThisUser.ACFlags) OR (NOT AACS(General.NormPrivPost))) AND (NOT CoSysOp) THEN
     BEGIN
       NL;
-      Print('^8Your access privledges do not include sending private messages!^0');
+      Print('^7Your access privledges do not include sending private messages!^1');
       EmailOk := FALSE;
     END
-    ELSE IF (AccountBalance < General.CreditEmail) AND (General.CreditEmail > 0) AND
-	        (NOT (FNoCredits IN ThisUser.ACFlags)) THEN
+    ELSE IF (AccountBalance < General.CreditEmail) AND (General.CreditEmail > 0) AND 
+			(NOT (FNoCredits IN ThisUser.ACFlags)) THEN
     BEGIN
       NL;
-      Print('^8Insufficient account balance to send private messages!^0');
+      Print('^7Insufficient account balance to send private messages!^1');
       EmailOk := FALSE;
     END
     ELSE IF (PrivatePostsToday >= General.MaxPrivPost) AND (NOT CoSysOp) THEN
     BEGIN
       NL;
-      Print('^8You have already sent the maximum private messages allowed per day!^0');
+      Print('^7You have already sent the maximum private messages allowed per day!^1');
       EmailOk := FALSE;
     END
     ELSE IF ((UNum = 1) AND (FeedbackPostsToday >= General.MaxFBack) AND (NOT CoSysOp)) THEN
     BEGIN
       NL;
-      Print('^8You have already sent the maximum allowed feedback per day!^0');
+      Print('^7You have already sent the maximum allowed feedback per day!^1');
       EmailOk := FALSE;
     END
-    ELSE IF (User.Waiting >= General.MaxWaiting) AND (NOT CoSysOp) THEN
+    ELSE IF ((NOT AACS1(User,UNum,General.CSOP)) AND (User.Waiting >= General.MaxWaiting)) OR
+			((AACS1(User,UNum,General.CSOP)) AND (User.Waiting >= General.CSMaxWaiting))
+			AND (NOT CoSysOp) THEN { LeeW: Added CoSysOp max waiting check }
     BEGIN
       NL;
-      Print('^8The mailbox for this user is full!^0');
+      Print('^7The mailbox for this user is full!^1%pa');
       EmailOk := FALSE;
     END
     ELSE IF (NoMail IN User.ACFlags) AND (NOT CoSysOp) THEN
     BEGIN
       NL;
-      Print('^8The mailbox for this user is closed!^0');
+      Print('^7The mailbox for this user is closed!^1');
       EmailOk := FALSE;
     END;
 
@@ -604,9 +610,9 @@ BEGIN
     SaveHeader((HiMsg + 1),MHeader);
 
     IF (UserOn) THEN
-      SysOpLog(AOnOff((NetMail IN MHeader.Status),'Netmail','Private message')+' sent to ^1'+Caps(User.Name)+'.');
+      SysOpLog(AOnOff((NetMail IN MHeader.Status),'Netmail','Private message')+' sent to ^5'+Caps(User.Name)+'.');
 
-    Print('^0'+AOnOff((NetMail IN MHeader.Status),'Netmail','Private message')+' sent to ^1'+Caps(User.Name)+'^0.');
+    Print('^1'+AOnOff((NetMail IN MHeader.Status),'Netmail','Private message')+' sent to ^5'+Caps(User.Name)+'^1.');
 
     Update_Screen;
   END;
@@ -645,7 +651,7 @@ BEGIN
   BEGIN
     LastAuthor := SearchUser(ReplyHeader.From.A1S,TRUE);
     IF (LastAuthor = 0) THEN
-      Print('^8That user does not have an account on this BBS!^0')
+      Print('^7That user does not have an account on this BBS!^1')
     ELSE
       SEMail(LastAuthor,ReplyHeader);
   END
@@ -785,7 +791,7 @@ BEGIN
         IF (Cmd = 'L') THEN
           ListYourEmail(SNum,MNum,MessageArray);
         NL;
-        Prt('Select message (^11^2-^1'+IntToStr(MNum)+'^2) [^1?^2=^1First^2,^1<CR>^2=^1Next^2,^1Q^2=^1Quit^2)]: ');
+        Prt('Select message (^51^4-^5'+IntToStr(MNum)+'^4) [^5?^4=^5First^4,^5<CR>^4=^5Next^4,^5Q^4=^5Quit^4)]: ');
         MPL(Length(IntToStr(MNum)));
         ScanInput(InputStr,'Q?'^M);
         Cmd := InputStr[1];
@@ -808,7 +814,7 @@ BEGIN
             ELSE
             BEGIN
               NL;
-              Print('^8The range must be from 1 to '+IntToStr(MNum)+'^0');
+              Print('^7The range must be from 1 to '+IntToStr(MNum)+'^1');
               PauseScr(FALSE);
               SNum := 1;
               Cmd := 'L';
@@ -865,7 +871,7 @@ BEGIN
             'F' : ForwardMessage(MessageArray[SNum]);
             'G' : InputByteWOC('%LFGoto message',SNum,[NumbersOnly],1,MNum);
             'M' : IF (NOT MsgSysOp) THEN
-                    Print('%LF^8You do not have the required access level for this option!^0%LF%PA')
+                    Print('%LF^7You do not have the required access level for this option!^1%LF%PA')
                   ELSE
                   BEGIN
                     MoveMsg(MessageArray[SNum]);
@@ -881,7 +887,7 @@ BEGIN
                         2 : ReplyOk := AACS(General.CSOP);
                       END;
                     IF (NOT ReplyOk) THEN
-                      Print('%LF^8You can not reply to an anonymous message!^0%LF%PA')
+                      Print('%LF^7You can not reply to an anonymous message!^1%LF%PA')
                     ELSE
                     BEGIN
                       DumpQuote(MHeader);
@@ -911,9 +917,9 @@ BEGIN
                     END;
                   END;
             'S' : IF (NOT CoSysOp) THEN
-                    Print('%LF^8You do not have the required access level for this option!^0%LF%PA')
+                    Print('%LF^7You do not have the required access level for this option!^1%LF%PA')
                   ELSE IF (LastAuthor < 1) OR (LastAuthor > (MaxUsers - 1)) THEN
-                    Print('%LF^8The sender of this message does not have an account on this BBS!^0%LF%PA')
+                    Print('%LF^7The sender of this message does not have an account on this BBS!^1%LF%PA')
                   ELSE
                   BEGIN
                     LoadURec(User,LastAuthor);
@@ -922,26 +928,26 @@ BEGIN
                     PauseScr(FALSE);
                   END;
             'U' : IF (NOT CoSysOp) THEN
-                    Print('%LF^8You do not have the required access level for this option!^0%LF%PA')
+                    Print('%LF^7You do not have the required access level for this option!^1%LF%PA')
                   ELSE IF (LastAuthor < 1) OR (LastAuthor > (MaxUsers - 1)) THEN
-                    Print('%LF^8The sender of this message does not have an account on this BBS!^0%LF%PA')
+                    Print('%LF^7The sender of this message does not have an account on this BBS!^1%LF%PA')
                   ELSE IF (CheckPW) THEN
                     UserEditor(LastAuthor);
             'V' : IF (NOT CoSysOp) THEN
-                    Print('%LF^8You do not have the required access level for this option!^0%LF%PA')
+                    Print('%LF^7You do not have the required access level for this option!^1%LF%PA')
                   ELSE IF (LastAuthor < 1) OR (LastAuthor > (MaxUsers - 1)) THEN
-                    Print('%LF^8The sender of this message does not have an account on this BBS!^0%LF%PA')
+                    Print('%LF^7The sender of this message does not have an account on this BBS!^1%LF%PA')
                   ELSE
                   BEGIN
                     LoadURec(User,LastAuthor);
                     AutoVal(User,LastAuthor);
                   END;
             'X' : IF (NOT CoSysOp) THEN
-                    Print('%LF^8You do not have the required access level for this option!^0%LF%PA')
+                    Print('%LF^7You do not have the required access level for this option!^1%LF%PA')
                   ELSE
                     ExtractMsgToFile(MessageArray[SNum],MHeader);
             'Z' : IF (NOT MsgSysOp) THEN
-                    Print('%LF^8You do not have the required access level for this option!^0%LF%PA')
+                    Print('%LF^7You do not have the required access level for this option!^1%LF%PA')
                   ELSE
                   BEGIN
                     DeleteOk := TRUE;
@@ -1035,7 +1041,7 @@ BEGIN
         ReadMsg(MsgNum,MsgNum,MaxMsgs);
       END;
       NL;
-      Prt('Private messages sent [^1?^2=^1Help^2]: ');
+      Prt('Private messages sent [^5?^4=^5Help^4]: ');
       IF (CoSysOp) THEN
         OneK(Cmd,'Q-ADENX?'^M,TRUE,TRUE)
       ELSE
@@ -1077,11 +1083,11 @@ BEGIN
               END;
         'E' : EditMessageText(MsgNum);
         'X' : IF (NOT CoSysOp) THEN
-                Print('%LF^8You do not have the required access level for this option!^0%LF%PA')
+                Print('%LF^7You do not have the required access level for this option!^1%LF%PA')
               ELSE
                 ExtractMsgToFile(MsgNum,MHeader);
         '?' : BEGIN
-                Print('%LF<^1CR^0>Next message');
+                Print('%LF<^3CR^1>Next message');
                 LCmds(20,3,'Again','Edit message');
                 LCmds(20,3,'Delete message','-Previous message');
                 IF (CoSysOp) THEN
@@ -1097,7 +1103,7 @@ BEGIN
   IF (NOT AnyFound) THEN
   BEGIN
     NL;
-    Print('^1No private messages sent.');
+    Print('^3No private messages sent.');
   END;
   LoadMsgArea(SaveReadMsgArea);
   ReadingMail := FALSE;
