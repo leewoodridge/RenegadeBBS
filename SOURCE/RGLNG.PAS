@@ -5,7 +5,7 @@ Lee Woodridge
  10/01/2021	- Added Lightbar "Yes"(96) & "No"(97) strings to LNG
  10/02/2021 - Added "Aborted"(44) & "Saved"(45) strings to NOTE
 			- Added Auto Message strings (98-104) to LNG
- 10/12/2021 - Added Teleconf normal(11),anonymous(12),global(13),private(14) to MAIN
+ 10/12/2021 - Added Teleconf Normal(11),Anonymous(12),Global(13),Private(14) to MAIN
 }
 PROGRAM RGLNG;
 
@@ -283,6 +283,16 @@ BEGIN
 		RgStrNum := 103
 	  ELSE IF (S = 'AUTO_MESSAGE_HEADER') THEN
 		RgStrNum := 104
+	  ELSE IF (S = 'ENTER_ONELINER') THEN
+		RgStrNum := 105
+	  ELSE IF (S = 'ADD_ONELINER') THEN
+		RgStrNum := 106
+	  ELSE IF (S = 'ADD_ONELINER_CONFIRM') THEN
+		RgStrNum := 107
+	  ELSE IF (S = 'ONELINER_HEADER') THEN
+		RgStrNum := 108
+	  ELSE IF (S = 'NO_ONELINERS') THEN
+		RgStrNum := 109
 		(*
 	  ELSE IF (S = '') THEN
 		RgStrNum := 

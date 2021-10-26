@@ -60,8 +60,8 @@ USES
   MiscUser,
   MsgPack,
   Multnode,
-  OffLine,
-  Oneliner,
+  Offline,
+  OneLiner,
   Script,
   Stats,
   LineChat,
@@ -654,7 +654,7 @@ BEGIN
           END;
        
     '1' : CASE Cmd[2] OF
-            'L' : DoOneLiners;
+            'L' : OneLiners;
           END;
   
 
