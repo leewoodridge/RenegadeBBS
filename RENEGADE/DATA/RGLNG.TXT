@@ -466,3 +466,23 @@ $
 $Auto_Message_Header
 Auto-Message:
 $
+
+$Enter_OneLiner
+Enter your OneLiner:
+$
+
+$Add_OneLiner
+Add a OneLiner?
+$
+
+$Add_OneLiner_Confirm
+Are you sure you want to add this OneLiner?
+$
+
+$OneLiner_Header
+%BN OneLiners
+$
+
+$No_OneLiners
+There are no OneLiners yet
+$
