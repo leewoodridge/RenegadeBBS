@@ -1,0 +1,488 @@
+$Anonymous_String
+[ANONYMOUS]
+$
+
+$Echo_Char_For_Passwords
+%
+$
+
+$Engage_Chat
+%LFYour SysOp, %SN, is here to chat with you!%LF%LF
+$
+
+$End_Chat
+%LFWelcome back to %BN.
+$
+
+$SysOp_Working
+^3 PLEASE WAIT ^0@
+$
+
+$Pause
+^3 PAUSE ^0@
+$
+
+$Enter_Message_Line_One
+Press ENTER to get a BLANK LINE and press the following:
+$
+
+$Enter_Message_Line_Two
+To Save: /S  To Quote: /Q  To Abort: /A  Help: /?
+$
+
+$NewScan_Begin
+%CLScanning ... [%MB - %HM]@
+$
+
+$NewScan_Done
+@
+$
+
+; @U = Username, @D = Date
+$Auto_Message_Title
+^0 - Posted by ^1@U^0 on ^1@D^0
+$
+
+; single character, color code ok
+$Auto_Message_Border_Characters
+-
+$
+
+$SysOp_Shelling_To_DOS
+^3 PLEASE WAIT ^0@
+$
+
+$Read_Mail
+%LFRead Mail (?=Help): @
+$
+
+$Paging_SysOp
+I will now attempt to call %SN to his computer!
+$
+
+$Chat_Call
+[(<*>)] @
+$
+
+$Bulletin_Prompt
+Time Left [%TL] (?=Help) %LFBulletin Menu: @
+$
+
+$Protocol_Prompt
+Press [G] To Transfer If Logged On By http://renegadebbs.info
+
+Otherwise, Press [ENTER] To Transfer, [B]atch, [N]ext, [Q]uit: @
+$
+
+$List_Files
+List Files - P to Pause
+$
+
+$Search_For_New_Files
+%LFSearch for new files -
+$
+
+$Search_All_Dirs_For_File_Mask
+Search all directories for a file name: 
+$
+
+$Search_For_Descriptions
+Enter a description to search for: [No Wildcards!]: 
+$
+
+$Enter_The_String_To_Search_For
+Press [ENTER] to abort.%LF
+$
+
+$Download
+%LFDownload from file area %FB
+%LFFilename: @
+$
+
+$Upload
+%LFUpload to file area %FB
+%LFFilename: @
+$
+
+$View_Interior_Files
+%LFEnter the name of the archive(s) you would like to view: 
+$
+
+$Insufficient_File_Credits
+You have insufficient file points to download this!
+$
+
+$Ratio_Is_Unbalanced
+Your upload/download ratio is too poor to download this
+$
+
+$All_Files
+
+$
+
+$File_Mask
+Press [ENTER] For ALL Files: @
+$
+
+$File_Added_To_Batch_Queue
+%LFFile added to batch download queue.
+$
+
+$Batch_Download_Flagging
+%LFEnter filename(s) for addition to the batch queue
+%LFFilename: @
+$
+
+$Read_Question_Prompt
+[%MB]%LFBegin reading at [1-%HM] (Q=Quit): @
+$
+
+$System_Password_Prompt
+%LFSysOp password: @
+$
+
+$Default_Message_To
+Press [ENTER] for ALL:%LF
+$
+
+$Newscan_All
+[ Global NewScan Beginning ]
+$
+
+$Newscan_Done
+[ Global NewScan Completed ]
+$
+
+$Chat_Reason
+%UN, State your reason for a Chat Session.
+$
+
+$User_Defined_Question_One
+Is ALL of your information REAL & CORRECT? (Yes/No)
+$
+
+$User_Defined_Question_Two
+Do you run a Telnet BBS? (If so, type in address below)
+$
+
+$User_Defined_Question_Three
+What BBS or Web Site did you hear about this BBS? (Specific Please)
+$
+
+$User_Defined_Question_Editor_One
+Info Real
+$
+
+$User_Defined_Question_Editor_Two
+Telnet BBS
+$
+
+$User_Defined_Question_Editor_Three
+Reference
+$
+
+$Continue_Prompt
+Continue? [(Y)es, (N)o, (C)ontinuous]: @
+$
+
+$Invisible_Login
+Invisible Login: @
+$
+
+$Cant_Email
+Unable to send mail to that user!
+$
+
+$Send_Email
+%CLUser to send private message to (1-%UM)?
+$
+
+$Sending_Mass_Mail_To
+Sending mass-mail to:
+$
+
+$Sending_Mass_Mail_To_All_Users
+Sending mass-mail to ALL USERS.
+$
+
+$No_Netmail
+You are not allowed to send netmail!
+$
+
+$Netmail_Prompt
+%LFIs this a netmail message? @
+$
+
+$No_Mail_Waiting
+%LFYou have no mail waiting
+%PA
+$
+
+$Must_Read_Message
+%LFSorry, you must read and reply to (or delete) your mail
+%PA
+$
+
+$Scan_For_New_Files
+Scan For NEW Files Since MM/DD/YYYY: @
+$
+
+$New_Scan_Char_File
+ş
+$
+
+$Bulletins_Prompt
+There are new bulletins, do you want to read them? @
+$
+
+$Quick_Logon
+Quick Logon? @
+$
+
+$Message_Area_Select_Header
+%CL7ÚÄÄÄÄÄÂÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÂÄÄÄÄÄÂÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄ¿
+7³8 Num 7³9 Name                           7³8 Num 7³9 Name                           7³
+7ÀÄÄÄÄÄÁÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÁÄÄÄÄÄÁÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÙ
+$
+
+
+$File_Area_Select_Header
+%CL-ÚÄÄÄÄÄÂÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÂÄÄÄÄÄÂÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄ¿
+-³. Num -³/ Name                           -³. Num -³/ Name                           -³
+-ÀÄÄÄÄÄÁÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÁÄÄÄÄÄÁÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÙ
+$
+
+$Receive_Email_Header
+%CL‡ÚÄÄÄÄÄÂÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÂÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÂÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄ¿
+‡³ˆ Num ‡³‰ Date/Time         ‡³Š Sender                 ‡³‹ Subject                  ‡³
+‡ÀÄÄÄÄÄÁÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÁÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÁÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÙ
+$
+
+$Vote_List_Topics_Header
+%CLÚÄÄÄÄÄÂÄÄÄÄÄÂÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄ¿
+³|17 Num |16³|17Votes|16³|17 Choice                                                          |16³
+ÀÄÄÄÄÄÁÄÄÄÄÄÁÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÙ
+$
+
+$Vote_Topic_Result_Header
+ÚÄÄÄÂÄÄÄÄÄÂÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄ¿
+³|17 N |16³|17  %  |16³|17 Choice                                                            |16³
+ÀÄÄÄÁÄÄÄÄÄÁÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÙ
+$
+
+$File_Area_Name_Header_No_Ratio
+%CLÚÄÄÂÄÄÄÄÄÄÄÄÄÄÄÄÂÄÄÄÄÄÄÄÄÄÄÂÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄ¿
+³##³ File Name  ³   Size   ³ Description  %FB{32    ³
+ÀÄÄÁÄÄÄÄÄÄÄÄÄÄÄÄÁÄÄÄÄÄÄÄÄÄÄÁÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÙ
+$
+
+$File_Area_Name_Header_Ratio
+%CLÚÄÄÂÄÄÄÄÄÄÄÄÄÄÄÄÂÄÄÄÂÄÄÄÄÄÄÂÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄ¿
+³##³ÿFile Name  ³Pts³ Size ³ Description  %FB{30    ³
+ÀÄÄÁÄÄÄÄÄÄÄÄÄÄÄÄÁÄÄÄÁÄÄÄÄÄÄÁÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÙ
+$
+
+$Sysop_Chat_Help
+/BYE:   Hang up
+/CLS:   Clear the screen
+/PAGE:  Page the SysOp and User
+/Q:     Exit chat mode%LF
+$
+
+$New_Scan_Char_Message
+ş
+$
+
+$File_Area_Select_No_Files
+%LFNo file areas!
+$
+
+$Message_Area_Select_No_Files
+%LFNo message areas!
+$
+
+$Message_Area_List_Prompt
+%LFMessage area list? [?=Help,Q=Quit]: @
+$
+
+$File_Area_List_Prompt
+%LFFile area list? [#,?=Help,Q=Quit]: @
+$
+
+$File_Message_Area_List_Help
+%LF(###)Manual entry selection  (<CR>)Select current entry
+(<Home>)First entry on page  (<End>)Last entry on page
+(Left Arrow)Previous entry   (Right Arrow)Next entry
+(Up Arrow)Move up            (Down Arrow)Move down
+([)Previous page             (])Next page
+%PA
+$
+
+$File_Area_Change_Prompt
+%LFChange file area? [#,?=Help,Q=Quit]: @
+$
+
+$Message_Area_Change_Prompt
+%LFChange message area? [#,?=Help,Q=Quit]: @
+$
+
+$File_Area_New_Scan_Toggle_Prompt
+%LFToggle new scan? [#,#-#,F=Flag or U=Unflag All,?=Help,Q=Quit]: @
+$
+
+$Message_Area_New_Scan_Toggle_Prompt
+%LFToggle new scan? [#,#-#,F=Flag or U=Unflag All,?=Help,Q=Quit]: @
+$
+
+$File_Area_Move_File_Prompt
+%LFMove to which file area? (%A1-%A2) [#,?=Help,Q=Quit]: @
+$
+
+$Message_Area_Move_Message_Prompt
+%LFMove to which area? (0=Private,%A3-%A3) [#,?=Help,Q=Quit]: @
+$
+
+$File_Area_Change_Min_Max_Error
+%LFThe range must be from %A1 to %A2!
+%PA
+$
+
+$Message_Area_Change_Min_Max_Error
+%LFThe range must be from %A3 to %A4!
+%PA
+$
+
+$File_Area_Change_No_Area_Access
+%LFYou do not have access to this file area!
+%PA
+$
+
+$Message_Area_Change_No_Area_Access
+%LFYou do not have access to this message area!
+%PA
+$
+
+$File_Area_Change_Lowest_Area
+%LFLowest accessible file area.
+%PA
+$
+
+$File_Area_Change_Highest_Area
+%LFHighest accessible file area.
+%PA
+$
+
+$Message_Area_Change_Lowest_Area
+%LFLowest accessible message area.
+%PA
+$
+
+$Message_Area_Change_Highest_Area
+%LFHighest accessible message area.
+%PA
+$
+
+$File_Area_New_Scan_Scanning_All_Areas
+%LFYou are now scanning all file areas.
+%PA
+$
+
+$Message_Area_New_Scan_Scanning_All_Areas
+%LFYou are now reading all message areas.
+%PA
+$
+
+$File_Area_New_Scan_Not_Scanning_All_Areas
+%LFYou are now not scanning any file areas.
+%PA
+$
+
+$Message_Area_New_Scan_Not_Scanning_All_Areas
+%LFYou are now not reading any message areas.
+%PA
+$
+
+$File_Area_New_Scan_Min_Max_Error
+%LFThe range must be from %A1 to %A2!
+%PA
+$
+
+$Message_Area_New_Scan_Min_Max_Error
+%LFThe range must be from %A3 to %A4!
+%PA
+$
+
+$File_Area_New_Scan_Area_On_Off
+%LF%FB will %FSbe scanned.
+%PA
+$
+
+$Message_Area_New_Scan_Area_On_Off
+%LF%MB will %MSbe scanned.
+%PA
+$
+
+$Message_Area_New_Scan_Area_Not_Removed
+%LF%MB cannot be removed from your newscan.
+%PA
+$
+
+$New_File_Scanning
+%CLScanning ... [%FB - %HM]@
+$
+
+$Lightbar_Yes
+ Yes 
+$
+
+$Lightbar_No
+ No 
+$
+
+$No_Auto_Message
+There's no auto-message
+$
+
+$Posted_Anonymously
+(Posted Anonymously)
+$
+
+$Auto_Message_Restricted
+You are restricted from writing auto-messages
+$
+
+$Post_Anonymously?
+Post Anonymously?
+$
+
+$No_Auto_Message_Reply
+There's no auto-message to reply to!
+$
+
+$Cant_Reply_Anonymous
+You can't reply to an anonymous message!
+$
+
+$Auto_Message_Header
+Auto-Message:
+$
+
+$Enter_OneLiner
+Enter your OneLiner:
+$
+
+$Add_OneLiner
+Add a OneLiner?
+$
+
+$Add_OneLiner_Confirm
+Are you sure you want to add this OneLiner?
+$
+
+$OneLiner_Header
+%BN OneLiners
+$
+
+$No_OneLiners
+There are no OneLiners yet
+$

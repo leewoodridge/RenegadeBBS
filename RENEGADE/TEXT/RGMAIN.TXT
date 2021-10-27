@@ -1,0 +1,62 @@
+$Baud_Override_PW
+%LFBaud rate override password: @
+$
+
+$Caller_Logon
+%LF[Node %ND] Login: @
+$
+
+$Logon_As_New
+%LFLogon as new? @
+$
+
+$User_Logon_Password
+%LFEnter Password: @
+$
+
+$User_Logon_Phone_Number
+%LFLast 4 Digits of phone #: ###-###-@
+$
+
+$SysOp_Logon_Password
+%LFSysOp Password: @
+$
+
+$Forgot_PW_Question
+%LFPlease answer the following question to logon to the BBS.
+
+What is your favorite Pet's name?
+: @
+$
+
+$Verify_Birth_Date
+%LFPlease verify your date of birth (mm/dd/yyyy): @
+$
+
+$Logon_Withdraw_Bank
+Withdraw from Time Bank? @
+$
+
+$Shuttle_Logon
+%LF[Node %ND] Login: @
+$
+
+$New_User_Password
+%LFNew User Password: @
+$
+
+$Teleconf_Normal
+[%UN]: 
+$
+
+$Teleconf_Anonymous
+[ANONYMOUS]: 
+$
+
+$Teleconf_Global
+[%UN(Global)]: 
+$
+
+$Teleconf_Private
+[%UN(Private)]: 
+$
