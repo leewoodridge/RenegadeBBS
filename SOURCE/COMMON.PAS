@@ -10,6 +10,7 @@ Lee Woodridge
 			- removed redundant $V- above lcmds3
 			{LeeW: Added, toggle proc instead of writing "x := not x" everywhere}
 			- Added a linefeed to MPL if inputfield extends past users linelen
+ 10/26/2021 - Fixed lightbar yes/no question from eating itself
 *)
 UNIT Common;
 
@@ -29,7 +30,7 @@ CONST
 TYPE
   MCIFunctionType = FUNCTION(CONST s: AStr; Data1, Data2: Pointer): STRING;
 
-  MemMenuRec = RECORD                  { Menu Record }
+  MemMenuRec = RECORD                  { MENU RECORD }
     LDesc: ARRAY[1..3] OF STRING[100]; { menu name }
     ACS: ACString;                     { access requirements }
     NodeActivityDesc: STRING[50];      { node activity description }
@@ -45,7 +46,7 @@ TYPE
     GCol: ARRAY[1..3] OF Byte;         { generic menus: colors }
   END;
 
-  MemCmdRec = RECORD                   { Command records }
+  MemCmdRec = RECORD                   { COMMAND RECORD }
     LDesc: STRING[100];                { long command description }
     ACS: ACString;                     { access requirements }
     NodeActivityDesc: STRING[50];      {  }
@@ -152,11 +153,11 @@ TYPE
     DOS5N);
 
   InputFlagType =(
-    UpperOnly,        { Uppercase only }
+    UpperOnly,        { Forced uppercase }
     ColorsAllowed,    { Colors allowed }
     NoLineFeed,       { No linefeed after <CR> pressed }
     ReDisplay,        { Display old IF no change }
-    CapWords,         { Capitalize characters }
+    CapWords,         { Forced capitalization of first characters }
     InterActiveEdit,  { Interactive editing }
     NumbersOnly,      { Numeric values only }
     DisplayValue,     {  }
@@ -533,38 +534,38 @@ FUNCTION Empty:Boolean;
 PROCEDURE DTR(Status: Boolean);
 PROCEDURE BackSpace;
 PROCEDURE DoBackSpace(Start,Finish: Byte);
-FUNCTION LennMCI(CONST InString: STRING): Integer;
+FUNCTION LennMCI(CONST InString: STRING): Integer; { Returns string length minus MCIs and color codes }
 FUNCTION MsgSysOp: Boolean; { Is user message SysOp? }
 FUNCTION FileSysOp: Boolean; { Is user file SysOp? }
 FUNCTION CoSysOp: Boolean; { Is user CoSysOp? }
 FUNCTION SysOp: Boolean; { Is user SysOp? }
 FUNCTION Timer: LongInt;
 PROCEDURE TeleConfCheck;
-FUNCTION Substitute(Src: STRING; CONST old,New: STRING): STRING;
+FUNCTION Substitute(Src: STRING; CONST Old,New: STRING): STRING;
 PROCEDURE NewCompTables;
 FUNCTION OkANSI: Boolean; { Does user support ANSI terminal emulation? }
 FUNCTION OkAvatar: Boolean; { Does user support Avatar terminal emulation? }
-FUNCTION OkRIP: Boolean; { Does user support RIP terminal emulation? }
+FUNCTION OkRIP: Boolean; { Does user support RIP graphics? }
 FUNCTION OkVT100: Boolean; { Does user support VT-100 terminal emulation? }
 FUNCTION NSL: LongInt;
 FUNCTION AgeUser(CONST BirthDate: LongInt): Word;
-FUNCTION AllCaps(Instring: STRING): STRING;
-FUNCTION Caps(InString: STRING): STRING;
+FUNCTION AllCaps(InString: STRING): STRING; { Returns string in all uppercase }
+FUNCTION Caps(InString: STRING): STRING; { Returns string with first letters of words capitalized }
 PROCEDURE Update_Screen;
 FUNCTION PageLength: Word;
 PROCEDURE lStatus_Screen(WhichScreen: Byte; Message: AStr; OneKey: Boolean; VAR Answer: AStr);
 FUNCTION CInKey: Char;
 FUNCTION CheckPW: Boolean;
 FUNCTION StripColor(CONST InString: STRING): STRING;
-PROCEDURE sl1(s: AStr);
-PROCEDURE SysOpLog(s: AStr);
+PROCEDURE sl1(s: AStr); { Write entry to SysOp log }
+PROCEDURE SysOpLog(s: AStr); { Write entry to SysOp log with indent (user actions) }
 FUNCTION StrToInt(S: Str11): LongInt;
 FUNCTION RealToStr(R: Real; W,D: Byte): STRING;
 FUNCTION ValueR(S: AStr): REAL;
-PROCEDURE ShellDos(MakeBatch: Boolean; CONST Command: AStr; VAR ResultCode: Integer);
+PROCEDURE ShellDOS(MakeBatch: Boolean; CONST Command: AStr; VAR ResultCode: Integer);
 PROCEDURE SysOpShell;
 PROCEDURE RedrawForANSI;
-PROCEDURE Star(InString: AStr);
+PROCEDURE Star(InString: AStr); { Display string with * infront }
 FUNCTION GetKey: Word;
 PROCEDURE SetC(C: Byte);
 PROCEDURE UserColor(Color: Byte);
@@ -576,10 +577,10 @@ FUNCTION PadRightStr(InString: STRING; MaxLen: Byte): STRING;
 FUNCTION PadLeftInt(L: LongInt; MaxLen: Byte): STRING;
 FUNCTION PadRightInt(L: LongInt; MaxLen: Byte): STRING;
 PROCEDURE Print(CONST InString: STRING);
-PROCEDURE NL;
+PROCEDURE NL; { Carriage return }
 PROCEDURE Prt(CONST Instring: STRING);
-PROCEDURE MPL(MaxLen: Byte);
-FUNCTION CTP(t,b: LongInt): STRING;
+PROCEDURE MPL(MaxLen: Byte); { Print input field }
+FUNCTION CTP(t,b: LongInt): STRING; { Calculate percentage }
 PROCEDURE TLeft;
 PROCEDURE LoadNode(NodeNumber: Byte);
 PROCEDURE Update_Node(NActivityDesc: AStr; SaveVars: Boolean);
@@ -591,7 +592,7 @@ PROCEDURE SaveURec(User: UserRecordType; UserNumber:Integer);
 FUNCTION MaxIDXRec: Integer;
 FUNCTION InKey: Word;
 PROCEDURE OutKey(c: Char);
-PROCEDURE CLS;
+PROCEDURE CLS; { ANSI Clear screen }
 PROCEDURE Wait(b: Boolean);
 FUNCTION DisplayARFlags(AR: ARFlagSet; C1,C2: Char): AStr;
 PROCEDURE ToggleARFlag(Flag: Char; VAR AR: ARFlagSet; VAR Changed: Boolean);
@@ -1116,14 +1117,14 @@ VAR
   S: STRING;
   TotLoad: LongInt;
 BEGIN
-  Assign(StrPointerFile,General.LMultPath+'RGSCFGPR.DAT');
+  Assign(StrPointerFile,General.TextPath+'RGSCFGPR.DAT');
   Reset(StrPointerFile);
   Seek(StrPointerFile,StrNum);
   Read(StrPointerFile,StrPointer);
   Close(StrPointerFile);
   LastError := IOResult;
   TotLoad := 0;
-  Assign(RGStrFile,General.LMultPath+'RGSCFGTX.DAT');
+  Assign(RGStrFile,General.TextPath+'RGSCFGTX.DAT');
   Reset(RGStrFile,1);
   Seek(RGStrFile,(StrPointer.Pointer - 1));
   REPEAT
@@ -1159,14 +1160,14 @@ VAR
   S: STRING;
   TotLoad: LongInt;
 BEGIN
-  Assign(StrPointerFile,General.LMultPath+'RGNOTEPR.DAT');
+  Assign(StrPointerFile,General.TextPath+'RGNOTEPR.DAT');
   Reset(StrPointerFile);
   Seek(StrPointerFile,StrNum);
   Read(StrPointerFile,StrPointer);
   Close(StrPointerFile);
   LastError := IOResult;
   TotLoad := 0;
-  Assign(RGStrFile,General.LMultPath+'RGNOTETX.DAT');
+  Assign(RGStrFile,General.TextPath+'RGNOTETX.DAT');
   Reset(RGStrFile,1);
   Seek(RGStrFile,(StrPointer.Pointer - 1));
   REPEAT
@@ -1202,14 +1203,14 @@ VAR
   S: STRING;
   TotLoad: LongInt;
 BEGIN
-  Assign(StrPointerFile,General.LMultPath+'RGMAINPR.DAT');
+  Assign(StrPointerFile,General.TextPath+'RGMAINPR.DAT');
   Reset(StrPointerFile);
   Seek(StrPointerFile,StrNum);
   Read(StrPointerFile,StrPointer);
   Close(StrPointerFile);
   LastError := IOResult;
   TotLoad := 0;
-  Assign(RGStrFile,General.LMultPath+'RGMAINTX.DAT');
+  Assign(RGStrFile,General.TextPath+'RGMAINTX.DAT');
   Reset(RGStrFile,1);
   Seek(RGStrFile,(StrPointer.Pointer - 1));
   REPEAT
@@ -1245,14 +1246,14 @@ VAR
   S: STRING;
   TotLoad: LongInt;
 BEGIN
-  Assign(StrPointerFile,General.LMultPath+'RGLNGPR.DAT');
+  Assign(StrPointerFile,General.TextPath+'RGLNGPR.DAT');
   Reset(StrPointerFile);
   Seek(StrPointerFile,StrNum);
   Read(StrPointerFile,StrPointer);
   Close(StrPointerFile);
   LastError := IOResult;
   TotLoad := 0;
-  Assign(RGStrFile,General.LMultPath+'RGLNGTX.DAT');
+  Assign(RGStrFile,General.TextPath+'RGLNGTX.DAT');
   Reset(RGStrFile,1);
   Seek(RGStrFile,(StrPointer.Pointer - 1));
   REPEAT
@@ -2549,7 +2550,7 @@ BEGIN
          c := #1
        ELSE
        BEGIN
-         InKey := (Ord(c) * 256);        { Return scan code IN MSB }
+         InKey := (Ord(c) * 256); { Return scan code IN MSB }
          Exit;
        END;
     END;
@@ -2578,20 +2579,20 @@ BEGIN
             c := CInKey;
         END;
         CASE Char(c) OF
-          'A' : InKey := F_UP;      {UpArrow}
-          'B' : InKey := F_DOWN;    {DownArrow}
-          'C' : InKey := F_RIGHT; {RightArrow}
-          'D' : InKey := F_LEFT;    {LeftArrow}
-          'H' : InKey := F_HOME;    {Home}
-          'K' : InKey := F_END;    {END - PROCOMM+}
-          'R' : InKey := F_END;     {END - GT}
+          'A' : InKey := F_UP;		{ Up Arrow }
+          'B' : InKey := F_DOWN;	{ Down Arrow }
+          'C' : InKey := F_RIGHT;	{ Right Arrow }
+          'D' : InKey := F_LEFT;	{ Left Arrow }
+          'H' : InKey := F_HOME;	{ Home }
+          'K' : InKey := F_END;		{ END - PROCOMM+ }
+          'R' : InKey := F_END;		{ END - GT }
           '4' : BEGIN
                   InKey := F_END;
                   c := CInKey;
                 END;
-          'r' : InKey := F_PGUP;    {PgUp}
-          'q' : InKey := F_PGDN;    {PgDn}
-          'n' : InKey := F_INS;     {Ins}
+          'r' : InKey := F_PGUP;	{ PgUp }
+          'q' : InKey := F_PGDN;	{ PgDn }
+          'n' : InKey := F_INS;		{ Ins }
         END;
         Exit;
       END;
@@ -3067,7 +3068,7 @@ BEGIN
 			  DYNY := TRUE;
 			IF ((W = 78) OR (W = 110)) OR ((W=F_RIGHT) AND (DYNY=TRUE)) THEN
 			  DYNY := FALSE;
-			DoBackspace(0,Length(lRGLngStr(96,TRUE))+Length(lRGLngStr(96,TRUE))-2);
+			DoBackspace(0,LennMCI(lRGLngStr(96,TRUE))+LennMCI(lRGLngStr(96,TRUE))-2);
 		  UNTIL (W=13) OR (W=89) OR (W=121) OR (W=78) OR (W=110); { Y/N/Enter }
 		  PrintYesNo;
 		  YN := (DYNY) AND (NOT HangUp);
@@ -4809,7 +4810,7 @@ BEGIN
                   {
                   '1' : Add := General.MsgPath;
                   '2' : Add := General.NodePath;
-                  '3' : Add := General.LMultPath;
+                  '3' : Add := General.TextPath;
                   '4' : Add := General.SysOpPW;
                   '5' : Add := General.NewUserPW;
                   '6' : Add := General.MinBaudOverride;

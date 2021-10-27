@@ -333,8 +333,10 @@ VAR
     IF (ClrScrBefore IN MemMenu.MenuFlags) THEN
     BEGIN
       CLS;
+      {
+	  NL;
       NL;
-      NL;
+	  }
     END;
     IF (NOT (NoMenuTitle IN MemMenu.MenuFlags)) THEN
     BEGIN

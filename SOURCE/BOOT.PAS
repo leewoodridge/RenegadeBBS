@@ -1,9 +1,27 @@
 {$A+,B-,D+,E-,F+,I-,L+,N-,O+,R-,S+,V-}
-
+{     (                                         }
+{    )\ )                           (           }
+{   (()/(  (         (  (  (     )  )\ )  (     }
+{    \(_))))\ (     ))\ )\))( ( /( (()/( ))\    }
+{   (_)) /((_))\ ) /((_|(_))\ )(_)) ((_))(( )   }
+{   | _ \_)) _(_/((_)) \( )(_|(_)_  _| (_))/    }
+{   |   / -_) ' \)) -_)/ _` |/ _` / _` / -_)    }
+{   |_|_\___|_||_|\___|\__, |\__,_\__,_\___|    }
+{   ------------------ |___/ ----------------   }
+{   B U L L E T I N   B O A R D   S Y S T E M   }
+{   -----------------------------------------   }
+{
+    [DONE]
+     - Removed ClrScrs so we can see what's going on during boot
+	 - Added ErrorCodeHelp() function for more useful error messages
+    [TO DO]
+     - 
+}
 UNIT Boot;
 
 INTERFACE
 
+FUNCTION ErrorCodeHelp(ErrorCode: Byte): STRING;
 PROCEDURE initp1;
 PROCEDURE init;
 
@@ -16,8 +34,46 @@ USES
   MyIo,
   MiscUser,
   TimeFunc;
+  
+FUNCTION ErrorCodeHelp(ErrorCode: Byte): STRING;
+BEGIN
+  CASE ErrorCode OF
+		{ DOS Errors }
+	  2 : ErrorCodeHelp := 'File not found (#2)';
+	  3 : ErrorCodeHelp := 'Path not found (#3)';
+	  4 : ErrorCodeHelp := 'Too many open files (#4)';
+	  5 : ErrorCodeHelp := 'Access denied (#5)';
+	  6 : ErrorCodeHelp := 'Invalid file handle (#6)';
+	 12 : ErrorCodeHelp := 'Invalid file-access mode (#12)';
+	 15 : ErrorCodeHelp := 'Invalid disk number (#15)';
+	 16 : ErrorCodeHelp := 'Cannot remove current directory (#16)';
+	 17 : ErrorCodeHelp := 'Cannot rename across volumes (#17)';
+		{ I/O Errors }
+	100 : ErrorCodeHelp := 'Error when reading from disk (#100)';
+	101 : ErrorCodeHelp := 'Error when writing to disk (#101)';
+	102 : ErrorCodeHelp := 'File not assigned (#102)';
+	103 : ErrorCodeHelp := 'File not open (#103)';
+	104 : ErrorCodeHelp := 'File not opened for input (#104)';
+	105 : ErrorCodeHelp := 'File not opened for output (#105)';
+	106 : ErrorCodeHelp := 'Invalid number (#106)';
+		{ Fatal Errors }
+	150 : ErrorCodeHelp := 'Disk is write protected (#150)';
+	151 : ErrorCodeHelp := 'Unknown device (#151)';
+	152 : ErrorCodeHelp := 'Drive not ready (#152)';
+	153 : ErrorCodeHelp := 'Unknown command (#153)';
+	154 : ErrorCodeHelp := 'CRC check failed (#154)';
+	155 : ErrorCodeHelp := 'Invalid drive specified (#155)';
+	156 : ErrorCodeHelp := 'Seek error on disk (#156)';
+	157 : ErrorCodeHelp := 'Invalid media type (#157)';
+	158 : ErrorCodeHelp := 'Sector not found (#158)';
+	159 : ErrorCodeHelp := 'Printer out of paper (#159)';
+	160 : ErrorCodeHelp := 'Error when writing to device (#160)';
+	161 : ErrorCodeHelp := 'Error when reading from device (#161)';
+	162 : ErrorCodeHelp := 'Hardware failure (#162)';
+  END;
+END;
 
-PROCEDURE initp1;
+PROCEDURE InitP1;
 VAR
   LineFile: FILE OF LineRec;
   F: FILE OF Byte;
@@ -35,38 +91,34 @@ VAR
     S2: AStr;
     Counter: Byte;
   BEGIN
-    InField_Out_FGrd := 7;
-    Infield_Out_BkGd := 0;
-    Infield_Inp_FGrd := 7;
-    Infield_Inp_BkGd := 0;
     IF Exist('1STBOOT') THEN
-    BEGIN
-      General.DataPath := StartDir+'\DATA\';
-      General.MiscPath := StartDir+'\MISC\';
-      General.LogsPath := StartDir+'\LOGS\';
-      General.MsgPath  := StartDir+'\MSGS\';
-      General.NodePath := '';
-      General.TempPath := StartDir+'\TEMP\';
-      General.ProtPath := StartDir+'\PROT\';
-      General.ArcsPath := StartDir+'\ARCS\';
-      General.FileAttachPath := StartDir+'\FATTACH\';
-      General.lMultPath := StartDir+'\STRING\';
-      SaveGeneral(FALSE);
-      Assign(BootFile,StartDir+'1STBOOT');
-      Erase(BootFile);
-    END;
+	  BEGIN
+		General.ArcsPath := StartDir+'\ARCS\';
+		General.DataPath := StartDir+'\DATA\';
+		General.FileAttachPath := StartDir+'\FATTACH\';
+		General.LogsPath := StartDir+'\LOGS\';
+		General.MiscPath := StartDir+'\MISC\';
+		General.MsgPath  := StartDir+'\MSGS\';
+		General.NodePath := StartDir+'\NLV7\';
+		General.ProtPath := StartDir+'\PROT\';
+		General.TempPath := StartDir+'\TEMP\';
+		General.TextPath := StartDir+'\TEXT\';
+		SaveGeneral(FALSE);
+		Assign(BootFile,StartDir+'1STBOOT');
+		Erase(BootFile);
+      END;
     FOR Counter := 1 TO 8 DO
-    BEGIN
-      CASE Counter OF
-        1 : BEGIN
+      BEGIN
+		CASE Counter OF
+          1 : BEGIN
               DirDesc := 'DATA';
               DirName := General.DataPath;
             END;
-        2 : BEGIN
+          2 : BEGIN
               DirDesc := 'MSGS';
               DirName := General.MsgPath;
             END;
-        3 : BEGIN
+          3 : BEGIN
               DirDesc := 'FATTACH';
               DirName := General.FileAttachPath;
             END;
@@ -79,7 +131,7 @@ VAR
               DirName := General.LogsPath;
             END;
         6 : BEGIN
-              DirDesc := 'ARC';
+              DirDesc := 'ARCH';
               DirName := General.ArcsPath;
             END;
         7 : BEGIN
@@ -88,7 +140,7 @@ VAR
             END;
         8 : BEGIN
               DirDesc := 'STRING';
-              DirName := General.lMultPath;
+              DirName := General.TextPath;
             END;
       END;
       IF (NOT ExistDir(DirName)) THEN
@@ -121,7 +173,7 @@ VAR
                 5 : General.LogsPath := S2;
                 6 : General.ArcsPath := S2;
                 7 : General.ProtPath := S2;
-                8 : General.lMultPath := S2;
+                8 : General.TextPath := S2;
             END
             ELSE
             BEGIN
@@ -134,7 +186,7 @@ VAR
     END;
     IF (AnyDone) THEN
       SaveGeneral(FALSE);
-  END;
+  END; { FINDBADPATHS }
 
 BEGIN
   FindBadPaths;
@@ -171,10 +223,10 @@ BEGIN
       HangUp := '^ATH0|';
       Offhook := 'ATH1|';
       DoorPath := '';
-      TeleConfNormal := '^2[%UN] ^9';
-      TeleConfAnon := '^2[^9??^2] ^9';
-      TeleConfGlobal := '^2[%UN ^1GLOBAL^2] ^9';
-      TeleConfPrivate := '^2[%UN ^1PRIVATE^2] ^9';
+      TeleConfNormal := '^4[%UN] ^9';
+      TeleConfAnon := '^4[^9??^4] ^9';
+      TeleConfGlobal := '^4[%UN ^0GLOBAL^4] ^9';
+      TeleConfPrivate := '^4[%UN ^0PRIVATE^4] ^9';
       Ok := 'OK';
       Ring := 'RING';
       Reliable := '/ARQ';
@@ -300,7 +352,7 @@ BEGIN
   Assign(SysOpLogFile1,General.LogsPath+'SLOGXXXX.LOG');
   SL1('');
   SL1('');
-  SL1('^8--> ^1Renegade '+General.Version+' Node '+IntToStr(ThisNode)+' Loaded on '+dat+'^8 <--');
+  SL1('^7--> ^5Renegade '+General.Version+' Node '+IntToStr(ThisNode)+' Loaded on '+dat+'^7 <--');
 
   Assign(UserFile,General.DataPath+'USERS.DAT');
 
@@ -932,27 +984,27 @@ BEGIN
     Tasker := Dos5N;
 END;
 
-PROCEDURE init;
+PROCEDURE Init;
 VAR
   Node: Byte;
 BEGIN
   IF (DateStr = '01-01-1980') THEN
-  BEGIN
-    ClrScr;
-    TextColor(Yellow);
-    WriteLn('Please set the operating system date & time.');
-    Halt(ExitErrors);
-  END;
+	BEGIN
+      {ClrScr;}
+      {TextColor(Yellow);}
+      WriteLn('[ERROR] Invalid system date!');
+      Halt(ExitErrors);
+	END;
 
   FindTaskerType;
 
   IF (General.MultiNode) AND (NOT SchareLoaded) THEN
-  BEGIN
-    ClrScr;
-    TextColor(Yellow);
-    WriteLn('WARNING: SHARE.EXE should be loaded for MultiNode operation.');
-    Delay(1000);
-  END;
+	BEGIN
+      {ClrScr;}
+      {TextColor(Yellow);}
+      WriteLn('[WARNING] SHARE.EXE should be loaded for multi-node operation');
+      {Delay(1000);}
+	END;
 
   HangUp := FALSE;
   InCom := FALSE;
@@ -980,55 +1032,53 @@ BEGIN
   DirectVideo := NOT General.UseBIOS;
 
   IF (General.NetworkMode) AND (ThisNode = 0) THEN
-  BEGIN
-    LocalIOOnly := TRUE;
-    Node := 1;
-    WHILE (Node <= MaxNodes) AND (ThisNode = 0) DO
-    BEGIN
-      LoadNode(Node);
-      IF (NOT (NActive IN NodeR.Status)) THEN
-        ThisNode := Node;
-      Inc(Node);
-    END;
-    IF (ThisNode = 0) THEN
-      ThisNode := Node;
-  END;
+	BEGIN
+      LocalIOOnly := TRUE;
+      Node := 1;
+      WHILE (Node <= MaxNodes) AND (ThisNode = 0) DO
+		BEGIN
+		  LoadNode(Node);
+		  IF (NOT (NActive IN NodeR.Status)) THEN
+			ThisNode := Node;
+		  Inc(Node);
+		END;
+      IF (ThisNode = 0) THEN
+		ThisNode := Node;
+	END;
 
   IF (ThisNode > 255) THEN
     ThisNode := 1;
 
   IF (General.MultiNode) AND (ThisNode = 0) THEN
-  BEGIN
-    ClrScr;
-    WriteLn('WARNING: No node number specified. Defaulting to node 1.');
-    ThisNode := 1;
-    Delay(1000);
-  END
+    BEGIN
+      {ClrScr;}
+      WriteLn('[WARNING] No node number specified, defaulting to node #1 '#196#196' Use "/N#"');
+      ThisNode := 1;
+      {Delay(1000);}
+    END
   ELSE IF (ThisNode = 0) THEN
     ThisNode := 1;
 
-  initp1;
+  InitP1;
 
   LoadNode(ThisNode);
   WITH NodeR DO
-  BEGIN
-    User := 0;
-    UserName := '';
-    CityState := '';
-    Sex := 'M';
-    Age := 0;
-    LogonTime := 0;
-    GroupChat := FALSE;
-    ActivityDesc := '';
-    Status := [NActive];
-    Room := 0;
-    Channel := 0;
-    FillChar(Invited,SizeOf(Invited),0);
-    FillChar(Booted,SizeOf(Booted),0);
-    FillChar(Forget,SizeOf(Forget),0);
-  END;
+	BEGIN
+      User := 0;
+      UserName := '';
+      CityState := '';
+      Sex := 'M';
+      Age := 0;
+      LogonTime := 0;
+      GroupChat := FALSE;
+      ActivityDesc := '';
+      Status := [NActive];
+      Room := 0;
+      Channel := 0;
+      FillChar(Invited,SizeOf(Invited),0);
+      FillChar(Booted,SizeOf(Booted),0);
+      FillChar(Forget,SizeOf(Forget),0);
+	END;
   SaveNode(ThisNode);
-
-END;
-
+END; { INIT }
 END.

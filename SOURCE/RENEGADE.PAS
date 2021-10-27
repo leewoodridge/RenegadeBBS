@@ -40,7 +40,7 @@ USES
   MyIO,
   NewUsers,
   Offline,
-  {OneLiner,}
+{ OneLiner, }
   Overlay,
   TimeFunc,
   WFCMenu;
@@ -126,9 +126,9 @@ BEGIN
     Assign(TextFile,'CRITICAL.ERR');
     ReWrite(TextFile);
     Close(TextFile);
-    SetFAttr(TextFile,Dos.Hidden);
+    SetFAttr(TextFile,DOS.Hidden);
 
-    Print('^8System malfunction.');
+    Print('^8* SYSTEM MALFUNCTION *');
 
     LoadNode(ThisNode);
     Noder.Status := [];
@@ -136,7 +136,7 @@ BEGIN
     SaveNode(ThisNode);
 
     Com_Flush_Send;
-    Dtr(FALSE);
+    DTR(FALSE);
     Com_DeInstall;
 
     Halt(ExitErrors);
@@ -164,7 +164,30 @@ BEGIN
     Inc(Counter);
     IF ((SC(ParamStr(Counter),1) = '-') OR (SC(ParamStr(Counter),1) = '/')) THEN
       CASE SC(ParamStr(Counter),2) OF
-        '5' : TextMode(259);
+          '?' : BEGIN { Command line parameters help }
+                  TextColor(LightGray);
+                  TextBackground(Black);
+                  WriteLn('Renegade BBS supports the following command-line parameters, please see the ');
+                  WriteLn('manual for more detailed information.');
+                  WriteLn('');
+                  WriteLn('/D   : Don''t Load Overlay file to EMS');
+                  WriteLn(' - CONNECTION -');
+                  WriteLn('/L : Local mode | /N# : Specify which node # to load');
+                  WriteLn('/T : Net2BBS | /TC : NetSerial or Com/IP | /H# : Specify sock handle');
+                  WriteLn('/B# : User already connected at # baud | /C : Reliable');
+                  WriteLn('/ID# or /IP#  : Specify caller ID/IP information');
+                  WriteLn(' - MAINTENANCE -');
+                  WriteLn('/F : Verify FILES.BBS | /P : Pack message bases | /S : Sort file areas');
+                  WriteLn(' - QWK -');
+                  WriteLn('/M# : Create QWK packet for user # | /U# : Upload REP packet for user #');
+                  WriteLn(' - EXIT -');
+                  WriteLn('/EE# : Critical errorlevel | /EN# : Normal errorlevel (NewMail=2,Forces /Q)');
+                  WriteLn('/Q   : Exit to DOS, instead of WFC when user logs off');
+                  WriteLn('/X#  : Log user off in # minutes for external event');
+                          {---------------------------------------|----------------------------------------} {80 CHARS}
+                  Halt;
+                END;
+        {'5' : TextMode(259);}
         'B' : AnswerBaud := StrToInt(Copy(ParamStr(Counter),3,255));
         'C' : Reliable := (Pos(AllCaps(Liner.Reliable),AllCaps(ParamStr(Counter))) > 0);
         'D' : OvrUseEms := FALSE;
@@ -219,110 +242,92 @@ END;
 
 BEGIN
   ClrScr;
-  TextColor(3);
+  TextColor(LightGray);
+  WriteLn('  ____                              _     ');
+  WriteLn(' |  _ \___ __ _  ___  __ _  __ _ __| |___ ');
+  WriteLn(' |    / -_)  ` \/ -_)/ _` |/ _` / _` / -_)');
+  WriteLn(' |__|_\___|__|_|\___|\__, |\__,_\__,_\___|');
+  WriteLn(' ------------------- |___/ ---------------');
+  WriteLn(' B U L L E T I N   B O A R D   S Y S T E M');
+  WriteLn(' -----------------------------------------');
+  
   GetIntVec($14,Interrupt14);
   FileMode := 66;
   ExitSave := ExitProc;
   ExitProc := @ErrorHandle;
-
   DirectVideo := FALSE;
   CheckSnow := FALSE;
-
   UserOn := FALSE;
   UserNum := 0;
-
   GetDir(0,StartDir);
-
-  DatFilePath := GetEnv('RENEGADE');
-  IF (DatFilePath <> '') THEN
-    DatFilePath := BSlash(DatFilePath,TRUE);
-  Assign(ByteFile,DatFilePath+'RENEGADE.DAT');
+  
+  DATFilePath := GetEnv('RENEGADE');
+  IF (DATFilePath <> '') THEN
+    DATFilePath := BSlash(DATFilePath,TRUE);
+    
+  Write(' - Initializing RENEGADE.DAT ... ');   
+  Assign(ByteFile,DATFilePath+'RENEGADE.DAT');
   Reset(ByteFile);
-  IF (IOResult <> 0) THEN
-  BEGIN
-    WriteLn('Error opening RENEGADE.DAT.');
-    Halt;
-  END;
+  LastError := IOResult;
+  IF (LastError <> 0) THEN
+    BEGIN
+      WriteLn('[ERROR] '+ErrorCodeHelp(LastError));
+      Halt;
+    END
+  ELSE
+    BEGIN
+      WriteLn('Done!');
+    END;
   Counter := 0;
   Seek(ByteFile,FileSize(ByteFile));
   WHILE FileSize(ByteFile) < SizeOf(General) DO
     Write(ByteFile,Counter);
   Close(ByteFile);
 
-  Assign(GeneralF,DatFilePath+'RENEGADE.DAT');
+  Assign(GeneralF,DATFilePath+'RENEGADE.DAT');
   Reset(GeneralF);
   Read(GeneralF,General);
   Close(GeneralF);
 
-  ReadP;
+  ReadP; { Read command-line parameters }
 
-  OvrFileMode := 0;
-  TextColor(1);
-  Write(' ::> ');
-  TextColor(3);
-  Write('Initializing ');
-  TextColor(15);
-  Write('RENEGADE.OVR ');
-  TextColor(3);
-  Write('and loading into memory ... ');
+  Write(' - Initializing RENEGADE.OVR ... ');
+  OvrFileMode := 0; { Read only }  
   OvrInit('RENEGADE.OVR');
   IF (OvrResult <> OvrOK) THEN
-    OvrInit(General.DataPath+'RENEGADE.OVR');
-  IF (OvrResult <> OvrOK) THEN
-  BEGIN
-    CASE OvrResult OF
-      OvrError    : WriteLn('Program has no overlays.');
-      OvrNotFound : WriteLn('Overlay file not found.');
-    END;
-    Halt;
-  END
-  ELSE
-    TextColor(11);
-    Write('Done');
-    TextColor(3);
-    Writeln('!');
-  TextColor(1);
-{  Writeln(' ::> ');
-  TextColor(1);}
-  Write(' ::> ');
-  TextColor(3);
-  Write('Now Booting ... ');
-
-
-  IF (General.UseEMS) AND (OvrUseEms) THEN
-  BEGIN
-
-{    Write('Attempting to load overlays into XMS memory ... ');}
-
-    {vrMovBufToUMB;}
-
-    IF (OvrResult <> OvrOK) THEN
     BEGIN
-      WriteLn('Attempting to load overlays into XMS memory ... Failed.');
-{      Write('Attempting to load overlays into EMS memory ... ');}
-      OvrInitEMS;
-      IF (OvrResult = OvrOK) THEN
-      BEGIN
-{        WriteLn('Done.');}
-        OverLayLocation := 1
-      END
-      ELSE
-      BEGIN
-        CASE OvrResult OF
-          OvrIOError     : WriteLn('Overlay file I/O error.');
-          OvrNoEMSDriver : WriteLn('EMS driver not installed.');
-          OvrNoEMSMemory : WriteLn('Not enough EMS memory.');
-        END;
-        Halt;
+      CASE OvrResult OF
+        OvrError    : WriteLn('[ERROR] Overlay manager error');
+        OvrNotFound : WriteLn('[ERROR] Overlay file not found');
       END;
+      Halt;
     END
-    ELSE
+  ELSE
     BEGIN
-{      WriteLn('Done.');}
-      OverLayLocation := 2;
+      WriteLn('Done!'); { Initialized overlays }
+      IF (General.UseEMS) AND (OvrUseEMS) THEN
+        BEGIN
+          Write(' - Attempting to load overlays ('+FormatNumber(OvrGetBuf)+' Bytes) into EMS memory ... ');
+          OvrInitEMS;
+          IF (OvrResult = OvrOK) THEN
+            BEGIN
+              WriteLn('Done!');
+              OverLayLocation := 1; { EMS }
+            END
+          ELSE
+            BEGIN { Failed to load overlays to EMS }
+              CASE OvrResult OF
+              { OvrError       : WriteLn('Overlay manager error');
+                OvrNotFound    : WriteLn('Overlay file not found'); }
+                OvrNoMemory    : WriteLn('[ERROR] Not enough memory for overlay buffer');
+                OvrIOError     : WriteLn('[ERROR] Overlay file I/O error');
+                OvrNoEMSDriver : WriteLn('[ERROR] EMS driver not installed');
+                OvrNoEMSMemory : WriteLn('[ERROR] Not enough EMS memory');
+              END;
+              OverLayLocation := 0; { Disk }
+            END;
+        END;
     END;
-  END;
-{  WriteLn('Initial size of the overlay buffer is '+FormatNumber(OvrGetBuf)+' bytes.');}
 
   Init;
 
