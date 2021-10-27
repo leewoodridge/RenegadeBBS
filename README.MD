@@ -1,6 +1,7 @@
 # Renegade Bulletin Board System
 Copyright (c) 1991-2021 The Renegade Development Team ─ Cott Lang, Patrick Spence, Gary Hall, Jeff Herrings, T.J. McMillen, Chris Hoppman, Lee Palmer, and Lee Woodridge.
 #
+  * bugfix yes/no lightbar to prevent it from eating itself
   * removed extra linefeeds above generic menu titles
   * text/lang files to /text/ subdir
   * new user app won't prompt for color scheme if color disabled, or only 1 scheme
