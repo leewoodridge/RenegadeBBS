@@ -1,7 +1,12 @@
 # Renegade Bulletin Board System
 Copyright (c) 1991-2021 The Renegade Development Team ─ Cott Lang, Patrick Spence, Gary Hall, Jeff Herrings, T.J. McMillen, Chris Hoppman, Lee Palmer, and Lee Woodridge.
 #
-
+  * removed extra linefeeds above generic menu titles
+  * text/lang files to /text/ subdir
+  * new user app won't prompt for color scheme if color disabled, or only 1 scheme
+  * new user app now uses MaxLogonTries as number of question answer attempts before giving up
+  * more verbose startup
+  * added ErrorCodeHelp func for more helpful error messages
   * Implemented CoSysOp max mail waiting configuration option
   * a bunch of work on chat, see chat.pas for more info
   * INT moved clear_eol + ansig to COMMON
