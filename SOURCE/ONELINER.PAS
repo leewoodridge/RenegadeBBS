@@ -138,7 +138,7 @@ VAR
         ELSE
           IF (AACS(General.AnonPubPost)) AND PYNQ(lRGLngStr(101,TRUE),0,FALSE) THEN {"Post anonymously?"}
             OneLinerList.Anonymous := TRUE;
-        {EXIT;}
+        EXIT;
       END;
   END;
   
