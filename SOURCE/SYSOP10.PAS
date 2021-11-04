@@ -222,12 +222,14 @@ VAR
     PrintACR('^1##^2:^1Answer^2:^1Choice');
     PrintACR('^2==:======:=====================================================================');
     NumDone := 0;
-    WHILE (NumDone < (PageLength - 5)) AND (RecNumToList1 >= 1) AND (RecNumToList1 <= Topic.ChoiceNumber)
+    WHILE (NumDone < (PageLength - 5)/2) AND (RecNumToList1 >= 1) AND (RecNumToList1 <= Topic.ChoiceNumber)
           AND (NOT Abort) AND (NOT HangUp) DO
     BEGIN
       PrintACR('^1'+PadRightInt(RecNumToList1,2)+
                ' ^1'+PadRightInt(Topic.Answers[RecNumToList1].NumVotedAnswer,6)+
                ' ^1'+Topic.Answers[RecNumToList1].Answer1);
+	  PrintACR(PadLeftStr(PadLeftStr('',10)+Topic.Answers[RecNumToList1].Answer2,79));
+			   
       WKey;
       Inc(RecNumToList1);
       Inc(NumDone);

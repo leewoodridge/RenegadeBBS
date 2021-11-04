@@ -7,13 +7,14 @@ INTERFACE
 USES
   Common;
 
-PROCEDURE lListNodes;
+PROCEDURE CheckStatus;
+PROCEDURE DumpNode;
+PROCEDURE ListNodes;
+PROCEDURE MessageNode(CONST b: ASTR);
+PROCEDURE PageNode;
+PROCEDURE TeleConfCheck; {LeeW: Moved from COMMON}
+PROCEDURE TeleConference;
 PROCEDURE ToggleChatAvailability;
-PROCEDURE page_user;
-PROCEDURE check_status;
-PROCEDURE multiline_chat;
-PROCEDURE dump_node;
-PROCEDURE lsend_message(CONST b: ASTR);
 
 IMPLEMENTATION
 
@@ -26,7 +27,7 @@ USES
 
 PROCEDURE pick_node(VAR NodeNum: Byte; IsChat: BOOLEAN);
 BEGIN
-  lListNodes;
+  ListNodes;
   InputByteWOC('Which node',NodeNum,[NumbersOnly],1,MaxNodes);
   IF (NodeNum >= 1) AND (NodeNum <= MaxNodes) AND (NodeNum <> ThisNode) THEN
   BEGIN
@@ -45,18 +46,7 @@ BEGIN
     NodeNum := 0;
 END;
 
-PROCEDURE ANSIG(X,Y: Byte);
-BEGIN
-  IF (ComPortSpeed > 0) THEN
-    IF (OkAvatar) THEN
-      SerialOut(^V^H+Chr(Y)+Chr(X))
-    ELSE
-      SerialOut(#27+'['+IntToStr(Y)+';'+IntToStr(X)+'H');
-  IF (WantOut) THEN
-{    GoToXY(X,Y);}
-END;
-
-PROCEDURE dump_node;
+PROCEDURE DumpNode;
 VAR
   NodeNum: Byte;
 BEGIN
@@ -72,7 +62,7 @@ BEGIN
     END;
 END;
 
-PROCEDURE page_user;
+PROCEDURE PageNode;
 VAR
   NodeNum: Byte;
 BEGIN
@@ -84,10 +74,10 @@ BEGIN
   END;
   pick_node(NodeNum,TRUE);
   IF (NodeNum > 0) AND (NodeNum <> ThisNode) THEN
-    lsend_message(IntToStr(NodeNum)+';^8'+Caps(ThisUser.Name)+' on node '+IntToStr(ThisNode)+' has paged you for chat.'^M^J);
+    MessageNode(IntToStr(NodeNum)+';^8'+Caps(ThisUser.Name)+' on node '+IntToStr(ThisNode)+' has paged you for chat.'^M^J);
 END;
 
-PROCEDURE check_status;
+PROCEDURE CheckStatus;
 VAR
   f: FILE;
   s: STRING;
@@ -160,7 +150,40 @@ BEGIN
   LastError := IOResult;
 END;
 
-PROCEDURE multiline_chat;
+PROCEDURE TeleConfCheck;
+VAR
+  f: FILE;
+  s: STRING;
+  Counter: Byte;
+  SaveMCIAlllowed: Boolean;
+  { Only check if we're bored and not slicing }
+BEGIN
+  IF (MaxChatRec > NodeChatLastRec) THEN
+  BEGIN
+    FOR Counter := 1 TO (LennMCI(MLC) + 5) DO
+      BackSpace;
+    Assign(f,General.TempPath+'MSG'+IntToStr(ThisNode)+'.TMP');
+    Reset(f,1);
+    Seek(f,NodeChatLastRec);
+    WHILE NOT EOF(f) DO
+    BEGIN
+      BlockRead(f,s[0],1);
+      BlockRead(f,s[1],Ord(s[0]));
+      MultiNodeChat := FALSE;  {Avoid recursive calls during pause!}
+      SaveMCIAlllowed := MCIAllowed;
+      MCIAllowed := FALSE;
+      Print(s);
+      MCIAllowed := SaveMCIAlllowed;
+      MultiNodeChat := TRUE;
+    END;
+    Close(f);
+    LastError := IOResult;
+    NodeChatLastRec := MaxChatRec;
+    Prompt('^3'+MLC);
+  END;
+END;
+
+PROCEDURE TeleConference;
 type
   WhyNot = (NotModerator,NotOnline,NotRoom,NotInRoom,NotValid);
 VAR
@@ -524,7 +547,7 @@ VAR
     origcolor := CurrentColor;
     os := s;
     s:='';
-    ml := (253 - Length(MCI(RGMainStr(11,TRUE))));
+    ml := (253 - Length(MCI(lRGLngStr(191,TRUE))));
     checkhangup;
     IF (HangUp) THEN
       Exit;
@@ -684,7 +707,7 @@ BEGIN
     MultiNodeChat := TRUE;
     LoadNode(ThisNode);
     UserColor(7);
-    check_status;
+    checkstatus;
     ANSIG(1,24);
     InputMain(s);
     ChannelOnly := FALSE;
@@ -1038,7 +1061,7 @@ BEGIN
                       Print('^9Private message sent to ^1'+SaveName);
                       IF AACS(General.TeleConfMCI) THEN
                         s := MCI(s);
-                      s := MCI(RGMainStr(14,TRUE)) + s;
+                      s := MCI(lRGLngStr(194,TRUE)) + s;
                       LowLevelSend(s,i)
                     END
                     ELSE
@@ -1106,7 +1129,7 @@ BEGIN
           'W' : IF (Copy(S,3,(Length(s) - 2)) <> '') THEN
                   Nope(NotValid)
                 ELSE
-                  lListNodes;
+                  ListNodes;
 
           '?' : IF (Copy(S,3,(Length(s) - 2)) <> '') THEN
                   Nope(NotValid)
@@ -1122,12 +1145,12 @@ BEGIN
         LoadRoom(RoomNumber);
         IF (s[1] <> '`') THEN
           IF (Room.Anonymous) THEN
-            s := MCI(RGMainStr(12,TRUE)) + s
+            s := MCI(lRGLngStr(192,TRUE)) + s
           ELSE
-            s := MCI(RGMainStr(11,TRUE)) + s
+            s := MCI(lRGLngStr(191,TRUE)) + s
         ELSE
           BEGIN
-            s := MCI(RGMainStr(13,TRUE)) + Copy(s,2,255);
+            s := MCI(lRGLngStr(193,TRUE)) + Copy(s,2,255);
             ChannelOnly := TRUE;
           END;
       END
@@ -1180,7 +1203,7 @@ BEGIN
   SaveNode(ThisNode);
 END;
 
-PROCEDURE lsend_message(CONST b: ASTR);
+PROCEDURE MessageNode(CONST b: ASTR);
 VAR
   s: STRING;
   NodeNum: Byte;
@@ -1267,11 +1290,11 @@ BEGIN
         'N' : IF (s[2] = 'N') THEN
                 NodeListMCI := IntToStr(NodeNum^);
         'A' : CASE s[2] OF
-                'C' : NodelistMCI := RGNoteStr(33,TRUE);
+                'C' : NodelistMCI := lRGLngStr(143,TRUE);
                 'V' : NodeListMCI := AOnOff((NAvail IN Status),'Y','N');
               END;
         'U' : IF (s[2] = 'N') THEN
-                NodeListMCI := RGNoteStr(34,TRUE);
+                NodeListMCI := lRGLngStr(144,TRUE);
       END;
   END
   ELSE
@@ -1298,7 +1321,7 @@ BEGIN
       END;
 END;
 
-PROCEDURE lListNodes;
+PROCEDURE ListNodes;
 VAR
   NodeNum: Byte;
 BEGIN

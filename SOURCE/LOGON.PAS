@@ -1,7 +1,7 @@
 {$A+,B-,D+,E-,F+,I-,L+,N-,O+,R-,S+,V-}
 {
-disabled forgotpw question for cosysop+
-won't prompt for sysoppw if blank
+Added: Disabled forgotpw question for CoSysOp+
+Added: Won't prompt for SysOpPW if blank
 }
 UNIT Logon;
 
@@ -108,7 +108,7 @@ BEGIN
   (* Should this be Prompt ???
   Write('Attempting IEMSI negotiation ... ');
   *)
-  Write(RGNoteStr(21,TRUE));
+  Write(lRGLngStr(131,TRUE));
   FillChar(Buffer,SizeOf(Buffer),0);
   T1 := Timer;
   T2 := Timer;
@@ -215,7 +215,7 @@ BEGIN
     (* Should this be print ???
     WriteLn('success.');
     *)
-    Writeln(RGNOteStr(22,TRUE));
+    Writeln(lRGLngStr(132,TRUE));
     SL1('IEMSI negotiation Suceeded.');
   END
   ELSE
@@ -223,7 +223,7 @@ BEGIN
     (* Should this be print ???
     WriteLn('failure.');
     *)
-    WriteLn(RGNoteStr(23,TRUE));
+    WriteLn(lRGLngStr(133,TRUE));
     SL1('IEMSI negotiation failed.');
   END;
   NextItemPointer := 1;
@@ -291,7 +291,7 @@ BEGIN
   (* Should this be Prompt ???
   Write('Attempting to detect emulation ... ');
   *)
-  Write(RGNoteStr(24,TRUE));
+  Write(lRGLngStr(134,TRUE));
   Exclude(ThisUser.ACFlags,Avatar);
   Exclude(ThisUser.ACFlags,Ansi);
   Exclude(ThisUser.ACFlags,Vt100);
@@ -321,7 +321,7 @@ BEGIN
       IF (C = 'P') THEN
       BEGIN
         Include(ThisUser.SFlags,Rip);
-        S := RGNoteStr(25,TRUE); {'RIP'}
+        S := lRGLngStr(135,TRUE); {'RIP'}
       END;
     END;
     Com_Flush_Recv;
@@ -333,9 +333,9 @@ BEGIN
     Include(ThisUser.ACFlags,Ansi);
   ANSIDetected := TRUE;
     IF (S <> '') THEN
-      S := S + RGNoteStr(26,TRUE) {'/Ansi'}
+      S := S + lRGLngStr(136,TRUE) {'/Ansi'}
     ELSE
-      S := RGNoteStr(27,TRUE); {'Ansi'}
+      S := lRGLngStr(137,TRUE); {'Ansi'}
     SerialOut(^V^F);
     SerialOut(^['[6n'#8#8);
     Ox := x;
@@ -344,15 +344,15 @@ BEGIN
     BEGIN
       Include(ThisUser.ACFlags,Avatar);
       IF (S <> '') THEN
-        S := S + RGNoteStr(28,TRUE)  {'/Avatar'}
+        S := S + lRGLngStr(138,TRUE)  {'/Avatar'}
       ELSE
-        S := RGNoteStr(29,TRUE); {'Avatar'}
+        S := lRGLngStr(139,TRUE); {'Avatar'}
     END
     ELSE
       SerialOut(#8#8);
   END;
   IF (S <> '') THEN
-    Print('|10'+S+RGNoteStr(30,TRUE)) {' detected.'}
+    Print('|10'+S+lRGLngStr(140,TRUE)) {' detected.'}
   ELSE
   BEGIN
     TextAttr := 7;
@@ -379,7 +379,7 @@ BEGIN
       (*
       Prompt(FString.Yourpassword);
       *)
-      RGMainStr(3,FALSE);
+      lRGLngStr(183,FALSE);
       GetPassword(UserPw,20);
     END
     ELSE
@@ -393,7 +393,7 @@ BEGIN
         (*
         Prompt(FString.YourPhoneNumber);
         *)
-        RGMainStr(4,FALSE);
+        lRGLngStr(184,FALSE);
         GetPassword(PhonePW,4);
       END
       ELSE
@@ -411,7 +411,7 @@ BEGIN
     (*
     Prompt(FString.ILogon);
     *)
-    RGNoteStr(9,FALSE);
+    lRGLngStr(119,FALSE);
     IF (NOT HangUp) AND (UserNum <> 0) THEN
     BEGIN
       S := '* Illegal logon attempt! Tried: '+Caps(ThisUser.Name)+' #'+IntToStr(UserNum)+' PW='+UserPw;
@@ -436,7 +436,7 @@ BEGIN
         Print('|03'+General.ForgotPWQuestion);
         Prt(': ');
         *)
-        RGMainStr(6,FALSE);
+        lRGLngStr(186,FALSE);
         MPL(40);
         Input(ForgotPW,40);
         IF (ForgotPW <> ThisUser.ForgotPWAnswer) THEN
@@ -465,14 +465,14 @@ BEGIN
     (*
     Prompt(FString.SysOpPrompt);
     *)
-    RGMainStr(5,FALSE);
+    lRGLngStr(185,FALSE);
     GetPassword(SysOpPW,20);
     IF (SysOpPW <> General.SysOpPW) THEN
     BEGIN
       (*
       Prompt(FString.ILogon);
       *)
-      RGNoteStr(9,FALSE);
+      lRGLngStr(119,FALSE);
       SL1('* Illegal System password: '+SysOpPw);
       Inc(Tries);
       IF (Tries >= General.MaxLogonTries) THEN
@@ -487,7 +487,7 @@ BEGIN
       (*
       Print('You don''t have the required ACS to logon to this node!');
       *)
-      RGNoteStr(10,FALSE);
+      lRGLngStr(120,FALSE);
     SysOpLog(ThisUser.Name+': Attempt to logon node '+IntToStr(ThisNode)+' without access.');
     HangUp := TRUE;
   END;
@@ -498,7 +498,7 @@ BEGIN
       (*
       Print('You have been locked out of the BBS by the SysOp.');
       *)
-      RGNoteStr(11,FALSE);
+      lRGLngStr(121,FALSE);
     SysOpLog(ThisUser.Name+': Attempt to access system when locked out^8 <--');
     HangUp := TRUE;
   END;
@@ -509,7 +509,7 @@ BEGIN
        (*
        Print('You are already logged in on another node!');
        *)
-       RGNoteStr(12,FALSE);
+       lRGLngStr(122,FALSE);
      HangUp := TRUE;
   END;
   IF (NOT FastLogon) AND (Ok) AND (NOT HangUp) AND (General.Birthdatecheck > 0) AND
@@ -518,7 +518,7 @@ BEGIN
     (*
     Prt('Please verify your date of birth (mm/dd/yyyy): ');
     *)
-    RGMainStr(7,FALSE);
+    lRGLngStr(187,FALSE);
     Inputformatted('',Birthday,'##/##/####',FALSE);
     IF (Date2Pd(Birthday) <> ThisUser.Birthdate) THEN
     BEGIN
@@ -528,7 +528,7 @@ BEGIN
         (*
         Print('You entered an incorrect birthdate.');
         *)
-        RGNoteStr(13,FALSE);
+        lRGLngStr(123,FALSE);
       SL1('*'+ThisUser.Name+' Failed birthday verification. Tried = '+Birthday+' Actual = '+Pd2Date(ThisUser.Birthdate));
       SendShortMessage(1,ThisUser.Name+' failed birthday verification on '+DateStr);
       InResponseTo := '\'#1'Failed birthdate check';
@@ -586,7 +586,7 @@ BEGIN
       (*
       Print(FString.NameNotFound);
       *)
-      RGNoteStr(8,FALSE);
+      lRGLngStr(118,FALSE);
 
   END;
 END;
@@ -628,7 +628,7 @@ BEGIN
           (*
           Prompt(FString.Shuttleprompt);
           *)
-          RGMainStr(9,FALSE);
+          lRGLngStr(189,FALSE);
           FindUser(UserNum);
           IF (UserNum >= 1) THEN
           BEGIN
@@ -671,7 +671,7 @@ BEGIN
             (*
             Print(FString.ILogon);
             *)
-            RGNoteStr(9,FALSE);
+            lRGLngStr(119,FALSE);
             Inc(Tries);
           END;
       END
@@ -707,14 +707,14 @@ BEGIN
                 (*
                 Print('You have not been validated yet.');
                 *)
-                RGNoteStr(31,FALSE);
+                lRGLngStr(141,FALSE);
               SL1('* Illegal Shuttle Logon attempt');
               Inc(Tries);
             END;
 
           END;
       2 : BEGIN
-            IF (NOT General.ClosedSystem) AND PYNQ(RGMainStr(2,TRUE){FString.LogonAsNew},0,FALSE) THEN
+            IF (NOT General.ClosedSystem) AND PYNQ(lRGLngStr(182,TRUE){FString.LogonAsNew},0,FALSE) THEN
             BEGIN
               NewUserInit;
               NewUser;
@@ -761,7 +761,7 @@ BEGIN
   LoadURec(ThisUser,0);
   TimeOn := GetPackDateTime;
   ChatChannel := 0;
-  Update_Node(RGNoteStr(35,TRUE){ Logging on },TRUE);  (* New *)
+  Update_Node(lRGLngStr(145,TRUE){ Logging on },TRUE);  (* New *)
 
   LoadNode(ThisNode);     (* New *)
   NodeR.GroupChat := FALSE;
@@ -810,14 +810,14 @@ BEGIN
         (*
         Prt('Baud rate override password: ');
         *)
-        RGMainStr(0,FALSE);
+        lRGLngStr(180,FALSE);
         GetPassword(OverridePW,20);
       END;
       IF (General.MinBaudOverride = '') OR (OverRidePW <> General.MinBaudOverride) THEN
       BEGIN
         PrintF('NOBAUD.ASC');
         IF (NoFile) THEN
-          RGNoteStr(3,FALSE);
+          lRGLngStr(113,FALSE);
           (*
           Print('You must be using at least '+IntToStr(General.MinimumBaud)+' baud to call this BBS.');
           *)
@@ -832,7 +832,7 @@ BEGIN
         (*
         Prt('Baud rate override password: ');
         *)
-        RGMainStr(0,FALSE);
+        lRGLngStr(180,FALSE);
         GetPassword(OverridePW,20);
       END;
       IF (General.MinBaudOverride = '') OR (OverridePW <> General.MinBaudOverride) THEN
@@ -843,7 +843,7 @@ BEGIN
           Print('Hours for those using less than '+IntToStr(General.MinimumBaud)+' baud are from '+
                Ctim(General.MinBaudLowTime)+' to '+Ctim(General.MinBaudHiTime));
           *)
-          RGNoteStr(4,FALSE);
+          lRGLngStr(114,FALSE);
         HangUp := TRUE;
         Exit;
       END;
@@ -860,7 +860,7 @@ BEGIN
             Print('restricted to the following hours ONLY:');
             Print('  '+Ctim(General.MinBaudLowTime)+' to '+Ctim(General.MinBaudHiTime));
             *)
-            RGNoteStr(5,FALSE);
+            lRGLngStr(115,FALSE);
         END;
     END;
   END;
@@ -893,7 +893,7 @@ BEGIN
       (*
       Print('Restricted: Only certain users allowed online at this time.');
       *)
-      RGNoteStr(6,FALSE);
+      lRGLngStr(116,FALSE);
   END;
   IF (NOT GotName) THEN
     TryIEMSILogon;
@@ -914,7 +914,7 @@ BEGIN
         IF (FString.Lprompt <> '') THEN
           Prompt(FString.Lprompt);
         *)
-        RGMainStr(1,FALSE);
+        lRGLngStr(181,FALSE);
         FindUser(UserNum);
         Inc(TTimes);
         IF (ACSUser) AND (UserNum = -1) THEN
@@ -925,7 +925,7 @@ BEGIN
             Print('This time window allows certain other users to get online.');
             Print('Please call back later, after it has ended.');
             *)
-            RGNoteStr(7,FALSE);
+            lRGLngStr(117,FALSE);
           HangUp := TRUE;
         END;
         IF (NOT HangUp) AND (UserNum = 0) THEN
@@ -935,9 +935,9 @@ BEGIN
             (*
             Print('Name not found in user list.');
             *)
-            RGNoteStr(8,FALSE);
+            lRGLngStr(118,FALSE);
           IF NOT (General.ShuttleLog) AND (NOT General.ClosedSystem) THEN
-            IF PYNQ(RGMainStr(2,TRUE){FString.LogonAsNew},0,FALSE) THEN
+            IF PYNQ(lRGLngStr(182,TRUE){FString.LogonAsNew},0,FALSE) THEN
               UserNum := -1;
         END;
       END;
@@ -950,7 +950,7 @@ BEGIN
         Print('This time window allows certain other users to get online.');
         Print('Please call back later, after it has ended.');
         *)
-        RGNoteStr(7,FALSE);
+        lRGLngStr(117,FALSE);
       HangUp := TRUE;
     END;
     Ok := TRUE;
@@ -1041,7 +1041,7 @@ BEGIN
       Print('This time window allows certain other users to get online.');
       Print('Please call back later, after it has ended.');
       *)
-      RGNoteStr(7,FALSE);
+      lRGLngStr(117,FALSE);
     HangUp := TRUE;
   END;
   IF NOT (AACS(Liner.LogonACS)) AND (NOT HangUp) THEN
@@ -1051,7 +1051,7 @@ BEGIN
       (*
       Print('You don''t have the required ACS to logon to this node!');
       *)
-      RGNoteStr(10,FALSE);
+      lRGLngStr(120,FALSE);
     SysOpLog(ThisUser.Name+': Attempt to logon node '+IntToStr(ThisNode)+' without access.');
     HangUp := TRUE;
   END;
@@ -1062,7 +1062,7 @@ BEGIN
       (*
       Print('You have been locked out of the BBS by the SysOp.');
       *)
-      RGNoteStr(11,FALSE);
+      lRGLngStr(121,FALSE);
     SysOpLog(ThisUser.Name+': Attempt to access system when locked out^8 <--');
     HangUp := TRUE;
   END;
@@ -1077,7 +1077,7 @@ BEGIN
         (*
         Print('You have insufficient credits for online time.');
         *)
-        RGNoteStr(14,FALSE);
+        lRGLngStr(124,FALSE);
       SysOpLog(ThisUser.Name+': insufficient credits for logon.');
       IF (General.CreditFreeTime < 1) THEN
         HangUp := TRUE
@@ -1095,7 +1095,7 @@ BEGIN
         (*
         Print('You can only log on once per day.');
         *)
-        RGNoteStr(15,FALSE);
+        lRGLngStr(125,FALSE);
       TooMuch := TRUE;
     END
     ELSE IF ((ThisUser.OnToday >= General.CallAllow[ThisUser.SL])  AND
@@ -1106,7 +1106,7 @@ BEGIN
         (*
         Print('You can only log on '+IntToStr(General.CallAllow[ThisUser.SL])+' times per day.');
         *)
-        RGNoteStr(16,FALSE);
+        lRGLngStr(126,FALSE);
       TooMuch := TRUE;
     END
     ELSE IF (ThisUser.TLToday <= 0) AND NOT (General.PerCall) THEN
@@ -1116,15 +1116,15 @@ BEGIN
         (*
         Prompt('You can only log on for '+IntToStr(General.TimeAllow[ThisUser.SL])+' minutes per day.');
         *)
-        RGNoteStr(17,FALSE);
+        lRGLngStr(127,FALSE);
       TooMuch := TRUE;
       IF (ThisUser.TimeBank > 0) THEN
       BEGIN
         (*
         Print('^1However, you have '+IntToStr(ThisUser.TimeBank)+' minutes left in your Time Bank.');
         *)
-        RGNoteStr(18,FALSE);
-        IF PYNQ(RGMainStr(8,TRUE){'Withdraw from Time Bank? '},0,TRUE) THEN
+        lRGLngStr(128,FALSE);
+        IF PYNQ(lRGLngStr(188,TRUE){'Withdraw from Time Bank? '},0,TRUE) THEN
         BEGIN
           InputIntegerWOC('Withdraw how many minutes',Lng,[NumbersOnly],1,32767);
           BEGIN
@@ -1138,7 +1138,7 @@ BEGIN
             (*
             Print('^1In your account: ^1'+IntToStr(ThisUser.TimeBank)+'^1   Time left online: ^1'+Formattedtime(NSL));
             *)
-            RGNoteStr(19,FALSE);
+            lRGLngStr(129,FALSE);
             SysOpLog('TimeBank: Withdrew '+ IntToStr(Lng)+' minutes at logon.');
           END;
         END;
@@ -1148,7 +1148,7 @@ BEGIN
           (*
           Print('Hanging up.');
           *)
-          RGNoteStr(20,FALSE);
+          lRGLngStr(130,FALSE);
       END;
     END;
     IF (TooMuch) THEN

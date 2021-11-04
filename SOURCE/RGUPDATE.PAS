@@ -43,7 +43,7 @@ TYPE
     TempPath,                          { TEMP path }
     ProtPath,                          { PROT path }
     ArcsPath,                          { ARCS path }
-    lMultPath,                         { MULT path }
+    TextPath,                         { MULT path }
     FileAttachPath,                    { directory for file attaches }
     QWKLocalPath,                      { QWK path for local usage }
     DefEchoPath,                       { default echomail path }
@@ -512,7 +512,7 @@ BEGIN
     TempPath := OldGeneral.TempPath;
     ProtPath := OldGeneral.ProtPath;
     ArcsPath := OldGeneral.ArcsPath;
-    lMultPath := OldGeneral.lMultPath; {Remove? Same as data}
+    TextPath := OldGeneral.TextPath; {Remove? Same as data}
     FileAttachPath := OldGeneral.FileAttachPath;
     QWKLocalPath := OldGeneral.QWKLocalPath;
     DefEchoPath := OldGeneral.DefEchoPath;

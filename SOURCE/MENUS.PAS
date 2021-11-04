@@ -1,6 +1,11 @@
 {$A+,B-,D+,E-,F+,I-,L+,N-,O-,R-,S+,V-}
 {
 10/21/2021 - Removed color change for input longer than 2
+10/31/2021 - sysop avail cmd
+		   - val edit cmd
+		   - col scheme edit cmd
+TO DO
+ - it'd be nice to find a way to turn on/off scrllck light to indicate sysop availablity
 }
 UNIT Menus;
 
@@ -8,6 +13,8 @@ INTERFACE
 
 USES
   Common,
+  Events,
+  SysOp2J,
   MyIO;
 
 PROCEDURE AutoExecCmd(AutoCmd: AStr);
@@ -82,7 +89,6 @@ USES
   TimeFunc,
   Vote;
 
-
     (*
     I := 1;
     Newmenucmd := '';
@@ -99,6 +105,7 @@ USES
       inc(I);
     end;
     *)
+	
 PROCEDURE AutoExecCmd(AutoCmd: AStr);
 VAR
   NewMenuCmd: AStr;
@@ -446,7 +453,7 @@ BEGIN
   AutoExecCmd('EVERYTIME');
 
   IF (General.MultiNode) THEN
-    Check_Status;
+    CheckStatus;
 
   IF ((NOT (NoMenuPrompt IN MemMenu.MenuFlags)) AND (NOT MenuAborted)) AND NOT
      (OKAnsi AND (NoGenericAnsi IN MemMenu.MenuFlags) AND NOT (OkAvatar OR OKRIP)) AND NOT
@@ -591,6 +598,10 @@ BEGIN
     Update_Node(NodeActivityDesc,TRUE);
 
   CASE Cmd[1] OF
+    '^' : CASE Cmd[2] OF { Command for testing }
+			'^' : BEGIN
+				  END;
+		  END;
     '$' : CASE Cmd[2] OF
             'D' : Deposit;
             'W' : Withdraw;
@@ -791,15 +802,15 @@ BEGIN
           END;
     'N' : CASE Cmd[2] OF
             'A' : ToggleChatAvailability;
-            'D' : Dump_Node;
+            'D' : DumpNode;
             'O' : BEGIN
-                    LListNodes;
+                    ListNodes;
                     IF (Novice IN ThisUser.ACFlags) THEN
                       PauseScr(FALSE);
                   END;
-            'P' : Page_User;
-            'G' : MultiLine_Chat;
-            'S' : LSend_Message(MenuOption);
+            'P' : PageNode;
+            'G' : TeleConference;
+            'S' : MessageNode(MenuOption);
             'T' : IF AACS(General.Invisible) THEN
                   BEGIN
                     IsInvisible := NOT IsInvisible;
@@ -934,101 +945,102 @@ BEGIN
           ELSE
             NoCmd := TRUE;
           END;
-    '*' : CASE Cmd[2] OF
-            '=' : ShowCmds(MenuOption);
-            'B' : IF (CheckPW) THEN
-                  BEGIN
-                    SysOpLog('* Message Area Editor');
-                    MessageAreaEditor;
-                  END;
-            'C' : IF (CheckPW) THEN
-                    ChangeUser;
-            'D' : IF (CheckPW) THEN
-                  BEGIN
-                    SysOpLog('* Entered Dos Emulator');
-                    MiniDOS;
-                  END;
-            'E' : IF (CheckPW) THEN
-                  BEGIN
-                    SysOpLog('* Event Editor');
-                    EventEditor;
-                  END;
-            'F' : IF (CheckPW) THEN
-                  BEGIN
-                    SysOpLog('* File Area Editor');
-                    FileAreaEditor;
-                  END;
-            'V' : IF (CheckPW) THEN
-                  BEGIN
-                    SysOpLog('* Vote Editor');
-                    VotingEditor;
-                  END;
-            'L' : IF (CheckPW) THEN
-                    ShowLogs;
-            'N' : TEdit1;
-            'P' : IF (CheckPW) THEN
-                  BEGIN
-                    SysOpLog('* System Configuration Editor');
-                    SystemConfigurationEditor;
-                  END;
-            'R' : IF (CheckPW) THEN
-                  BEGIN
-                    SysOpLog('* Conference Editor');
-                    ConferenceEditor;
-                  END;
-            'U' : IF (CheckPW) THEN
-                  BEGIN
-                    SysOpLog('* User Editor');
-                    UserEditor(UserNum);
-                  END;
-            'X' : IF (CheckPW) THEN
-                  BEGIN
-                    SysOpLog('* Protocol Editor');
-                    ProtocolEditor;
-                  END;
-            'Z' : BEGIN
-                    SysOpLog('* History Editor');
-                    HistoryEditor;
-                  END;
-            '1' : BEGIN
-                    SysOpLog('* Edited Files');
-                    EditFiles;
-                  END;
-            '2' : BEGIN
-                    SysOpLog('* Sorted Files');
-                    Sort;
-                  END;
-            '3' : IF (CheckPW) THEN
-                  BEGIN
-                    SysOpLog('* Read Private Messages');
-                    ReadAllMessages('');
-                  END;
-            '4' : IF (MenuOption = '') THEN
-                    Do_Unlisted_Download
-                  ELSE
-                    UnlistedDownload(MenuOption);
-            '5' : BEGIN
-                    SysOpLog('* Rechecked files');
-                    ReCheck;
-                  END;
-            '6' : IF (CheckPW) THEN
-                    UploadAll;
-            '7' : ValidateFiles;
-            '8' : AddGIFSpecs;
-            '9' : PackMessageAreas;
-            '#' : IF (CheckPW) THEN
-                  BEGIN
-                    SysOpLog('* Menu Editor');
-                    SaveMenu := CurMenu;
-                    MenuEditor;
-                    CurMenu := SaveMenu;
-                    LoadMenu;
-                  END;
-            '$' : DirF(TRUE);
-            '%' : DirF(FALSE);
-          ELSE
-            NoCmd := TRUE;
-          END;
+    '*' : IF (CheckPW) THEN { LeeW: Added }
+            CASE Cmd[2] OF
+              '=' : ShowCmds(MenuOption);
+              'B' : BEGIN
+                      SysOpLog('* Message Area Editor');
+                      MessageAreaEditor;
+                    END;
+              'C' : ChangeUser;
+              'D' : BEGIN
+                      SysOpLog('* Entered Dos Emulator');
+                      MiniDOS;
+                    END;
+              'E' : BEGIN
+                      SysOpLog('* Event Editor');
+                      EventEditor;
+                    END;
+              'F' : BEGIN
+                      SysOpLog('* File Area Editor');
+                      FileAreaEditor;
+                    END;
+			  'G' : BEGIN
+				  	  ColorConfiguration;
+					END;
+              'V' : BEGIN
+                      SysOpLog('* Vote Editor');
+                      VotingEditor;
+                    END;
+              'L' : ShowLogs;
+              'N' : TEdit1;
+              'P' : BEGIN
+                      SysOpLog('* System Configuration Editor');
+                      SystemConfigurationEditor;
+                    END;
+              'R' : BEGIN
+                      SysOpLog('* Conference Editor');
+                      ConferenceEditor;
+                    END;
+			  'S' : BEGIN
+					  SysOpLog('* Validation Editor');
+					  ValidationEditor;
+					END;
+			  'T' : BEGIN
+					  mem[Seg0040:$0017] := mem[Seg0040:$0017] XOR 16;
+					  IF (SysOpAvailable) THEN
+						SysOpLog('* Turned ON chat availablity')
+					  ELSE
+						SysOpLog('* Turned OFF chat availablity');
+					END;
+              'U' : BEGIN
+                      SysOpLog('* User Editor');
+                      UserEditor(UserNum);
+                    END;
+              'X' : BEGIN
+                      SysOpLog('* Protocol Editor');
+                      ProtocolEditor;
+                    END;
+              'Z' : BEGIN
+                      SysOpLog('* History Editor');
+                      HistoryEditor;
+                    END;
+              '1' : BEGIN
+                      SysOpLog('* Edited Files');
+                      EditFiles;
+                    END;
+              '2' : BEGIN
+                      SysOpLog('* Sorted Files');
+                      Sort;
+                    END;
+              '3' : BEGIN
+                      SysOpLog('* Read Private Messages');
+                      ReadAllMessages('');
+                    END;
+              '4' : IF (MenuOption = '') THEN
+                      Do_Unlisted_Download
+                    ELSE
+                      UnlistedDownload(MenuOption);
+              '5' : BEGIN
+                      SysOpLog('* Rechecked files');
+                      ReCheck;
+                    END;
+              '6' : UploadAll;
+              '7' : ValidateFiles;
+              '8' : AddGIFSpecs;
+              '9' : PackMessageAreas;
+              '#' : BEGIN
+                      SysOpLog('* Menu Editor');
+                      SaveMenu := CurMenu;
+                      MenuEditor;
+                      CurMenu := SaveMenu;
+                      LoadMenu;
+                    END;
+              '$' : DirF(TRUE);
+              '%' : DirF(FALSE);
+            ELSE
+              NoCmd := TRUE;
+            END;
   ELSE
     NoCmd := TRUE;
   END;

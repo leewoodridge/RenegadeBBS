@@ -1,5 +1,4 @@
 {$A+,B-,D+,E-,F+,I-,L+,N-,O+,R-,S+,V-}
-
 UNIT Maint;
 
 INTERFACE
@@ -213,7 +212,7 @@ BEGIN
     FillChar(NodeR.Forget,SizeOf(NodeR.Forget),0);
     Include(NodeR.Status,NAvail);
     SaveNode(ThisNode);
-    Update_Node(RGNoteStr(37,TRUE),TRUE);
+    Update_Node(lRGLngStr(147,TRUE),TRUE);
     FOR Counter := 1 TO MaxNodes DO
     BEGIN
       LoadNode(Counter);

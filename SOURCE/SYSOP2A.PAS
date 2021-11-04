@@ -77,33 +77,38 @@ BEGIN
       BEGIN
         Abort := FALSE;
         Next := FALSE;
-		ConfigHeader('Main BBS Configuration');
-        PrintACR('^0A. BBS name/number  : ^1'+General.BBSName+' ^0(^1'+General.BBSPhone+'^0)');
-        PrintACR('^0B. Telnet Url       : ^1'+Liner.NodeTelnetURL);
-        PrintACR(PadLeftStr('^0C. SysOps name      : ^1'+General.SysOpName,39)+'^0D. Renegade Version   : ^1'+General.Version);
-        PrintACR(PadLeftStr('^0E. SysOp chat hours : ^1'+PHours('Always allowed',General.lLowTime,General.HiTime),39)+
-                    '^0F. Minimum baud hours : '+PHours('Always allowed',General.MinBaudLowTime,General.MinBaudHiTime));
-        PrintACR(PadLeftStr('^0G. Regular DL hours : ^1'+PHours('Always allowed',General.DLLowTime,General.DLHiTime),39)+
-                    '^0H. Minimum baud DL hrs: ^1'+PHours('Always allowed',General.MinBaudDLLowTime,General.MinBaudDLHiTime));
-        PrintACR(PadLeftStr('^0I. BBS Passwords    :',39)+
-         '^0J. Pre-event warning  : ^1'+IntToStr(General.EventWarningTime)+' seconds');
-        PrintACR(PadLeftStr('^0K. System Menus     :',39)+'^0L. Bulletin Prefix    : ^1'+General.BulletPrefix);
-        PrintACR(PadLeftStr('^0M. MultiNode support: ^1'+ShowOnOff(General.MultiNode),39)+
-         '^0N. Network mode     : ^1'+ShowOnOff(General.NetworkMode));
+        ConfigHeader('Main BBS Configuration');
+        PrintACR(PadLeftStr('^0(^1A^0) BBS name/number   : ^1'+General.BBSName+' ^0(^1'+General.BBSPhone+'^0)',79));
+        PrintACR(PadLeftStr('^0(^1B^0) Telnet URL        : ^1'+Liner.NodeTelnetURL,79));
+        PrintACR(PadLeftStr('^0(^1C^0) SysOps name       : ^1'+General.SysOpName,39)+
+                 PadLeftStr('^0(^1D^0) Renegade Version  : ^1'+General.Version,39));
+        PrintACR(PadLeftStr('^0(^1E^0) SysOp chat hours  : ^1'+PHours('Always allowed',
+                                                                      General.lLowTime,General.HiTime),39)+
+                 PadLeftStr('^0(^1F^0) Min baud hours    : ^1'+PHours('Always allowed',
+                                                                      General.MinBaudLowTime,General.MinBaudHiTime),39));
+        PrintACR(PadLeftStr('^0(^1G^0) Reg DL hours      : ^1'+PHours('Always allowed',
+                                                                      General.DLLowTime,General.DLHiTime),39)+
+                 PadLeftStr('^0(^1H^0) Min baud DL hrs   : ^1'+PHours('Always allowed',
+                                                                      General.MinBaudDLLowTime,General.MinBaudDLHiTime),39));
+        PrintACR(PadLeftStr('^0(^1I^0) BBS Passwords ...',39)+
+                 PadLeftStr('^0(^1J^0) Pre-event warning : ^1'+IntToStr(General.EventWarningTime)+' seconds',39));
+        PrintACR(PadLeftStr('^0(^1K^0) System Menus ...',39)+
+                 PadLeftStr('^0(^1L^0) Bulletin Prefix   : ^1'+General.BulletPrefix,39));
+        PrintACR(PadLeftStr('^0(^1M^0) MultiNode support : ^1'+ShowOnOff(General.MultiNode),39)+
+                 PadLeftStr('^0(^1N^0) Network mode      : ^1'+ShowOnOff(General.NetworkMode),39));
         NL;
-        PrintACR('^00. Main data files dir.    : ^1'+General.DataPath);
-        PrintACR('^01. Miscellaneous Files dir.: ^1'+General.MiscPath);
-        PrintACR('^02. Message file storage dir: ^1'+General.MsgPath);
-        PrintACR('^03. Nodelist (Version 7) dir: ^1'+General.NodePath);
-        PrintACR('^04. Log files/trap files dir: ^1'+General.LogsPath);
-        PrintACR('^05. Temporary directory     : ^1'+General.TempPath);
-        PrintACR('^06. Protocols directory     : ^1'+General.ProtPath);
-        PrintACR('^07. Archivers directory     : ^1'+General.ArcsPath);
-        PrintACR('^08. File attach directory   : ^1'+General.FileAttachPath);
-        PrintACR('^09. Strings directory       : ^1'+General.lMultPath);
+        PrintACR('^0(^10^0) Data files                : ^1'+General.DataPath);
+        PrintACR('^0(^11^0) Miscellaneous (Art) files : ^1'+General.MiscPath);
+        PrintACR('^0(^12^0) Message area data files   : ^1'+General.MsgPath);
+        PrintACR('^0(^13^0) Mail Nodelist (V7) files  : ^1'+General.NodePath);
+        PrintACR('^0(^14^0) Log files                 : ^1'+General.LogsPath);
+        PrintACR('^0(^15^0) Temporary files           : ^1'+General.TempPath);
+        PrintACR('^0(^16^0) Protocol files            : ^1'+General.ProtPath);
+        PrintACR('^0(^17^0) Archiver files            : ^1'+General.ArcsPath);
+        PrintACR('^0(^18^0) File attachments          : ^1'+General.FileAttachPath);
+        PrintACR('^0(^19^0) Text/Language files       : ^1'+General.TextPath);
         NL;
-        Prt('Enter selection [^1A^2-^1N^2,^10^2-^19^2,^1Q^2=^1Quit^2]: ');
-        OneK(Cmd,'QABCDEFGHIJKLMN0123456789'^M,TRUE,TRUE);
+        LOneK('Enter selection [^1A^2-^1N^2,^10^2-^19^2,^1Q^2=^1Quit^2]: ',Cmd,'QABCDEFGHIJKLMN0123456789'^M,TRUE,TRUE);
         CASE Cmd OF
           'A' : BEGIN
                   InputWNWC('%LFNew BBS name: ',BBSName,(SizeOf(BBSName) - 1),Changed);
@@ -112,9 +117,9 @@ BEGIN
           'B' : InputWN1('%LF^0New Telnet Url:%LF^2: ',Liner.NodeTelnetURL,(SizeOf(Liner.NodeTelnetURL) - 1),
                 [InteractiveEdit],Changed);
           'C' : InputWN1('%LFNew SysOp name: ',SysOpName,(SizeOf(SysOpName) - 1),[InterActiveEdit],Changed);
-          'D' : RGNoteStr(0,FALSE);
+          'D' : lRGLngStr(110,FALSE);
           'E' : IF (InCom) THEN
-                  RGNoteStr(1,FALSE)
+                  lRGLngStr(111,FALSE)
                 ELSE
                   GetTimeRange('%LFDo you want to declare sysop chat hours? @',lLowTime,HiTime);
           'F' : GetTimeRange('%LFDo you want to declare hours people at the minimum baud can logon?',
@@ -144,14 +149,13 @@ BEGIN
           'K' : BEGIN
                   REPEAT
                     PrintACR('%CL^1System Menus:^0');
-                    PrintACR('^01. Global       : ^1'+IntToStr(General.GlobalMenu));
-                    PrintACR('^02. All Start    : ^1'+IntToStr(General.AllStartMenu));
-                    PrintACR('^03. Shutle logon : ^1'+IntToStr(General.ShuttleLogonMenu));
-                    PrintACR('^04. New user info: ^1'+IntToStr(General.NewUserInformationMenu));
-                    PrintACR('^05. Message Read : ^1'+IntToStr(General.MessageReadMenu));
-                    PrintACR('^06. File List    : ^1'+IntToStr(General.FileListingMenu));
-                    Prt('Enter selection [^11^2-^16^2,^1<CR>^2=^1Quit^2]: ');
-                    OneK(Cmd,^M'123456',TRUE,TRUE);
+                    PrintACR('^01. Global commands  : ^1'+IntToStr(General.GlobalMenu));
+                    PrintACR('^02. Default start    : ^1'+IntToStr(General.AllStartMenu));
+                    PrintACR('^03. Shuttle logon    : ^1'+IntToStr(General.ShuttleLogonMenu));
+                    PrintACR('^04. New user info    : ^1'+IntToStr(General.NewUserInformationMenu));
+                    PrintACR('^05. Reading messages : ^1'+IntToStr(General.MessageReadMenu));
+                    PrintACR('^06. Listing files    : ^1'+IntToStr(General.FileListingMenu));
+                    LOneK('Enter selection [^11^2-^16^2,^1<CR>^2=^1Quit^2]: ',Cmd,^M'123456',TRUE,TRUE);
                     CASE Cmd OF
                       '1' : FindMenu('%LFMenu for global commands (^10^2=^1None^2)@',GlobalMenu,0,NumMenus,Changed);
                       '2' : FindMenu('%LFMenu to start all users at@',AllStartMenu,1,NumMenus,Changed);
@@ -166,7 +170,7 @@ BEGIN
           'L' : InputWN1('%LFDefault bulletin prefix: ',BulletPrefix,(SizeOf(BulletPrefix) - 1),
                 [InterActiveEdit,UpperOnly],Changed);
           'M' : IF (InCom) THEN
-                  RGNoteStr(1,FALSE)
+                  lRGLngStr(111,FALSE)
                 ELSE
                   BEGIN
                     MultiNode := (NOT MultiNode);
@@ -192,7 +196,7 @@ BEGIN
           '7' : InputPath('%LF^0New archive files path (^1End with a ^0"^1\^0"):%LF^2: ',ArcsPath,TRUE,FALSE,Changed);
           '8' : InputPath('%LF^0New file attach files path (^1End with a ^0"^1\^0"):%LF^2: ',
                 FileAttachPath,TRUE,FALSE,Changed);
-          '9' : InputPath('%LF^0New string files path (^1End with a ^0"^1\^0"):%LF^2: ',lMultPath,TRUE,FALSE,Changed);
+          '9' : InputPath('%LF^0New string files path (^1End with a ^0"^1\^0"):%LF^2: ',TextPath,TRUE,FALSE,Changed);
         END;
       END;
   UNTIL (Cmd = 'Q') OR (HangUp);

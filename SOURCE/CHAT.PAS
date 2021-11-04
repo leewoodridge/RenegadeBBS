@@ -364,10 +364,10 @@ BEGIN
 	  BEGIN
 		IF (WColor) THEN
           Print('^5/TYPE D:\PATH\FILENAME.EXT^3: Type a file');
-   (* Print('^5/BYE^3:   Hang up');
-      Print('^5/CLS^3:   Clear the screen');
-      Print('^5/PAGE^3:  Page the SysOp and User');
-      Print('^5/Q^3:     Exit chat mode'^M^J); *)
+     (* Print('^5/BYE^3:   Hang up');
+        Print('^5/CLS^3:   Clear the screen');
+        Print('^5/PAGE^3:  Page the SysOp and User');
+        Print('^5/Q^3:     Exit chat mode'^M^J); *)
 		lRGLngStr(65,FALSE);
       END
     ELSE IF (S = '/CLS') THEN

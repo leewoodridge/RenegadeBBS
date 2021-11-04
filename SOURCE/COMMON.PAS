@@ -1,16 +1,22 @@
 {$A+,B-,D-,E-,F+,I-,L-,N+,O-,R-,S-,V-}
 (*
 Lee Woodridge
- 10/04/2021 - Commented out RGSysCfgStr function
-            - Removed MCIs that were added for system config & file area editor
-            - Documented all current MCIs in code - see MCI.TXT
- 10/06/2021 - Fixed %DE bug
+ 10/04/2021 - Removed: RGSysCfgStr function
+            - Removed: MCIs that were added for system config & file area editor
+            - Documented: All current MCIs in code - see DOCS\MCI.TXT
+ 10/06/2021 - Fixed: %DE bug
  10/07/2021 - Indentation...
 			- Added: ACS 'Q' check for menu #
-			- removed redundant $V- above lcmds3
-			{LeeW: Added, toggle proc instead of writing "x := not x" everywhere}
-			- Added a linefeed to MPL if inputfield extends past users linelen
- 10/26/2021 - Fixed lightbar yes/no question from eating itself
+			- Removed: Redundant $V- above lcmds3
+			- Added: Toggle proc instead of writing "x := not x" everywhere
+			- Added: Linefeed to MPL if input field extends past users LineLen
+ ... 		- Added: MCIPos/MCIPosArray to pull location data from ANSIs
+ 10/26/2021 - Fixed: lightbar yes/no question no longer eats itself if color codes/MCIs in string
+ 10/27/2021 - Moved: TeleconfCheck to MULTNODE
+ 10/31/2021 - Added: LangStringArray to pass strings to lang file 
+            - Added: %SA MCI - returns "available" or "unavailable" depending on SysOp chat availability
+ 11/01/2021 - Removed: RGNote, RGMain - All strings now in lRGLngStr
+ 11/03/2021 - moved savendescription to its proc, no need to be global
 *)
 UNIT Common;
 
@@ -28,33 +34,38 @@ CONST
   StrLen = 119;
 
 TYPE
+  MCIPos = RECORD  { LeeW: Added - Array of MCI positioning data taken from ANSIs }
+    X,       { X (horizontal) axis }
+    Y: Byte; { Y (vertical) axis }
+  END;
+
   MCIFunctionType = FUNCTION(CONST s: AStr; Data1, Data2: Pointer): STRING;
 
   MemMenuRec = RECORD                  { MENU RECORD }
-    LDesc: ARRAY[1..3] OF STRING[100]; { menu name }
-    ACS: ACString;                     { access requirements }
-    NodeActivityDesc: STRING[50];      { node activity description }
-    MenuFlags: MenuFlagSet;            { menu status variables }
-    LongMenu: STRING[12];              { displayed IN place OF long menu }
-    MenuNum: Byte;                     { menu  number }
-    MenuPrompt: STRING[120];           { menu Prompt }
-    Password: STRING[20];              { password required }
-    FallBack: Byte;                    { fallback menu }
-    Directive: STRING[12];             {  }
-    ForceHelpLevel: Byte;              { forced help Level FOR menu }
-    GenCols: Byte;                     { generic menus: # OF columns }
-    GCol: ARRAY[1..3] OF Byte;         { generic menus: colors }
+    LDesc: ARRAY[1..3] OF STRING[100]; { Titles }
+    ACS: ACString;                     { Access requirements }
+    NodeActivityDesc: STRING[50];      { Node activity description }
+    MenuFlags: MenuFlagSet;            { Flags }
+    LongMenu: STRING[12];              { Long menu art file }
+    MenuNum: Byte;                     { Menu number }
+    MenuPrompt: STRING[120];           { Prompt }
+    Password: STRING[20];              { Password }
+    FallBack: Byte;                    { Fallback menu }
+    Directive: STRING[12];             { Short menu art file }
+    ForceHelpLevel: Byte;              { Forced help level }
+    GenCols: Byte;                     { Generic menu: Number of columns }
+    GCol: ARRAY[1..3] OF Byte;         { Generic menu: Colors }
   END;
 
   MemCmdRec = RECORD                   { COMMAND RECORD }
-    LDesc: STRING[100];                { long command description }
-    ACS: ACString;                     { access requirements }
-    NodeActivityDesc: STRING[50];      {  }
-    CmdFlags: CmdFlagSet;              { command status variables }
-    SDesc: STRING[35];                 { short command description }
-    CKeys: STRING[14];                 { command-execution keys }
-    CmdKeys: STRING[2];                { command keys: type OF command }
-    Options: STRING[50];               { MString: command data }
+    LDesc: STRING[100];                { Long command description }
+    ACS: ACString;                     { Access requirements }
+    NodeActivityDesc: STRING[50];      { Node activity description }
+    CmdFlags: CmdFlagSet;              { Flags }
+    SDesc: STRING[35];                 { Short command description }
+    CKeys: STRING[14];                 { Execution key }
+    CmdKeys: STRING[2];                { Command }
+    Options: STRING[50];               { Command parameters }
   END;
 
   LightBarRecordType = RECORD
@@ -145,7 +156,7 @@ TYPE
   MCIBufferPtr = ^MCIBufferType;
 
   Multitasker =(
-    None,  (* DOS 5 thu 9 *)
+    None,  { DOS 5 through 9 }
     DV,
     Win,
     OS2,
@@ -153,15 +164,19 @@ TYPE
     DOS5N);
 
   InputFlagType =(
-    UpperOnly,        { Forced uppercase }
-    ColorsAllowed,    { Colors allowed }
-    NoLineFeed,       { No linefeed after <CR> pressed }
-    ReDisplay,        { Display old IF no change }
-    CapWords,         { Forced capitalization of first characters }
-    InterActiveEdit,  { Interactive editing }
-    NumbersOnly,      { Numeric values only }
-    DisplayValue,     {  }
-    NegativeAllowed); { Negative numbers allowed }
+	{ Formatting }
+    UpperOnly,       { Forced uppercase }
+    ColorsAllowed,   { Colors allowed }
+    CapWords,        { Forced capitalization of first characters }
+	{ Interface }
+	DisplayValue,    {  }
+	InterActiveEdit, { Interactive editing }
+	NoLineFeed,      { No linefeed after <CR> pressed }
+    ReDisplay,       { Display old IF no change }
+	{ Input type }
+	NumbersOnly,     { Numeric values only }
+    NegativeAllowed  { Negative numbers allowed }
+	); 
 
   InputFlagSet = SET OF InputFlagType; {  }
 
@@ -217,7 +232,7 @@ CONST
   WantOut: Boolean = TRUE;             { output Text locally? }
   WColor: Boolean = TRUE;              { IN chat: was last key pressed by SysOp? }
   BadDLPath: Boolean = FALSE;          { is the current DL path BAD? }
-  BadUlPath: Boolean = FALSE;          { is the current UL path BAD? }
+  BadULPath: Boolean = FALSE;          { is the current UL path BAD? }
   BeepEnd: Boolean = FALSE;            { whether TO beep after caller logs off }
   FileAreaNameDisplayed: Boolean = FALSE; { Was file area name printed yet? }
   CFO: Boolean = FALSE;                { is chat FILE open? }
@@ -235,16 +250,19 @@ CONST
   InWFCMenu: Boolean = FALSE;          { are we IN the WFC menu? }
   LastCommandGood: Boolean = FALSE;    { was last command a REAL command? }
   LastCommandOvr: Boolean = FALSE;     { override Pause? (NO Pause?) }
-  LocalIOOnly: Boolean = FALSE;        { local I/O ONLY? }
-  MakeQWKFor: Integer = 0;             { make a qwk packet ONLY? }
-  UpQWKFor: Integer = 0;               { upload a qwk packet ONLY? }
+  
+  { Startup parameters }
+  LocalIOOnly: Boolean = FALSE;        { Are we in local I/O mode? }
+  MakeQWKFor: Integer = 0;             { Are we making a QWK packet only? }
+  UpQWKFor: Integer = 0;               { Are we uploading a QWK packet only? }
+  PackBasesOnly: Boolean = FALSE;      { Are we packing message bases only? }
+  SortFilesOnly: Boolean = FALSE;      { Are we sorting file bases only? }
+  FileBBSOnly: Boolean = FALSE;        { Are we verifying FILES.BBS only? }
+  
   RoomNumber: Integer = 0;             { Room OF teleconference }
-  PackBasesOnly: Boolean = FALSE;      { pack message bases ONLY? }
-  SortFilesOnly: Boolean = FALSE;      { sort FILE bases ONLY? }
-  FileBBSOnly: Boolean = FALSE;        {  }
   NewMenuToLoad: Boolean = FALSE;      { menu command returns TRUE IF new menu TO load }
   OvrUseEMS: Boolean = TRUE;           {  }
-  OverLayLocation: Byte = 0;           { 0=Normal, 1=EMS, 2=XMS }
+  OverlayLocation: Byte = 0;           { 0=Normal, 1=EMS, 2=XMS }
   OutCom: Boolean = FALSE;             { outputting TO com? }
   DirFileopen1: Boolean = TRUE;        { whether DirFile has been opened before }
   ExtFileOpen1: Boolean = TRUE;        {  }
@@ -261,22 +279,25 @@ CONST
   NewEchoMail: Boolean = FALSE;        { has new echomail been entered? }
   TimeWarn: Boolean = FALSE;           { has User been warned OF time shortage? }
   TellUserEvent: Byte = 0;             { has User been told about the up-coming event? }
-  ExitErrors: Byte = 1;                { errorLEVEL FOR Critical error Exit }
-  ExitNormal: Byte = 0;                { errorLEVEL FOR Normal Exit }
+  ExitErrors: Byte = 1;                { Error level for critical error exit }
+  ExitNormal: Byte = 0;                { Error level for normal exit }
   TodayCallers: Integer = 0;           { new system callers }
   lTodaynumUsers: Integer = 0;         { new number OF users }
   ThisNode: Byte = 0;                  { node number }
   AnswerBaud: LongInt = 0;             { baud rate TO answer the phone at }
   ExtEventTime: Word = 0;              { # minutes before External event }
   IsInvisible: Boolean = FALSE;        { Run IN invisible Mode? }
-  SaveNDescription:                    {  }
-    STRING[50] = 'Miscellaneous';
+
   SaveNAvail: Boolean = FALSE;         {  }
   LastWFCX: Byte = 1;                  {  }
   LastWFCY: Byte = 1;                  {  }
   ANSIDetected: Boolean = FALSE;       {  }
   
 VAR
+  LangStringArray:					   { LeeW: Added }
+    ARRAY[0..9] OF STRING[40];
+  MCIPosRecArray:					   { LeeW: Added }
+	ARRAY[0..9] OF MCIPos;
   LightBarArray:                       {  }
     ARRAY[1..50] OF LightBarRecordType;
   LightBarCmd,                         {  }
@@ -284,7 +305,7 @@ VAR
   LightBarFirstCmd: Boolean;           {  }
   Telnet: Boolean;                     {  }
   HangUpTelnet: Boolean;               {  }
-  DatFilePath: STRING[40];             {  }
+  DatFilePath: STRING[40];             { Path to RENEGADE.DAT }
   Interrupt14: Pointer;                { far ptr TO interrupt 14 }
   Ticks: LongInt ABSOLUTE $0040:$006C; {  }
   IEMSIRec: IEMSIRecord;               {  }
@@ -464,6 +485,7 @@ VAR
 
 PROCEDURE Clear_EOL; { ANSI Clear to end of line }
 PROCEDURE ANSIG(X,Y: Byte); { ANSI go to position }
+PROCEDURE CLS; { ANSI Clear screen }
 FUNCTION ToLower(S: STRING): STRING; { Convert string to lowercase } { LeeW: Moved from OneLiner }
 PROCEDURE Toggle(VAR TheVar: Boolean); { Toggles a boolean } { LeeW: Added }
 FUNCTION GetC(c: Byte): STRING;
@@ -478,9 +500,6 @@ FUNCTION GetFileSize(FileName: AStr): LongInt;
 PROCEDURE GetFileDateTime(CONST FileName: AStr; VAR FileTime: LongInt);
 PROCEDURE SetFileDateTime(CONST FileName: AStr; FileTime: LongInt);
 FUNCTION PHours(CONST DisplayStr: AStr; LoTime,HiTime: Integer): AStr;
-{FUNCTION RGSysCfgStr(StrNum: LongInt; PassValue: Boolean): AStr;} { LeeW: Removed }
-FUNCTION RGNoteStr(StrNum: LongInt; PassValue: Boolean): AStr;
-FUNCTION RGMainStr(StrNum: LongInt; PassValue: Boolean): AStr;
 FUNCTION lRGLNGStr(StrNum: LongInt; PassValue: Boolean): AStr;
 PROCEDURE GetPassword(VAR PW: AStr; Len: Byte);
 PROCEDURE MakeDir(VAR Path: PathStr; AskMakeDir: Boolean);
@@ -513,7 +532,6 @@ PROCEDURE PurgeDir(s: AStr; SubDirs: Boolean);
 PROCEDURE DOSANSI(CONST c: Char);
 FUNCTION HiMsg: Word;
 FUNCTION OnNode(UserNumber: Integer): Byte;
-FUNCTION MaxUsers: Integer;
 PROCEDURE Kill(CONST FileName: AStr);
 PROCEDURE ScreenDump(CONST FileName: AStr);
 PROCEDURE ScanInput(VAR s: AStr; CONST Allowed: AStr);
@@ -540,7 +558,7 @@ FUNCTION FileSysOp: Boolean; { Is user file SysOp? }
 FUNCTION CoSysOp: Boolean; { Is user CoSysOp? }
 FUNCTION SysOp: Boolean; { Is user SysOp? }
 FUNCTION Timer: LongInt;
-PROCEDURE TeleConfCheck;
+{PROCEDURE TeleConfCheck;}
 FUNCTION Substitute(Src: STRING; CONST Old,New: STRING): STRING;
 PROCEDURE NewCompTables;
 FUNCTION OkANSI: Boolean; { Does user support ANSI terminal emulation? }
@@ -584,15 +602,15 @@ FUNCTION CTP(t,b: LongInt): STRING; { Calculate percentage }
 PROCEDURE TLeft;
 PROCEDURE LoadNode(NodeNumber: Byte);
 PROCEDURE Update_Node(NActivityDesc: AStr; SaveVars: Boolean);
-FUNCTION MaxNodes: Byte;
 FUNCTION MaxChatRec: LongInt;
+FUNCTION MaxIDXRec: Integer;
+FUNCTION MaxNodes: Byte;
+FUNCTION MaxUsers: Integer;
 PROCEDURE SaveNode(NodeNumber: Byte);
 PROCEDURE LoadURec(VAR User: UserRecordType; UserNumber: Integer);
 PROCEDURE SaveURec(User: UserRecordType; UserNumber:Integer);
-FUNCTION MaxIDXRec: Integer;
 FUNCTION InKey: Word;
 PROCEDURE OutKey(c: Char);
-PROCEDURE CLS; { ANSI Clear screen }
 PROCEDURE Wait(b: Boolean);
 FUNCTION DisplayARFlags(AR: ARFlagSet; C1,C2: Char): AStr;
 PROCEDURE ToggleARFlag(Flag: Char; VAR AR: ARFlagSet; VAR Changed: Boolean);
@@ -608,8 +626,9 @@ PROCEDURE InitTrapFile;
 FUNCTION AOnOff(b: Boolean; CONST s1,s2: AStr): STRING;
 FUNCTION ShowOnOff(b: Boolean): STRING;
 FUNCTION ShowYesNo(b: Boolean): STRING;
-FUNCTION YN(Len: Byte; DYNY: Boolean): Boolean;
+FUNCTION YN(Len: Byte; DYNY: Boolean): Boolean; {LeeW: Nest this in PYNQ once figure out SCRIPT}
 FUNCTION PYNQ(CONST InString: AStr; MaxLen: Byte; DYNY: Boolean): Boolean;
+{ below in common3 }
 PROCEDURE InputLongIntWC(S: AStr; VAR L: LongInt; InputFlags: InputFlagSet; LowNum,HighNum: LongInt; VAR Changed: Boolean);
 PROCEDURE InputLongIntWOC(S: AStr; VAR L: LongInt; InputFlags: InputFlagSet; LowNum,HighNum: LongInt);
 PROCEDURE InputWordWC(S: AStr; VAR W: Word; InputFlags: InputFlagSet; LowNum,HighNum: Word; VAR Changed: Boolean);
@@ -627,6 +646,7 @@ PROCEDURE InputWC(VAR s: STRING; MaxLen: Byte);
 PROCEDURE Input(VAR s: STRING; MaxLen: Byte);
 PROCEDURE InputL(VAR s: STRING; MaxLen: Byte);
 PROCEDURE InputCaps(VAR s: STRING; MaxLen: Byte);
+{ end of common3 }
 PROCEDURE OneK(VAR C: Char; ValidKeys: AStr; DisplayKey,LineFeed: Boolean);
 PROCEDURE OneK1(VAR C: Char; ValidKeys: AStr; DisplayKey,LineFeed: Boolean);
 PROCEDURE LOneK(DisplayStr: AStr; VAR C: Char; ValidKeys: AStr; DisplayKey,LineFeed: Boolean);
@@ -639,12 +659,14 @@ PROCEDURE WKey;
 PROCEDURE PrintMain(CONST ss: STRING);
 PROCEDURE PrintACR(InString: STRING);
 PROCEDURE SaveGeneral(X: Boolean);
+
+PROCEDURE PrintF(FileName: AStr); {>}
+PROCEDURE PrintFile(FileName: AStr); {>}
 PROCEDURE pfl(FN: AStr);
-PROCEDURE PrintFile(FileName: AStr);
+
 FUNCTION BSlash(InString: AStr; b: Boolean): AStr;
 FUNCTION Exist(FileName: AStr): Boolean;
 FUNCTION ExistDir(Path: PathStr): Boolean;
-PROCEDURE PrintF(FileName: AStr);
 PROCEDURE SKey1(VAR c: Char);
 FUNCTION VerLine(B: Byte): STRING;
 FUNCTION AACS1(User: UserRecordType; UNum: Integer; S: ACString): Boolean;
@@ -1108,138 +1130,10 @@ BEGIN
   ELSE
     PHours := DisplayStr;
 END;
-{
-FUNCTION RGSysCfgStr(StrNum: LongInt; PassValue: Boolean): AStr;
-VAR
-  StrPointerFile: FILE OF StrPointerRec;
-  StrPointer: StrPointerRec;
-  RGStrFile: FILE;
-  S: STRING;
-  TotLoad: LongInt;
-BEGIN
-  Assign(StrPointerFile,General.TextPath+'RGSCFGPR.DAT');
-  Reset(StrPointerFile);
-  Seek(StrPointerFile,StrNum);
-  Read(StrPointerFile,StrPointer);
-  Close(StrPointerFile);
-  LastError := IOResult;
-  TotLoad := 0;
-  Assign(RGStrFile,General.TextPath+'RGSCFGTX.DAT');
-  Reset(RGStrFile,1);
-  Seek(RGStrFile,(StrPointer.Pointer - 1));
-  REPEAT
-    BlockRead(RGStrFile,S[0],1);
-    BlockRead(RGStrFile,S[1],Ord(S[0]));
-    Inc(TotLoad,(Length(S) + 1));
-    IF (PassValue) THEN
-    BEGIN
-      IF (S[Length(s)] = '@') THEN
-        Dec(S[0]);
-    END
-    ELSE
-    BEGIN
-      IF (S[Length(S)] = '@') THEN
-      BEGIN
-        Dec(S[0]);
-        Prt(S);
-      END
-      ELSE
-        PrintACR(S);
-    END;
-  UNTIL (TotLoad >= StrPointer.TextSize) OR (Abort) OR (HangUp);
-  Close(RGStrFile);
-  LastError := IOResult;
-  RGSysCfgStr := S;
-END;
-}
-FUNCTION RGNoteStr(StrNum: LongInt; PassValue: Boolean): AStr;
-VAR
-  StrPointerFile: FILE OF StrPointerRec;
-  StrPointer: StrPointerRec;
-  RGStrFile: FILE;
-  S: STRING;
-  TotLoad: LongInt;
-BEGIN
-  Assign(StrPointerFile,General.TextPath+'RGNOTEPR.DAT');
-  Reset(StrPointerFile);
-  Seek(StrPointerFile,StrNum);
-  Read(StrPointerFile,StrPointer);
-  Close(StrPointerFile);
-  LastError := IOResult;
-  TotLoad := 0;
-  Assign(RGStrFile,General.TextPath+'RGNOTETX.DAT');
-  Reset(RGStrFile,1);
-  Seek(RGStrFile,(StrPointer.Pointer - 1));
-  REPEAT
-    BlockRead(RGStrFile,S[0],1);
-    BlockRead(RGStrFile,S[1],Ord(S[0]));
-    Inc(TotLoad,(Length(S) + 1));
-    IF (PassValue) THEN
-    BEGIN
-      IF (S[Length(s)] = '@') THEN
-        Dec(S[0]);
-    END
-    ELSE
-    BEGIN
-      IF (S[Length(S)] = '@') THEN
-      BEGIN
-        Dec(S[0]);
-        Prt(S);
-      END
-      ELSE
-        PrintACR(S);
-    END;
-  UNTIL (TotLoad >= StrPointer.TextSize) OR (Abort) OR (HangUp);
-  Close(RGStrFile);
-  LastError := IOResult;
-  RGNoteStr := S;
-END;
-
-FUNCTION RGMainStr(StrNum: LongInt; PassValue: Boolean): AStr;
-VAR
-  StrPointerFile: FILE OF StrPointerRec;
-  StrPointer: StrPointerRec;
-  RGStrFile: FILE;
-  S: STRING;
-  TotLoad: LongInt;
-BEGIN
-  Assign(StrPointerFile,General.TextPath+'RGMAINPR.DAT');
-  Reset(StrPointerFile);
-  Seek(StrPointerFile,StrNum);
-  Read(StrPointerFile,StrPointer);
-  Close(StrPointerFile);
-  LastError := IOResult;
-  TotLoad := 0;
-  Assign(RGStrFile,General.TextPath+'RGMAINTX.DAT');
-  Reset(RGStrFile,1);
-  Seek(RGStrFile,(StrPointer.Pointer - 1));
-  REPEAT
-    BlockRead(RGStrFile,S[0],1);
-    BlockRead(RGStrFile,S[1],Ord(S[0]));
-    Inc(TotLoad,(Length(S) + 1));
-    IF (PassValue) THEN
-	  BEGIN
-		IF (S[Length(s)] = '@') THEN
-		  Dec(S[0]);
-	  END
-    ELSE
-	  BEGIN
-        IF (S[Length(S)] = '@') THEN
-		  BEGIN
-			Dec(S[0]);
-			Prt(S);
-		  END
-		ELSE
-          PrintACR(S);
-	  END;
-  UNTIL (TotLoad >= StrPointer.TextSize) OR (Abort) OR (HangUp);
-  Close(RGStrFile);
-  LastError := IOResult;
-  RGMainStr := S;
-END;
 
 FUNCTION lRGLngStr(StrNum: LongInt; PassValue: Boolean): AStr;
 VAR
+  b: Byte; { LeeW: Added - for counter }
   StrPointerFile: FILE OF StrPointerRec;
   StrPointer: StrPointerRec;
   RGStrFile: FILE;
@@ -1260,6 +1154,16 @@ BEGIN
     BlockRead(RGStrFile,S[0],1);
     BlockRead(RGStrFile,S[1],Ord(S[0]));
     Inc(TotLoad,(Length(S) + 1));
+	{ -- }
+	CASE StrNum OF
+	  201 :	FOR b := 0 TO 0 DO { $ENTER_STATE_PROVINCE }
+		  	  IF (LangStringArray[b] <> '') THEN
+				S := Substitute(S,'@'+IntToStr(b),LangStringArray[b]);
+	  177 :	FOR b := 0 TO 1 DO { $FORWARDING_TO }
+		  	  IF (LangStringArray[b] <> '') THEN
+				S := Substitute(S,'@'+IntToStr(b),LangStringArray[b]);
+	END;
+	{ -- }
     IF (PassValue) THEN
       BEGIN
 		IF (S[Length(s)] = '@') THEN
@@ -1279,6 +1183,10 @@ BEGIN
   Close(RGStrFile);
   LastError := IOResult;
   lRGLNGStr := S;
+  FOR b := 0 TO 9 DO
+	IF (LangStringArray[b] <> '') THEN
+	  LangStringArray[b] := '';
+  { ^ LeeW: Clear passed strings here, check if there's better way to do this -- dispose? }
 END;
 
 PROCEDURE GetPassword(VAR PW: AStr; Len: Byte);
@@ -2696,39 +2604,6 @@ BEGIN
     PageLength := MaxDisplayRows;
 END;
 
-PROCEDURE TeleConfCheck;
-VAR
-  f: FILE;
-  s: STRING;
-  Counter: Byte;
-  SaveMCIAlllowed: Boolean;
-  { Only check IF we're bored AND NOT slicing }
-BEGIN
-  IF (MaxChatRec > NodeChatLastRec) THEN
-  BEGIN
-    FOR Counter := 1 TO (LennMCI(MLC) + 5) DO
-      BackSpace;
-    Assign(f,General.TempPath+'MSG'+IntToStr(ThisNode)+'.TMP');
-    Reset(f,1);
-    Seek(f,NodeChatLastRec);
-    WHILE NOT EOF(f) DO
-    BEGIN
-      BlockRead(f,s[0],1);
-      BlockRead(f,s[1],Ord(s[0]));
-      MultiNodeChat := FALSE;  {avoid recursive calls during Pause!}
-      SaveMCIAlllowed := MCIAllowed;
-      MCIAllowed := FALSE;
-      Print(s);
-      MCIAllowed := SaveMCIAlllowed;
-      MultiNodeChat := TRUE;
-    END;
-    Close(f);
-    LastError := IOResult;
-    NodeChatLastRec := MaxChatRec;
-    Prompt('^1'+MLC);
-  END;
-END;
-
 FUNCTION GetKey: Word;
 CONST
   LastTimeSlice: LongInt = 0;
@@ -2828,7 +2703,7 @@ BEGIN
                        Mov ax, 1680h
                        int 2Fh
                      END;
-               Os2 : ASM
+               OS2 : ASM
                        Push dx
                        XOR dx, dx
                        Mov ax, 0
@@ -3002,8 +2877,8 @@ BEGIN
   END;
 END;
 
-FUNCTION AOnOff(b: Boolean; CONST s1,s2:AStr): STRING; ASSEMBLER;
-ASM
+FUNCTION AOnOff(b: Boolean; CONST s1,s2:AStr): STRING; {ASSEMBLER;}
+{ASM
   PUSH ds
   Test b, 1
   JZ   @@1
@@ -3018,7 +2893,12 @@ ASM
   Inc  si
   CLD
   REP  MOVSB
-  POP  ds
+  POP  ds}
+BEGIN
+  IF (b) THEN
+	AOnOff := s1
+  ELSE 
+	AOnOff := s2;
 END;
 
 FUNCTION ShowOnOff(b: Boolean): STRING;
@@ -3220,6 +3100,8 @@ PROCEDURE PrintMain(CONST ss:STRING);
 VAR
   i,
   X: Word;
+  TX,
+  TY,
   X2: Byte;
   c: Char;
   cs: STRING;
@@ -3315,6 +3197,31 @@ BEGIN
                   Inc(i,2);
                   PauseScr(FALSE)
                 END
+					(* LeeW: Added ANSI read & store position MCI %00 - %09 *)
+					ELSE IF (UpCase(s[i + 1]) IN ['0'..'9']) AND (UpCase(s[i + 2]) IN ['0'..'9']) THEN
+                      BEGIN
+						MCIPosRecArray[StrToInt(s[i+1]+s[i+2])].X := WhereX;
+						MCIPosRecArray[StrToInt(s[i+1]+s[i+2])].Y := WhereY;
+						Inc(i,2);
+                      END
+                    (* LeeW: Added ANSI go to position MCI %XY00;00% *)
+                    ELSE IF (UpCase(s[i + 1]) = 'X') AND (UpCase(s[i + 2]) = 'Y') THEN
+                      BEGIN
+                        cs := '';
+                        Inc(i, 3);
+                        WHILE (i <= Length(s)) AND (s[i] <> '%') DO
+                          BEGIN
+                            cs := cs + s[i];
+                            Inc(i);
+                          END;
+                        TX := StrToInt(Copy(cs,1,(Pos(';',cs))));
+                        IF (TX > 80) OR (TX = 0) THEN
+                          TX := WhereX;
+                        TY := StrToInt(Copy(cs,(Pos(';',cs) + 1),Length(cs)));
+                        IF (TY > 25) OR (TY = 0) THEN
+                          TY := WhereY;
+                        ANSIG(TX,TY);
+                      END
                 ELSE IF (UpCase(s[i + 1]) = 'D') THEN
                   IF (UpCase(s[i + 2]) = 'E') THEN
                   BEGIN
@@ -3734,7 +3641,7 @@ VAR
       'N' : ACS := (ThisNode = VSI);
       'O' : ACS := SysOpAvailable;
       'P' : ACS := ((User.lCredit - User.Debit) >= VSI);
-	  'Q' : ACS := (CurMenu = VSI); { LeeW: Added -- Menu # }
+	  'Q' : ACS := (CurMenu = VSI); { LeeW: Added - Menu # }
       'R' : ACS := (TACCH(UpCase(VS[1])) IN User.ACFlags);
       'S' : ACS := (User.SL >= VSI) OR (TempSysOp);
       'T' : ACS := (NSL DIV 60 >= VSI);
@@ -3859,21 +3766,21 @@ BEGIN
 END;
 
 PROCEDURE Update_Node(NActivityDesc: AStr; SaveVars: Boolean);
+CONST
+  SaveNDescription: STRING[50] = 'Miscellaneous'; { LeeW: Shouldn't this be lRGLngStr(147,)? }
 BEGIN
   IF (General.MultiNode) THEN
-  BEGIN
-    LoadNode(ThisNode);
-    IF (SaveVars) THEN
-    BEGIN
-      SaveNDescription := NodeR.ActivityDesc;
-      NodeR.ActivityDesc := NActivityDesc
-    END
-    ELSE
-      NodeR.ActivityDesc := SaveNDescription;
-    (*
-    IF (UserOn) THEN
-    BEGIN
-    *)
+	BEGIN
+      LoadNode(ThisNode);
+      IF (SaveVars) THEN
+		BEGIN
+		  SaveNDescription := NodeR.ActivityDesc;
+		  NodeR.ActivityDesc := NActivityDesc
+		END
+      ELSE
+		NodeR.ActivityDesc := SaveNDescription;
+   (* IF (UserOn) THEN
+		BEGIN *)
       NodeR.User := UserNum;
       NodeR.UserName := ThisUser.Name;
       NodeR.Sex := ThisUser.Sex;
@@ -3881,9 +3788,7 @@ BEGIN
       NodeR.CityState := ThisUser.CityState;
       NodeR.LogonTime := TimeOn;
       NodeR.Channel := ChatChannel;
-    (*
-    END;
-    *)
+	(* END; *)
     SaveNode(ThisNode);
   END;
 END;
@@ -3931,20 +3836,20 @@ VAR
 BEGIN
   FO := (FileRec(UserFile).Mode <> FMClosed);
   IF (NOT FO) THEN
-  BEGIN
-    Reset(UserFile);
-    IF (IOResult <> 0) THEN
-    BEGIN
-      SysOpLog('Error opening USERS.DAT.');
-      Exit;
-    END;
-  END;
+	BEGIN
+      Reset(UserFile);
+      IF (IOResult <> 0) THEN
+		BEGIN
+		  SysOpLog('Error opening USERS.DAT.');
+		  Exit;
+		END;
+	END;
 
   IF (UserNumber <> UserNum) OR (NOT UserOn) THEN
-  BEGIN
-    Seek(UserFile,UserNumber);
-    Read(UserFile,User);
-  END
+	BEGIN
+      Seek(UserFile,UserNumber);
+      Read(UserFile,User);
+	END
   ELSE
     User := ThisUser;
 
@@ -3961,14 +3866,14 @@ VAR
 BEGIN
   FO := (FileRec(UserFile).Mode <> FMClosed);
   IF (NOT FO) THEN
-  BEGIN
-    Reset(UserFile);
-    IF (IOResult <> 0) THEN
-    BEGIN
-      SysOpLog('Error opening USERS.DAT.');
-      Exit;
-    END;
-  END;
+	BEGIN
+      Reset(UserFile);
+      IF (IOResult <> 0) THEN
+		BEGIN
+		  SysOpLog('Error opening USERS.DAT.');
+		  Exit;
+		END;
+	END;
 
   Seek(UserFile,UserNumber);
   Write(UserFile,User);
@@ -3979,18 +3884,18 @@ BEGIN
   IF (UserNumber = UserNum) THEN
     ThisUser := User
   ELSE
-  BEGIN
-    IF (General.MultiNode) THEN
-    BEGIN
-      NodeNumber := OnNode(UserNumber);
-      IF (NodeNumber > 0) THEN
-      BEGIN
-        LoadNode(NodeNumber);
-        Include(NodeR.Status,NUpdate);
-        SaveNode(NodeNumber);
-      END;
-    END;
-  END;
+	BEGIN
+      IF (General.MultiNode) THEN
+		BEGIN
+		  NodeNumber := OnNode(UserNumber);
+		  IF (NodeNumber > 0) THEN
+			BEGIN
+			  LoadNode(NodeNumber);
+			  Include(NodeR.Status,NUpdate);
+			  SaveNode(NodeNumber);
+			END;
+		END;
+	END;
   LastError := IOResult;
 END;
 
@@ -4848,9 +4753,10 @@ BEGIN
                   '1' : Add := lRGLngStr(41,TRUE); {FString.UserDefEd[Ord(S[Index + 2]) - 48]; }
                   '2' : Add := lRGLngStr(42,TRUE); {FString.UserDefEd[Ord(S[Index + 2]) - 48]; }
                   '3' : Add := lRGLngStr(43,TRUE); {FString.UserDefEd[Ord(S[Index + 2]) - 48]; }
+				  'A' : Add := AOnOff((SysOpAvailable), 'available','unavailable' );
                   'C' : Add := FormatNumber(General.CallerNum);
                   'L' : Add := IntToStr(SL);
-                  'N' : Add := General.SysopName;
+                  'N' : Add := General.SysOpName;
                   'X' : Add := AOnOff((Sex = 'M'),'Male','Female');
                 END;
           'T' : CASE UpCase(S[Index + 2]) OF

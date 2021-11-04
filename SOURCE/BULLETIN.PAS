@@ -502,7 +502,7 @@ VAR
 BEGIN
   IF (MenuOption = '') THEN
     Exit;
-  Assign(StrPointerFile,General.LMultPath+MenuOption+'.PTR');
+  Assign(StrPointerFile,General.TextPath+MenuOption+'.PTR');
   Reset(StrPointerFile);
   TotLoad := FileSize(StrPointerFile);
   IF (TotLoad < 1) THEN
@@ -526,7 +526,7 @@ BEGIN
     NL;
   END;
   TotLoad := 0;
-  Assign(RGStrFile,General.LMultPath+MenuOption+'.DAT');
+  Assign(RGStrFile,General.TextPath+MenuOption+'.DAT');
   Reset(RGStrFile,1);
   Seek(RGStrFile,(StrPointer.Pointer - 1));
   REPEAT
@@ -558,16 +558,16 @@ BEGIN
     PrintF('QUOTE');
     InResponseTo := '';
     MHeader.Status := [];
-    IF (InputMessage(TRUE,FALSE,'New Quote',MHeader,General.LMultPath+MenuOption+'.TMP',78,500)) then
-      IF Exist(General.LMultPath+MenuOption+'.TMP') THEN
+    IF (InputMessage(TRUE,FALSE,'New Quote',MHeader,General.TextPath+MenuOption+'.TMP',78,500)) then
+      IF Exist(General.TextPath+MenuOption+'.TMP') THEN
       BEGIN
-        Assign(F,General.LMultPath+MenuOption+'.NEW');
+        Assign(F,General.TextPath+MenuOption+'.NEW');
         Reset(F);
         IF (IOResult <> 0) THEN
           ReWrite(F)
         ELSE
           Append(F);
-        Assign(F1,General.LMultPath+MenuOption+'.TMP');
+        Assign(F1,General.TextPath+MenuOption+'.TMP');
         Reset(F1);
         IF (IOResult <> 0) THEN
           Exit;
@@ -584,7 +584,7 @@ BEGIN
         WriteLn(F);
         Close(F);
         Close(F1);
-        Kill(General.LMultPath+MenuOption+'.TMP');
+        Kill(General.TextPath+MenuOption+'.TMP');
         NL;
         Print('^8Your new quote was saved.');
         PauseScr(FALSE);

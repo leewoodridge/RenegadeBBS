@@ -115,10 +115,10 @@ BEGIN
                ELSE
                BEGIN
                  TempStr := General.ForgotPWQuestion;
-                 REPEAT
+                 {REPEAT}
                    InputWN1('%LFEnter question to ask user if they forget thier password:%LF: ',TempStr,70,
                             [InterActiveEdit],Changed);
-                 UNTIL (TempStr <> '') OR (HangUp);
+                 {UNTIL (TempStr <> '') OR (HangUp);}
                  IF (Changed) THEN
                    ForgotPWQuestion := TempStr;
                END;

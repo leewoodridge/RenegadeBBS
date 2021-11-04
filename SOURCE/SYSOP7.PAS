@@ -132,7 +132,7 @@ BEGIN
 
         IF (RecNum1 = -1) THEN
         BEGIN
-          RGNoteStr(2,FALSE);
+          lRGLngStr(112,FALSE);
           MenuNum := SaveMenuNum;
         END
         ELSE

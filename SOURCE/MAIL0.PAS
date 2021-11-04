@@ -446,8 +446,8 @@ BEGIN
     END;
 
     S1 := Substitute(S1,'@S',AOnOff(MHeader.FileAttached = 0,
-                 Substitute(S1,'@S',MHeader.Subject),
-                 Substitute(S1,'@S',StripName(MHeader.Subject))));
+          Substitute(S1,'@S',MHeader.Subject),
+          Substitute(S1,'@S',StripName(MHeader.Subject))));
 
     S1 := Substitute(S1,'@B',MemMsgArea.Name);
 
@@ -853,11 +853,11 @@ VAR
   FSize: LongInt;
 BEGIN
   TagLine := '';
-  IF (NOT Exist(General.lMultPath+'TAGLINE.PTR')) OR (NOT Exist(General.LMultPath+'TAGLINE.DAT')) THEN
+  IF (NOT Exist(General.TextPath+'TAGLINE.PTR')) OR (NOT Exist(General.TextPath+'TAGLINE.DAT')) THEN
     SL1('* TAGLINE.PTR or TAGLINE.DAT file(s) do not exist!')
   ELSE
   BEGIN
-    Assign(StrPointerFile,General.LMultPath+'TAGLINE.PTR');
+    Assign(StrPointerFile,General.TextPath+'TAGLINE.PTR');
     Reset(StrPointerFile);
     FSize := FileSize(StrPointerFile);
     IF (FSize < 1) THEN
@@ -875,7 +875,7 @@ BEGIN
     Read(StrPointerFile,StrPointer);
     Close(StrPointerFile);
     LastError := IOResult;
-    Assign(RGStrFile,General.LMultPath+'TAGLINE.DAT');
+    Assign(RGStrFile,General.TextPath+'TAGLINE.DAT');
     Reset(RGStrFile,1);
     Seek(RGStrFile,(StrPointer.Pointer - 1));
     TempTextSize := 0;

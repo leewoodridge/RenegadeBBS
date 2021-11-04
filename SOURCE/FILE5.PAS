@@ -593,7 +593,9 @@ BEGIN
     Prompt('^0'+CurDir+'>');
     InputL(s1,128);
     Parse(s1);
-    Check_Status;
+	
+    CheckStatus;
+	
     DoCmd(s1);
     IF (NOT NoCmd) THEN
       SysOpLog('> '+s1);

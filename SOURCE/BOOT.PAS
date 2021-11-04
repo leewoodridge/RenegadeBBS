@@ -22,16 +22,16 @@ UNIT Boot;
 INTERFACE
 
 FUNCTION ErrorCodeHelp(ErrorCode: Byte): STRING;
-PROCEDURE initp1;
+PROCEDURE initp1; { check paths }
 PROCEDURE init;
 
 IMPLEMENTATION
 
 USES
-  Crt,
-  Dos,
+  CRT,
+  DOS,
   Common,
-  MyIo,
+  MyIO,
   MiscUser,
   TimeFunc;
   
@@ -111,81 +111,99 @@ VAR
       BEGIN
 		CASE Counter OF
           1 : BEGIN
-              DirDesc := 'DATA';
-              DirName := General.DataPath;
-            END;
+				DirDesc := 'DATA';
+				DirName := General.DataPath;
+              END;
           2 : BEGIN
-              DirDesc := 'MSGS';
-              DirName := General.MsgPath;
-            END;
+				DirDesc := 'MSGS';
+				DirName := General.MsgPath;
+              END;
           3 : BEGIN
-              DirDesc := 'FATTACH';
-              DirName := General.FileAttachPath;
-            END;
-        4 : BEGIN
-              DirDesc := 'MISC';
-              DirName := General.MiscPath;
-            END;
-        5 : BEGIN
-              DirDesc := 'LOGS';
-              DirName := General.LogsPath;
-            END;
-        6 : BEGIN
-              DirDesc := 'ARCH';
-              DirName := General.ArcsPath;
-            END;
-        7 : BEGIN
-              DirDesc := 'PROT';
-              DirName := General.ProtPath;
-            END;
-        8 : BEGIN
-              DirDesc := 'STRING';
-              DirName := General.TextPath;
-            END;
+				DirDesc := 'FATTACH';
+				DirName := General.FileAttachPath;
+              END;
+          4 : BEGIN
+				DirDesc := 'MISC';
+				DirName := General.MiscPath;
+              END;
+          5 : BEGIN
+				DirDesc := 'LOGS';
+				DirName := General.LogsPath;
+              END;
+          6 : BEGIN
+				DirDesc := 'ARCH';
+				DirName := General.ArcsPath;
+              END;
+          7 : BEGIN
+				DirDesc := 'PROT';
+				DirName := General.ProtPath;
+              END;
+          8 : BEGIN
+				DirDesc := 'TEXT';
+				DirName := General.TextPath;
+              END;
+		END;
+		IF (NOT ExistDir(DirName)) THEN
+		  BEGIN
+			AnyDone := TRUE;
+			WriteLn(DirDesc+' path is currently '+DirName);
+			WriteLn('This path is missing or invalid');
+			REPEAT
+			  WriteLn;
+			  S2 := DirName;
+			  Write('New '+DirDesc+' path: ');
+			  InField(S2,40);
+			  S2 := AllCaps(SQOutSp(S2));
+			  IF (DirName = S2) OR (S2 = '') THEN
+				BEGIN
+				  NL;
+				  WriteLn('Illegal pathname error');
+				  Halt(ExitErrors);
+				END
+			  ELSE
+				BEGIN
+				  IF (S2 <> '') THEN
+					S2 := BSlash(S2,TRUE);
+				  IF (ExistDir(S2)) THEN
+					CASE Counter OF
+					  1 : General.DataPath := S2;
+					  2 : General.MsgPath := S2;
+					  3 : General.FileAttachPath := S2;
+					  4 : General.MiscPath := S2;
+					  5 : General.LogsPath := S2;
+					  6 : General.ArcsPath := S2;
+					  7 : General.ProtPath := S2;
+					  8 : General.TextPath := S2;
+					END
+				  ELSE
+					BEGIN
+					  WriteLn;
+					  WriteLn('That path does not exist!');
+					END;
+				END;
+			UNTIL (ExistDir(S2));
+		  END;
       END;
-      IF (NOT ExistDir(DirName)) THEN
-      BEGIN
-        AnyDone := TRUE;
-        WriteLn(DirDesc+' path is currently '+DirName);
-        WriteLn('This path is bad or missing.');
-        REPEAT
-          WriteLn;
-          S2 := DirName;
-          Write('New '+DirDesc+' path: ');
-          InField(S2,40);
-          S2 := AllCaps(SQOutSp(S2));
-          IF (DirName = S2) OR (S2 = '') THEN
-          BEGIN
-            NL;
-            WriteLn('Illegal pathname error');
-            Halt(ExitErrors);
-          END
-          ELSE
-          BEGIN
-            IF (S2 <> '') THEN
-              S2 := BSlash(S2,TRUE);
-            IF (ExistDir(S2)) THEN
-              CASE Counter OF
-                1 : General.DataPath := S2;
-                2 : General.MsgPath := S2;
-                3 : General.FileAttachPath := S2;
-                4 : General.MiscPath := S2;
-                5 : General.LogsPath := S2;
-                6 : General.ArcsPath := S2;
-                7 : General.ProtPath := S2;
-                8 : General.TextPath := S2;
-            END
-            ELSE
-            BEGIN
-              WriteLn;
-              WriteLn('That path does not exist!');
-            END;
-          END;
-        UNTIL (ExistDir(S2));
-      END;
-    END;
     IF (AnyDone) THEN
       SaveGeneral(FALSE);
+	  
+	TempDir := Copy(General.TempPath,1,Length(General.TempPath) - 1)+IntToStr(ThisNode)+'\';
+	IF (NOT ExistDir(TempDir)) THEN
+      MkDir(Copy(TempDir,1,Length(TempDir) - 1));
+	IF (NOT ExistDir(TempDir+'QWK\')) THEN
+      MkDir(TempDir+'QWK');
+	IF (NOT ExistDir(TempDir+'ARC\')) THEN
+      MkDir(TempDir+'ARC');
+	IF (NOT ExistDir(TempDir+'UP\')) THEN
+      MkDir(TempDir+'UP');
+	IF (NOT ExistDir(TempDir+'CD\')) THEN
+      MkDir(TempDir+'CD');
+	LastError := IOResult;
+	IF (LastError <> 0) THEN
+	  BEGIN
+		WriteLn('Error creating directories: '+TempDir);
+		Delay(1000); {halt?}
+	  END;
   END; { FINDBADPATHS }
 
 BEGIN
@@ -282,23 +300,7 @@ BEGIN
   IF (Liner.Comport = 0) THEN
     LocalIOOnly := TRUE;
 
-  TempDir := Copy(General.TempPath,1,Length(General.TempPath) - 1)+IntToStr(ThisNode)+'\';
-  IF (NOT ExistDir(TempDir)) THEN
-    MkDir(Copy(TempDir,1,Length(TempDir) - 1));
-  IF (NOT ExistDir(TempDir+'QWK\')) THEN
-    MkDir(TempDir+'QWK');
-  IF (NOT ExistDir(TempDir+'ARC\')) THEN
-    MkDir(TempDir+'ARC');
-  IF (NOT ExistDir(TempDir+'UP\')) THEN
-    MkDir(TempDir+'UP');
-  IF (NOT ExistDir(TempDir+'CD\')) THEN
-    MkDir(TempDir+'CD');
-  LastError := IOResult;
-  IF (LastError <> 0) THEN
-  BEGIN
-    WriteLn('Error creating directories: '+TempDir);
-    Delay(1000);
-  END;
+{tempdirs was here}
 
   Assign(SysOpLogFile,General.LogsPath+'SYSOP.LOG');
   Append(SysOpLogFile);

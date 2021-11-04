@@ -3,7 +3,7 @@
 Lee Woodridge
  10/20/2021 - Color config now uses pipe codes instead of caret codes
  updating color codes
- switched out onek for lonek
+ switched out onek for lonek to display prompt
 }
 UNIT SysOp2H;
 
@@ -44,11 +44,11 @@ USES
     IF (TempColor IN [0..15]) THEN
 	  BEGIN
 		ColorVar := TempColor;
-		RGNoteStr(45,FALSE); {"Saved!"}
+		lRGLngStr(155,FALSE); {"Saved!"}
 	  END(*
 	ELSE
 	  BEGIN
-		RGNoteStr(44,FALSE); {"Aborted!"}
+		lRGLngStr(154,FALSE); {"Aborted!"}
 	  END*);
 	SetC(7);
   END;

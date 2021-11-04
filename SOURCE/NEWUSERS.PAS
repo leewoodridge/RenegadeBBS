@@ -47,7 +47,7 @@ BEGIN
 
   UserNum := 0;
 
-  Update_Node(RGNoteStr(36,TRUE){'New user logging on'},TRUE);
+  Update_Node(lRGLngStr(146,TRUE){'New user logging on'},TRUE);
 
   UserNum := -1;
 
@@ -60,14 +60,14 @@ BEGIN
       (*
       Prt(FString.NewUserPassword);
       *)
-      RGMainStr(10,FALSE);
+      lRGLngStr(190,FALSE);
       GetPassword(NewUserPassword,20);
       IF ((NewUserPassword <> '') AND (General.NewUserPW <> NewUserPassword)) THEN
       BEGIN
         (*
         Print('Invalid password, keep trying ...');
         *)
-        RGNoteStr(38,FALSE);
+        lRGLngStr(148,FALSE);
         SL1('* Invalid new user password: '+NewUserPassword);
         Inc(PasswordAttemps);
       END;
@@ -79,7 +79,7 @@ BEGIN
         (*
         Print('You have exceeded the maximum new user logon attempts, hanging up ...');
         *)
-        RGNoteStr(39,FALSE);
+        lRGLngStr(149,FALSE);
       SL1('* Maximum new user logon attempts exceeded - hung user up.');
       HangUp := TRUE;
     END;
@@ -137,7 +137,7 @@ BEGIN
     (*
     Prompt('Saving your information ... ');
     *)
-    RGNoteStr(40,FALSE);
+    lRGLngStr(150,FALSE);
     SysOpLog('Saving new user information ...');
     Counter1 := 0;
     Counter := 1;
@@ -181,7 +181,7 @@ BEGIN
     (*
     Print('^1Saved.');
     *)
-    RGNoteStr(41,FALSE);
+    lRGLngStr(151,FALSE);
     SysOpLog('Saved as user #'+IntToStr(UserNum));
     UserOn := TRUE;
     WasNewUser := TRUE;
@@ -209,8 +209,8 @@ BEGIN
         (*
         Print('You must now send a new user application letter to the SysOp.');
         *)
-        RGNoteStr(42,FALSE);
-      InResponseTo := '\'+#1+RGNoteStr(43,TRUE); { 'New User Application' }
+        lRGLngStr(152,FALSE);
+      InResponseTo := '\'+#1+lRGLngStr(153,TRUE); { 'New User Application' }
       MHeader.Status := [];
       SeMail(TempNewApp,MHeader);
     END;
@@ -264,7 +264,7 @@ BEGIN
       (*
       Print('This BBS is currently not accepting new users, hanging up ...');
       *)
-      RGNoteStr(32,FALSE);
+      lRGLngStr(142,FALSE);
     SL1('* Attempted logon when BBS closed to new users - hung user up.');
     HangUp := TRUE;
   END

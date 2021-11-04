@@ -98,11 +98,11 @@ VAR
 	Com_Flush_Recv;
 	NL;
 	IF (NOT PYNQ('Is this correct? ',0,FALSE)) THEN
-	  RGNoteStr(44,FALSE) {Print('^8Aborted!')}
+	  lRGLngStr(154,FALSE) {Print('^8Aborted!')}
 	ELSE
 	  BEGIN
 		General.Macro[MacroNum] := S;
-		RGNoteStr(45,FALSE); {Print('^9Saved!');}
+		lRGLngStr(155,FALSE); {Print('^9Saved!');}
 	  END;
 	PauseScr(FALSE);
   END;

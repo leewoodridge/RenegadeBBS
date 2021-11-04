@@ -2,6 +2,10 @@
 {
 10/21/2021 updating color codes
 add inputvalidation for inputformatted, maybe have it pass '' if incomplete?
+
+inputflags : add different types like dir, filename etc, notabortable, askblank
+
+remove redundant procs
 }
 UNIT Common3;
 
@@ -10,23 +14,24 @@ INTERFACE
 USES
   Common;
 
-PROCEDURE InputDefault(VAR S: STRING; v: STRING; MaxLen: Byte; InputFlags: InputFlagSet; LineFeed: Boolean);
-PROCEDURE InputFormatted(DisplayStr: AStr; VAR InputStr: STRING; Format: STRING; Abortable: Boolean);
-PROCEDURE InputLongIntWC(S: AStr; VAR L: LongInt; InputFlags: InputFlagSet; LowNum,HighNum: LongInt; VAR Changed: Boolean);
-PROCEDURE InputLongIntWOC(S: AStr; VAR L: LongInt; InputFlags: InputFlagSet; LowNum,HighNum: LongInt);
-PROCEDURE InputWordWC(S: AStr; VAR W: Word; InputFlags: InputFlagSet; LowNum,HighNum: Word; VAR Changed: Boolean);
-PROCEDURE InputWordWOC(S: AStr; VAR W: Word; InputFlags: InputFlagSet; LowNum,HighNum: Word);
-PROCEDURE InputIntegerWC(S: AStr; VAR I: Integer; InputFlags: InputFlagSet; LowNum,HighNum: Integer; VAR Changed: Boolean);
-PROCEDURE InputIntegerWOC(S: AStr; VAR I: Integer; InputFlags: InputFlagSet; LowNum,HighNum: Integer);
-PROCEDURE InputByteWC(S: AStr; VAR B: Byte; InputFlags: InputFlagSet; LowNum,HighNum: Byte; VAR Changed: Boolean);
-PROCEDURE InputByteWOC(S: AStr; VAR B: Byte; InputFlags: InputFlagSet; LowNum,HighNum: Byte);
-PROCEDURE InputWN1(DisplayStr: AStr; VAR InputStr: AStr; MaxLen: Byte; InputFlags: InputFlagSet; VAR Changed: Boolean);
-PROCEDURE InputWNWC(DisplayStr: AStr; VAR InputStr: AStr; MaxLen: Byte; VAR Changed: Boolean);
 PROCEDURE InputMain(VAR S: STRING; MaxLen: Byte; InputFlags: InputFlagSet);
-PROCEDURE InputWC(VAR S: STRING; MaxLen: Byte);
-PROCEDURE Input(VAR S: STRING; MaxLen: Byte);
-PROCEDURE InputL(VAR S: STRING; MaxLen: Byte);
-PROCEDURE InputCaps(VAR S: STRING; MaxLen: Byte);
+{/}
+PROCEDURE InputDefault		(VAR S: STRING; v: STRING; MaxLen: Byte; InputFlags: InputFlagSet; LineFeed: Boolean);
+PROCEDURE InputFormatted	(DisplayStr: AStr; VAR InputStr: STRING; Format: STRING; Abortable: Boolean);
+PROCEDURE InputLongIntWC	(S: AStr; VAR L: LongInt; InputFlags: InputFlagSet; LowNum,HighNum: LongInt; VAR Changed: Boolean);
+PROCEDURE InputLongIntWOC	(S: AStr; VAR L: LongInt; InputFlags: InputFlagSet; LowNum,HighNum: LongInt);
+PROCEDURE InputWordWC		(S: AStr; VAR W: Word; 	  InputFlags: InputFlagSet; LowNum,HighNum: Word; VAR Changed: Boolean);
+PROCEDURE InputWordWOC		(S: AStr; VAR W: Word; 	  InputFlags: InputFlagSet; LowNum,HighNum: Word);
+PROCEDURE InputIntegerWC	(S: AStr; VAR I: Integer; InputFlags: InputFlagSet; LowNum,HighNum: Integer; VAR Changed: Boolean);
+PROCEDURE InputIntegerWOC	(S: AStr; VAR I: Integer; InputFlags: InputFlagSet; LowNum,HighNum: Integer);
+PROCEDURE InputByteWC		(S: AStr; VAR B: Byte; InputFlags: InputFlagSet; LowNum,HighNum: Byte; VAR Changed: Boolean);
+PROCEDURE InputByteWOC		(S: AStr; VAR B: Byte; InputFlags: InputFlagSet; LowNum,HighNum: Byte);
+PROCEDURE InputWN1			(DisplayStr: AStr; VAR InputStr: AStr; MaxLen: Byte; InputFlags: InputFlagSet; VAR Changed: Boolean);
+PROCEDURE InputWNWC			(DisplayStr: AStr; VAR InputStr: AStr; MaxLen: Byte; VAR Changed: Boolean);
+PROCEDURE InputWC	(VAR S: STRING; MaxLen: Byte);
+PROCEDURE Input		(VAR S: STRING; MaxLen: Byte);
+PROCEDURE InputL	(VAR S: STRING; MaxLen: Byte);
+PROCEDURE InputCaps	(VAR S: STRING; MaxLen: Byte);
 
 IMPLEMENTATION
 
@@ -63,7 +68,7 @@ BEGIN
   ELSE
   BEGIN
     S := v;
-    IF NOT (NolineFeed IN InputFlags) THEN
+    IF NOT (NoLineFeed IN InputFlags) THEN
       NL;
   END;
   UserColor(0);
@@ -355,9 +360,13 @@ VAR
   END;
 
 BEGIN
+(*
+  IF (NOT (NoInputField IN InputFlags)) THEN
+	MPL(MaxLen); { LeeW: Added }
+*)
   FirstKey := FALSE;
 
-  IF (NOT (InterActiveEdit IN InputFlags)) OR NOT (Okansi OR OkAvatar) THEN
+  IF (NOT (InterActiveEdit IN InputFlags)) OR NOT (OkANSI OR OkAvatar) THEN
   BEGIN
     S := '';
     Cp := 1;

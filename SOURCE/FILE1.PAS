@@ -3,6 +3,7 @@
 Lee Woodridge
  09/21/2021	- Added  DirInfo: SearchRec; to UploadFile VARS, was breaking mass uploads
 			- Indenting...
+ 10/25/2021 - Changed DLOAD.EXT to DOWNLOAD.EXT
 }
 
 UNIT File1;
@@ -369,7 +370,7 @@ BEGIN
     BEGIN
       IF (FileName = '') THEN
       BEGIN
-        PrintF('DLOAD');
+        PrintF('DOWNLOAD');
         IF (NOT (lIsAddDLBatch IN TransferFlags)) THEN
           {
           NL;
