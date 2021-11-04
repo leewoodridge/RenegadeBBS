@@ -486,3 +486,518 @@ $
 $No_OneLiners
 There are no OneLiners yet
 $
+
+$Internal_Use_Only
+^8This is for internal use only^0
+%PA
+$
+
+$Only_Change_Locally
+^8This can only be changed locally^0
+%PA
+$
+
+$Invalid_Menu_Number
+^8Invalid menu number!^0
+%PA
+$
+
+$Minimum_Baud_Logon_PW
+You must be using at least %M7 baud to call this BBS.
+$
+
+$Minimum_Baud_Logon_High_Low_Time_PW
+Hours for those using less than %M7 baud are from %H3 to %H4.
+$
+
+$Minimum_Baud_Logon_High_Low_Time_No_PW
+NOTE: Callers at less than %M7 baud are restricted to the
+      following hours ONLY: %H3 to %H4.
+$
+
+$Logon_Event_Restricted_1
+%LFRestricted: Only certain users allowed online at this time.
+$
+
+$Logon_Event_Restricted_2
+%LFThis time window allows certain other users to get online.
+Please call back later, after it has ended.
+$
+
+$Name_Not_Found
+%LFName not found in user list.
+$
+
+$Illegal_Logon
+^8Invalid Login!
+$
+
+$Logon_Node_ACS
+You don't have the required ACS to logon to this node.
+$
+
+$Locked_Out
+You have been locked out of the BBS by the SysOp.
+$
+
+$Logged_On_Another_Node
+You are already logged in on another node.
+$
+
+$Incorrect_Birth_Date
+You entered an incorrect birthdate.
+$
+
+$Insufficient_Logon_Credits
+You have insufficient credits for online time.
+$
+
+$Logon_Once_Per_Day
+You can only log on once per day.
+$
+
+$Logon_Calls_Allowed_Per_Day
+You can only log on %CA times per day.
+$
+
+$Logon_Time_Allowed_Per_Day_Or_Call
+You can only logon for %T1 minutes per %CD.
+$
+
+$Logon_Minutes_Left_In_Bank
+However, you have %TB minutes left in your Time Bank.
+$
+
+$Logon_Minutes_Left_In_Bank_Time_Left
+In your account: %TB  Time left online: %TL
+$
+
+$Logon_Bank_Hangup
+Hanging up...
+$
+
+$Logon_Attempt_IEMSI_Negotiation
+Attempting IEMSI negotiation ... @
+$
+
+$Logon_IEMSI_Negotiation_Success
+success.
+
+$Logon_IEMSI_Negotiation_Failed
+failure.
+
+$Logon_Attempt_Detect_Emulation
+Attempting to detect emulation ... @
+$
+
+$Logon_RIP_Detected
+RIP
+$
+
+$Logon_ANSI_Detect_Other
+/ANSI
+$
+
+$Logon_ANSI_Detect
+ANSI
+$
+
+$Logon_Avatar_Detect_Other
+/Avatar
+$
+
+$Logon_Avatar_Detect
+Avatar
+$
+
+$Logon_Emulation_Detected
+ detected.
+$
+
+$Shuttle_Logon_Validation_Status
+You have not been validated yet.
+$
+
+$Logon_Closed_BBS
+This BBS is currently not accepting new users, hanging up ... @
+$
+
+$Node_Activity_Waiting_One
+Waiting For Logon
+$
+
+$Node_Activity_Waiting_Two
+-
+$
+
+$Node_Activity_Logging_On
+Logging on
+$
+
+$Node_Activity_New_User_Logging_On
+New user logging on
+$
+
+$Node_Activity_Miscellaneous
+Miscellaneous
+$
+
+$New_User_Password_Invalid
+^8Invalid Password!
+$
+
+$New_User_Password_Attempt_Exceeded
+You have exceeded the maximum new user logon attempts, hanging up.
+$
+
+$New_User_Record_Saving
+Saving your information ... @
+$
+
+$New_User_Record_Saved
+^9Saved!
+$
+
+$New_User_Application_Letter
+You must now send a new user application letter to the SysOp.
+%PA
+$
+
+$New_User_In_Response_To_Subj
+New User Application
+$
+
+$Aborted
+^8Aborted!
+$
+
+$Saved
+^9Saved!
+$
+
+$Name_First_AND_Last
+^8Enter your first AND last name!^0%PA
+$
+
+$Name_Exists
+^8That name already exists in our records!^0
+$
+
+$Name_Blacklisted
+^8That username has been blacklisted!^0
+$
+
+$Invalid_Address
+$
+
+$Invalid_City
+$
+
+$Invalid_Birthdate
+^8You entered an invalid date of birth!^0
+$
+
+$Invalid_Password
+^8Wrong!^0
+$
+
+$Bad_Password_Short
+^8Must be at least 4 characters long!^0
+$
+
+$Bad_Password_Long
+^8Must be no more than 20 characters long.^0
+$
+
+$Bad_Password_Same
+^8Must be different from your old password!^0
+$
+
+$Bad_Password_Name
+^8You cannot use that password!^0
+$
+
+$Passwords_Dont_Match
+^8Passwords do not match!^0
+$
+
+$Password_Changed
+^9Your password has been successfully changed^0
+$
+
+$Color_Scheme_Default
+^0%LFUsing default color scheme
+$
+
+$Lightbars_Not_Avail
+^0%LFLightbars are not available on this system
+$
+
+$Editor_No_ANSI
+^0%LFANSI terminal emulation required to use fullscreen editor
+$
+
+$Mailbox_Opened
+^0%LFYour mailbox is now open
+$
+
+$Mailbox_No_Longer_Forwarding
+^0%LFYour mail is no longer being forwarded
+$
+
+$Mailbox_Closed
+^0%LFYour mailbox is now closed
+$
+
+$Forward_Mail_Info
+^0%LFIf you forward your mail, all email sent to your account
+^0will be redirected to that person.
+$
+
+$Cant_Forward_User
+^8%LFYou can not forward mail to that user!^0
+$
+
+@0 = User Name, @1 = User Number
+$Forwarding_To
+^0%LFYour mail is now being forwarded to ^1@0 ^0(^1#@1^0)
+$
+
+$QWK_Config
+$
+
+$Baud_Override_PW
+%LFBaud rate override password: @
+$
+
+$Caller_Logon
+%LF[Node %ND] Login: @
+$
+
+$Logon_As_New
+%LFLogon as new? @
+$
+
+$User_Logon_Password
+%LFEnter Password: @
+$
+
+$User_Logon_Phone_Number
+%LFLast 4 Digits of phone #: ###-###-@
+$
+
+$SysOp_Logon_Password
+%LFSysOp Password: @
+$
+
+$Forgot_PW_Question
+%LFPlease answer the following question to logon to the BBS.
+
+What is your favorite Pet's name?
+: @
+$
+
+$Verify_Birth_Date
+%LFPlease verify your date of birth (mm/dd/yyyy): @
+$
+
+$Logon_Withdraw_Bank
+Withdraw from Time Bank? @
+$
+
+$Shuttle_Logon
+%LF[Node %ND] Login: @
+$
+
+$New_User_Password
+%LFNew User Password: @
+$
+
+$Teleconf_Normal
+^0[^1%UN^0]: 
+$
+
+$Teleconf_Anonymous
+^0[^1ANONYMOUS^0]: 
+$
+
+$Teleconf_Global
+[%UN(Global)]: 
+$
+
+$Teleconf_Private
+^0[^1%UN^0(^1Private^0)]: 
+$
+
+$Enter_Handle
+%LF^2Enter your handle, or your real first and
+last names if you don't want to use one
+$
+
+$Enter_Name_No_Handles
+%LF^2Enter your first and last names,
+Handles are NOT allowed!
+$
+
+$Enter_Real_Name
+%LF^2Enter your real first and last names
+$
+
+$Enter_Country
+%LF^2Where are you calling from?
+
+^2(^11^2) United States of America
+^2(^12^2) Canada
+^2(^13^2) Other Country
+
+^2: @
+$
+
+$Enter_Address
+%LF^2Enter your street address
+$
+
+$Enter_City
+%LF^2Enter your city
+$
+
+@0 = 'state' OR 'province' depending on country
+$Enter_State_Province
+%LF^2Enter your @0 abbreviation: @
+$
+
+$Enter_Zipcode
+%LF^2Enter your zip code (NNNNN-NNNN): @
+$
+
+$Enter_Postal_Code_Canada
+%LF^2Enter your postal code (LNLNLN): @
+$
+
+$Enter_Postal_Code
+%LF^2Enter your postal code
+$
+
+$Enter_Phone_Number
+%LF^2Enter your phone number: @
+$
+
+$Enter_Birthdate
+%LF^2Enter your date of birth (MM/DD/YYYY): @
+$
+
+$Enter_Gender
+%LF^2Are you (^1M^2)ale or (^1F^2)emale? @
+$
+
+$Enter_Current_Password
+^0Enter your current password
+
+^2Password: @
+$
+
+$Enter_Password
+%LF^0Enter your desired password for future access
+It should be between 4 and 20 characters in length
+
+^2Password: @
+$
+
+$Verify_Password
+%LF^0Enter your password again for verification
+
+^2Password: @
+$
+
+$Forgot_PW
+%LF^0In case you forget your password, you will be asked the
+following question in order to reset your password
+$
+
+$Enter_Forgot_PW_Answer
+%LF^2Enter your answer
+$
+
+$Emulation_ANSI_Support
+%LF^2Does your terminal support ANSI emulation? @
+$
+
+$Emulation_Auto_Detect
+%LF^2Would you like this to be auto-detected in the future? @
+$
+
+$Toggle_Color
+%LF^2Enable ANSI colors? @
+$
+
+$Color_Scheme_Select
+^2%LFSelect a color scheme: @
+$
+
+$Screen_Columns
+%LF^2How many columns wide is your display?@
+$
+
+$Screen_Rows
+%LF^2How many rows tall is your display?@
+$
+
+$Toggle_Clear
+%LF^2Clear screen before each message read? @
+$
+
+$Toggle_Pause
+%LF^2Pause after each screen? @
+$
+
+$Toggle_Hotkeys
+%LF^2Do you want to use Hot Keys? @
+$
+
+$Toggle_Expert
+%LF^2Do you want to be in expert mode? @
+$
+
+$Toggle_Lightbars
+%LF^2Do you want to use Lightbars? @
+$
+
+$Toggle_Editor
+%LF^2Do you want to use the full screen editor? @
+$
+
+$Open_Mailbox_Forwarding
+%LF^2Do you want to stop forwarding your mail and open your mailbox? @
+$
+
+$Open_Mailbox
+%LF^2Do you want to open your mailbox? @
+$
+
+$Close_Mailbox
+%LF^2Do you want to close your mail box? @
+$
+
+$Forward_Mail
+%LF^2Do you want to forward your mail? @
+$
+
+$User_Search
+%LF^2Enter User Number, Name, or Partial Search String: 
+$
+
+$QWK_Select_Archive
+%LF^2Select your preferred archive format: @
+$
+
+$QWK_Own_Replies
+%LF^2Do you want your own replies in your QWK packet? @
+$
+
+$QWK_Private
+%LF^2Do you want your private mail in your QWK packet? @
+$
+
+$QWK_New_Files
+%LF^2Do you want new file list in your QWK packet? @
+$
