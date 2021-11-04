@@ -1,0 +1,10 @@
+AUTOH
+AUTOM > Automessage
+AUTOT
+-
+ONELH
+ONELM > OneLiners
+ONELT
+-
+DLOAD changed to DOWNLOAD > print before user downloads file
+-
