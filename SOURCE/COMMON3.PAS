@@ -6,6 +6,9 @@ add inputvalidation for inputformatted, maybe have it pass '' if incomplete?
 inputflags : add different types like dir, filename etc, notabortable, askblank
 
 remove redundant procs
+	- Removed InputWC, now using printmain with [ColorAllowed] param
+	- Removed InputCaps
+	- Removed InputL, now using printmain with no param
 }
 UNIT Common3;
 
@@ -28,15 +31,262 @@ PROCEDURE InputByteWC		(S: AStr; VAR B: Byte; InputFlags: InputFlagSet; LowNum,H
 PROCEDURE InputByteWOC		(S: AStr; VAR B: Byte; InputFlags: InputFlagSet; LowNum,HighNum: Byte);
 PROCEDURE InputWN1			(DisplayStr: AStr; VAR InputStr: AStr; MaxLen: Byte; InputFlags: InputFlagSet; VAR Changed: Boolean);
 PROCEDURE InputWNWC			(DisplayStr: AStr; VAR InputStr: AStr; MaxLen: Byte; VAR Changed: Boolean);
-PROCEDURE InputWC	(VAR S: STRING; MaxLen: Byte);
-PROCEDURE Input		(VAR S: STRING; MaxLen: Byte);
-PROCEDURE InputL	(VAR S: STRING; MaxLen: Byte);
-PROCEDURE InputCaps	(VAR S: STRING; MaxLen: Byte);
+PROCEDURE Input(VAR S: STRING; MaxLen: Byte); {** remove this, change calls to inputmain with upperonly param}
+{ LeeW: Below was moved from COMMON/COMMON1 }
+PROCEDURE GetPassword(VAR PW: AStr; Len: Byte);
+PROCEDURE InputPath(CONST DisplayStr: AStr; VAR DirPath: Str40; CreateDir,AllowExit: Boolean; VAR Changed: Boolean);
+PROCEDURE MPL(MaxLen: Byte); { Print input field }
+PROCEDURE Local_Input1(VAR S: STRING; MaxLen: Byte; LowerCase: Boolean);
+PROCEDURE Local_Input(VAR S: STRING; MaxLen: Byte);
+PROCEDURE Local_InputL(VAR S: STRING; MaxLen: Byte);
+PROCEDURE Local_OneK(VAR C: Char; S: STRING);
+PROCEDURE OneK(VAR C: Char; ValidKeys: AStr; DisplayKey,LineFeed: Boolean);
+PROCEDURE OneK1(VAR C: Char; ValidKeys: AStr; DisplayKey,LineFeed: Boolean);
+PROCEDURE LOneK(DisplayStr: AStr; VAR C: Char; ValidKeys: AStr; DisplayKey,LineFeed: Boolean);
 
 IMPLEMENTATION
 
 USES
-  Crt;
+  CRT,
+  DOS;
+
+PROCEDURE GetPassword(VAR PW: AStr; Len: Byte);
+BEGIN
+  PW := '';
+  Echo := FALSE;
+  Input(PW,Len);
+  Echo := TRUE;
+END;
+
+PROCEDURE InputPath(CONST DisplayStr: AStr; VAR DirPath: Str40; CreateDir,AllowExit: Boolean; VAR Changed: Boolean);
+VAR
+  TempDirPath: Str40;
+  CurDir: PathStr;
+  Counter: Byte;
+BEGIN
+  REPEAT
+    TempDirPath := DirPath;
+    Changed := FALSE;
+    InputWN1(DisplayStr,TempDirPath,39,[UpperOnly,InterActiveEdit],Changed);
+    TempDirPath := SQOutSp(TempDirPath);
+
+    IF (Length(TempDirPath) = 1) THEN
+      TempDirPath := TempDirPath + ':\'
+    ELSE IF (Length(TempDirPath) = 2) AND (TempDirPath[2] = ':') THEN
+      TempDirPath := TempDirPath + '\';
+
+    IF (AllowExit) AND (TempDirPath = '') THEN
+    BEGIN
+      NL;
+      Print('Aborted!');
+    END
+    ELSE IF (TempDirPath = '') THEN
+    BEGIN
+      NL;
+      Print('^8A valid path must be specified!^0');
+    END
+    ELSE IF (NOT (TempDirPath[1] IN ['A'..'Z'])) OR (Length(TempDirPath) < 3) OR
+         (NOT (TempDirPath[2] = ':')) OR (NOT (TempDirPath[3] = '\')) THEN
+    BEGIN
+      NL;
+      Print('^8Invalid drive specification: "'+Copy(TempDirPath,1,3)+'"^0');
+      TempDirPath := '';
+    END
+    ELSE
+    BEGIN
+      GetDir(0,CurDir);
+      ChDir(TempDirPath[1]+':');
+      IF (IOResult <> 0) THEN
+      BEGIN
+        NL;
+        Print('^8Drive does not exist: "'+Copy(TempDirPath,1,3)+'"^0');
+        TempDirPath := '';
+      END
+      ELSE
+      BEGIN
+        ChDir(CurDir);
+        IF (CreateDir) THEN
+        BEGIN
+          TempDirPath := BSlash(TempDirPath,TRUE);
+          IF (Length(TempDirPath) > 3) AND (NOT ExistDir(TempDirPath)) THEN
+          BEGIN
+            NL;
+            IF PYNQ('Directory does not exist, create it? ',0,FALSE) THEN
+            BEGIN
+              Counter := 2;
+              WHILE (Counter <= Length(TempDirPath)) DO
+              BEGIN
+                IF (TempDirPath[Counter] = '\') THEN
+                BEGIN
+                  IF (TempDirPath[Counter - 1] <> ':') THEN
+                  BEGIN
+                    IF (NOT ExistDir(Copy(TempDirPath,1,(Counter - 1)))) THEN
+                    BEGIN
+                      MkDir(Copy(TempDirPath,1,(Counter - 1)));
+                      LastError := IOResult;
+                      IF (LastError <> 0) THEN
+                      BEGIN
+                        NL;
+                        Print('Error creating directory: '+Copy(TempDirPath,1,(Counter - 1)));
+                        SysOpLog('^8Error creating directory: '+Copy(TempDirPath,1,(Counter - 1)));
+                        TempDirPath := '';
+                      END;
+                    END;
+                  END;
+                END;
+                Inc(Counter);
+              END;
+            END;
+          END;
+        END;
+      END;
+    END;
+  UNTIL (TempDirPath <> '') OR (AllowExit) OR (HangUp);
+  IF (TempDirPath <> '') THEN
+    TempDirPath := BSlash(TempDirPath,TRUE);
+  IF (TempDirPath <> DirPath) THEN
+    Changed := TRUE;
+  DirPath := TempDirPath;
+END;
+
+PROCEDURE MPL(MaxLen: Byte);
+VAR
+  Counter,
+  SaveWhereX : Byte;
+BEGIN
+  IF (OkANSI OR OkAvatar) THEN
+	BEGIN
+      IF (WhereX+MaxLen > ThisUser.LineLen) THEN
+		NL;
+      UserColor(3);
+      SaveWhereX := WhereX;
+      IF (OutCom) THEN
+		FOR Counter := 1 TO MaxLen DO
+          Com_Send(' ');
+	  IF (WantOut) THEN
+		FOR Counter := 1 TO MaxLen DO
+          Write(' ');
+      GoToXY(SaveWhereX,WhereY);
+      IF (OutCom) THEN
+		IF (OkAvatar) THEN
+          SerialOut(^y+^H+Chr(MaxLen))
+        ELSE
+          SerialOut(#27+'['+IntToStr(MaxLen)+'D');
+	END;
+END;
+
+PROCEDURE Local_Input1(VAR S: STRING; MaxLen: Byte; LowerCase: Boolean);
+VAR
+  C: Char;
+  B: Byte;
+BEGIN
+  B := 1;
+  REPEAT
+    C := ReadKey;
+    IF (NOT LowerCase) THEN
+      C := UpCase(C);
+    IF (C IN [#32..#255]) THEN
+      IF (B <= MaxLen) THEN
+      BEGIN
+        S[B] := C;
+        Inc(B);
+        Write(C);
+      END
+      ELSE
+    ELSE
+      CASE C of
+        ^H : IF (B > 1) THEN
+             BEGIN
+               Write(^H' '^H);
+               C := ^H;
+               Dec(B);
+             END;
+     ^U,^X : WHILE (B <> 1) DO
+             BEGIN
+               Write(^H' '^H);
+               Dec(B);
+             END;
+      END;
+  UNTIL (C IN [^M,^N]);
+  S[0] := Chr(B - 1);
+  IF (WhereY <= Hi(WindMax) - Hi(WindMin)) THEN
+    WriteLn;
+END;
+
+PROCEDURE Local_Input(VAR S: STRING; MaxLen: Byte);
+BEGIN
+  Local_Input1(S,MaxLen,FALSE);
+END;
+
+PROCEDURE Local_InputL(VAR S: STRING; MaxLen: Byte);
+BEGIN
+  Local_Input1(S,MaxLen,TRUE);
+END;
+
+PROCEDURE Local_OneK(VAR C: Char; S: STRING);
+BEGIN
+  REPEAT
+    C := UpCase(ReadKey)
+  UNTIL (Pos(C,S) > 0);
+  WriteLn(C);
+END;
+
+PROCEDURE OneK(VAR C: Char; ValidKeys: AStr; DisplayKey,LineFeed: Boolean);
+BEGIN
+  MPL(1);
+  TempPause := (Pause IN ThisUser.ACFlags);
+  REPEAT
+    C := UpCase(Char(GetKey));
+  UNTIL (Pos(C,ValidKeys) > 0) OR (HangUp);
+  IF (HangUp) THEN
+    C := ValidKeys[1];
+  IF (DisplayKey) THEN
+    OutKey(C);
+  IF (Trapping) THEN
+    OutTrap(C);
+  UserColor(0);
+  IF (LineFeed) THEN
+    NL;
+END;
+
+PROCEDURE OneK1(VAR C: Char; ValidKeys: AStr; DisplayKey,LineFeed: Boolean);
+BEGIN
+  MPL(1);
+  TempPause := (Pause IN ThisUser.ACFlags);
+  REPEAT
+    C := Char(GetKey);
+    IF (C = 'q') THEN
+      C := UpCase(C);
+  UNTIL (Pos(C,ValidKeys) > 0) OR (HangUp);
+  IF (HangUp) THEN
+    C := ValidKeys[1];
+  IF (DisplayKey) THEN
+    OutKey(C);
+  IF (Trapping) THEN
+    OutTrap(C);
+  UserColor(0);
+  IF (LineFeed) THEN
+    NL;
+END;
+
+PROCEDURE LOneK(DisplayStr: AStr; VAR C: Char; ValidKeys: AStr; DisplayKey,LineFeed: Boolean);
+BEGIN
+  Prt('^2'+DisplayStr);
+  MPL(1);
+  TempPause := (Pause IN ThisUser.ACFlags);
+  REPEAT
+    C := UpCase(Char(GetKey));
+  UNTIL (Pos(C,ValidKeys) > 0) OR (HangUp);
+  IF (HangUp) THEN
+    C := ValidKeys[1];
+  IF (DisplayKey) THEN
+    OutKey(C);
+  IF (Trapping) THEN
+    OutTrap(C);
+  UserColor(0);
+  IF (LineFeed) THEN
+    NL;
+END;
 
 PROCEDURE InputDefault(VAR S: STRING; v: STRING; MaxLen: Byte; InputFlags: InputFlagSet; LineFeed: Boolean);
 VAR
@@ -512,24 +762,8 @@ BEGIN
   SetCursor(FALSE);
 END;
 
-PROCEDURE InputWC(VAR S: STRING; MaxLen: Byte);
-BEGIN
-  InputMain(S,MaxLen,[ColorsAllowed]);
-END;
-
 PROCEDURE Input(VAR S: STRING; MaxLen: Byte);
 BEGIN
   InputMain(S,MaxLen,[UpperOnly]);
 END;
-
-PROCEDURE InputL(VAR S: STRING; MaxLen: Byte);
-BEGIN
-  InputMain(S,MaxLen,[]);
-END;
-
-PROCEDURE InputCaps(VAR S: STRING; MaxLen: Byte);
-BEGIN
-  InputMain(S,MaxLen,[CapWords]);
-END;
-
 END.

@@ -121,19 +121,20 @@ BEGIN
           'E' : IF (InCom) THEN
                   lRGLngStr(111,FALSE)
                 ELSE
-                  GetTimeRange('%LFDo you want to declare sysop chat hours? @',lLowTime,HiTime);
+                  GetTimeRange('%LFDo you want to declare sysop chat hours? ',lLowTime,HiTime);
           'F' : GetTimeRange('%LFDo you want to declare hours people at the minimum baud can logon?',
                 MinBaudLowTime,MinBaudHiTime);
-          'G' : GetTimeRange('%LFDo you want to declare download hours? @',DLLowTime,DLHiTime);
+          'G' : GetTimeRange('%LFDo you want to declare download hours? ',DLLowTime,DLHiTime);
           'H' : GetTimeRange('%LFDo you want to declare hours people at minimum baud can download? ',
                 MinBaudDLLowTime,MinBaudDLHiTime);
           'I' : BEGIN
                   REPEAT
-                    PrintACR('%CL^1System Passwords:^0');
-                    PrintACR('^0A. SysOp password        : ^1[NOT SHOWN]');
-                    PrintACR('^0B. New user password     : ^1[NOT SHOWN]');
-                    PrintACR('^0C. Baud override password: ^1[NOT SHOWN]');
-                    OneK(Cmd,^M'ABC',TRUE,TRUE);
+                    ConfigHeader('System Passwords');
+                    PrintACR('^0(^1A^0) SysOp Password             : ^1[NOT SHOWN]');
+                    PrintACR('^0(^1B^0) New User Password          : ^1[NOT SHOWN]');
+                    PrintACR('^0(^1C^0) Min Baud Override Password : ^1[NOT SHOWN]');
+                    NL;
+                    LOneK('^2System Passwords [^1A^2-^1C^2,<^1CR^2>Quit]: ',Cmd,^M'ABC',TRUE,TRUE);
                     CASE Cmd OF
                       'A' : InputWN1('%LFNew SysOp password: ',SysOpPw,(SizeOf(SysOpPW) - 1),
                             [InterActiveEdit,UpperOnly],Changed);
@@ -145,24 +146,25 @@ BEGIN
                   UNTIL (Cmd = ^M) OR (HangUp);
                   Cmd := #0;
                 END;
-          'J' : InputByteWOC('%LFNew pre-event warning time@',EventWarningTime,[DisplayValue,NumbersOnly],0,255);
+          'J' : InputByteWOC('%LFNew pre-event warning time',EventWarningTime,[DisplayValue,NumbersOnly],0,255);
           'K' : BEGIN
                   REPEAT
-                    PrintACR('%CL^1System Menus:^0');
-                    PrintACR('^01. Global commands  : ^1'+IntToStr(General.GlobalMenu));
-                    PrintACR('^02. Default start    : ^1'+IntToStr(General.AllStartMenu));
-                    PrintACR('^03. Shuttle logon    : ^1'+IntToStr(General.ShuttleLogonMenu));
-                    PrintACR('^04. New user info    : ^1'+IntToStr(General.NewUserInformationMenu));
-                    PrintACR('^05. Reading messages : ^1'+IntToStr(General.MessageReadMenu));
-                    PrintACR('^06. Listing files    : ^1'+IntToStr(General.FileListingMenu));
-                    LOneK('Enter selection [^11^2-^16^2,^1<CR>^2=^1Quit^2]: ',Cmd,^M'123456',TRUE,TRUE);
+                    ConfigHeader('System Menus');
+                    PrintACR('^0(^11^0) Global Commands      : ^1'+IntToStr(General.GlobalMenu));
+                    PrintACR('^0(^12^0) Default Start        : ^1'+IntToStr(General.AllStartMenu));
+                    PrintACR('^0(^13^0) Shuttle Logon        : ^1'+IntToStr(General.ShuttleLogonMenu));
+                    PrintACR('^0(^14^0) New User Information : ^1'+IntToStr(General.NewUserInformationMenu));
+                    PrintACR('^0(^15^0) Reading Messages     : ^1'+IntToStr(General.MessageReadMenu));
+                    PrintACR('^0(^16^0) Listing Files        : ^1'+IntToStr(General.FileListingMenu));
+                    NL;
+                    LOneK('^2System Menus [^11^2-^16^2,<^1CR^2>Quit]: ',Cmd,^M'123456',TRUE,TRUE);
                     CASE Cmd OF
-                      '1' : FindMenu('%LFMenu for global commands (^10^2=^1None^2)@',GlobalMenu,0,NumMenus,Changed);
-                      '2' : FindMenu('%LFMenu to start all users at@',AllStartMenu,1,NumMenus,Changed);
+                      '1' : FindMenu('%LFMenu for global commands (^10^2=^1None^2)',GlobalMenu,0,NumMenus,Changed);
+                      '2' : FindMenu('%LFMenu to start all users at',AllStartMenu,1,NumMenus,Changed);
                       '3' : FindMenu('%LFMenu for shuttle logon (^10^2=^1None^2)',ShuttleLogonMenu,0,NumMenus,Changed);
-                      '4' : FindMenu('%LFMenu for new user information@',NewUserInformationMenu,1,NumMenus,Changed);
-                      '5' : FindMenu('%LFMenu for message read@',MessageReadMenu,1,NumMenus,Changed);
-                      '6' : FindMenu('%LFMenu for file listing@',FileListingMenu,1,NumMenus,Changed);
+                      '4' : FindMenu('%LFMenu for new user information',NewUserInformationMenu,1,NumMenus,Changed);
+                      '5' : FindMenu('%LFMenu for message read',MessageReadMenu,1,NumMenus,Changed);
+                      '6' : FindMenu('%LFMenu for file listing',FileListingMenu,1,NumMenus,Changed);
                     END;
                   UNTIL (Cmd = ^M) OR (HangUp);
                   Cmd := #0;
@@ -184,7 +186,7 @@ BEGIN
                   IF (NetworkMode) THEN
                     LocalSec := TRUE
                   ELSE
-                    LocalSec := PYNQ('%LFDo you want local security to remain on? @',0,FALSE);
+                    LocalSec := PYNQ('%LFDo you want local security to remain on? ',0,FALSE);
                 END;
           '0' : InputPath('%LF^0New data files path (^1End with a ^0"^1\^0"):%LF^2: ',DataPath,TRUE,FALSE,Changed);
           '1' : InputPath('%LF^0New miscellaneous files path (^1End with a ^0"^1\^0"):%LF^2: ',MiscPath,TRUE,FALSE,Changed);

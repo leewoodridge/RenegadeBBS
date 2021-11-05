@@ -307,7 +307,7 @@ BEGIN
               NL;
               Prt('Enter ACS: ');
               MPL((SizeOf(ACString) - 1));
-              InputL(MassACS,(SizeOf(ACString) - 1));
+              InputMain(MassACS,(SizeOf(ACString) - 1),[]);
               IF (MassACS <> '') THEN
               BEGIN
                 NL;

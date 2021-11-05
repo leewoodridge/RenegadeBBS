@@ -17,6 +17,10 @@ Lee Woodridge
             - Added: %SA MCI - returns "available" or "unavailable" depending on SysOp chat availability
  11/01/2021 - Removed: RGNote, RGMain - All strings now in lRGLngStr
  11/03/2021 - moved savendescription to its proc, no need to be global
+ 11/04/2021 - Nested ChInKey in GetKey since its the only proc that calls it
+			- sorting funcs and procs
+			- moved input procs to COMMON3, more to do still
+			- dielater const/killme pointer commented out, does nothing afaik
 *)
 UNIT Common;
 
@@ -187,53 +191,53 @@ TYPE
   CompArrayType = ARRAY[0..1] OF Integer; {  }
 
 CONST
-  MCIBuffer: MCIBufferPtr = NIL;       { NIL }
-  DieLater: Boolean = FALSE;           { IF TRUE, Renegade locks up ??? } 
-  F_HOME = 18176;                      { 256 * Scan Code }
-  F_UP   = 18432;                      { ^ }
-  F_PGUP = 18688;                      { ^ }
-  F_LEFT = 19200;                      { ^ }
-  F_RIGHT = 19712;                     { ^ }
-  F_END  = 20224;                      { ^ }
-  F_DOWN = 20480;                      { ^ }
-  F_PGDN = 20736;                      { ^ }
-  F_INS  = 20992;                      { ^ }
-  F_DEL  = 21248;                      { ^ }
-  F_CTRLLEFT  = 29440;                 { ^ }
-  F_CTRLRIGHT = 29696;                 { ^ }
-  NoCallInitTime = (30 * 60);          { thirty minutes between modem inits }
-  Tasker: Multitasker = None;          {  }
-  LastScreenSwap: LongInt = 0;         {  }
-  ParamArr:                            { for dosansi }
+  MCIBuffer: MCIBufferPtr = NIL;          { NIL }
+(*DieLater: Boolean = FALSE;              { IF TRUE, Renegade locks up ??? } *)
+  F_HOME = 18176;                         { 256 * Scan code }
+  F_UP   = 18432;                         { ^ }
+  F_PGUP = 18688;                         { ^ }
+  F_LEFT = 19200;                         { ^ }
+  F_RIGHT = 19712;                        { ^ }
+  F_END  = 20224;                         { ^ }
+  F_DOWN = 20480;                         { ^ }
+  F_PGDN = 20736;                         { ^ }
+  F_INS  = 20992;                         { ^ }
+  F_DEL  = 21248;                         { ^ }
+  F_CTRLLEFT  = 29440;                    { ^ }
+  F_CTRLRIGHT = 29696;                    { ^ }
+  NoCallInitTime = (30 * 60);             { Time between modem initializations (30 minutes) }
+  Tasker: Multitasker = None;             {  }
+  LastScreenSwap: LongInt = 0;            {  }
+  Params: Word = 0;                       { Number of parameters (DOSANSI) }
+  ParamArr:                               { Parameters (DOSANSI) }
     ARRAY [1..5] OF Word = (0,0,0,0,0);
-  Params: Word = 0;                    { number OF parameters }
-  NextState: States = Waiting;         { Next state FOR the parser }
-  TempSysOp: Boolean = FALSE;          { is temporary sysop? }
-  Reverse: Boolean = FALSE;            { TRUE IF Text attributes are reversed }
-  TimeLock: Boolean = FALSE;           { IF TRUE, DO NOT HangUp due TO time! }
-  SaveX: Byte = 0;                     { FOR ANSI driver }
-  SaveY: Byte = 0;                     { FOR ANSI driver }
-  TempPause: Boolean = TRUE;           { is Pause on OR off?  Set at prompts, OneK, used everywhere }
-  OfflineMail: Boolean = FALSE;        { are we IN the offline mail system? }
-  MultiNodeChat: Boolean = FALSE;      { are we IN MultiNode chat?}
-  ChatChannel: Integer = 0;            { What chat channel are we IN? }
-  DisplayingMenu: Boolean = FALSE;     { are we displaying a menu? }
-  InVisEdit: Boolean = FALSE;          { are we IN the visual editor? }
-  MenuAborted: Boolean = FALSE;        { was the menu Aborted? }
-  AllowAbort: Boolean = TRUE;          { are Aborts allowed? }
-  MCIAllowed: Boolean = TRUE;          { is mci allowed? }
-  ColorAllowed: Boolean = TRUE;        { is color allowed? }
-  Echo: Boolean = TRUE;                { is Text being echoed? (FALSE=use echo Chr) }
-  HangUp: Boolean = TRUE;              { is User offline now? }
-  TimedOut: Boolean = FALSE;           { has he timed out? }
-  NoFile: Boolean = TRUE;              { did last pfl() FILE NOT Exist?        }
-  SLogging: Boolean = TRUE;            { are we outputting TO the SysOp log? }
-  SysOpOn: Boolean = TRUE;             { is SysOp logged onto the WFC menu? }
-  WantOut: Boolean = TRUE;             { output Text locally? }
-  WColor: Boolean = TRUE;              { IN chat: was last key pressed by SysOp? }
-  BadDLPath: Boolean = FALSE;          { is the current DL path BAD? }
-  BadULPath: Boolean = FALSE;          { is the current UL path BAD? }
-  BeepEnd: Boolean = FALSE;            { whether TO beep after caller logs off }
+  NextState: States = Waiting;            { Next state FOR the parser }
+  TempSysOp: Boolean = FALSE;             { Has user been granted temporary SysOp access? }
+  Reverse: Boolean = FALSE;               { Are text attributes reversed? }
+  TimeLock: Boolean = FALSE;              { TRUE=No timeout }
+  SaveX: Byte = 0;                        { For ANSI driver }
+  SaveY: Byte = 0;                        { For ANSI driver }
+  TempPause: Boolean = TRUE;              { is Pause on OR off?  Set at prompts, OneK, used everywhere }
+  OfflineMail: Boolean = FALSE;           { Is user in offline mail system? }
+  MultiNodeChat: Boolean = FALSE;         { Is user in multinode chat? }
+  ChatChannel: Integer = 0;               { What chat channel are we IN? }
+  DisplayingMenu: Boolean = FALSE;        { Is a menu being displayed? }
+  InVisEdit: Boolean = FALSE;             { Is user in the fullscreen editor? }
+  MenuAborted: Boolean = FALSE;           { was the menu Aborted? }
+  AllowAbort: Boolean = TRUE;             { Are aborts allowed? }
+  MCIAllowed: Boolean = TRUE;             { Are MCI code allowed? }
+  ColorAllowed: Boolean = TRUE;           { Are color codes allowed? }
+  Echo: Boolean = TRUE;                   { is Text being echoed? (FALSE=use echo Chr) }
+  HangUp: Boolean = TRUE;                 { Has user hung up? }
+  TimedOut: Boolean = FALSE;              { Has user timed out? }
+  NoFile: Boolean = TRUE;                 { did last pfl() FILE NOT Exist?        }
+  SLogging: Boolean = TRUE;               { are we outputting TO the SysOp log? }
+  SysOpOn: Boolean = TRUE;                { is SysOp logged onto the WFC menu? }
+  WantOut: Boolean = TRUE;                { output Text locally? }
+  WColor: Boolean = TRUE;                 { Was last key pressed by SysOp? (Chat) }
+  BadDLPath: Boolean = FALSE;             { Is the current download path invalid? }
+  BadULPath: Boolean = FALSE;             { Is the current upload path invalid? }
+  BeepEnd: Boolean = FALSE;               { Beep after caller logs off? }
   FileAreaNameDisplayed: Boolean = FALSE; { Was file area name printed yet? }
   CFO: Boolean = FALSE;                { is chat FILE open? }
   InChat: Boolean = FALSE;             { are we IN chat Mode? }
@@ -250,7 +254,6 @@ CONST
   InWFCMenu: Boolean = FALSE;          { are we IN the WFC menu? }
   LastCommandGood: Boolean = FALSE;    { was last command a REAL command? }
   LastCommandOvr: Boolean = FALSE;     { override Pause? (NO Pause?) }
-  
   { Startup parameters }
   LocalIOOnly: Boolean = FALSE;        { Are we in local I/O mode? }
   MakeQWKFor: Integer = 0;             { Are we making a QWK packet only? }
@@ -258,10 +261,10 @@ CONST
   PackBasesOnly: Boolean = FALSE;      { Are we packing message bases only? }
   SortFilesOnly: Boolean = FALSE;      { Are we sorting file bases only? }
   FileBBSOnly: Boolean = FALSE;        { Are we verifying FILES.BBS only? }
-  
+  {}
   RoomNumber: Integer = 0;             { Room OF teleconference }
   NewMenuToLoad: Boolean = FALSE;      { menu command returns TRUE IF new menu TO load }
-  OvrUseEMS: Boolean = TRUE;           {  }
+  OvrUseEMS: Boolean = TRUE;           { Use EMS for overlay? }
   OverlayLocation: Byte = 0;           { 0=Normal, 1=EMS, 2=XMS }
   OutCom: Boolean = FALSE;             { outputting TO com? }
   DirFileopen1: Boolean = TRUE;        { whether DirFile has been opened before }
@@ -318,6 +321,48 @@ VAR
   LastError: Integer;                  { Results from last IOResult, when needed }
   General: GeneralRecordType;          { configuration information }
   DirInfo: SearchRec;                  {  }
+  Buf: STRING[255];         { macro buffer }
+  MLC: STRING[255];         { multiline FOR chat }
+  ChatReason,               { last chat reason }
+  LastLineStr,              { "last-line" STRING FOR Word-wrapping }
+  StartDir: AStr;           { Directory BBS was executed from }
+  TempDir,                  { Temporary Directory base name }
+  InResponseTo: STRING[40]; { reason FOR reply }
+  LastDIRFileName: Str12;   { last filename FOR recno/nrecno }
+  CurrentColor,             { current ANSI color }
+  ExiterrorLevel,           { errorLEVEL TO Exit WITH }
+  TShuttleLogon,            { type OF special Shuttle Logon command }
+  TFilePrompt,              { type OF special FILE Prompt command }
+  TReadPrompt,              { type OF special Read Prompt command }
+  PublicPostsToday,         { posts made by User this call }
+  FeedBackPostsToday,       { feedback sent by User this call }
+  PrivatePostsToday: Byte;  { E-mail sent by User this call }
+  LastDIRRecNum,            { last record # FOR recno/nrecno }
+  ChatAttempts,             { number chat attempts made by User }
+  LIL,                      { lines on screen since last PauseScr() }
+  PublicReadThisCall,       { # public messages has Read this call }
+  UserNum: Integer;         { User's User number }
+  Rate: Word;               { cps FOR FILE transfers }
+  NewFileDate,              { NewScan Pointer date }
+  DownloadsToday,           { download sent TO User this call }
+  UploadsToday,             { uploads sent by User this call }
+  DownloadKBytesToday,      { download k by User this call }
+  UploadKBytesToday,        { upload k by User this call }
+  CreditsLastUpdated,       { Time Credits last updated }
+  TimeOn,                   { time User logged on }
+  LastBeep,                 {  }
+  LastKeyHit,               {  }
+  ChopTime,                 { time TO chop off FOR system events }
+  ExtraTime,                { extra time - given by F7/F8, etc }
+  CreditTime,               { credit time adjustment }
+  FreeTime: LongInt;        { free time }
+  BlankMenuNow,             { Is WFC menu blanked out? }
+  Abort,                    { Global abort }
+  Next,                     { Global next }
+  RQArea,                   {  }
+  FQArea,                   {  }
+  MQArea,                   {  }
+  VQArea: Boolean;          {  }
 
   { Voting Variables }
   VotingFile: FILE OF VotingRecordType; {  }
@@ -439,77 +484,22 @@ VAR
   FallBackMenu,              {  }
   CurMenu,                   {  }
   CurHelpLevel: Byte;        {  }
-
-  Buf: STRING[255];         { macro buffer }
-  MLC: STRING[255];         { multiline FOR chat }
-  ChatReason,               { last chat reason }
-  LastLineStr,              { "last-line" STRING FOR Word-wrapping }
-  StartDir: AStr;           { Directory BBS was executed from }
-  TempDir,                  { Temporary Directory base name }
-  InResponseTo: STRING[40]; { reason FOR reply }
-  LastDIRFileName: Str12;   { last filename FOR recno/nrecno }
-  CurrentColor,             { current ANSI color }
-  ExiterrorLevel,           { errorLEVEL TO Exit WITH }
-  TShuttleLogon,            { type OF special Shuttle Logon command }
-  TFilePrompt,              { type OF special FILE Prompt command }
-  TReadPrompt,              { type OF special Read Prompt command }
-  PublicPostsToday,         { posts made by User this call }
-  FeedBackPostsToday,       { feedback sent by User this call }
-  PrivatePostsToday: Byte;  { E-mail sent by User this call }
-  LastDIRRecNum,            { last record # FOR recno/nrecno }
-  ChatAttempts,             { number chat attempts made by User }
-  LIL,                      { lines on screen since last PauseScr() }
-  PublicReadThisCall,       { # public messages has Read this call }
-  UserNum: Integer;         { User's User number }
-  Rate: Word;               { cps FOR FILE transfers }
-  NewFileDate,              { NewScan Pointer date }
-  DownloadsToday,           { download sent TO User this call }
-  UploadsToday,             { uploads sent by User this call }
-  DownloadKBytesToday,      { download k by User this call }
-  UploadKBytesToday,        { upload k by User this call }
-  CreditsLastUpdated,       { Time Credits last updated }
-  TimeOn,                   { time User logged on }
-  LastBeep,                 {  }
-  LastKeyHit,               {  }
-  ChopTime,                 { time TO chop off FOR system events }
-  ExtraTime,                { extra time - given by F7/F8, etc }
-  CreditTime,               { credit time adjustment }
-  FreeTime: LongInt;        { free time }
-  BlankMenuNow,             { is the wfcmenu blanked out? }
-  Abort,                    { Global abort }
-  Next,                     { Global next }
-  RQArea,                   {  }
-  FQArea,                   {  }
-  MQArea,                   {  }
-  VQArea: Boolean;          {  }
-
-PROCEDURE Clear_EOL; { ANSI Clear to end of line }
-PROCEDURE ANSIG(X,Y: Byte); { ANSI go to position }
-PROCEDURE CLS; { ANSI Clear screen }
-FUNCTION ToLower(S: STRING): STRING; { Convert string to lowercase } { LeeW: Moved from OneLiner }
+  
+{UNSORTED}
+FUNCTION Timer: LongInt;
+PROCEDURE NewCompTables;
+FUNCTION NSL: LongInt;
+FUNCTION AgeUser(CONST BirthDate: LongInt): Word;
+PROCEDURE Update_Screen;
+FUNCTION PageLength: Word;
+PROCEDURE lStatus_Screen(WhichScreen: Byte; Message: AStr; OneKey: Boolean; VAR Answer: AStr);
+PROCEDURE SaveGeneral(X: Boolean);
+PROCEDURE SKey1(VAR c: Char);
+FUNCTION VerLine(B: Byte): STRING;
 PROCEDURE Toggle(VAR TheVar: Boolean); { Toggles a boolean } { LeeW: Added }
-FUNCTION GetC(c: Byte): STRING;
-PROCEDURE ShowColors;
-FUNCTION CheckDriveSpace(S,Path: AStr; MinSpace: Integer): Boolean;
-FUNCTION StripLeadSpace(S: STRING): STRING;
-FUNCTION StripTrailSpace(S: STRING): STRING;
-FUNCTION SemiCmd(S: AStr; B: Byte): STRING;
-FUNCTION ExistDrive(Drive: Char): Boolean;
-PROCEDURE RenameFile(DisplayStr: AStr; OldFileName,NewFileName: AStr; VAR ReNameOk: Boolean);
-FUNCTION GetFileSize(FileName: AStr): LongInt;
-PROCEDURE GetFileDateTime(CONST FileName: AStr; VAR FileTime: LongInt);
-PROCEDURE SetFileDateTime(CONST FileName: AStr; FileTime: LongInt);
-FUNCTION PHours(CONST DisplayStr: AStr; LoTime,HiTime: Integer): AStr;
-FUNCTION lRGLNGStr(StrNum: LongInt; PassValue: Boolean): AStr;
-PROCEDURE GetPassword(VAR PW: AStr; Len: Byte);
-PROCEDURE MakeDir(VAR Path: PathStr; AskMakeDir: Boolean);
-PROCEDURE Messages(MsgNum,I: Integer; S: AStr);
+FUNCTION PHours(CONST DisplayStr: AStr; LoTime,HiTime: Integer): AStr; {**move to timefunc}
 PROCEDURE DisplayBuffer(MCIFunction: MCIFunctionType; Data1, Data2:Pointer);
 FUNCTION ReadBuffer(FileName: AStr): Boolean;
-FUNCTION chinkey: Char;
-FUNCTION FormatNumber(L: LongInt): STRING;
-FUNCTION ConvertBytes(BytesToConvert: LongInt; OneChar: Boolean): STRING;
-FUNCTION ConvertKB(KBToConvert: LongInt; OneChar: Boolean): STRING;
 PROCEDURE WriteWFC(c: Char);
 FUNCTION AccountBalance: LongInt;
 PROCEDURE AdjustBalance(Adjustment: LongInt);
@@ -517,24 +507,69 @@ PROCEDURE BackErase(Len: Byte);
 FUNCTION UpdateCRC32(CRC: LongInt; VAR Buffer; Len: Word): LongInt;
 FUNCTION CRC32(s: AStr): LongInt;
 FUNCTION FunctionalMCI(CONST s: AStr; FileName,InternalFileName: AStr): STRING;
-FUNCTION MCI(CONST s: STRING): STRING;
-FUNCTION Plural(InString: STRING; Number: Byte): STRING;
-FUNCTION FormattedTime(TimeUsed: LongInt): STRING;
 FUNCTION SearchUser(Uname: Str36; RealNameOK: Boolean): Integer;
 PROCEDURE PauseScr(IsCont: Boolean); { Pause the screen }
-PROCEDURE Com_Send_Str(CONST InString: AStr);
-PROCEDURE DoPhoneHangUp(ShowIt: Boolean);
-PROCEDURE DoTelnetHangUp(ShowIt: Boolean);
-PROCEDURE DoPhoneOffHook(ShowIt: Boolean);
-PROCEDURE InputPath(CONST DisplayStr: AStr; VAR DirPath: Str40; CreateDir,AllowExit: Boolean; VAR Changed: Boolean);
-FUNCTION StripName(InString: STRING): STRING;
-PROCEDURE PurgeDir(s: AStr; SubDirs: Boolean);
-PROCEDURE DOSANSI(CONST c: Char);
 FUNCTION HiMsg: Word;
 FUNCTION OnNode(UserNumber: Integer): Byte;
-PROCEDURE Kill(CONST FileName: AStr);
 PROCEDURE ScreenDump(CONST FileName: AStr);
-PROCEDURE ScanInput(VAR s: AStr; CONST Allowed: AStr);
+FUNCTION StrToInt(S: Str11): LongInt;
+FUNCTION ValueR(S: AStr): REAL;
+PROCEDURE ShellDOS(MakeBatch: Boolean; CONST Command: AStr; VAR ResultCode: Integer);
+PROCEDURE SysOpShell;
+PROCEDURE RedrawForANSI;
+FUNCTION ExtractDriveNumber(s: AStr): Byte;
+FUNCTION CTP(t,b: LongInt): STRING; { Calculate percentage }
+PROCEDURE TLeft;
+PROCEDURE LoadNode(NodeNumber: Byte);
+PROCEDURE Update_Node(NActivityDesc: AStr; SaveVars: Boolean);
+FUNCTION MaxChatRec: LongInt;
+FUNCTION MaxIDXRec: Integer;
+FUNCTION MaxNodes: Byte;
+FUNCTION MaxUsers: Integer;
+PROCEDURE SaveNode(NodeNumber: Byte);
+PROCEDURE LoadURec(VAR User: UserRecordType; UserNumber: Integer);
+PROCEDURE SaveURec(User: UserRecordType; UserNumber:Integer);
+PROCEDURE OutKey(c: Char);
+PROCEDURE Wait(b: Boolean);
+FUNCTION DisplayARFlags(AR: ARFlagSet; C1,C2: Char): AStr;
+PROCEDURE ToggleARFlag(Flag: Char; VAR AR: ARFlagSet; VAR Changed: Boolean);
+FUNCTION DisplayACFlags(Flags: ACFlagSet; C1,C2: Char): AStr;
+PROCEDURE ToggleACFlag(Flag: ACFlagType; VAR Flags: ACFlagSet);
+PROCEDURE ToggleACFlags(Flag: Char; VAR Flags: ACFlagSet; VAR Changed: Boolean);
+PROCEDURE ToggleStatusFlag(Flag: StatusFlagType; VAR SUFlags: StatusFlagSet);
+PROCEDURE ToggleStatusFlags(Flag: Char; VAR SUFlags: StatusFlagSet);
+FUNCTION TACCH(Flag: Char): ACFlagType;
+{ END OF UNSORTED }
+{ Boolean checks }
+FUNCTION AACS1(User: UserRecordType; UNum: Integer; S: ACString): Boolean; { Check ACS for user }
+FUNCTION AACS(s: ACString): Boolean; { Check ACS for ThisUser }
+FUNCTION MsgSysOp: Boolean; { Is user message SysOp? }
+FUNCTION FileSysOp: Boolean; { Is user file SysOp? }
+FUNCTION CoSysOp: Boolean; { Is user CoSysOp? }
+FUNCTION SysOp: Boolean; { Is user SysOp? }
+FUNCTION OkANSI: Boolean; { Does user support ANSI terminal emulation? }
+FUNCTION OkAvatar: Boolean; { Does user support Avatar terminal emulation? }
+FUNCTION OkRIP: Boolean; { Does user support RIP graphics? }
+FUNCTION OkVT100: Boolean; { Does user support VT-100 terminal emulation? }
+{ ANSI procedures }
+PROCEDURE Clear_EOL; { ANSI Clear to end of line }
+PROCEDURE ANSIG(X,Y: Byte); { ANSI go to position }
+PROCEDURE CLS; { ANSI Clear screen }
+PROCEDURE DOSANSI(CONST c: Char);
+{ Disk operations }
+FUNCTION DiskKBFree(DrivePath: AStr): LongInt;
+FUNCTION Exist(FileName: AStr): Boolean;
+FUNCTION ExistDir(Path: PathStr): Boolean;
+PROCEDURE Kill(CONST FileName: AStr);
+PROCEDURE PurgeDir(s: AStr; SubDirs: Boolean);
+PROCEDURE MakeDir(VAR Path: PathStr; AskMakeDir: Boolean);
+FUNCTION CheckDriveSpace(S,Path: AStr; MinSpace: Integer): Boolean;
+FUNCTION ExistDrive(Drive: Char): Boolean;
+PROCEDURE RenameFile(DisplayStr: AStr; OldFileName,NewFileName: AStr; VAR ReNameOk: Boolean);
+FUNCTION GetFileSize(FileName: AStr): LongInt;
+PROCEDURE GetFileDateTime(CONST FileName: AStr; VAR FileTime: LongInt);
+PROCEDURE SetFileDateTime(CONST FileName: AStr; FileTime: LongInt);
+{ Communication routines }
 PROCEDURE Com_Flush_Recv;
 PROCEDURE Com_Flush_Send;
 PROCEDURE Com_Purge_Send;
@@ -550,85 +585,23 @@ PROCEDURE CheckHangup;
 PROCEDURE SerialOut(s: STRING);
 FUNCTION Empty:Boolean;
 PROCEDURE DTR(Status: Boolean);
-PROCEDURE BackSpace;
-PROCEDURE DoBackSpace(Start,Finish: Byte);
-FUNCTION LennMCI(CONST InString: STRING): Integer; { Returns string length minus MCIs and color codes }
-FUNCTION MsgSysOp: Boolean; { Is user message SysOp? }
-FUNCTION FileSysOp: Boolean; { Is user file SysOp? }
-FUNCTION CoSysOp: Boolean; { Is user CoSysOp? }
-FUNCTION SysOp: Boolean; { Is user SysOp? }
-FUNCTION Timer: LongInt;
-{PROCEDURE TeleConfCheck;}
-FUNCTION Substitute(Src: STRING; CONST Old,New: STRING): STRING;
-PROCEDURE NewCompTables;
-FUNCTION OkANSI: Boolean; { Does user support ANSI terminal emulation? }
-FUNCTION OkAvatar: Boolean; { Does user support Avatar terminal emulation? }
-FUNCTION OkRIP: Boolean; { Does user support RIP graphics? }
-FUNCTION OkVT100: Boolean; { Does user support VT-100 terminal emulation? }
-FUNCTION NSL: LongInt;
-FUNCTION AgeUser(CONST BirthDate: LongInt): Word;
-FUNCTION AllCaps(InString: STRING): STRING; { Returns string in all uppercase }
-FUNCTION Caps(InString: STRING): STRING; { Returns string with first letters of words capitalized }
-PROCEDURE Update_Screen;
-FUNCTION PageLength: Word;
-PROCEDURE lStatus_Screen(WhichScreen: Byte; Message: AStr; OneKey: Boolean; VAR Answer: AStr);
-FUNCTION CInKey: Char;
-FUNCTION CheckPW: Boolean;
-FUNCTION StripColor(CONST InString: STRING): STRING;
+PROCEDURE Com_Send_Str(CONST InString: AStr);
+PROCEDURE DoPhoneHangUp(ShowIt: Boolean);
+PROCEDURE DoTelnetHangUp(ShowIt: Boolean);
+PROCEDURE DoPhoneOffHook(ShowIt: Boolean);
+{ Logging stuff }
 PROCEDURE sl1(s: AStr); { Write entry to SysOp log }
 PROCEDURE SysOpLog(s: AStr); { Write entry to SysOp log with indent (user actions) }
-FUNCTION StrToInt(S: Str11): LongInt;
-FUNCTION RealToStr(R: Real; W,D: Byte): STRING;
-FUNCTION ValueR(S: AStr): REAL;
-PROCEDURE ShellDOS(MakeBatch: Boolean; CONST Command: AStr; VAR ResultCode: Integer);
-PROCEDURE SysOpShell;
-PROCEDURE RedrawForANSI;
-PROCEDURE Star(InString: AStr); { Display string with * infront }
-FUNCTION GetKey: Word;
+PROCEDURE InitTrapFile;
+PROCEDURE OutTrap(c: Char); {leew: was missing}
+{ Color stuff }
+FUNCTION GetC(c: Byte): STRING;
+PROCEDURE ShowColors;
 PROCEDURE SetC(C: Byte);
 PROCEDURE UserColor(Color: Byte);
-PROCEDURE Prompt(CONST InString: STRING);
-FUNCTION SQOutSp(InString: STRING): STRING;
-FUNCTION ExtractDriveNumber(s: AStr): Byte;
-FUNCTION PadLeftStr(InString: STRING; MaxLen: Byte): STRING;
-FUNCTION PadRightStr(InString: STRING; MaxLen: Byte): STRING;
-FUNCTION PadLeftInt(L: LongInt; MaxLen: Byte): STRING;
-FUNCTION PadRightInt(L: LongInt; MaxLen: Byte): STRING;
-PROCEDURE Print(CONST InString: STRING);
-PROCEDURE NL; { Carriage return }
-PROCEDURE Prt(CONST Instring: STRING);
-PROCEDURE MPL(MaxLen: Byte); { Print input field }
-FUNCTION CTP(t,b: LongInt): STRING; { Calculate percentage }
-PROCEDURE TLeft;
-PROCEDURE LoadNode(NodeNumber: Byte);
-PROCEDURE Update_Node(NActivityDesc: AStr; SaveVars: Boolean);
-FUNCTION MaxChatRec: LongInt;
-FUNCTION MaxIDXRec: Integer;
-FUNCTION MaxNodes: Byte;
-FUNCTION MaxUsers: Integer;
-PROCEDURE SaveNode(NodeNumber: Byte);
-PROCEDURE LoadURec(VAR User: UserRecordType; UserNumber: Integer);
-PROCEDURE SaveURec(User: UserRecordType; UserNumber:Integer);
-FUNCTION InKey: Word;
-PROCEDURE OutKey(c: Char);
-PROCEDURE Wait(b: Boolean);
-FUNCTION DisplayARFlags(AR: ARFlagSet; C1,C2: Char): AStr;
-PROCEDURE ToggleARFlag(Flag: Char; VAR AR: ARFlagSet; VAR Changed: Boolean);
-FUNCTION DisplayACFlags(Flags: ACFlagSet; C1,C2: Char): AStr;
-PROCEDURE ToggleACFlag(Flag: ACFlagType; VAR Flags: ACFlagSet);
-PROCEDURE ToggleACFlags(Flag: Char; VAR Flags: ACFlagSet; VAR Changed: Boolean);
-PROCEDURE ToggleStatusFlag(Flag: StatusFlagType; VAR SUFlags: StatusFlagSet);
-PROCEDURE ToggleStatusFlags(Flag: Char; VAR SUFlags: StatusFlagSet);
-FUNCTION TACCH(Flag: Char): ACFlagType;
-PROCEDURE LCmds(Len,c: Byte; c1,c2: AStr);
-PROCEDURE LCmds3(Len,c: Byte; c1,c2,c3: AStr);
-PROCEDURE InitTrapFile;
-FUNCTION AOnOff(b: Boolean; CONST s1,s2: AStr): STRING;
-FUNCTION ShowOnOff(b: Boolean): STRING;
-FUNCTION ShowYesNo(b: Boolean): STRING;
-FUNCTION YN(Len: Byte; DYNY: Boolean): Boolean; {LeeW: Nest this in PYNQ once figure out SCRIPT}
-FUNCTION PYNQ(CONST InString: AStr; MaxLen: Byte; DYNY: Boolean): Boolean;
-{ below in common3 }
+FUNCTION StripColor(CONST InString: STRING): STRING;
+{ Input }
+{in common3}
 PROCEDURE InputLongIntWC(S: AStr; VAR L: LongInt; InputFlags: InputFlagSet; LowNum,HighNum: LongInt; VAR Changed: Boolean);
 PROCEDURE InputLongIntWOC(S: AStr; VAR L: LongInt; InputFlags: InputFlagSet; LowNum,HighNum: LongInt);
 PROCEDURE InputWordWC(S: AStr; VAR W: Word; InputFlags: InputFlagSet; LowNum,HighNum: Word; VAR Changed: Boolean);
@@ -642,11 +615,7 @@ PROCEDURE InputFormatted(DisplayStr: AStr; VAR InputStr: STRING; v: STRING; Abor
 PROCEDURE InputWN1(DisplayStr: AStr; VAR InputStr: AStr; MaxLen: Byte; InputFlags: InputFlagSet; VAR Changed: Boolean);
 PROCEDURE InputWNWC(DisplayStr: AStr; VAR InputStr: AStr; MaxLen: Byte; VAR Changed: Boolean);
 PROCEDURE InputMain(VAR s: STRING; MaxLen: Byte; InputFlags: InputFlagSet);
-PROCEDURE InputWC(VAR s: STRING; MaxLen: Byte);
 PROCEDURE Input(VAR s: STRING; MaxLen: Byte);
-PROCEDURE InputL(VAR s: STRING; MaxLen: Byte);
-PROCEDURE InputCaps(VAR s: STRING; MaxLen: Byte);
-{ end of common3 }
 PROCEDURE OneK(VAR C: Char; ValidKeys: AStr; DisplayKey,LineFeed: Boolean);
 PROCEDURE OneK1(VAR C: Char; ValidKeys: AStr; DisplayKey,LineFeed: Boolean);
 PROCEDURE LOneK(DisplayStr: AStr; VAR C: Char; ValidKeys: AStr; DisplayKey,LineFeed: Boolean);
@@ -654,25 +623,63 @@ PROCEDURE Local_Input1(VAR S: STRING; MaxLen: Byte; LowerCase: Boolean);
 PROCEDURE Local_Input(VAR S: STRING; MaxLen: Byte);
 PROCEDURE Local_InputL(VAR S: STRING; MaxLen: Byte);
 PROCEDURE Local_OneK(VAR C: Char; S: STRING);
-FUNCTION Centre(InString: AStr): STRING;
+PROCEDURE MPL(MaxLen: Byte); { Print input field }
+PROCEDURE InputPath(CONST DisplayStr: AStr; VAR DirPath: Str40; CreateDir,AllowExit: Boolean; VAR Changed: Boolean);
+PROCEDURE GetPassword(VAR PW: AStr; Len: Byte);
+{ END OF COMMON3 }
+FUNCTION GetKey: Word;
+PROCEDURE ScanInput(VAR s: AStr; CONST Allowed: AStr);
+FUNCTION CInKey: Char;
+FUNCTION CheckPW: Boolean;
+FUNCTION YN(Len: Byte; DYNY: Boolean): Boolean; {LeeW: Nest this in PYNQ once figure out SCRIPT}
+FUNCTION PYNQ(CONST InString: AStr; MaxLen: Byte; DYNY: Boolean): Boolean;
+FUNCTION InKey: Word;
 PROCEDURE WKey;
+{ string stuff}
+PROCEDURE BackSpace;
+PROCEDURE DoBackSpace(Start,Finish: Byte);
+PROCEDURE LCmds(Len,c: Byte; c1,c2: AStr);
+PROCEDURE LCmds3(Len,c: Byte; c1,c2,c3: AStr);
+PROCEDURE Messages(MsgNum,I: Integer; S: AStr);
+FUNCTION ConvertBytes(BytesToConvert: LongInt; OneChar: Boolean): STRING;
+FUNCTION ConvertKB(KBToConvert: LongInt; OneChar: Boolean): STRING;
+FUNCTION StripName(InString: STRING): STRING;
+FUNCTION IntToStr(L: LongInt): STRING;
+FUNCTION RealToStr(R: Real; W,D: Byte): STRING;
+FUNCTION PadLeftStr(InString: STRING; MaxLen: Byte): STRING;
+FUNCTION PadRightStr(InString: STRING; MaxLen: Byte): STRING;
+FUNCTION PadLeftInt(L: LongInt; MaxLen: Byte): STRING;
+FUNCTION PadRightInt(L: LongInt; MaxLen: Byte): STRING;
+FUNCTION lRGLNGStr(StrNum: LongInt; PassValue: Boolean): AStr;
+FUNCTION StripLeadSpace(S: STRING): STRING;
+FUNCTION StripTrailSpace(S: STRING): STRING;
+FUNCTION SemiCmd(S: AStr; B: Byte): STRING;
+FUNCTION MCI(CONST s: STRING): STRING;
+FUNCTION Plural(InString: STRING; Number: Byte): STRING;
+FUNCTION FormattedTime(TimeUsed: LongInt): STRING;
+FUNCTION FormatNumber(L: LongInt): STRING;
+FUNCTION ToLower(S: STRING): STRING; { Convert string to lowercase } { LeeW: Moved from OneLiner }
+FUNCTION LennMCI(CONST InString: STRING): Integer; { Returns string length minus MCIs and color codes }
+FUNCTION Substitute(Src: STRING; CONST Old,New: STRING): STRING;
+FUNCTION BSlash(InString: AStr; b: Boolean): AStr;
+FUNCTION AllCaps(InString: STRING): STRING; { Returns string in all uppercase }
+FUNCTION Caps(InString: STRING): STRING; { Returns string with first letters of words capitalized }
+PROCEDURE Star(InString: AStr); { Display string with * infront }
+PROCEDURE Prompt(CONST InString: STRING);
+FUNCTION SQOutSp(InString: STRING): STRING;
+FUNCTION Centre(InString: AStr): STRING;
+PROCEDURE Print(CONST InString: STRING);
+PROCEDURE NL; { Carriage return }
+PROCEDURE Prt(CONST Instring: STRING);
+FUNCTION AOnOff(b: Boolean; CONST s1,s2: AStr): STRING;
+FUNCTION ShowOnOff(b: Boolean): STRING;
+FUNCTION ShowYesNo(b: Boolean): STRING;
 PROCEDURE PrintMain(CONST ss: STRING);
 PROCEDURE PrintACR(InString: STRING);
-PROCEDURE SaveGeneral(X: Boolean);
-
+{ art files stuff }
 PROCEDURE PrintF(FileName: AStr); {>}
 PROCEDURE PrintFile(FileName: AStr); {>}
 PROCEDURE pfl(FN: AStr);
-
-FUNCTION BSlash(InString: AStr; b: Boolean): AStr;
-FUNCTION Exist(FileName: AStr): Boolean;
-FUNCTION ExistDir(Path: PathStr): Boolean;
-PROCEDURE SKey1(VAR c: Char);
-FUNCTION VerLine(B: Byte): STRING;
-FUNCTION AACS1(User: UserRecordType; UNum: Integer; S: ACString): Boolean;
-FUNCTION AACS(s: ACString): Boolean;
-FUNCTION DiskKBFree(DrivePath: AStr): LongInt;
-FUNCTION IntToStr(L: LongInt): STRING;
 
 IMPLEMENTATION
 
@@ -689,6 +696,11 @@ USES
   SpawnO,
   SysOp12,
   Vote;
+
+PROCEDURE InputPath(CONST DisplayStr: AStr; VAR DirPath: Str40; CreateDir,AllowExit: Boolean; VAR Changed: Boolean);
+BEGIN
+  Common3.InputPath(DisplayStr,DirPath,CreateDir,AllowExit,Changed);
+END;
 
 PROCEDURE Clear_EOL;
 BEGIN
@@ -753,22 +765,22 @@ END;
 
 PROCEDURE Local_Input1(VAR S: STRING; MaxLen: Byte; LowerCase: Boolean);
 BEGIN
-  Common1.Local_Input1(S,MaxLen,LowerCase);
+  Common3.Local_Input1(S,MaxLen,LowerCase);
 END;
 
 PROCEDURE Local_Input(VAR S: STRING; MaxLen: Byte);
 BEGIN
-  Common1.Local_Input(S,MaxLen);
+  Common3.Local_Input(S,MaxLen);
 END;
 
 PROCEDURE Local_InputL(VAR S: STRING; MaxLen: Byte);
 BEGIN
-  Common1.Local_InputL(S,MaxLen);
+  Common3.Local_InputL(S,MaxLen);
 END;
 
 PROCEDURE Local_OneK(VAR C: Char; S: STRING);
 BEGIN
-  Common1.Local_OneK(C,S);
+  Common3.Local_OneK(C,S);
 END;
 
 PROCEDURE SysOpShell;
@@ -804,6 +816,21 @@ END;
 PROCEDURE TLeft;
 BEGIN
   Common2.TLeft;
+END;
+
+PROCEDURE OneK(VAR C: Char; ValidKeys: AStr; DisplayKey,LineFeed: Boolean);
+BEGIN
+  Common3.OneK(C,ValidKeys,DisplayKey,LineFeed);
+END;
+
+PROCEDURE OneK1(VAR C: Char; ValidKeys: AStr; DisplayKey,LineFeed: Boolean);
+BEGIN
+  Common3.OneK1(C,ValidKeys,DisplayKey,LineFeed);
+END;
+
+PROCEDURE LOneK(DisplayStr: AStr; VAR C: Char; ValidKeys: AStr; DisplayKey,LineFeed: Boolean);
+BEGIN
+  Common3.LOneK(DisplayStr,C,ValidKeys,DisplayKey,LineFeed);
 END;
 
 PROCEDURE InputLongIntWC(S: AStr; VAR L: LongInt; InputFlags: InputFlagSet; LowNum,HighNum: LongInt; VAR Changed: Boolean);
@@ -871,24 +898,9 @@ BEGIN
   Common3.InputMain(s,MaxLen,InputFlags);
 END;
 
-PROCEDURE InputWC(VAR s: STRING; MaxLen: Byte);
-BEGIN
-  Common3.InputWC(s,MaxLen);
-END;
-
 PROCEDURE Input(VAR s: STRING; MaxLen: Byte);
 BEGIN
   Common3.Input(s,MaxLen);
-END;
-
-PROCEDURE InputL(VAR s: STRING; MaxLen: Byte);
-BEGIN
-  Common3.InputL(s,MaxLen);
-END;
-
-PROCEDURE InputCaps(VAR s: STRING; MaxLen: Byte);
-BEGIN
-  Common3.InputCaps(s,MaxLen);
 END;
 
 PROCEDURE Com_Flush_Recv;
@@ -1191,10 +1203,7 @@ END;
 
 PROCEDURE GetPassword(VAR PW: AStr; Len: Byte);
 BEGIN
-  PW := '';
-  Echo := FALSE;
-  Input(PW,Len);
-  Echo := TRUE;
+  Common3.GetPassword(PW,Len);
 END;
 
 PROCEDURE MakeDir(VAR Path: PathStr; AskMakeDir: Boolean);
@@ -1409,45 +1418,6 @@ BEGIN
       Inc(Counter,2);
     CROff := TRUE;
     PrintACR(TempStr);
-  END;
-END;
-
-FUNCTION Chinkey: Char;
-VAR
-  C: Char;
-BEGIN
-  C := #0;
-  Chinkey := #0;
-  IF (KeyPressed) THEN
-  BEGIN
-    C := ReadKey;
-    IF (NOT WColor) THEN
-      UserColor(General.SysOpColor);
-    WColor := TRUE;
-    IF (C = #0) THEN
-      IF (KeyPressed) THEN
-      BEGIN
-        C := ReadKey;
-        SKey1(C);
-        IF (C = #31) OR (C = #46) THEN
-          C := #1
-        ELSE IF (Buf <> '') THEN
-        BEGIN
-          C := Buf[1];
-          Buf := Copy(Buf,2,(Length(Buf) - 1));
-        END
-        ELSE
-          C := #0
-      END;
-    Chinkey := C;
-  END
-  ELSE IF ((NOT Com_IsRecv_Empty) AND (InCom)) THEN
-  BEGIN
-    C := CInKey;
-    IF (WColor) THEN
-      UserColor(General.UserColor);
-    WColor := FALSE;
-    Chinkey := C;
   END;
 END;
 
@@ -1932,7 +1902,7 @@ BEGIN
   END {CASE NextState} ;
 END {AnsiWrite} ;
 
-PROCEDURE ShellDos(MakeBatch: Boolean; CONST Command: AStr; VAR ResultCode: Integer);
+PROCEDURE ShellDOS(MakeBatch: Boolean; CONST Command: AStr; VAR ResultCode: Integer);
 VAR
   BatFile: Text;
   FName,
@@ -2609,16 +2579,56 @@ CONST
   LastTimeSlice: LongInt = 0;
   LastCheckTimeSlice: LongInt = 0;
 VAR
-  Killme: Pointer ABSOLUTE $0040 :$F000;
+  {Killme: Pointer ABSOLUTE $0040 :$F000;}
   Tf: Boolean;
   I: Integer;
   C: Word;
   TempTimer: LongInt;
+  
+FUNCTION Chinkey: Char;
+VAR
+  C: Char;
 BEGIN
-  IF (DieLater) THEN
+  C := #0;
+  Chinkey := #0;
+  IF (KeyPressed) THEN
+  BEGIN
+    C := ReadKey;
+    IF (NOT WColor) THEN
+      UserColor(General.SysOpColor);
+    WColor := TRUE;
+    IF (C = #0) THEN
+      IF (KeyPressed) THEN
+      BEGIN
+        C := ReadKey;
+        SKey1(C);
+        IF (C = #31) OR (C = #46) THEN
+          C := #1
+        ELSE IF (Buf <> '') THEN
+        BEGIN
+          C := Buf[1];
+          Buf := Copy(Buf,2,(Length(Buf) - 1));
+        END
+        ELSE
+          C := #0
+      END;
+    Chinkey := C;
+  END
+  ELSE IF ((NOT Com_IsRecv_Empty) AND (InCom)) THEN
+  BEGIN
+    C := CInKey;
+    IF (WColor) THEN
+      UserColor(General.UserColor);
+    WColor := FALSE;
+    Chinkey := C;
+  END;
+END;
+  
+BEGIN
+  {IF (DieLater) THEN
     ASM
       Call Killme
-    END;
+    END;}
   LIL := 1;
   IF (Buf <> '') THEN
   BEGIN
@@ -2987,62 +2997,7 @@ BEGIN
   PYNQ := YN(MaxLen,DYNY);
 END;
 
-PROCEDURE OneK(VAR C: Char; ValidKeys: AStr; DisplayKey,LineFeed: Boolean);
-BEGIN
-  MPL(1);
-  TempPause := (Pause IN ThisUser.ACFlags);
-  REPEAT
-    C := UpCase(Char(GetKey));
-  UNTIL (Pos(C,ValidKeys) > 0) OR (HangUp);
-  IF (HangUp) THEN
-    C := ValidKeys[1];
-  IF (DisplayKey) THEN
-    OutKey(C);
-  IF (Trapping) THEN
-    OutTrap(C);
-  UserColor(0);
-  IF (LineFeed) THEN
-    NL;
-END;
 
-PROCEDURE OneK1(VAR C: Char; ValidKeys: AStr; DisplayKey,LineFeed: Boolean);
-BEGIN
-  MPL(1);
-  TempPause := (Pause IN ThisUser.ACFlags);
-  REPEAT
-    C := Char(GetKey);
-    IF (C = 'q') THEN
-      C := UpCase(C);
-  UNTIL (Pos(C,ValidKeys) > 0) OR (HangUp);
-  IF (HangUp) THEN
-    C := ValidKeys[1];
-  IF (DisplayKey) THEN
-    OutKey(C);
-  IF (Trapping) THEN
-    OutTrap(C);
-  UserColor(0);
-  IF (LineFeed) THEN
-    NL;
-END;
-
-PROCEDURE LOneK(DisplayStr: AStr; VAR C: Char; ValidKeys: AStr; DisplayKey,LineFeed: Boolean);
-BEGIN
-  Prt('^2'+DisplayStr);
-  MPL(1);
-  TempPause := (Pause IN ThisUser.ACFlags);
-  REPEAT
-    C := UpCase(Char(GetKey));
-  UNTIL (Pos(C,ValidKeys) > 0) OR (HangUp);
-  IF (HangUp) THEN
-    C := ValidKeys[1];
-  IF (DisplayKey) THEN
-    OutKey(C);
-  IF (Trapping) THEN
-    OutTrap(C);
-  UserColor(0);
-  IF (LineFeed) THEN
-    NL;
-END;
 
 FUNCTION Centre(InString: AStr): STRING;
 VAR
@@ -3531,8 +3486,8 @@ VAR
 BEGIN
   GetDate(Year,Month,MDay,WDay);
   CASE B OF
-	1 : VerLine := '^1Renegade Bulletin Board System, Version ^0'+General.Version;
-	2 : VerLine := '^1Copyright (c) 1991-'+IntToStr(Year)+' The Renegade Development Team';
+	1 : VerLine := '^0Renegade Bulletin Board System, Version ^1'+General.Version;
+	2 : VerLine := '^0Copyright (c) 1991-'+IntToStr(Year)+' The Renegade Development Team';
   END;
 END;
 
@@ -4011,97 +3966,6 @@ BEGIN
   END;
   Close(ScreenFile);
   LastError := IOResult;
-END;
-
-PROCEDURE InputPath(CONST DisplayStr: AStr; VAR DirPath: Str40; CreateDir,AllowExit: Boolean; VAR Changed: Boolean);
-VAR
-  TempDirPath: Str40;
-  CurDir: PathStr;
-  Counter: Byte;
-BEGIN
-  REPEAT
-    TempDirPath := DirPath;
-    Changed := FALSE;
-    InputWN1(DisplayStr,TempDirPath,39,[UpperOnly,InterActiveEdit],Changed);
-    TempDirPath := SQOutSp(TempDirPath);
-
-    IF (Length(TempDirPath) = 1) THEN
-      TempDirPath := TempDirPath + ':\'
-    ELSE IF (Length(TempDirPath) = 2) AND (TempDirPath[2] = ':') THEN
-      TempDirPath := TempDirPath + '\';
-
-    IF (AllowExit) AND (TempDirPath = '') THEN
-    BEGIN
-      NL;
-      Print('Aborted!');
-    END
-    ELSE IF (TempDirPath = '') THEN
-    BEGIN
-      NL;
-      Print('^8A valid path must be specified!^0');
-    END
-    ELSE IF (NOT (TempDirPath[1] IN ['A'..'Z'])) OR (Length(TempDirPath) < 3) OR
-         (NOT (TempDirPath[2] = ':')) OR (NOT (TempDirPath[3] = '\')) THEN
-    BEGIN
-      NL;
-      Print('^8Invalid drive specification: "'+Copy(TempDirPath,1,3)+'"^0');
-      TempDirPath := '';
-    END
-    ELSE
-    BEGIN
-      GetDir(0,CurDir);
-      ChDir(TempDirPath[1]+':');
-      IF (IOResult <> 0) THEN
-      BEGIN
-        NL;
-        Print('^8Drive does not exist: "'+Copy(TempDirPath,1,3)+'"^0');
-        TempDirPath := '';
-      END
-      ELSE
-      BEGIN
-        ChDir(CurDir);
-        IF (CreateDir) THEN
-        BEGIN
-          TempDirPath := BSlash(TempDirPath,TRUE);
-          IF (Length(TempDirPath) > 3) AND (NOT ExistDir(TempDirPath)) THEN
-          BEGIN
-            NL;
-            IF PYNQ('Directory does not exist, create it? ',0,FALSE) THEN
-            BEGIN
-              Counter := 2;
-              WHILE (Counter <= Length(TempDirPath)) DO
-              BEGIN
-                IF (TempDirPath[Counter] = '\') THEN
-                BEGIN
-                  IF (TempDirPath[Counter - 1] <> ':') THEN
-                  BEGIN
-                    IF (NOT ExistDir(Copy(TempDirPath,1,(Counter - 1)))) THEN
-                    BEGIN
-                      MkDir(Copy(TempDirPath,1,(Counter - 1)));
-                      LastError := IOResult;
-                      IF (LastError <> 0) THEN
-                      BEGIN
-                        NL;
-                        Print('Error creating directory: '+Copy(TempDirPath,1,(Counter - 1)));
-                        SysOpLog('^8Error creating directory: '+Copy(TempDirPath,1,(Counter - 1)));
-                        TempDirPath := '';
-                      END;
-                    END;
-                  END;
-                END;
-                Inc(Counter);
-              END;
-            END;
-          END;
-        END;
-      END;
-    END;
-  UNTIL (TempDirPath <> '') OR (AllowExit) OR (HangUp);
-  IF (TempDirPath <> '') THEN
-    TempDirPath := BSlash(TempDirPath,TRUE);
-  IF (TempDirPath <> DirPath) THEN
-    Changed := TRUE;
-  DirPath := TempDirPath;
 END;
 
 FUNCTION OnNode(UserNumber: Integer): Byte;

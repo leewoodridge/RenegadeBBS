@@ -428,7 +428,7 @@ BEGIN
   REPEAT
     Prt(': ');
     MPL(MaxLen);
-    InputWC(FileInfo.Description,MaxLen);
+    InputMain(FileInfo.Description,SizeOf(FileInfo.Description) - 1,[ColorsAllowed]);
     IF ((FileInfo.Description[1] = '/') OR (RValidate IN ThisUser.ACFlags)) AND (ToSysOp) THEN
     BEGIN
       IF (General.ToSysOpDir >= 1) AND (General.ToSysOpDir <= NumFileAreas) THEN
@@ -447,7 +447,7 @@ BEGIN
     Inc(NumExtDesc);
     Prt(': ');
     MPL(50);
-    InputL(ExtendedArray[NumExtDesc],50);
+    InputMain(ExtendedArray[NumExtDesc],SizeOf(ExtendedArray[NumExtDesc])-1,[]);
   UNTIL (ExtendedArray[NumExtDesc] = '') OR (NumExtDesc = MaxExtDesc) OR (HangUp);
 END;
 
@@ -575,13 +575,13 @@ NewFileName : desired archive format FileName
 *)
 
 PROCEDURE ArcStuff(VAR Ok,
-                   Convt: Boolean;    { IF Ok - IF converted }
-                   VAR FSize,	      { file size }
+                   Convt: Boolean; { IF Ok - IF converted }
+                   VAR FSize, { file size }
                    ConvTime: LongInt; { convert time  }
-                   ITest: Boolean;    { whether to test integrity  }
+                   ITest: Boolean; { whether to test integrity  }
                    CONST FilePath: AStr; { filepath  }
-                   VAR FileName: Str12;      { FileName  }
-                   VAR Descr: AStr);  { Description  }
+                   VAR FileName: Str12; { FileName  }
+                   VAR Descr: AStr); { Description  }
 VAR
   OldFileName,
   NewFileName: AStr;

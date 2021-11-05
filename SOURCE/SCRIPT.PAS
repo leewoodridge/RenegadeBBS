@@ -177,8 +177,8 @@ BEGIN
                   END;
                 S := #1#1#1;
                 CASE OutP[2] OF
-                  'A' : InputL(S,I);
-                  'B' : Input(S,I);
+                  'A' : InputMain(S,I,[]);
+                  'B' : InputMain(S,I,[UpperOnly]);
                   'C' : BEGIN
                           Mult := '';
                           I := 1;

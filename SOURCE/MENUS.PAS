@@ -1,9 +1,7 @@
 {$A+,B-,D+,E-,F+,I-,L+,N-,O-,R-,S+,V-}
 {
-10/21/2021 - Removed color change for input longer than 2
-10/31/2021 - sysop avail cmd
-		   - val edit cmd
-		   - col scheme edit cmd
+10/21/2021 - Removed: Color change for input longer than 2
+10/31/2021 - Added: SysOp avail cmd (*T), Validation editor cmd (*S), Color scheme edit cmd (*G)
 TO DO
  - it'd be nice to find a way to turn on/off scrllck light to indicate sysop availablity
 }
@@ -23,11 +21,7 @@ PROCEDURE LoadMenuPW;
 PROCEDURE MainMenuHandle(VAR Cmd: AStr);
 PROCEDURE FCmd(CONST Cmd: AStr; VAR CmdToExec: Byte; VAR CmdExists,CmdNotHid: Boolean);
 PROCEDURE DoMenuExec(Cmd: AStr; VAR NewMenuCmd: AStr);
-PROCEDURE DoMenuCommand(VAR Done: Boolean;
-                        Cmd,
-                        MenuOption: AStr;
-                        VAR NewMenuCmd: AStr;
-                        NodeActivityDesc: AStr);
+PROCEDURE DoMenuCommand(VAR Done: Boolean;Cmd,MenuOption: AStr;VAR NewMenuCmd: AStr;NodeActivityDesc: AStr);
 
 IMPLEMENTATION
 

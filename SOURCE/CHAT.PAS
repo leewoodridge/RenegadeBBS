@@ -54,7 +54,7 @@ PROCEDURE RequestSysOpChat(CONST MenuOption: Str50);
 VAR
   User: UserRecordType;
   MHeader: MHeaderRec;
-  Reason: AStr;
+  Reason: STRING[60];
   Cmd: Char;
   Counter: Byte;
   UNum,
@@ -71,7 +71,7 @@ BEGIN
     Chatted := FALSE;
     Prt(': ');
     MPL(60);
-    InputL(Reason,60);
+    InputMain(Reason,SizeOf(Reason)-1,[]);
     IF (Reason <> '') THEN
     BEGIN
       Inc(ChatAttempts);
@@ -363,11 +363,14 @@ BEGIN
     ELSE IF ((S = '/HELP') OR (S = '/?')) THEN
 	  BEGIN
 		IF (WColor) THEN
-          Print('^5/TYPE D:\PATH\FILENAME.EXT^3: Type a file');
-     (* Print('^5/BYE^3:   Hang up');
+          Print('^1/TYPE D:\PATH\FILENAME.EXT^0: Display file');
+        (*
+		Print('^5/BYE^3:   Hang up');
         Print('^5/CLS^3:   Clear the screen');
         Print('^5/PAGE^3:  Page the SysOp and User');
-        Print('^5/Q^3:     Exit chat mode'^M^J); *)
+        Print('^5/Q^3:     Exit chat mode');
+		NL;
+		*)
 		lRGLngStr(65,FALSE);
       END
     ELSE IF (S = '/CLS') THEN

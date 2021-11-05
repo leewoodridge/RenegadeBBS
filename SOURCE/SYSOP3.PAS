@@ -496,7 +496,7 @@ VAR
                 Print('Search ACS ["'+F_ACS+'"]');
                 Prt(': ');
                 MPL(20);
-                InputL(TempStr1,20);
+				InputMain(TempStr1,20,[]);
                 IF (TempStr1 <> '') THEN
                   F_ACS := TempStr1;
               END;

@@ -1951,7 +1951,7 @@ VAR
                         NL;
                         Print('^2Enter string to replace:');
                         Prt(': ');
-                        InputL(TempStr1,MaxLineLen);
+						InputMain(TempStr1,MaxLineLen,[]);
                         IF (TempStr1 <> '') THEN
                           IF (Pos(TempStr1,LinePtr^[LineNum1]) = 0) THEN
                           BEGIN
@@ -1963,7 +1963,7 @@ VAR
                             NL;
                             Print('^2Enter replacement string:');
                             Prt(': ');
-                            InputL(TempStr2,MaxLineLen);
+							InputMain(TempStr2,MaxLineLen,[]);
                             IF (TempStr2 <> '') THEN
                             BEGIN
                               IF (Pos(TempStr1,TempStr3) > 0) THEN

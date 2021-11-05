@@ -591,11 +591,9 @@ BEGIN
   REPEAT
     GetDir(0,CurDir);
     Prompt('^0'+CurDir+'>');
-    InputL(s1,128);
+	InputMain(s1,SizeOf(s1)-1,[]);
     Parse(s1);
-	
     CheckStatus;
-	
     DoCmd(s1);
     IF (NOT NoCmd) THEN
       SysOpLog('> '+s1);
@@ -696,7 +694,7 @@ VAR
           BEGIN
             Prompt(' ^9'+PadRightInt(FArrayRecNum1,2)+' ^1'+DirInfo.Name+' ^2'+GetFileStats(FileInfo)+' ');
             MPL(50);
-            InputL(FileInfo.Description,50);
+			InputMain(FileInfo.Description,SizeOf(FileInfo.Description)-1,[]);
             Ok := TRUE;
             IF (FileInfo.Description <> '') AND (FileInfo.Description[1] = '.') THEN
             BEGIN
@@ -734,7 +732,7 @@ VAR
                 Inc(Counter);
                 Prt(PadLeftStr('',28));
                 MPL(50);
-                InputL(ExtendedArray[Counter],50);
+				InputMain(ExtendedArray[Counter],SizeOf(ExtendedArray[Counter])-1,[]);
                 IF (ExtendedArray[Counter] = '') THEN
                   Counter := MaxExtDesc;
               UNTIL (Counter = MaxExtDesc) OR (HangUp);

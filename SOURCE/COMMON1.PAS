@@ -1,5 +1,7 @@
 {$A+,B-,D+,E-,F+,I-,L+,N-,O+,R-,S-,V-}
-
+{
+11/4/2021 - moved input procs to COMMON3
+}
 UNIT Common1;
 
 INTERFACE
@@ -8,10 +10,6 @@ FUNCTION CheckPW: Boolean;
 PROCEDURE NewCompTables;
 PROCEDURE Wait(b: Boolean);
 PROCEDURE InitTrapFile;
-PROCEDURE Local_Input1(VAR S: STRING; MaxLen: Byte; LowerCase: Boolean);
-PROCEDURE Local_Input(VAR S: STRING; MaxLen: Byte);
-PROCEDURE Local_InputL(VAR S: STRING; MaxLen: Byte);
-PROCEDURE Local_OneK(VAR C: Char; S: STRING);
 PROCEDURE SysOpShell;
 PROCEDURE ReDrawForANSI;
 
@@ -283,62 +281,6 @@ BEGIN
     END;
     WriteLn(TrapFile,'***** Renegade User Audit - '+Caps(ThisUser.Name)+' on at '+DateStr+' '+TimeStr+' *****');
   END;
-END;
-
-PROCEDURE Local_Input1(VAR S: STRING; MaxLen: Byte; LowerCase: Boolean);
-VAR
-  C: Char;
-  B: Byte;
-BEGIN
-  B := 1;
-  REPEAT
-    C := ReadKey;
-    IF (NOT LowerCase) THEN
-      C := UpCase(C);
-    IF (C IN [#32..#255]) THEN
-      IF (B <= MaxLen) THEN
-      BEGIN
-        S[B] := C;
-        Inc(B);
-        Write(C);
-      END
-      ELSE
-    ELSE
-      CASE C of
-        ^H : IF (B > 1) THEN
-             BEGIN
-               Write(^H' '^H);
-               C := ^H;
-               Dec(B);
-             END;
-     ^U,^X : WHILE (B <> 1) DO
-             BEGIN
-               Write(^H' '^H);
-               Dec(B);
-             END;
-      END;
-  UNTIL (C IN [^M,^N]);
-  S[0] := Chr(B - 1);
-  IF (WhereY <= Hi(WindMax) - Hi(WindMin)) THEN
-    WriteLn;
-END;
-
-PROCEDURE Local_Input(VAR S: STRING; MaxLen: Byte);
-BEGIN
-  Local_Input1(S,MaxLen,FALSE);
-END;
-
-PROCEDURE Local_InputL(VAR S: STRING; MaxLen: Byte);
-BEGIN
-  Local_Input1(S,MaxLen,TRUE);
-END;
-
-PROCEDURE Local_OneK(VAR C: Char; S: STRING);
-BEGIN
-  REPEAT
-    C := UpCase(ReadKey)
-  UNTIL (Pos(C,S) > 0);
-  WriteLn(C);
 END;
 
 PROCEDURE SysOpShell;

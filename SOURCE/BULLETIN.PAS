@@ -437,7 +437,7 @@ BEGIN
     'T' : CASE S[2] OF
             'O' : WITH LastCallerPtr^ DO
 					IF (LogOffTime=0) THEN
-					  TodaysCallerMCI := 'N/A'
+					  TodaysCallerMCI := 'Online'
 					ELSE
 					  TodaysCallerMCI := IntToStr((LogoffTime - LogonTime) DIV 60);
           END;

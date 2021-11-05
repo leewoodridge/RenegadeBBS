@@ -244,12 +244,12 @@ BEGIN
     NL;
     Prt('Choice '+IntToStr(ChoiceNum)+': ');
     MPL(65);
-    InputWC(Topic.Answers[ChoiceNum].Answer1,65);
+    InputMain(Topic.Answers[ChoiceNum].Answer1,SizeOf(Topic.Answers[ChoiceNum].Answer1) - 1,[ColorsAllowed]);
     IF (Topic.Answers[ChoiceNum].Answer1 <> '') THEN
     BEGIN
       Prt(PadLeftStr('',7+Length(IntToStr(ChoiceNum)))+': ');
       MPL(65);
-      InputWC(Topic.Answers[ChoiceNum].Answer2,65);
+      InputMain(Topic.Answers[ChoiceNum].Answer2,SizeOf(Topic.Answers[ChoiceNum].Answer2) - 1,[ColorsAllowed]);
       NL;
       IF (NOT PYNQ('Add this choice? ',0,FALSE)) THEN
       BEGIN
@@ -477,12 +477,12 @@ BEGIN
   NL;
   Prt('Topic: ');
   MPL(SizeOf(Topic.Question1) - 1);
-  InputWC(Topic.Question1,SizeOf(Topic.Question1) - 1);
+  InputMain(Topic.Question1,SizeOf(Topic.Question1) - 1,[ColorsAllowed]);
   IF (Topic.Question1 <> '') THEN
   BEGIN
     Prt(PadLeftStr('',5)+': ');
     MPL(SizeOf(Topic.Question2) - 1);
-    InputWC(Topic.Question2,SizeOf(Topic.Question2) - 1);
+    InputMain(Topic.Question2,SizeOf(Topic.Question2) - 1,[ColorsAllowed]);
     NL;
     IF PYNQ('Are you sure? ',0,FALSE) THEN
     BEGIN
@@ -507,7 +507,7 @@ BEGIN
         Inc(ChoiceNum);
         Prt('Choice '+PadRightInt(ChoiceNum,2)+': ');
         MPL(SizeOf(Topic.Answers[ChoiceNum].Answer1) - 1);
-        InputWC(Topic.Answers[ChoiceNum].Answer1,SizeOf(Topic.Answers[ChoiceNum].Answer1) - 1);
+        InputMain(Topic.Answers[ChoiceNum].Answer1,SizeOf(Topic.Answers[ChoiceNum].Answer1) - 1,[ColorsAllowed]);
         IF (Topic.Answers[ChoiceNum].Answer1 = '') THEN
           Abort := TRUE
         ELSE
@@ -515,7 +515,7 @@ BEGIN
           Inc(Topic.ChoiceNumber);
           Prt(PadLeftStr('',9)+': ');
           MPL(SizeOf(Topic.Answers[ChoiceNum].Answer2) - 1);
-          InputWC(Topic.Answers[ChoiceNum].Answer2,SizeOf(Topic.Answers[ChoiceNum].Answer2) - 1);
+          InputMain(Topic.Answers[ChoiceNum].Answer2,SizeOf(Topic.Answers[ChoiceNum].Answer2) - 1,[ColorsAllowed]);
           Topic.Answers[ChoiceNum].NumVotedAnswer := 0;
         END;
       END;
