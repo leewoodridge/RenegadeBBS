@@ -1,6 +1,11 @@
 # Renegade Bulletin Board System
 Copyright (c) 1991-2021 The Renegade Development Team ─ Cott Lang, Patrick Spence, Gary Hall, Jeff Herrings, T.J. McMillen, Chris Hoppman, Lee Palmer, and Lee Woodridge.
 #
+  * moving input procs to COMMON3
+  * *T menu cmd to toggle sysop chat availability
+  * %SA display sysop chat availability
+  * combined all language strings to rglng
+  * nesting code that doesn't get called elsewhere
   * bugfix yes/no lightbar to prevent it from eating itself
   * removed extra linefeeds above generic menu titles
   * text/lang files to /text/ subdir
