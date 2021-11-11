@@ -268,7 +268,7 @@ VAR
   VAR
     TmpZipCode: STRING[10];
   BEGIN
-    IF (How <> 1) THEN
+    IF (How <> 1) OR (TmpCountryCode=0) THEN
       AskCountry;
     CASE TmpCountryCode OF
       1 : InputFormatted(lRGLngStr(202,TRUE),TmpZipCode,'#####-####',(How <> 1)); {"Enter zip code"}
