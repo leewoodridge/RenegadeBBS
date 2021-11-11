@@ -1,5 +1,7 @@
 {$A+,B-,D+,E-,F+,I-,L+,N-,O+,R-,S+,V-}
+{
 
+}
 UNIT SysOp2G;
 
 INTERFACE
@@ -16,24 +18,13 @@ IMPLEMENTATION
 
 USES
   ShortMsg,
+  SysOp2,
   SysOp7,
   TimeFunc;
 
 CONST
-  Settings: ACFlagSet = [RLogon,
-                       RChat,
-                       RValidate,
-                       RUserList,
-                       RAMsg,
-                       RPostAN,
-                       RPost,
-                       REmail,
-                       RVoting,
-                       RMsg,
-                       FNoDLRatio,
-                       FNoPostRatio,
-                       FNoCredits,
-                       FNoDeletion];
+  Settings: ACFlagSet = [RLogon, RChat, RValidate, RUserList, RAMsg, RPostAN, RPost,REmail,
+                         RVoting, RMsg, FNoDLRatio, FNoPostRatio, FNoCredits, FNoDeletion];
 
 FUNCTION ARMatch(SoftAR: Boolean; UserAR,NewAR: ARFlagSet): Boolean;
 VAR
@@ -70,7 +61,7 @@ PROCEDURE DisplayValidationRecords(VAR RecNumToList1: Integer);
 VAR
   TempStr: AStr;
   NumDone,
-  NumOnline: Byte;
+  NumOnLine: Byte;
 BEGIN
   IF (RecNumToList1 < 1) OR (RecNumToList1 > NumValKeys) THEN
     RecNumToList1 := 1;
@@ -78,35 +69,37 @@ BEGIN
   Next := FALSE;
   TempStr := '';
   NumOnline := 0;
-  CLS;
-  PrintACR('^1##^2:^1K^2:^1Description                     ^1##^2:^1K^2:^1Description');
-  PrintACR('^2==:=:==============================  ==:=:==============================');
+  ConfigHeader('Validation Editor');
+  PrintACR('^5<^4##^5> <^4K^5/^4Description>                    ^5<^4##^5> <^4K^5/^4Description^5>'); { List header }
+  HL;
   Reset(ValidationFile);
   NumDone := 0;
   WHILE (NumDone < (PageLength - 5)) AND (RecNumToList1 >= 1) AND (RecNumToList1 <= NumValKeys)
         AND (NOT Abort) AND (NOT HangUp) DO
-  BEGIN
-    Seek(ValidationFile,(RecNumToList1 - 1));
-    Read(ValidationFile,Validation);
-    TempStr := TempStr + '^1'+PadLeftStr(PadRightInt(RecNumToList1,2)+
-                         ' ^1'+Validation.Key+
-                         ' ^1'+Validation.Description,37);
-    Inc(NumOnline);
-    IF (NumOnline = 2) THEN
     BEGIN
-      PrintaCR(TempStr);
-      NumOnline := 0;
-      Inc(NumDone);
-      TempStr := '';
+      Seek(ValidationFile,(RecNumToList1 - 1));
+      Read(ValidationFile,Validation);
+      TempStr := TempStr + PadLeftStr(' ^1'+PadLeftInt(RecNumToList1,3)+' '+
+                                      ' ^1'+PadLeftStr(Validation.Key,1)+{' '+}
+                                      ' ^1'+Validation.Description,39);
+      Inc(NumOnLine);
+      IF (NumOnLine = 2) THEN
+        BEGIN
+          PrintACR(TempStr);
+          NumOnLine := 0;
+          Inc(NumDone);
+          TempStr := '';
+        END
+      ELSE
+        TempStr := TempStr + ' ';
+      Inc(RecNumToList1);
     END;
-    Inc(RecNumToList1);
-  END;
-  Close(ValidationFile);
-  LastError := IOResult;
-  IF (NumOnline = 1) AND (NOT Abort) AND (NOT HangUp) THEN
-    PrintaCR(TempStr);
-  IF (NumValKeys = 0) AND (NOT Abort) AND (NOT HangUp) THEN
-    Print('^8No validation records.');
+    Close(ValidationFile);
+    LastError := IOResult;
+    IF (NumOnline = 1) AND (NOT Abort) AND (NOT HangUp) THEN
+      PrintACR(TempStr);
+    IF (NumValKeys = 0) AND (NOT Abort) AND (NOT HangUp) THEN
+      Messages(4,0,'validation records'); {"No validation records exist!"}
 END;
 
 PROCEDURE AutoValidate(VAR User: UserRecordType; UNum: Integer; Level: Char);
@@ -344,7 +337,7 @@ BEGIN
   END;
   Print('%LFPress <ENTER> to abort.');
   Prt('%LFPassword: ');
-  GetPassword(TempPW,20);
+  InputMain(TempPW,SizeOf(TempPW)-1,[IsPassword]); {GetPassword(TempPW,20);}
   IF (TempPW = '') THEN
   BEGIN
     Print('%LFAborted.');
@@ -487,35 +480,34 @@ VAR
     WITH Validation DO
       REPEAT
         IF (Cmd1 <> '?') THEN
-        BEGIN
-          Abort := FALSE;
-          Next := FALSE;
-          CLS;
-          IF (Editing) THEN
-            PrintACR('^1Editing validation record #'+IntToStr(RecNumToEdit)+' of '+IntToStr(NumValKeys))
-          ELSE
-            PrintACR('^1Inserting validation record #'+IntToStr(RecNumToEdit)+' of '+IntToStr(NumValKeys + 1));
-          NL;
-          PrintACR('^0A. Key        : ^1'+Key);
-          PrintACR('^0B. Description: ^1'+Description);
-          PrintACR('^0C. User msg   : ^1'+AOnOff(UserMsg = '','*None*',UserMsg));
-          PrintACR('^0D. New SL     : ^1'+IntToStr(NewSL));
-          PrintACR('^0E. New DSL    : ^1'+IntToStr(NewDSL));
-          PrintACR('^0G. AR         : Flags: ^1'+DisplayARFlags(NewAR,'5','1')+
-                   ' ^0Upgrade: ^1'+AOnOff(SoftAR,'Soft','Hard'));
-          PrintACR('^0H. AC         : Flags: ^1'+DisplayACFlags(NewAC,'5','1')+
-                   ' ^0Upgrade: ^1'+AOnOff(SoftAC,'Soft','Hard'));
-          PrintACR('^0I. New points : ^1'+IntToStr(NewFP));
-          PrintACR('^0K. New credit : ^1'+IntToStr(NewCredit));
-          PrintACR('^0M. Start menu : ^1'+IntToStr(NewMenu));
-          PrintACR('^0N. Expiration : Days: ^1'+AOnOff((Expiration > 0),IntToStr(Expiration),'No Expiration')+
-                   ' ^0Level: ^1'+AOnOff((ExpireTo IN ['!'..'~']),ExpireTo,'No Change'));
+          BEGIN
+            Abort := FALSE;
+            Next := FALSE;
+            IF (Editing) THEN
+              ConfigHeader('Editing Validation Record #'+IntToStr(RecNumToEdit)+' Of '+IntToStr(NumValKeys))
+            ELSE
+              ConfigHeader('Inserting Validation Record #'+IntToStr(RecNumToEdit)+' Of '+IntToStr(NumValKeys + 1));
+          PrintACR('^0(^1A^0) Key         : ^1'+Key);
+          PrintACR('^0(^1B^0) Description : ^1'+Description);
+          PrintACR('^0(^1C^0) Message     : ^1'+AOnOff(UserMsg='','*None*',UserMsg));
+          PrintACR('^0(^1D^0) SL          : ^1'+IntToStr(NewSL));
+          PrintACR('^0(^1E^0) DSL         : ^1'+IntToStr(NewDSL));
+          PrintACR('^0(^1G^0) AR Flags    : ^1'+DisplayARFlags(NewAR,'1','0')+
+                   '^0 Upgrade: ^1'+AOnOff(SoftAR,'Soft','Hard'));
+          PrintACR('^0(^1H^0) AC Flags    : ^1'+DisplayACFlags(NewAC,'1','0')+
+                   '^0 Upgrade: ^1'+AOnOff(SoftAC,'Soft','Hard'));
+          PrintACR('^0(^1I^0) File Points : ^1'+IntToStr(NewFP));
+          PrintACR('^0(^1K^0) Credits     : ^1'+IntToStr(NewCredit));
+          PrintACR('^0(^1M^0) Start Menu  : ^1'+IntToStr(NewMenu));
+          PrintACR('^0(^1N^0) Expiration  : Days: ^1'+AOnOff((Expiration > 0),IntToStr(Expiration),'No Expiration')+
+                   '^0 Level: ^1'+AOnOff((ExpireTo IN ['!'..'~']),ExpireTo,'No Change'));
         END;
         IF (NOT Editing) THEN
           CmdStr := 'ABCDEGHIKMN'
         ELSE
           CmdStr := 'ABCDEGHIKMN[]FJL';
-        LOneK('%LFModify menu [^1?^2=^1Help^2]: ',Cmd1,'Q?'+CmdStr+^M,TRUE,TRUE);
+        NL;
+        LOneK('Modify Validation Level [^1[]FLJ^2,(^1?^2)Help,(^1Q^2)uit]: ',Cmd1,'Q?'+CmdStr{+^M},TRUE,TRUE);
         CASE Cmd1 OF
           'A' : BEGIN
                   Print('%LF^8You can not modify the validation key.');
@@ -550,9 +542,9 @@ VAR
                 END;
           'G' : BEGIN
                   REPEAT
-                    Prt('%LFToggle which AR flag? ('+DisplayARFlags(NewAR,'5','4')+'^2)'+
-                        ' [^1*^2=^1All^2,^1?^2=^1Help^2,^1<CR>^2=^1Quit^2]: ');
-                    OneK(Cmd1,^M'ABCDEFGHIJKLMNOPQRSTUVWXYZ*?',TRUE,TRUE);
+                    LOneK('%LFToggle which AR flag? ('+DisplayARFlags(NewAR,'5','4')+'^2)'+
+                        ' [^1*^2=^1All^2,^1?^2=^1Help^2,^1<CR>^2=^1Quit^2]: ',
+                        Cmd1,^M'ABCDEFGHIJKLMNOPQRSTUVWXYZ*?',TRUE,TRUE);
                     IF (Cmd1 = '?') THEN
                       PrintF('ARFLAGS')
                     ELSE IF (Cmd1 IN ['A'..'Z']) THEN
@@ -569,9 +561,8 @@ VAR
                 END;
           'H' : BEGIN
                   REPEAT
-                    Prt('%LFToggle which AC flag? ('+DisplayACFlags(NewAC,'5','4')+'^2)'+
-                        ' [^1?^2=^1Help^2,^1<CR>^2=^1Quit^2]: ');
-                    OneK(Cmd1,^M'LCVUA*PEKM1234?',TRUE,TRUE);
+                    LOneK('%LFToggle which AC flag? ('+DisplayACFlags(NewAC,'5','4')+'^2)'+
+                        ' [^1?^2=^1Help^2,^1<CR>^2=^1Quit^2]: ',Cmd1,^M'LCVUA*PEKM1234?',TRUE,TRUE);
                     IF (Cmd1 = '?') THEN
                       PrintF('ACFLAGS')
                     ELSE IF (Cmd1 <> ^M) THEN
@@ -588,39 +579,44 @@ VAR
           'K' : InputLongIntWC('%LFEnter additional credit',NewCredit,[DisplayValue,NumbersOnly],0,2147483647,Changed);
           'M' : FindMenu('%LFEnter start menu (^10^2=^1Default^2)',NewMenu,0,NumMenus,Changed);
           'N' : IF (Validation.Key = '!') THEN
-                BEGIN
-                  Print('%LF^8You can not modify the new user expiration days or level.');
-                  PauseScr(FALSE);
-                END
+                  BEGIN
+                    Print('%LF^8You can not modify the new user expiration days or level.');
+                    PauseScr(FALSE);
+                  END
                 ELSE
-                BEGIN
-                  InputWordWC('%LFEnter days until expiration',Expiration,[DisplayValue,NumbersOnly],0,65535,Changed);
-                  OneKCmds := '';
-                  FOR Cmd2 := '!' TO '~' DO
-                    IF (Cmd2 IN ValKeys) THEN
-                      IF (NOT (Cmd2 = Key)) THEN
-                         OneKCmds := OneKCmds + Cmd2;
-                  Prt('%LFEnter expiration level (^1!^2-^1P^2,^1R^2-^1p^2,^1r^2-^1~^2) [^1<Space>^2=^1No Change^2]: ');
-                  OneK1(Cmd1,^M' '+OneKCmds,TRUE,TRUE);
-                  IF (Cmd1 = ' ') OR (Cmd1 IN ValKeys) THEN
                   BEGIN
-                    IF (Cmd1 <> ExpireTo) THEN
-                      Changed := TRUE;
-                    ExpireTo := Cmd1;
-                  END;
-                  IF (Expiration = 0) THEN
-                  BEGIN
-                    ExpireTo := ' ';
-                    Changed := TRUE;
-                  END;
-                  IF (ExpireTo = ' ') THEN
-                  BEGIN
-                    Expiration := 0;
-                    Changed := TRUE;
-                  END;
+                    InputWordWC('%LF^2Enter days until expiration',Expiration,[InterActiveEdit{DisplayValue},
+                        NumbersOnly],0,65535,Changed);
+                    IF (Expiration <> 0) THEN
+                      BEGIN
+                        OneKCmds := '';
+                        FOR Cmd2 := '!' TO '~' DO
+                          IF (Cmd2 IN ValKeys) THEN
+                            IF (NOT (Cmd2 = Key)) THEN
+                              OneKCmds := OneKCmds + Cmd2;
+                        Prt('%LF^2Enter expiration level (^1!^2-^1P^2,^1R^2-^1p^2,^1r^2-^1~^2) [<Space>Abort]: ');
+                        OneK1(Cmd1,^M' '+OneKCmds,TRUE,TRUE);
+                        IF (Cmd1 = ' ') THEN
+                          BEGIN
+                            ExpireTo := ' ';
+                            Expiration := 0;
+                            Changed := TRUE;
+                          END
+                      ELSE IF (Cmd1 IN ValKeys) THEN
+                        BEGIN
+                          IF (Cmd1 <> ExpireTo) THEN
+                            Changed := TRUE;
+                          ExpireTo := Cmd1;
+                        END;
+                    END
+                  ELSE
+                    BEGIN
+                      ExpireTo := ' ';
+                      {Changed := TRUE;}
+                    END;
                   Cmd1 := #0;
                   Cmd2 := #0;
-                END;
+                  END;
           '[' : IF (RecNumToEdit > 1) THEN
                   Dec(RecNumToEdit)
                 ELSE
@@ -655,15 +651,18 @@ VAR
                   Cmd1 := #0;
                 END;
           '?' : BEGIN
+                  {
                   Print('%LF^0<^1CR^0>Redisplay current screen');
                   Print('^1A^0-^1E^0,^1G^0-^1I^0,^1K^0,^1M^0-^1N^0:Modify item');
                   IF (NOT Editing) THEN
                     LCmds(20,3,'Quit and save','')
                   ELSE
+                  }
                   BEGIN
-                    LCmds(20,3,'[Back entry',']Forward entry');
-                    LCmds(20,3,'First entry in list','Jump to entry');
-                    LCmds(20,3,'Last entry in list','Quit and save');
+                    NL;
+                    LCmds(17,1,'[Previous Record',']Next Record');
+                    LCmds(17,1,'First Record','Last Record');
+                    LCmds(17,1,'Jump To Record',''{'Quit and save'});
                   END;
                 END;
         END;
@@ -679,65 +678,65 @@ VAR
     Changed: Boolean;
   BEGIN
     IF (NumValKeys = MaxValKeys) THEN
-      Messages(5,MaxValKeys,'validation records')
+      Messages(5,MaxValKeys,'validation records') {"No more than # validation records can exist!"}
     ELSE
-    BEGIN
-      RecNumToInsertBefore := -1;
-      InputIntegerWOC('%LFValidation record to insert before?',RecNumToInsertBefore,[NumbersOnly],1,(NumValKeys + 1));
-      IF (RecNumToInsertBefore >= 1) AND (RecNumToInsertBefore <= (NumValKeys + 1)) THEN
       BEGIN
-        OneKCmds := '';
-        FOR Cmd1 := '!' TO '~' DO
-          IF (NOT (Cmd1 IN ValKeys)) AND (NOT (Cmd1 = 'Q')) AND (NOT (Cmd1 = 'q')) THEN
-            OneKCmds := OneKCmds + Cmd1;
-        Prt('%LFChoose validation key (^1!^2-^1P^2,^1R^2-^1p^2,^1r^2-^1~^2) [^1<CR>^2=^1Quit^2]: ');
-        OneK1(Cmd1,^M+OneKCmds,TRUE,TRUE);
-        IF (Cmd1 <> ^M) THEN
-        BEGIN
-          Reset(ValidationFile);
-          InitValidateVars(TempValidation1);
-          TempValidation1.Key := Cmd1;
-          IF (RecNumToInsertBefore = 1) THEN
-            RecNumToEdit := 1
-          ELSE IF (RecNumToInsertBefore = (NumValKeys + 1)) THEN
-            RecNumToEdit := (NumValKeys + 1)
-          ELSE
-            RecNumToEdit := RecNumToInsertBefore;
-          REPEAT
-            OK := TRUE;
-            EditValidationLevel(TempValidation1,TempValidation1,Cmd1,RecNumToEdit,Changed,FALSE);
-            CheckValidationLevel(TempValidation1,1,1,Ok);
-            IF (NOT OK) THEN
-              IF (NOT PYNQ('%LFContinue inserting validation record? ',0,TRUE)) THEN
-                Abort := TRUE;
-          UNTIL (OK) OR (Abort) OR (HangUp);
-          IF (NOT Abort) AND (PYNQ('%LFIs this what you want? ',0,FALSE)) THEN
+        RecNumToInsertBefore := -1;
+        InputIntegerWOC('%LFValidation record to insert before?',RecNumToInsertBefore,[NumbersOnly],1,(NumValKeys + 1));
+        IF (RecNumToInsertBefore >= 1) AND (RecNumToInsertBefore <= (NumValKeys + 1)) THEN
           BEGIN
-            Include(ValKeys,Cmd1);
-            Print('%LF[> Inserting validation record ...');
-            Seek(ValidationFile,FileSize(ValidationFile));
-            Write(ValidationFile,Validation);
-            Dec(RecNumToInsertBefore);
-            FOR RecNum := ((FileSize(ValidationFile) - 1) - 1) DOWNTO RecNumToInsertBefore DO
-            BEGIN
-              Seek(ValidationFile,RecNum);
-              Read(ValidationFile,Validation);
-              Seek(ValidationFile,(RecNum + 1));
-              Write(ValidationFile,Validation);
-            END;
-            FOR RecNum := RecNumToInsertBefore TO ((RecNumToInsertBefore + 1) - 1) DO
-            BEGIN
-              Seek(ValidationFile,RecNum);
-              Write(ValidationFile,TempValidation1);
-              Inc(NumValKeys);
-              SysOpLog('* Inserted validation record: ^1'+TempValidation1.Description);
-            END;
+            OneKCmds := '';
+            FOR Cmd1 := '!' TO '~' DO
+              IF (NOT (Cmd1 IN ValKeys)) AND (NOT (Cmd1 = 'Q')) AND (NOT (Cmd1 = 'q')) THEN
+                OneKCmds := OneKCmds + Cmd1;
+            Prt('%LFChoose validation key (^1!^2-^1P^2,^1R^2-^1p^2,^1r^2-^1~^2) [^1<CR>^2=^1Quit^2]: ');
+            OneK1(Cmd1,^M+OneKCmds,TRUE,TRUE);
+            IF (Cmd1 <> ^M) THEN
+              BEGIN
+                Reset(ValidationFile);
+                InitValidateVars(TempValidation1);
+                TempValidation1.Key := Cmd1;
+                IF (RecNumToInsertBefore = 1) THEN
+                  RecNumToEdit := 1
+                ELSE IF (RecNumToInsertBefore = (NumValKeys + 1)) THEN
+                  RecNumToEdit := (NumValKeys + 1)
+                ELSE
+                  RecNumToEdit := RecNumToInsertBefore;
+                REPEAT
+                  OK := TRUE;
+                  EditValidationLevel(TempValidation1,TempValidation1,Cmd1,RecNumToEdit,Changed,FALSE);
+                  CheckValidationLevel(TempValidation1,1,1,Ok);
+                  IF (NOT OK) THEN
+                    IF (NOT PYNQ('%LFContinue inserting validation record? ',0,TRUE)) THEN
+                      Abort := TRUE;
+                UNTIL (OK) OR (Abort) OR (HangUp);
+                IF (NOT Abort) AND (PYNQ('%LFIs this what you want? ',0,FALSE)) THEN
+                  BEGIN
+                    Include(ValKeys,Cmd1);
+                    Print('%LF^9[> Inserting validation record ...^0');
+                    Seek(ValidationFile,FileSize(ValidationFile));
+                    Write(ValidationFile,Validation);
+                    Dec(RecNumToInsertBefore);
+                    FOR RecNum := ((FileSize(ValidationFile) - 1) - 1) DOWNTO RecNumToInsertBefore DO
+                      BEGIN
+                        Seek(ValidationFile,RecNum);
+                        Read(ValidationFile,Validation);
+                        Seek(ValidationFile,(RecNum + 1));
+                        Write(ValidationFile,Validation);
+                      END;
+                    FOR RecNum := RecNumToInsertBefore TO ((RecNumToInsertBefore + 1) - 1) DO
+                      BEGIN
+                        Seek(ValidationFile,RecNum);
+                        Write(ValidationFile,TempValidation1);
+                        Inc(NumValKeys);
+                        SysOpLog('* Inserted validation record: ^1'+TempValidation1.Description);
+                      END;
+                  END;
+                Close(ValidationFile);
+                LastError := IOResult;
+              END;
           END;
-          Close(ValidationFile);
-          LastError := IOResult;
-        END;
       END;
-    END;
   END;
 
   PROCEDURE ModifyValidationLevel(TempValidation1: ValidationRecordType; Cmd1: Char; RecNumToEdit: Integer);
@@ -747,48 +746,48 @@ VAR
     Changed: Boolean;
   BEGIN
     IF (NumValKeys = 0) THEN
-      Messages(4,0,'validation records')
+      Messages(4,0,'validation records') {"No validation records exist!"}
     ELSE
-    BEGIN
-      RecNumToEdit := -1;
-      InputIntegerWOC('%LFValidation record to modify?',RecNumToEdit,[NumbersOnly],1,NumValKeys);
-      IF (RecNumToEdit >= 1) AND (RecNumToEdit <= NumValKeys) THEN
       BEGIN
-        SaveRecNumToEdit := -1;
-        Cmd1 := #0;
-        Reset(ValidationFile);
-        WHILE (Cmd1 <> 'Q') AND (NOT HangUp) DO
-        BEGIN
-          IF (SaveRecNumToEdit <> RecNumToEdit) THEN
+        RecNumToEdit := -1;
+        InputIntegerWOC('%LF^2Modify which validation record?',RecNumToEdit,[NumbersOnly],1,NumValKeys);
+        IF (RecNumToEdit >= 1) AND (RecNumToEdit <= NumValKeys) THEN
           BEGIN
-            Seek(ValidationFile,(RecNumToEdit - 1));
-            Read(ValidationFile,Validation);
-            SaveRecNumToEdit := RecNumToEdit;
-            Changed := FALSE;
+            SaveRecNumToEdit := -1;
+            Cmd1 := #0;
+            Reset(ValidationFile);
+            WHILE (Cmd1 <> 'Q') AND (NOT HangUp) DO
+              BEGIN
+                IF (SaveRecNumToEdit <> RecNumToEdit) THEN
+                  BEGIN
+                    Seek(ValidationFile,(RecNumToEdit - 1));
+                    Read(ValidationFile,Validation);
+                    SaveRecNumToEdit := RecNumToEdit;
+                    Changed := FALSE;
+                  END;
+                REPEAT
+                  Ok := TRUE;
+                  EditValidationLevel(TempValidation1,Validation,Cmd1,RecNumToEdit,Changed,TRUE);
+                  CheckValidationLevel(Validation,1,1,Ok);
+                  IF (NOT OK) THEN
+                    BEGIN
+                      PauseScr(FALSE);
+                      IF (RecNumToEdit <> SaveRecNumToEdit) THEN
+                        RecNumToEdit := SaveRecNumToEdit;
+                    END;
+                UNTIL (OK) OR (HangUp);
+                IF (Changed) THEN
+                  BEGIN
+                    Seek(ValidationFile,(SaveRecNumToEdit - 1));
+                    Write(ValidationFile,Validation);
+                    Changed := FALSE;
+                    SysOpLog('* Modified validation record: ^1'+Validation.Description);
+                  END;
+              END;
+            Close(ValidationFile);
+            LastError := IOResult;
           END;
-          REPEAT
-            Ok := TRUE;
-            EditValidationLevel(TempValidation1,Validation,Cmd1,RecNumToEdit,Changed,TRUE);
-            CheckValidationLevel(Validation,1,1,Ok);
-            IF (NOT OK) THEN
-            BEGIN
-              PauseScr(FALSE);
-              IF (RecNumToEdit <> SaveRecNumToEdit) THEN
-                RecNumToEdit := SaveRecNumToEdit;
-            END;
-          UNTIL (OK) OR (HangUp);
-          IF (Changed) THEN
-          BEGIN
-            Seek(ValidationFile,(SaveRecNumToEdit - 1));
-            Write(ValidationFile,Validation);
-            Changed := FALSE;
-            SysOpLog('* Modified validation record: ^1'+Validation.Description);
-          END;
-        END;
-        Close(ValidationFile);
-        LastError := IOResult;
       END;
-    END;
   END;
 
   PROCEDURE PositionValidationLevel(TempValidation1: ValidationRecordType; RecNumToPosition: Integer);
@@ -798,52 +797,54 @@ VAR
     RecNum2: Integer;
   BEGIN
     IF (NumValKeys = 0) THEN
-      Messages(4,0,'validation records')
+      Messages(4,0,'validation records') {"No validation records exist!"}
     ELSE IF (NumValKeys = 1) THEN
-      Messages(6,0,'validation records')
+      Messages(6,0,'validation records') {"No validation records to position!"}
     ELSE
-    BEGIN
-      RecNumToPosition := -1;
-      InputIntegerWOC('%LFPosition which validation record?',RecNumToPosition,[NumbersOnly],1,NumValKeys);
-      IF (RecNumToPosition >= 1) AND (RecNumToPosition <= NumValKeys) THEN
       BEGIN
-        Print('%LFAccording to the current numbering system.');
-        RecNumToPositionBefore := -1;
-        InputIntegerWOC('%LFPosition before which validation record?',RecNumToPositionBefore,[NumbersOnly],1,(NumValKeys + 1));
-        IF (RecNumToPositionBefore >= 1) AND (RecNumToPositionBefore <= (NumValKeys + 1)) AND
-           (RecNumToPositionBefore <> RecNumToPosition) AND (RecNumToPositionBefore <> (RecNumToPosition + 1)) THEN
-        BEGIN
-          Print('%LF[> Positioning validation records ...');
-          Reset(ValidationFile);
-          IF (RecNumToPositionBefore > RecNumToPosition) THEN
-            Dec(RecNumToPositionBefore);
-          Dec(RecNumToPosition);
-          Dec(RecNumToPositionBefore);
-          Seek(ValidationFile,RecNumToPosition);
-          Read(ValidationFile,TempValidation1);
-          RecNum1 := RecNumToPosition;
-          IF (RecNumToPosition > RecNumToPositionBefore) THEN
-            RecNum2 := -1
-          ELSE
-            RecNum2 := 1;
-          WHILE (RecNum1 <> RecNumToPositionBefore) DO
+        RecNumToPosition := -1;
+        InputIntegerWOC('%LF^2Position which validation record?',RecNumToPosition,[NumbersOnly],1,NumValKeys);
+        IF (RecNumToPosition >= 1) AND (RecNumToPosition <= NumValKeys) THEN
           BEGIN
-            IF ((RecNum1 + RecNum2) < FileSize(ValidationFile)) THEN
-            BEGIN
-              Seek(ValidationFile,(RecNum1 + RecNum2));
-              Read(ValidationFile,Validation);
-              Seek(ValidationFile,RecNum1);
-              Write(ValidationFile,Validation);
-            END;
-            Inc(RecNum1,RecNum2);
+            Print('%LF^0According to the CURRENT numbering system ...');
+            RecNumToPositionBefore := -1;
+            InputIntegerWOC('%LF^2Position before which validation record?',RecNumToPositionBefore,[NumbersOnly],1,
+                        (NumValKeys + 1));
+            IF (RecNumToPositionBefore >= 1) AND (RecNumToPositionBefore <= (NumValKeys + 1)) AND
+               (RecNumToPositionBefore <> RecNumToPosition) AND (RecNumToPositionBefore <> (RecNumToPosition + 1)) THEN
+              BEGIN
+                Print('%LF^9[> Positioning validation records ...^0');
+                Reset(ValidationFile);
+                IF (RecNumToPositionBefore > RecNumToPosition) THEN
+                  Dec(RecNumToPositionBefore);
+                Dec(RecNumToPosition);
+                Dec(RecNumToPositionBefore);
+                Seek(ValidationFile,RecNumToPosition);
+                Read(ValidationFile,TempValidation1);
+                RecNum1 := RecNumToPosition;
+                IF (RecNumToPosition > RecNumToPositionBefore) THEN
+                  RecNum2 := -1
+                ELSE
+                  RecNum2 := 1;
+                WHILE (RecNum1 <> RecNumToPositionBefore) DO
+                  BEGIN
+                    IF ((RecNum1 + RecNum2) < FileSize(ValidationFile)) THEN
+                      BEGIN
+                        Seek(ValidationFile,(RecNum1 + RecNum2));
+                        Read(ValidationFile,Validation);
+                        Seek(ValidationFile,RecNum1);
+                        Write(ValidationFile,Validation);
+                      END;
+                    Inc(RecNum1,RecNum2);
+                  END;
+                Seek(ValidationFile,RecNumToPositionBefore);
+                Write(ValidationFile,TempValidation1);
+                Close(ValidationFile);
+                LastError := IOResult;
+              END;
           END;
-          Seek(ValidationFile,RecNumToPositionBefore);
-          Write(ValidationFile,TempValidation1);
-          Close(ValidationFile);
-          LastError := IOResult;
-        END;
       END;
-    END;
+    {PauseScr(FALSE);}
   END;
 
 BEGIN
@@ -854,7 +855,8 @@ BEGIN
   REPEAT
     IF (Cmd <> '?') THEN
       DisplayValidationRecords(RecNumToList);
-    LOneK('%LFValidation editor [^1?^2=^1Help^2]: ',Cmd,'QDIMP?'^M,TRUE,TRUE);
+    NL;
+    LOneK('^2Validation Editor [^1DIMP^2,(^1?^2)Help,(^1Q^2)uit]: ',Cmd,'Q?DIMP'^M,TRUE,TRUE);
     CASE Cmd OF
       ^M  : IF (RecNumToList < 1) OR (RecNumToList > NumValKeys) THEN
               RecNumToList := 1;
@@ -863,11 +865,12 @@ BEGIN
       'M' : ModifyValidationLevel(TempValidation,Cmd,RecNumToList);
       'P' : PositionValidationLevel(TempValidation,RecNumToList);
       '?' : BEGIN
-              Print('%LF^0<^1CR^0>Next screen or redisplay screen');
-              Print('^0(^1?^0)Help/First validation level');
-              LCmds(24,3,'Delete validation level','Insert validation level');
-              LCmds(24,3,'Modify validation level','Position validation level');
-              LCmds(24,3,'Quit','');
+              NL;
+              Print('^0<^1CR^0>Next Page / Refresh');
+              {Print('^0(^1?^0)Help/First validation level');}
+              LCmds(24,1,'Delete Validation Level','Insert Validation Level');
+              LCmds(24,1,'Modify Validation Level','Position Validation Level');
+              {LCmds(24,1,'Quit','');}
             END;
     END;
     IF (Cmd <> ^M) THEN
@@ -876,5 +879,4 @@ BEGIN
   TempPause := SaveTempPause;
   LastError := IOResult;
 END;
-
 END.

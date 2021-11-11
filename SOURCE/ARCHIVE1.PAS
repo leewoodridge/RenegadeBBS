@@ -140,13 +140,13 @@ BEGIN
   AType := 0;
   Counter := 1;
   WHILE (Counter <= MaxArcs) AND (AType = 0) DO
-	BEGIN
+    BEGIN
       IF (General.FileArcInfo[Counter].Active) THEN
         IF (General.FileArcInfo[Counter].Ext <> '') THEN
           IF (General.FileArcInfo[Counter].Ext = Copy(FileName,(Length(FileName) - 2),3)) THEN
-			AType := Counter;
+            AType := Counter;
       Inc(Counter);
-	END;
+    END;
   ArcType := AType;
 END;
 
@@ -246,12 +246,12 @@ BEGIN
   IF (FileSysOp) THEN
   BEGIN
     MPL(52);
-    Input(FileName,52);
+    InputMain(FileName,52,[UpperOnly]);
   END
   ELSE
   BEGIN
     MPL(12);
-    Input(FileName,12);
+    InputMain(FileName,12,[UpperOnly]);
   END;
 
   FileName := SQOutSp(FileName);
@@ -347,7 +347,7 @@ BEGIN
       Print('but you can''t extract files from it.');
     NL;
     Prt('Which? (^1C^2=^1Copy'+AOnOff((AType <> 0),'^2,^1E^2=^1Extract','')+'^2,^1Q^2=^1Quit^2): ');
-    OneK(Cmd,'QC'+AOnOff((AType <> 0),'E',''),TRUE,TRUE);
+    LOneK('',Cmd,'QC'+AOnOff((AType <> 0),'E',''),TRUE,TRUE);
     CASE Cmd OF
       'C' : BEGIN
               FSplit(ArcFileName,DS,NS,ES);
@@ -361,7 +361,7 @@ BEGIN
               REPEAT
                 NL;
                 Prt('Extract files (^1E^2=^1Extract^2,^1V^2=^1View^2,^1Q^2=^1Quit^2): ');
-                OneK(Cmd,'QEV',TRUE,TRUE);
+                LOneK('',Cmd,'QEV',TRUE,TRUE);
                 CASE Cmd OF
                   'E' : BEGIN
                           NL;
@@ -372,7 +372,7 @@ BEGIN
                             NL;
                             Prt('File name: ');
                             MPL(12);
-                            Input(FileName,12);
+                            InputMain(FileName,12,[UpperOnly]);
                             FileName := SQOutSp(FileName);
                             IF (FileName = '') THEN
                             BEGIN
@@ -460,13 +460,13 @@ BEGIN
   REPEAT
     NL;
     Prt('Temp archive menu [^1?^2=^1Help^2]: ');
-    OneK(Cmd,'QADLRVT?',TRUE,TRUE);
+    LOneK('',Cmd,'QADLRVT?',TRUE,TRUE);
     CASE Cmd OF
       'A' : BEGIN
               NL;
               Prt('Archive name: ');
               MPL(12);
-              Input(ArcFileName,12);
+              InputMain(ArcFileName,SizeOf(ArcFileName)-1,[UpperOnly]);
               IF (ArcFileName = '') THEN
               BEGIN
                 NL;
@@ -488,7 +488,7 @@ BEGIN
                   NL;
                   Prt('File name: ');
                   MPL(12);
-                  Input(FName,12);
+                  InputMain(FName,SizeOf(FName)-1,[UpperOnly]);
                   IF (FName = '') THEN
                   BEGIN
                     NL;
@@ -530,7 +530,7 @@ BEGIN
               NL;
               Prt('File name: ');
               MPL(12);
-              Input(FName,12);
+              InputMain(FName,SizeOf(FName)-1,[UpperOnly]);
               IF (FName = '') THEN
               BEGIN
                 NL;
@@ -601,7 +601,7 @@ BEGIN
               NL;
               Prt('File mask: ');
               MPL(12);
-              Input(FName,12);
+              InputMain(FName,SizeOf(FName)-1,[UpperOnly]);
               IF (FName = '') THEN
               BEGIN
                 NL;
@@ -636,7 +636,7 @@ BEGIN
               NL;
               Prt('File name: ');
               MPL(12);
-              Input(FName,12);
+              InputMain(FName,SizeOf(FName)-1,[UpperOnly]);
               IF (FName = '') THEN
               BEGIN
                 NL;
@@ -667,7 +667,7 @@ BEGIN
               NL;
               Prt('File mask: ');
               MPL(12);
-              Input(FName,12);
+              InputMain(FName,SizeOf(FName)-1,[UpperOnly]);
               IF (FName = '') THEN
               BEGIN
                 NL;

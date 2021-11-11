@@ -260,7 +260,7 @@ BEGIN
     Print('Message area: ^1'+MemMsgArea.Name+' #'+IntToStr(CompMsgArea(MArea,0))+'^0');
     NL;
     Prt('Password: ');
-    GetPassword(TempPassword,20);
+    InputMain(TempPassword,SizeOf(TempPassword)-1,[IsPassword]);
     IF (TempPassword <> MemMsgArea.Password) THEN
     BEGIN
       NL;

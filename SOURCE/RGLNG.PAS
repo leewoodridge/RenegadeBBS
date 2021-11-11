@@ -105,7 +105,7 @@ BEGIN
                 RGStrNum := 6
               ELSE IF (S = 'ENTER_MESSAGE_LINE_TWO') THEN
                 RGStrNum := 7
-              ELSE IF (S = 'NEWSCAN_BEGIN') THEN
+              ELSE IF (S = 'NEWSCAN_BEGIN') THEN {msg}
                 RGStrNum := 8
               ELSE IF (S = 'NEWSCAN_DONE') THEN
                 RGStrNum := 9
@@ -159,9 +159,9 @@ BEGIN
                 RGStrNum := 33
               ELSE IF (S = 'DEFAULT_MESSAGE_TO') THEN
                 RGStrNum := 34
-              ELSE IF (S = 'NEWSCAN_ALL') THEN
+              ELSE IF (S = 'NEWSCAN_GLOBAL_BEGIN') THEN
                 RGStrNum := 35
-              ELSE IF (S = 'NEWSCAN_DONE') THEN
+              ELSE IF (S = 'NEWSCAN_GLOBAL_COMPLETE') THEN
                 RGStrNum := 36
               ELSE IF (S = 'CHAT_REASON') THEN
                 RGStrNum := 37

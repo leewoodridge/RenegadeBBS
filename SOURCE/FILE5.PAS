@@ -399,7 +399,7 @@ VAR
     BEGIN
       Prt('File Name: ');
       MPL(12);
-      Input(s,12);
+      InputMain(s,12,[UpperOnly]);
       s := StripName(s);
       Receive(s,'',FALSE,Junk,junk2,junk3,TransferTime);
       IF (Junk) THEN
@@ -591,7 +591,7 @@ BEGIN
   REPEAT
     GetDir(0,CurDir);
     Prompt('^0'+CurDir+'>');
-	InputMain(s1,SizeOf(s1)-1,[]);
+    InputMain(s1,SizeOf(s1)-1,[]);
     Parse(s1);
     CheckStatus;
     DoCmd(s1);
@@ -683,7 +683,7 @@ VAR
             ELSE
             BEGIN
               Prt('Upload? (Yes,No,All,Quit): ');
-              OneK(Cmd,'QYNA',TRUE,TRUE);
+              LOneK('',Cmd,'QYNA',TRUE,TRUE);
               Ok := (Cmd = 'Y') OR (Cmd = 'A');
               FlagAll := (Cmd = 'A');
               Abort := (Cmd = 'Q');
@@ -694,7 +694,7 @@ VAR
           BEGIN
             Prompt(' ^9'+PadRightInt(FArrayRecNum1,2)+' ^1'+DirInfo.Name+' ^2'+GetFileStats(FileInfo)+' ');
             MPL(50);
-			InputMain(FileInfo.Description,SizeOf(FileInfo.Description)-1,[]);
+            InputMain(FileInfo.Description,SizeOf(FileInfo.Description)-1,[]);
             Ok := TRUE;
             IF (FileInfo.Description <> '') AND (FileInfo.Description[1] = '.') THEN
             BEGIN
@@ -732,7 +732,7 @@ VAR
                 Inc(Counter);
                 Prt(PadLeftStr('',28));
                 MPL(50);
-				InputMain(ExtendedArray[Counter],SizeOf(ExtendedArray[Counter])-1,[]);
+                InputMain(ExtendedArray[Counter],SizeOf(ExtendedArray[Counter])-1,[]);
                 IF (ExtendedArray[Counter] = '') THEN
                   Counter := MaxExtDesc;
               UNTIL (Counter = MaxExtDesc) OR (HangUp);
@@ -790,7 +790,7 @@ NL;
     BEGIN
       UploadFiles(FArea,FileName,FArrayRecNum);
         Inc(FArea);       
-	WKey;
+    WKey;
     END;
     FileArea := SaveFileArea;
     LoadFileArea(FileArea);

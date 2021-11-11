@@ -99,7 +99,7 @@ BEGIN
                    Print('3. '+Caps(ThisUser.Name));
                    NL;
                    Prt('Which? ');
-                   OneK(Cmd,'123'^M,TRUE,TRUE);
+                   LOneK('',Cmd,'123'^M,TRUE,TRUE);
                    CASE Cmd OF
                      '1' : MHeader.From.Anon := 3;
                      '2' : MHeader.From.Anon := 4;
@@ -1426,7 +1426,7 @@ VAR
       NL;
       Prt('File name: ');
       MPL(40);
-      Input(FileName,40);
+      InputMain(FileName,SizeOf(FileName)-1,[UpperOnly]);
       NL;
       IF (NOT CoSysOp) OR (NOT IsUL(FileName)) THEN
         FileName := General.FileAttachPath+StripName(FileName);
@@ -1522,7 +1522,7 @@ VAR
       BEGIN
         Prt('Enter file to import [Enter=Upload]: ');
         MPL(40);
-        Input(TempStr1,40);
+        InputMain(TempStr1,40,[UpperOnly]);
       END;
       IF (TempStr1 = '') THEN
       BEGIN
@@ -1598,7 +1598,7 @@ VAR
           ExitMsg := TRUE;
           NL;
           Prt('Full screen editor (^1?^2=^1Help^2): ');
-          OneK(Cmd,^M'ACFMQSTU?',TRUE,TRUE);
+          LOneK('',Cmd,^M'ACFMQSTU?',TRUE,TRUE);
           NL;
           CASE Cmd OF
             'A' : IF (CantAbort1) THEN
@@ -1782,7 +1782,7 @@ VAR
             ShowCont := TRUE;
             NL;
             Prt('Line editor (^1?^2=^1Help^2): ');
-            OneK(Cmd,^M'ACDFILMOPQRSTUZ?',TRUE,TRUE);
+            LOneK('',Cmd,^M'ACDFILMOPQRSTUZ?',TRUE,TRUE);
             IF (Cmd <> ^M) THEN
               NL;
             CASE Cmd OF
@@ -1951,7 +1951,7 @@ VAR
                         NL;
                         Print('^2Enter string to replace:');
                         Prt(': ');
-						InputMain(TempStr1,MaxLineLen,[]);
+                        InputMain(TempStr1,MaxLineLen,[]);
                         IF (TempStr1 <> '') THEN
                           IF (Pos(TempStr1,LinePtr^[LineNum1]) = 0) THEN
                           BEGIN
@@ -1963,7 +1963,7 @@ VAR
                             NL;
                             Print('^2Enter replacement string:');
                             Prt(': ');
-							InputMain(TempStr2,MaxLineLen,[]);
+                            InputMain(TempStr2,MaxLineLen,[]);
                             IF (TempStr2 <> '') THEN
                             BEGIN
                               IF (Pos(TempStr1,TempStr3) > 0) THEN

@@ -23,63 +23,63 @@ TYPE
   CompProc = FUNCTION(VAR ALine,Desire; L: Char): Integer;
 
   DATRec = RECORD
-    Zone, 											{ Zone of board 							}
-    Net,												{ Net Address of board				}
-    Node, 											{ Node Address of board 			}
-    Point: Integer;				{ Either Point number OR 0		}
-    CallCost, 									{ Cost to sysop to send 			}
-    MsgFee, 										{ Cost to user to send				}
-    NodeFlags: Word; 				{ Node flags									}
-    ModemType,									{ Modem TYPE									}
+    Zone,                                           { Zone of board                             }
+    Net,                                                { Net Address of board              }
+    Node,                                           { Node Address of board             }
+    Point: Integer;             { Either Point number OR 0      }
+    CallCost,                                   { Cost to sysop to send             }
+    MsgFee,                                         { Cost to user to send              }
+    NodeFlags: Word;                { Node flags                                    }
+    ModemType,                                  { Modem TYPE                                    }
     PassWord: STRING[9];
     Phone,
     BName,
     CName,
     SName: STRING[39];
-    BaudRate,    				{ Highest Baud Rate 					}
-    RecSize: Byte; 				{ Size of the Node on FILE		}
+    BaudRate,                   { Highest Baud Rate                     }
+    RecSize: Byte;              { Size of the Node on FILE      }
   END;
 
   IndxRefBlk = RECORD
-    IndxOfs,  		{ Offset of STRING into block }
-    IndxLen: Word; 	{ Length of STRING						}
-    IndxData,         	{ RECORD number of STRING 		}
-    IndxPtr: LongInt;	{ Block number of lower index }
+    IndxOfs,        { Offset of STRING into block }
+    IndxLen: Word;  { Length of STRING                      }
+    IndxData,           { RECORD number of STRING       }
+    IndxPtr: LongInt;   { Block number of lower index }
   END;  { IndxRef }
 
   LeafRefBlk = RECORD
-    KeyOfs,  		{ Offset of STRING into block }
-    KeyLen: Word;	{ Length of STRING						}
-    KeyVal: LongInt;	{ Pointer to Data block 			}
-  END; 	{ LeafRef }
+    KeyOfs,         { Offset of STRING into block }
+    KeyLen: Word;   { Length of STRING                      }
+    KeyVal: LongInt;    { Pointer to Data block             }
+  END;  { LeafRef }
 
   CtlBlk = RECORD
-    CtlBlkSize: Word; 	{ blocksize of Index blocks 	}
-    CtlRoot,										{ Block number of Root				}
-    CtlHiBlk, 									{ Block number of last block	}
-    CtlLoLeaf,		{ Block number of first leaf	}
-    CtlHiLeaf,		{ Block number of last leaf 	}
-    CtlFree: LongInt;	{ Head of freelist						}
-    CtlLvls, 		{ Number of index levels			}
-    CtlParity: Word; 	{ XOR of above fields 				}
+    CtlBlkSize: Word;   { blocksize of Index blocks     }
+    CtlRoot,                                        { Block number of Root              }
+    CtlHiBlk,                                   { Block number of last block    }
+    CtlLoLeaf,      { Block number of first leaf    }
+    CtlHiLeaf,      { Block number of last leaf     }
+    CtlFree: LongInt;   { Head of freelist                      }
+    CtlLvls,        { Number of index levels            }
+    CtlParity: Word;    { XOR of above fields               }
   END;
 
   INodeBlk = RECORD
-    IndxFirst,			{ Pointer to next lower level }
-    IndxBLink,			{ Pointer to previous link		}
-    IndxFLink: LongInt;			{ Pointer to next link				}
-    IndxCnt: Integer;			{ Count of Items IN block 		}
-    IndxStr: Word; 				{ Offset IN block of 1st str	}
-								{ IF IndxFirst is NOT -1, this is INode:	}
+    IndxFirst,          { Pointer to next lower level }
+    IndxBLink,          { Pointer to previous link      }
+    IndxFLink: LongInt;         { Pointer to next link              }
+    IndxCnt: Integer;           { Count of Items IN block       }
+    IndxStr: Word;              { Offset IN block of 1st str    }
+                                { IF IndxFirst is NOT -1, this is INode:    }
     IndxRef: ARRAY [0..49] OF IndxRefBlk;
   END;
 
   LNodeBlk = RECORD
-    IndxFirst,			{ Pointer to next lower level }
-    IndxBLink,			{ Pointer to previous link		}
-    IndxFLink: LongInt;			{ Pointer to next link				}
-    IndxCnt: Integer;			{ Count of Items IN block 		}
-    IndxStr: Word; 				{ Offset IN block of 1st str	}
+    IndxFirst,          { Pointer to next lower level }
+    IndxBLink,          { Pointer to previous link      }
+    IndxFLink: LongInt;         { Pointer to next link              }
+    IndxCnt: Integer;           { Count of Items IN block       }
+    IndxStr: Word;              { Offset IN block of 1st str    }
     LeafRef: ARRAY [0..49] OF LeafRefBlk;
   END;
 
@@ -108,7 +108,7 @@ BEGIN
   GetNewAddr := FALSE;
   Prt(DisplayStr);
   MPL(MaxLen);
-  Input(DisplayStr,MaxLen);
+  InputMain(DisplayStr,MaxLen,[UpperOnly]);
   IF (DisplayStr = '') OR (Pos('/',DisplayStr) = 0) THEN
     Exit;
   IF (Pos(':',DisplayStr) > 0) THEN
@@ -244,7 +244,7 @@ VAR
 
   FUNCTION MakeAddress(Z,Nt,N,P: Word): STRING;
   TYPE
-    NodeType = RECORD 			{ A Node address TYPE }
+    NodeType = RECORD           { A Node address TYPE }
       Len: Byte;
       Zone,
       Net,
@@ -322,22 +322,22 @@ VAR
   FUNCTION GetData(VAR F1: FILE; SL: LongInt; VAR Dat: DATRec): Boolean;
   TYPE
     RealDATRec = RECORD
-      Zone, 											{ Zone of board 							}
-      Net,												{ Net Address of board				}
-      Node, 											{ Node Address of board 			}
-      Point: Integer;				{ Either Point number OR 0		}
-      CallCost, 									{ Cost to sysop to send 			}
-      MsgFee, 										{ Cost to user to send				}
-      NodeFlags: Word; 				{ Node flags									}
-      ModemType,									{ Modem TYPE									}
-      PhoneLen, 									{ Length of Phone Number			}
-      PassWordLen,								{ Length of Password					}
-      BNameLen, 									{ Length of Board Name				}
-      SNameLen, 									{ Length of Sysop Name				}
-      CNameLen, 									{ Length of City/State Name 	}
-      PackLen,										{ Length of Packed STRING 		}
-      Baud: Byte; 				{ Highest Baud Rate 					}
-      Pack: ARRAY [1..160] of Char;		{ The Packed STRING 					}
+      Zone,                                             { Zone of board                             }
+      Net,                                              { Net Address of board              }
+      Node,                                             { Node Address of board             }
+      Point: Integer;               { Either Point number OR 0      }
+      CallCost,                                     { Cost to sysop to send             }
+      MsgFee,                                       { Cost to user to send              }
+      NodeFlags: Word;              { Node flags                                    }
+      ModemType,                                    { Modem TYPE                                    }
+      PhoneLen,                                     { Length of Phone Number            }
+      PassWordLen,                              { Length of Password                    }
+      BNameLen,                                     { Length of Board Name              }
+      SNameLen,                                     { Length of Sysop Name              }
+      CNameLen,                                     { Length of City/State Name     }
+      PackLen,                                      { Length of Packed STRING       }
+      Baud: Byte;               { Highest Baud Rate                     }
+      Pack: ARRAY [1..160] of Char;     { The Packed STRING                     }
     END;
   VAR
     Data: RealDATRec;
@@ -376,18 +376,18 @@ VAR
   LABEL
     Return;
   VAR
-    Buf: ARRAY [0..511] OF Char; 	{ These four variables all occupy 	}
-    CTL: CTLBlk ABSOLUTE Buf;			{ the same memory location.  Total	}
-    INode: INodeBlk ABSOLUTE Buf;		{ of 512 bytes. 										}
-    LNode: LNodeBlk ABSOLUTE Buf;		{ --------------------------------- }
-    NodeCTL: CTLBlk; 									{ Store the CTL block seperately		}
-    ALine: STRING[160];							{ Address from NDX FILE 						}
+    Buf: ARRAY [0..511] OF Char;    { These four variables all occupy   }
+    CTL: CTLBlk ABSOLUTE Buf;           { the same memory location.  Total  }
+    INode: INodeBlk ABSOLUTE Buf;       { of 512 bytes.                                         }
+    LNode: LNodeBlk ABSOLUTE Buf;       { --------------------------------- }
+    NodeCTL: CTLBlk;                                    { Store the CTL block seperately        }
+    ALine: STRING[160];                         { Address from NDX FILE                         }
     J,
     K,
-    L,Count: Integer;									{ Temp integers 										}
-    TP: Word; 										{ Pointer to location IN BUF				}
-    Rec,									{ A temp RECORD IN the FILE 				}
-    FRec: LongInt;									{ The RECORD when found OR NOT			}
+    L,Count: Integer;                                   { Temp integers                                         }
+    TP: Word;                                       { Pointer to location IN BUF                }
+    Rec,                                    { A temp RECORD IN the FILE                 }
+    FRec: LongInt;                                  { The RECORD when found OR NOT          }
   BEGIN
     FRec := -1;
     Get7Node(F1,0,Buf);
@@ -564,7 +564,7 @@ BEGIN
         SysOpName := Dat.Sname;
         Zone := Dat.Zone;
         Net := Dat.Net;
-	Node := Dat.Node;
+    Node := Dat.Node;
         Point := 0;
         Fee := Dat.MsgFee;
       END
@@ -620,7 +620,7 @@ BEGIN
         NL
       END;
       Prt('Flag to change: ');
-      OneK(Cmd,'QPCAIKHRLU?'^M,TRUE,TRUE);
+      LOneK('',Cmd,'QPCAIKHRLU?'^M,TRUE,TRUE);
       IF (Cmd IN ['?']) THEN
         NL;
       WITH MsgHeader DO

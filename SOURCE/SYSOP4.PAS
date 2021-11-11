@@ -25,17 +25,17 @@ BEGIN
   NL;
   Prt('File name: ');
   IF (FileSysOp) THEN
-  BEGIN
-    MPL(50);
-    Input(FSpec,50);
-  END
+    BEGIN
+      MPL(50);
+      InputMain(FSpec,50,[UpperOnly]);
+    END
   ELSE
-  BEGIN
-    MPL(12);
-    Input(FSpec,12);
-    FSplit(FSpec,Dir,Name,Ext);
-    FSpec := Name+Ext;
-  END;
+    BEGIN
+      MPL(12);
+      InputMain(FSpec,12,[UpperOnly]);
+      FSplit(FSpec,Dir,Name,Ext);
+      FSpec := Name+Ext;
+    END;
   TEdit(FSpec);
 END;
 
@@ -301,7 +301,7 @@ BEGIN
       PL;
       REPEAT
         Prt(':');
-        Input(S,10);
+        InputMain(S,10,[UpperOnly]);
         IF (S = '') THEN
           S := '+';
         IF (StrToInt(S) > 0) THEN

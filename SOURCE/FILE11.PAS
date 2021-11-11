@@ -859,7 +859,7 @@ BEGIN
   lRGLngStr(22,FALSE);
   Prt(': ');
   MPL(20);
-  Input(SearchString,20);
+  InputMain(SearchString,SizeOf(SearchString)-1,[UpperOnly]);
   IF (SearchString = '') THEN
   BEGIN
     Print('%LFAborted.');

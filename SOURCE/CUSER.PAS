@@ -238,7 +238,7 @@ VAR
                       END;
                     IF (Length(TmpCityState) < 3) THEN
                       Exit;
-					LangStringArray[0] := AOnOff((TmpCountryCode = 1),'state','province');
+                    LangStringArray[0] := AOnOff((TmpCountryCode = 1),'state','province');
                     lRGLngStr(201,FALSE); {"Enter state/province abbreviation"}
                     MPL(2);
                     InputMain(TmpCityState1,2,[UpperOnly]);
@@ -418,7 +418,7 @@ VAR
         EXIT;
       END;
     {/}
-	NL;
+    NL;
     Prt('^2'+TmpQuestion{+' '});
     MPL((SizeOf(User.UsrDefStr[QuestionNum])-1));
     InputMain(TmpAnswer,(SizeOf(User.UsrDefStr[QuestionNum])-1),[InterActiveEdit,CapWords]);
@@ -447,7 +447,7 @@ VAR
       BEGIN
         lRGLngStr(208,FALSE); {""}
         MPL(20);
-        GetPassword(TmpPW,20);
+        InputMain(TmpPW,SizeOf(TmpPW)-1,[IsPassword]); {GetPassword(TmpPW,20);}
         IF (CRC32(TmpPW) <> User.PW) THEN
           BEGIN
             lRGLngStr(162,FALSE); {"Wrong!"}
@@ -456,7 +456,7 @@ VAR
       END;
     lRGLngStr(209,FALSE); {""}
     MPL(20);
-    GetPassword(TmpPW,20);
+    InputMain(TmpPW,SizeOf(TmpPW)-1,[IsPassword]); {GetPassword(TmpPW,20);}
     IF (Length(TmpPW) < 4) THEN
       BEGIN
         lRGLngStr(163,FALSE); {"Too short!"}
@@ -477,7 +477,7 @@ VAR
       BEGIN
         lRGLngStr(210,FALSE); {"Enter password again for verification"}
         MPL(20);
-        GetPassword(TmpPW2,20);
+        InputMain(TmpPW2,SizeOf(TmpPW2)-1,[IsPassword]); {GetPassword(TmpPW2,20);}
         IF (TmpPW2 <> TmpPW) AND NOT (HangUp) THEN
           lRGLngStr(167,FALSE) {"Passwords don't match!"}
         ELSE
@@ -851,10 +851,10 @@ VAR
           ELSE
             BEGIN
               User.ForUsr := TmpUNum;
-			  
-			  LangStringArray[0] := Caps(TmpUser.Name);
-			  LangStringArray[1] := IntToStr(TmpUNum);
-			  
+              
+              LangStringArray[0] := Caps(TmpUser.Name);
+              LangStringArray[1] := IntToStr(TmpUNum);
+              
               lRGLngStr(177,FALSE); {"Mail is being forwarded to"}
               SysOpLog('Forwarding mail to: '+Caps(TmpUser.Name)+' #'+IntToStr(TmpUNum));
             END;
@@ -890,7 +890,7 @@ VAR
         END;
     IF ((User.ForUsr = 0) AND (NoMail IN User.ACFlags)) THEN
       BEGIN
-		lRGLngStr(175,FALSE); { Mail forwarding info }
+        lRGLngStr(175,FALSE); { Mail forwarding info }
         IF PYNQ(lRGLngStr(228,TRUE),0,FALSE) THEN {"Forward mail?"}
           ForwardMail;
       END;
@@ -927,10 +927,10 @@ VAR
   
   { --- }
 
-  PROCEDURE WW(www: Byte);
+  PROCEDURE WW(Num: Byte);
   BEGIN
     {NL;}
-    CASE www OF
+    CASE Num OF
       { Personal Information }
       01 : AskName;         { Users handle *MANDATORY* }
       02 : AskRealName;     { Users real name }

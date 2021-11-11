@@ -189,7 +189,7 @@ BEGIN
                           UNTIL (S[I] = '"') OR (I > Length(S));
                           Lin := Copy(OutP,(I + 3),(Length(S) - (I - 1)));
                           Prompt(Lin);
-                          OneK(C,Mult,TRUE,TRUE);
+                          LOneK('',C,Mult,TRUE,TRUE);
                           S := C;
                         END;
                   'D' : BEGIN
@@ -391,7 +391,7 @@ BEGIN
   BEGIN
     Prt('Enter filename: ');
     MPL(8);
-    Input(MenuOption,8);
+    InputMain(MenuOption,8,[UpperOnly]);
     NL;
     IF (MenuOption = '') THEN
       Exit;

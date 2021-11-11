@@ -44,7 +44,7 @@ BEGIN
       PrintACR('^0U. Force batch upload at login     : ^1'+ShowOnOff(ForceBatchUL));
       NL;
       Prt('Enter selection [^1A^2-^1P^2,^1R^2-^1U^2,^1Q^2=^1Quit^2]: ');
-      OneK(Cmd,'QABCDEFGHIJKLMNOPRSTU'^M,TRUE,TRUE);
+      LOneK('',Cmd,'QABCDEFGHIJKLMNOPRSTU'^M,TRUE,TRUE);
       CASE Cmd OF
         'A' : ULDLRatio := NOT ULDLRatio;
         'B' : FileCreditRatio := NOT FileCreditRatio;

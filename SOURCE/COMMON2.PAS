@@ -1,5 +1,7 @@
 {$A+,B-,D+,E-,F+,I-,L+,N-,O+,R-,S-,V-}
-
+{
+11/5/2021 Nested Local_Input1 in lStatus_screen
+}
 UNIT Common2;
 
 INTERFACE
@@ -249,6 +251,45 @@ VAR
   SaveWhereY,
   SaveTextAttr: Byte;
   SaveWindowOn: Boolean;
+  
+PROCEDURE Local_Input1(VAR S: STRING; MaxLen: Byte; LowerCase: Boolean);
+VAR
+  C: Char;
+  B: Byte;
+BEGIN
+  B := 1;
+  REPEAT
+    C := ReadKey;
+    IF (NOT LowerCase) THEN
+      C := UpCase(C);
+    IF (C IN [#32..#255]) THEN
+      IF (B <= MaxLen) THEN
+      BEGIN
+        S[B] := C;
+        Inc(B);
+        Write(C);
+      END
+      ELSE
+    ELSE
+      CASE C of
+        ^H : IF (B > 1) THEN
+             BEGIN
+               Write(^H' '^H);
+               C := ^H;
+               Dec(B);
+             END;
+     ^U,^X : WHILE (B <> 1) DO
+             BEGIN
+               Write(^H' '^H);
+               Dec(B);
+             END;
+      END;
+  UNTIL (C IN [^M,^N]);
+  S[0] := Chr(B - 1);
+  IF (WhereY <= Hi(WindMax) - Hi(WindMin)) THEN
+    WriteLn;
+END;
+  
 BEGIN
   IF ((InWFCMenu OR (NOT General.WindowOn)) AND (WhichScreen < 99)) OR
     (General.NetworkMode AND NOT CoSysOp) THEN

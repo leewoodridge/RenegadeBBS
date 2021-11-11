@@ -349,7 +349,7 @@ BEGIN
             Print('Archive file name: ');
             Prt(':');
             MPL(78);
-            Input(FileName,78);
+            InputMain(FileName,78,[UpperOnly]);
 
             IF IsUL(FileName) AND (NOT FileSysOp) THEN
               FileName := '';
@@ -386,7 +386,7 @@ BEGIN
                       Print('Add files to list - <CR> to end');
                       Prt(IntToStr(NumFiles + 1)+':');
                       MPL(70);
-                      Input(S,70);
+                      InputMain(S,70,[UpperOnly]);
                       IF (S <> '') AND (NOT IsUL(S) OR FileSysOp) THEN
                       BEGIN
                         IF (Pos('.',S) = 0) THEN
@@ -396,7 +396,7 @@ BEGIN
                     UNTIL (S = '') OR (NumFiles >= MaxFiles) OR (HangUp);
                   NL;
                   Prt('Add files to list [^1?^2=^1Help^2]: ');
-                  OneK(Cmd,'QADLR?',TRUE,TRUE);
+                  LOneK('',Cmd,'QADLR?',TRUE,TRUE);
                   NL;
                   CASE Cmd OF
                     '?' : BEGIN
@@ -472,7 +472,7 @@ BEGIN
                                     NL;
                                     Prt('Enter file name: ');
                                     MPL(12);
-                                    Input(S2,12);
+                                    InputMain(S2,12,[UpperOnly]);
                                     IF (S2 = '') THEN
                                     BEGIN
                                       NL;
@@ -582,7 +582,7 @@ BEGIN
                           BEGIN
                             Prt('Remove file name: ');
                             MPL(12);
-                            Input(S,12);
+                            InputMain(S,12,[UpperOnly]);
                             IF (S = '') THEN
                             BEGIN
                               NL;
@@ -620,7 +620,7 @@ BEGIN
             Print('Filespec:');
             Prt(':');
             MPL(78);
-            Input(FileName,78);
+            InputMain(FileName,78,[UpperOnly]);
             IF (FileName = '') THEN
             BEGIN
               NL;
@@ -633,7 +633,7 @@ BEGIN
               REPEAT
                 Prt('Archive type to use? (?=List): ');
                 MPL(3);
-                Input(S,3);
+                InputMain(S,3,[UpperOnly]);
                 IF (S = '?') THEN
                 BEGIN
                   NL;
@@ -779,7 +779,7 @@ BEGIN
             Print('Filespec:');
             Prt(':');
             MPL(78);
-            Input(FileName,78);
+            InputMain(FileName,78,[UpperOnly]);
             IF (FileName = '') THEN
             BEGIN
               NL;
@@ -802,7 +802,7 @@ BEGIN
                   END;
                 NL;
                 Prt('Comment to use [0=Quit]: ');
-                OneK(Cmd,'0'+S,TRUE,TRUE);
+                LOneK('',Cmd,'0'+S,TRUE,TRUE);
 
                 IF (Cmd IN ['1'..'3']) THEN
                 BEGIN
@@ -849,7 +849,7 @@ BEGIN
             Print('Filespec:');
             Prt(':');
             MPL(78);
-            Input(FileName,78);
+            InputMain(FileName,78,[UpperOnly]);
             IF (FileName = '') THEN
             BEGIN
               NL;

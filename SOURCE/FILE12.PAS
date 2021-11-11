@@ -65,7 +65,7 @@ BEGIN
   REPEAT
     NL;
     Prt('Batch upoad queue [^1C^2]lear, [^1L^2]ist batch, [^1R^2]emove a file, [^1Q^2]uit: ');
-    OneK(Cmd,'QCLR',TRUE,TRUE);
+    LOneK('',Cmd,'QCLR',TRUE,TRUE);
     CASE Cmd OF
       'C' : ClearBatchULQueue;
       'L' : ListBatchULFiles;

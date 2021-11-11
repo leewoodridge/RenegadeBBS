@@ -197,10 +197,10 @@ BEGIN
   IF (LastError = 2) THEN
     ReWrite(OneLinerListFile);
   IF (NOT ReadBuffer('ONELM')) THEN
-	BEGIN
-	  SysOpLog('^8[!]^0 Tried to view OneLiners, but ^1ONELM.EXT^0 was missing!');
+    BEGIN
+      SysOpLog('^8[!]^0 Tried to view OneLiners, but ^1ONELM.EXT^0 was missing!');
       EXIT;
-	END;
+    END;
   AllowContinue := TRUE;
   Abort := FALSE;
   PrintF('ONELH');
@@ -252,10 +252,10 @@ VAR
 BEGIN
   OneLiner_Random := '';
   IF (NOT ReadBuffer('ONELM')) THEN
-	BEGIN
-	  SysOpLog('^8[!]^0 Tried to view oneliners, but ^1ONELM.EXT^0 was missing!');
+    BEGIN
+      SysOpLog('^8[!]^0 Tried to view oneliners, but ^1ONELM.EXT^0 was missing!');
       EXIT;
-	END;
+    END;
   Assign(OneLinerListFile,General.DataPath+'ONELINER.DAT');
   Reset(OneLinerListFile);
   REPEAT

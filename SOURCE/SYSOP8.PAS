@@ -2,8 +2,9 @@
 {
 Lee Woodridge
  10/20/2021 - Color config now uses pipe codes instead of caret codes
- 
+ 11/10/2021 - changed default new base options -- sysop acs and colors
  add submenu for changing color options
+ 
 }
 UNIT SysOp8;
 
@@ -17,9 +18,10 @@ USES
   Common,
   File2,
   Mail0,
-  SysOp2H, { GetPipeColor }
+  SysOp2, {ConfigHeader}
+  SysOp2H, {GetPipeColor}
   SysOp7,
-  TimeFunc; { ZeroPad }
+  TimeFunc; {ZeroPad}
 
 PROCEDURE MessageAreaEditor;
 CONST
@@ -120,7 +122,7 @@ VAR
       0 : MATypeStr := 'Local';
       1 : MATypeStr := 'EchoMail';
       2 : MATypeStr := 'GroupMail';
-      3 : MATypeStr := 'QwkMail';
+      3 : MATypeStr := 'QWKMail';
     END;
   END;
 
@@ -146,7 +148,7 @@ VAR
       ACS := '';
       PostACS := '';
       MCIACS := '';
-      SysOpACS := '';
+      SysOpACS := General.MSOp; {LeeW: changed, was '' - seems like a safer choice for new users}
       MaxMsgs := 100;
       Anonymous := ATNo;
       Password := '';
@@ -158,8 +160,8 @@ VAR
       Tear_Color := General.Tear_Color;
       Origin_Color := General.Origin_Color;
       MessageReadMenu := 0;
-      QuoteStart := '|03Quoting message from |11@F |03to |11@T';
-      QuoteEnd := '|03on |11@D|03.';
+      QuoteStart := '^0Quoting message from ^1@F ^0to ^1@T^0'; {LeeW: changed - using scheme colors }
+      QuoteEnd := '^0on ^1@D ^0...';
       PrePostFile := '';
       AKA := 0;
       QWKIndex := 0;
@@ -565,19 +567,23 @@ VAR
                     Changed := TRUE;
                 END;
           'N' : BEGIN
-				  {
-                  Prompt('%LF^1Colors: ');
-                  ShowColors;
-                  InputByteWC('%LFNew standard text color',Text_Color,[DisplayValue,NumbersOnly],0,9,Changed);
-                  InputByteWC('%LFNew quoted text color',Quote_Color,[DisplayValue,NumbersOnly],0,9,Changed);
-                  InputByteWC('%LFNew tear line color',Tear_Color,[DisplayValue,NumbersOnly],0,9,Changed);
-                  InputByteWC('%LFNew origin line color',Origin_Color,[DisplayValue,NumbersOnly],0,9,Changed);
-				  }
-				  GetPipeColor(Text_Color,'standard text');
-				  GetPipeColor(Quote_Color,'quoted text');
-				  GetPipeColor(Tear_Color,'tear line');
-				  GetPipeColor(Origin_Color,'origin line');
-				  Changed := TRUE;
+                  REPEAT
+                    ConfigHeader('Message Colors');
+                    PrintACR('^0(^11^0) Text   : |'+ZeroPad(IntToStr(Text_Color))+'Text');
+                    PrintACR('^0(^12^0) Quoted : |'+ZeroPad(IntToStr(Quote_Color))+'Quoted');
+                    PrintACR('^0(^13^0) Tear   : |'+ZeroPad(IntToStr(Tear_Color))+'Tear');
+                    PrintACR('^0(^14^0) Origin : |'+ZeroPad(IntToStr(Origin_Color))+'Origin');
+                    NL;
+                    LOneK('^2Message Colors [^11^2-^14^2,<^1CR^2>Quit]: ',Cmd1,^M'1234',TRUE,TRUE);
+                    CASE Cmd1 OF
+                      '1' : GetPipeColor(Text_Color,'standard text');
+                      '2' : GetPipeColor(Quote_Color,'quoted text');
+                      '3' : GetPipeColor(Tear_Color,'tear line');
+                      '4' : GetPipeColor(Origin_Color,'origin line');
+                    END;
+                  UNTIL (Cmd1 = ^M) OR (HangUp);
+                  Cmd1 := #0;
+                  Changed := TRUE; {LeeW: Cheating here, fix}
                 END;
           'O' : FindMenu('%LFNew read menu (^10^2=^1Default^2)',MessageReadMenu,0,NumMenus,Changed);
           'P' : IF (MAType IN [1,2]) THEN
@@ -590,9 +596,9 @@ VAR
                             ToggleMAFlags(Cmd1,MAFlags,Changed);
                       '?' : BEGIN
                               NL;
-                              LCmds(22,3,'Kludge line strip','SEEN-BY line strip');
-                              LCmds(22,3,'Origin line strip','Tear/Origin line add');
-                              LCmds(22,3,'Internet flag','');
+                              LCmds(22,3,'Kludge Line Strip','SEEN-BY Line Strip');
+                              LCmds(22,3,'Origin Line Strip','Tear/Origin Line Add');
+                              LCmds(22,3,'Internet Flag','');
                             END;
                     END;
                   UNTIL (Cmd1 = ^M) OR (HangUp);
@@ -682,15 +688,18 @@ VAR
                   Cmd1 := #0;
                 END;
           '?' : BEGIN
+                  {
                   Print('%LF^0<^1CR^0>Redisplay current screen');
                   Print('^1A^0-^1E^0,^1G^0-^1I^0,^1K^0,^1M^0-^1P^0,^1R^0-^1W^0:Modify item');
                   IF (NOT Editing) THEN
                     LCmds(20,3,'Quit and save','')
                   ELSE
+                  }
                   BEGIN
-                    LCmds(20,3,'[Back entry',']Forward entry');
-                    LCmds(20,3,'First entry in list','Jump to entry');
-                    LCmds(20,3,'Last entry in list','Quit and save');
+                    NL;
+                    LCmds(16,1,'[Previous Entry',']Next Entry');
+                    LCmds(16,1,'First Entry','Last Entry');
+                    LCmds(16,1,'Jump To Entry','Quit');
                   END;
                 END;
         END;

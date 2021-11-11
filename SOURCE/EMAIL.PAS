@@ -1,6 +1,6 @@
 {$A+,B-,D+,E-,F+,I-,L+,N-,O+,R-,S+,V-}
 { Lee Woodridge
- 10/18/2021	- Added CoSysOp max mail waiting check
+ 10/18/2021 - Added CoSysOp max mail waiting check
 }
 UNIT EMail;
 
@@ -82,9 +82,9 @@ VAR
       Exit;
     END;
     LoadURec(User,UNum1);
-	IF ((NOT AACS1(User,UNum,General.CSOP)) AND (User.Waiting >= General.MaxWaiting)) OR
-	   ((AACS1(User,UNum1,General.CSOP)) AND (User.Waiting >= General.CSMaxWaiting)) OR
-	   (NoMail IN User.ACFlags) AND (NOT CoSysOp) THEN { LeeW: Added CoSysOp max waiting check }
+    IF ((NOT AACS1(User,UNum,General.CSOP)) AND (User.Waiting >= General.MaxWaiting)) OR
+       ((AACS1(User,UNum1,General.CSOP)) AND (User.Waiting >= General.CSMaxWaiting)) OR
+       (NoMail IN User.ACFlags) AND (NOT CoSysOp) THEN { LeeW: Added CoSysOp max waiting check }
     BEGIN
       UNum1 := 0;
       { Print(FString.CantEmail); }
@@ -300,7 +300,7 @@ BEGIN
       Print('(3) Send private messages to a list of users.');
       NL;
       Prt('Your choice [^51^4-^53^4,^5Q^4=^5Quit^4]: ');
-      OneK(Cmd,'Q123',TRUE,TRUE);
+      LOneK('',Cmd,'Q123',TRUE,TRUE);
     END;
     CASE Cmd OF
       '1' : BEGIN
@@ -444,7 +444,7 @@ BEGIN
       EmailOk := FALSE;
     END
     ELSE IF (AccountBalance < General.CreditEmail) AND (General.CreditEmail > 0) AND 
-			(NOT (FNoCredits IN ThisUser.ACFlags)) THEN
+            (NOT (FNoCredits IN ThisUser.ACFlags)) THEN
     BEGIN
       NL;
       Print('^7Insufficient account balance to send private messages!^1');
@@ -463,8 +463,8 @@ BEGIN
       EmailOk := FALSE;
     END
     ELSE IF ((NOT AACS1(User,UNum,General.CSOP)) AND (User.Waiting >= General.MaxWaiting)) OR
-			((AACS1(User,UNum,General.CSOP)) AND (User.Waiting >= General.CSMaxWaiting))
-			AND (NOT CoSysOp) THEN { LeeW: Added CoSysOp max waiting check }
+            ((AACS1(User,UNum,General.CSOP)) AND (User.Waiting >= General.CSMaxWaiting))
+            AND (NOT CoSysOp) THEN { LeeW: Added CoSysOp max waiting check }
     BEGIN
       NL;
       Print('^7The mailbox for this user is full!^1%pa');
@@ -1043,9 +1043,9 @@ BEGIN
       NL;
       Prt('Private messages sent [^5?^4=^5Help^4]: ');
       IF (CoSysOp) THEN
-        OneK(Cmd,'Q-ADENX?'^M,TRUE,TRUE)
+        LOneK('',Cmd,'Q-ADENX?'^M,TRUE,TRUE)
       ELSE
-        OneK(Cmd,'Q-ADEN?'^M,TRUE,TRUE);
+        LOneK('',Cmd,'Q-ADEN?'^M,TRUE,TRUE);
       CASE Cmd OF
         '-' : BEGIN
                 PreviousMsgNum := (MsgNum - 1);

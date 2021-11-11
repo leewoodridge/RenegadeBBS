@@ -52,52 +52,43 @@ BEGIN
   UserNum := -1;
 
   IF (General.NewUserPW <> '') THEN
-  BEGIN
-    PasswordAttemps := 0;
-    NewUserPassword := '';
-    WHILE ((NewUserPassword <> General.NewUserPW) AND (PasswordAttemps < General.MaxLogonTries) AND (NOT HangUp)) DO
     BEGIN
-      (*
-      Prt(FString.NewUserPassword);
-      *)
-      lRGLngStr(190,FALSE);
-      GetPassword(NewUserPassword,20);
-      IF ((NewUserPassword <> '') AND (General.NewUserPW <> NewUserPassword)) THEN
-      BEGIN
-        (*
-        Print('Invalid password, keep trying ...');
-        *)
-        lRGLngStr(148,FALSE);
-        SL1('* Invalid new user password: '+NewUserPassword);
-        Inc(PasswordAttemps);
-      END;
+      PasswordAttemps := 0;
+      NewUserPassword := '';
+      WHILE ((NewUserPassword <> General.NewUserPW) AND (PasswordAttemps < General.MaxLogonTries) AND (NOT HangUp)) DO
+        BEGIN
+          lRGLngStr(190,FALSE); (*Prt(FString.NewUserPassword);*)
+          InputMain(NewUserPassword,SizeOf(NewUserPassword)-1,[IsPassword]); {GetPassword(NewUserPassword,20);}
+          IF ((NewUserPassword <> '') AND (General.NewUserPW <> NewUserPassword)) THEN
+            BEGIN
+              lRGLngStr(148,FALSE); (*Print('Invalid password, keep trying ...');*)
+              SL1('* Invalid new user password: '+NewUserPassword);
+              Inc(PasswordAttemps);
+            END;
+        END;
+      IF (PasswordAttemps >= General.MaxLogonTries) THEN
+        BEGIN
+          PrintF('NUPWFAIL');
+          IF (NoFile) THEN
+            lRGLngStr(149,FALSE); (*Print('You have exceeded the maximum new user logon attempts, hanging up ...');*)
+          SL1('* Maximum new user logon attempts exceeded - hung user up.');
+          HangUp := TRUE;
+        END;
     END;
-    IF (PasswordAttemps >= General.MaxLogonTries) THEN
-    BEGIN
-      PrintF('NUPWFAIL');
-      IF (NoFile) THEN
-        (*
-        Print('You have exceeded the maximum new user logon attempts, hanging up ...');
-        *)
-        lRGLngStr(149,FALSE);
-      SL1('* Maximum new user logon attempts exceeded - hung user up.');
-      HangUp := TRUE;
-    END;
-  END;
-
+    
   IF (NOT HangUp) THEN
-	BEGIN
+    BEGIN
       PrintF('NEWUSER');
       Counter := 1;
-	  WHILE (Counter <= 20) AND (NOT HangUp) DO
-		BEGIN
-		  {IF (General.NewUserToggles[Counter] <> 0) THEN}
-			BEGIN
-			  Update_Screen;
-			  CStuff({General.NewUserToggles[}Counter{]},1,ThisUser);
-			END;
-		  Inc(Counter);
-		END;
+      WHILE (Counter <= 26) AND (NOT HangUp) DO
+        BEGIN
+          IF (General.NewUserQToggles[Counter] = TRUE) THEN
+            BEGIN
+              Update_Screen;
+              CStuff(Counter,1,ThisUser);
+            END;
+          Inc(Counter);
+        END;
 
     Abort := FALSE;
     Next := FALSE;
@@ -134,10 +125,7 @@ BEGIN
   END;
   IF (NOT HangUp) THEN
   BEGIN
-    (*
-    Prompt('Saving your information ... ');
-    *)
-    lRGLngStr(150,FALSE);
+    lRGLngStr(150,FALSE); (*Prompt('Saving your information ... ');*)
     SysOpLog('Saving new user information ...');
     Counter1 := 0;
     Counter := 1;

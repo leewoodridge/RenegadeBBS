@@ -6,11 +6,11 @@ Lee Woodridge
             - Documented: All current MCIs in code - see DOCS\MCI.TXT
  10/06/2021 - Fixed: %DE bug
  10/07/2021 - Indentation...
-			- Added: ACS 'Q' check for menu #
-			- Removed: Redundant $V- above lcmds3
-			- Added: Toggle proc instead of writing "x := not x" everywhere
-			- Added: Linefeed to MPL if input field extends past users LineLen
- ... 		- Added: MCIPos/MCIPosArray to pull location data from ANSIs
+            - Added: ACS 'Q' check for menu #
+            - Removed: Redundant $V- above lcmds3
+            - Added: Toggle proc instead of writing "x := not x" everywhere
+            - Added: Linefeed to MPL if input field extends past users LineLen
+ ...        - Added: MCIPos/MCIPosArray to pull location data from ANSIs
  10/26/2021 - Fixed: lightbar yes/no question no longer eats itself if color codes/MCIs in string
  10/27/2021 - Moved: TeleconfCheck to MULTNODE
  10/31/2021 - Added: LangStringArray to pass strings to lang file 
@@ -18,9 +18,13 @@ Lee Woodridge
  11/01/2021 - Removed: RGNote, RGMain - All strings now in lRGLngStr
  11/03/2021 - moved savendescription to its proc, no need to be global
  11/04/2021 - Nested ChInKey in GetKey since its the only proc that calls it
-			- sorting funcs and procs
-			- moved input procs to COMMON3, more to do still
-			- dielater const/killme pointer commented out, does nothing afaik
+            - sorting funcs and procs
+            - moved input procs to COMMON3, more to do still
+            - dielater const/killme pointer commented out, does nothing afaik
+            - %TU reporting +1 extra user. maybe counting new user config? fixed?
+            - %SC reporting +1 more caller, fixed?
+ 11/05/2021 - Removed ReDisplay from inputflags, unused, seems useless
+              Added IsPassword inputflag, masks input, replaces getpassword proc
 *)
 UNIT Common;
 
@@ -168,19 +172,19 @@ TYPE
     DOS5N);
 
   InputFlagType =(
-	{ Formatting }
-    UpperOnly,       { Forced uppercase }
-    ColorsAllowed,   { Colors allowed }
-    CapWords,        { Forced capitalization of first characters }
-	{ Interface }
-	DisplayValue,    {  }
-	InterActiveEdit, { Interactive editing }
-	NoLineFeed,      { No linefeed after <CR> pressed }
-    ReDisplay,       { Display old IF no change }
-	{ Input type }
-	NumbersOnly,     { Numeric values only }
-    NegativeAllowed  { Negative numbers allowed }
-	); 
+    { Formatting }
+    UpperOnly,       { Capitalize entire string } {CapAll}
+    ColorsAllowed,   { Colors allowed -- does nothing except no mpl}
+    CapWords,        { Capitalize first character of words }
+    { Interface }
+    DisplayValue,    {  }
+    InteractiveEdit, { Interactive editing }
+    NoLineFeed,      { No linefeed after <CR> pressed }
+    { Input type }
+    NumbersOnly,     { Numeric values only } {IsNumber}
+    NegativeAllowed, { Negative numbers allowed }
+    IsPassword       { Masks input with echo char - LeeW: Added }
+    ); 
 
   InputFlagSet = SET OF InputFlagType; {  }
 
@@ -223,14 +227,14 @@ CONST
   ChatChannel: Integer = 0;               { What chat channel are we IN? }
   DisplayingMenu: Boolean = FALSE;        { Is a menu being displayed? }
   InVisEdit: Boolean = FALSE;             { Is user in the fullscreen editor? }
-  MenuAborted: Boolean = FALSE;           { was the menu Aborted? }
+  MenuAborted: Boolean = FALSE;           { Was the menu aborted? }
   AllowAbort: Boolean = TRUE;             { Are aborts allowed? }
-  MCIAllowed: Boolean = TRUE;             { Are MCI code allowed? }
+  MCIAllowed: Boolean = TRUE;             { Are MCI codes allowed? }
   ColorAllowed: Boolean = TRUE;           { Are color codes allowed? }
-  Echo: Boolean = TRUE;                   { is Text being echoed? (FALSE=use echo Chr) }
+  Echo: Boolean = TRUE;                   { Is text being echoed? (FALSE=use echo char) }
   HangUp: Boolean = TRUE;                 { Has user hung up? }
   TimedOut: Boolean = FALSE;              { Has user timed out? }
-  NoFile: Boolean = TRUE;                 { did last pfl() FILE NOT Exist?        }
+  NoFile: Boolean = TRUE;                 { Did last PFL() FILE not exist? }
   SLogging: Boolean = TRUE;               { are we outputting TO the SysOp log? }
   SysOpOn: Boolean = TRUE;                { is SysOp logged onto the WFC menu? }
   WantOut: Boolean = TRUE;                { output Text locally? }
@@ -239,57 +243,57 @@ CONST
   BadULPath: Boolean = FALSE;             { Is the current upload path invalid? }
   BeepEnd: Boolean = FALSE;               { Beep after caller logs off? }
   FileAreaNameDisplayed: Boolean = FALSE; { Was file area name printed yet? }
-  CFO: Boolean = FALSE;                { is chat FILE open? }
-  InChat: Boolean = FALSE;             { are we IN chat Mode? }
-  ChatCall: Boolean = FALSE;           { is the chat call "noise" on? }
-  ContList: Boolean = FALSE;           { continuous message listing Mode on?  }
-  CROff: Boolean = FALSE;              { are CRs turned off? }
-  CtrlJOff: Boolean = FALSE;           { turn color TO #1 after ^Js?? }
-  DoneAfterNext: Boolean = FALSE;      { offhook AND Exit after Next logoff?  }
-  DoneDay: Boolean = FALSE;            { are we done now? ready TO drop TO DOS?}
-  DOSANSIOn: Boolean = FALSE;          { output chrs TO DOS FOR ANSI codes?!!? }
-  FastLogon: Boolean = FALSE;          { IF a FAST LOGON is requested }
-  HungUp: Boolean = FALSE;             { did User drop carrier? }
-  InCom: Boolean = FALSE;              { accepting input from com? }
-  InWFCMenu: Boolean = FALSE;          { are we IN the WFC menu? }
-  LastCommandGood: Boolean = FALSE;    { was last command a REAL command? }
-  LastCommandOvr: Boolean = FALSE;     { override Pause? (NO Pause?) }
+  CFO: Boolean = FALSE;                   { is chat FILE open? }
+  InChat: Boolean = FALSE;                { are we IN chat Mode? }
+  ChatCall: Boolean = FALSE;              { is the chat call "noise" on? }
+  ContList: Boolean = FALSE;              { continuous message listing Mode on?  }
+  CROff: Boolean = FALSE;                 { are CRs turned off? }
+  CtrlJOff: Boolean = FALSE;              { turn color TO #1 after ^Js?? }
+  DoneAfterNext: Boolean = FALSE;         { offhook AND Exit after Next logoff?  }
+  DoneDay: Boolean = FALSE;               { are we done now? ready TO drop TO DOS?}
+  DOSANSIOn: Boolean = FALSE;             { output chrs TO DOS FOR ANSI codes?!!? }
+  FastLogon: Boolean = FALSE;             { IF a FAST LOGON is requested }
+  HungUp: Boolean = FALSE;                { did User drop carrier? }
+  InCom: Boolean = FALSE;                 { accepting input from com? }
+  InWFCMenu: Boolean = FALSE;             { are we IN the WFC menu? }
+  LastCommandGood: Boolean = FALSE;       { was last command a REAL command? }
+  LastCommandOvr: Boolean = FALSE;        { override Pause? (NO Pause?) }
   { Startup parameters }
-  LocalIOOnly: Boolean = FALSE;        { Are we in local I/O mode? }
-  MakeQWKFor: Integer = 0;             { Are we making a QWK packet only? }
-  UpQWKFor: Integer = 0;               { Are we uploading a QWK packet only? }
-  PackBasesOnly: Boolean = FALSE;      { Are we packing message bases only? }
-  SortFilesOnly: Boolean = FALSE;      { Are we sorting file bases only? }
-  FileBBSOnly: Boolean = FALSE;        { Are we verifying FILES.BBS only? }
+  LocalIOOnly: Boolean = FALSE;           { Are we in local I/O mode? }
+  MakeQWKFor: Integer = 0;                { Are we making a QWK packet only? }
+  UpQWKFor: Integer = 0;                  { Are we uploading a QWK packet only? }
+  PackBasesOnly: Boolean = FALSE;         { Are we packing message bases only? }
+  SortFilesOnly: Boolean = FALSE;         { Are we sorting file bases only? }
+  FileBBSOnly: Boolean = FALSE;           { Are we verifying FILES.BBS only? }
   {}
-  RoomNumber: Integer = 0;             { Room OF teleconference }
-  NewMenuToLoad: Boolean = FALSE;      { menu command returns TRUE IF new menu TO load }
-  OvrUseEMS: Boolean = TRUE;           { Use EMS for overlay? }
-  OverlayLocation: Byte = 0;           { 0=Normal, 1=EMS, 2=XMS }
-  OutCom: Boolean = FALSE;             { outputting TO com? }
-  DirFileopen1: Boolean = TRUE;        { whether DirFile has been opened before }
-  ExtFileOpen1: Boolean = TRUE;        {  }
-  PrintingFile: Boolean = FALSE;       { are we printing a FILE? }
-  AllowContinue: Boolean = FALSE;      { Allow Continue prompts? }
-  QuitAfterDone: Boolean = FALSE;      { quit after Next User logs off? }
-  Reading_A_Msg: Boolean = FALSE;      { is User reading a message? }
-  ReadingMail: Boolean = FALSE;        { reading private mail? }
-  ShutUpChatCall: Boolean = FALSE;     { was chat call "SHUT UP" FOR this call? }
-  Trapping: Boolean = FALSE;           { are we Trapping users Text? }
-  UserOn: Boolean = FALSE;             { is there a User on right now? }
-  WasNewUser: Boolean = FALSE;         { did a NEW User log on? }
-  Write_Msg: Boolean = FALSE;          { is User writing a message? }
-  NewEchoMail: Boolean = FALSE;        { has new echomail been entered? }
-  TimeWarn: Boolean = FALSE;           { has User been warned OF time shortage? }
-  TellUserEvent: Byte = 0;             { has User been told about the up-coming event? }
-  ExitErrors: Byte = 1;                { Error level for critical error exit }
-  ExitNormal: Byte = 0;                { Error level for normal exit }
-  TodayCallers: Integer = 0;           { new system callers }
-  lTodaynumUsers: Integer = 0;         { new number OF users }
-  ThisNode: Byte = 0;                  { node number }
-  AnswerBaud: LongInt = 0;             { baud rate TO answer the phone at }
-  ExtEventTime: Word = 0;              { # minutes before External event }
-  IsInvisible: Boolean = FALSE;        { Run IN invisible Mode? }
+  RoomNumber: Integer = 0;                { Room OF teleconference }
+  NewMenuToLoad: Boolean = FALSE;         { menu command returns TRUE IF new menu TO load }
+  OvrUseEMS: Boolean = TRUE;              { Use EMS for overlay? }
+  OverlayLocation: Byte = 0;              { 0=Normal(Disk?), 1=EMS, 2=XMS }
+  OutCom: Boolean = FALSE;                { outputting TO com? }
+  DirFileopen1: Boolean = TRUE;           { whether DirFile has been opened before }
+  ExtFileOpen1: Boolean = TRUE;           {  }
+  PrintingFile: Boolean = FALSE;          { are we printing a FILE? }
+  AllowContinue: Boolean = FALSE;         { Allow Continue prompts? }
+  QuitAfterDone: Boolean = FALSE;         { quit after Next User logs off? }
+  Reading_A_Msg: Boolean = FALSE;         { is User reading a message? }
+  ReadingMail: Boolean = FALSE;           { reading private mail? }
+  ShutUpChatCall: Boolean = FALSE;        { was chat call "SHUT UP" FOR this call? }
+  Trapping: Boolean = FALSE;              { are we Trapping users Text? }
+  UserOn: Boolean = FALSE;                { is there a User on right now? }
+  WasNewUser: Boolean = FALSE;            { did a NEW User log on? }
+  Write_Msg: Boolean = FALSE;             { is User writing a message? }
+  NewEchoMail: Boolean = FALSE;           { has new echomail been entered? }
+  TimeWarn: Boolean = FALSE;              { has User been warned OF time shortage? }
+  TellUserEvent: Byte = 0;                { has User been told about the up-coming event? }
+  ExitErrors: Byte = 1;                   { Error level for critical error exit }
+  ExitNormal: Byte = 0;                   { Error level for normal exit }
+  TodayCallers: Integer = 0;              { new system callers }
+  lTodaynumUsers: Integer = 0;            { new number OF users }
+  ThisNode: Byte = 0;                     { node number }
+  AnswerBaud: LongInt = 0;                { baud rate TO answer the phone at }
+  ExtEventTime: Word = 0;                 { # minutes before External event }
+  IsInvisible: Boolean = FALSE;           { Run IN invisible Mode? }
 
   SaveNAvail: Boolean = FALSE;         {  }
   LastWFCX: Byte = 1;                  {  }
@@ -297,10 +301,10 @@ CONST
   ANSIDetected: Boolean = FALSE;       {  }
   
 VAR
-  LangStringArray:					   { LeeW: Added }
+  LangStringArray:                     { LeeW: Added }
     ARRAY[0..9] OF STRING[40];
-  MCIPosRecArray:					   { LeeW: Added }
-	ARRAY[0..9] OF MCIPos;
+  MCIPosRecArray:                      { LeeW: Added }
+    ARRAY[0..9] OF MCIPos;
   LightBarArray:                       {  }
     ARRAY[1..50] OF LightBarRecordType;
   LightBarCmd,                         {  }
@@ -329,6 +333,7 @@ VAR
   TempDir,                  { Temporary Directory base name }
   InResponseTo: STRING[40]; { reason FOR reply }
   LastDIRFileName: Str12;   { last filename FOR recno/nrecno }
+  LastDIRRecNum,            { last record # FOR recno/nrecno }
   CurrentColor,             { current ANSI color }
   ExiterrorLevel,           { errorLEVEL TO Exit WITH }
   TShuttleLogon,            { type OF special Shuttle Logon command }
@@ -337,7 +342,6 @@ VAR
   PublicPostsToday,         { posts made by User this call }
   FeedBackPostsToday,       { feedback sent by User this call }
   PrivatePostsToday: Byte;  { E-mail sent by User this call }
-  LastDIRRecNum,            { last record # FOR recno/nrecno }
   ChatAttempts,             { number chat attempts made by User }
   LIL,                      { lines on screen since last PauseScr() }
   PublicReadThisCall,       { # public messages has Read this call }
@@ -362,7 +366,8 @@ VAR
   RQArea,                   {  }
   FQArea,                   {  }
   MQArea,                   {  }
-  VQArea: Boolean;          {  }
+  VQArea,                   {  }
+  Changed: Boolean;         { Global changed - LeeW: Added }
 
   { Voting Variables }
   VotingFile: FILE OF VotingRecordType; {  }
@@ -615,31 +620,25 @@ PROCEDURE InputFormatted(DisplayStr: AStr; VAR InputStr: STRING; v: STRING; Abor
 PROCEDURE InputWN1(DisplayStr: AStr; VAR InputStr: AStr; MaxLen: Byte; InputFlags: InputFlagSet; VAR Changed: Boolean);
 PROCEDURE InputWNWC(DisplayStr: AStr; VAR InputStr: AStr; MaxLen: Byte; VAR Changed: Boolean);
 PROCEDURE InputMain(VAR s: STRING; MaxLen: Byte; InputFlags: InputFlagSet);
-PROCEDURE Input(VAR s: STRING; MaxLen: Byte);
-PROCEDURE OneK(VAR C: Char; ValidKeys: AStr; DisplayKey,LineFeed: Boolean);
-PROCEDURE OneK1(VAR C: Char; ValidKeys: AStr; DisplayKey,LineFeed: Boolean);
-PROCEDURE LOneK(DisplayStr: AStr; VAR C: Char; ValidKeys: AStr; DisplayKey,LineFeed: Boolean);
-PROCEDURE Local_Input1(VAR S: STRING; MaxLen: Byte; LowerCase: Boolean);
-PROCEDURE Local_Input(VAR S: STRING; MaxLen: Byte);
-PROCEDURE Local_InputL(VAR S: STRING; MaxLen: Byte);
-PROCEDURE Local_OneK(VAR C: Char; S: STRING);
+PROCEDURE OneK1(VAR C: Char; ValidKeys: AStr; DisplayKey,LineFeed: Boolean); { allows lowercase input, used for val editor }
+PROCEDURE LOneK(DisplayStr: AStr; VAR C: Char; ValidKeys: AStr; DisplayKey,LineFeed: Boolean); { single key input prompt }
 PROCEDURE MPL(MaxLen: Byte); { Print input field }
 PROCEDURE InputPath(CONST DisplayStr: AStr; VAR DirPath: Str40; CreateDir,AllowExit: Boolean; VAR Changed: Boolean);
-PROCEDURE GetPassword(VAR PW: AStr; Len: Byte);
+{PROCEDURE GetPassword(VAR PW: AStr; Len: Byte);}
 { END OF COMMON3 }
 FUNCTION GetKey: Word;
 PROCEDURE ScanInput(VAR s: AStr; CONST Allowed: AStr);
 FUNCTION CInKey: Char;
-FUNCTION CheckPW: Boolean;
-FUNCTION YN(Len: Byte; DYNY: Boolean): Boolean; {LeeW: Nest this in PYNQ once figure out SCRIPT}
-FUNCTION PYNQ(CONST InString: AStr; MaxLen: Byte; DYNY: Boolean): Boolean;
+FUNCTION CheckPW: Boolean; { Prompt for SysOp password }
+FUNCTION YN(Len: Byte; DYNY: Boolean): Boolean; {**LeeW: Nest this in PYNQ once figure out SCRIPT}
+FUNCTION PYNQ(CONST InString: AStr; MaxLen: Byte; DYNY: Boolean): Boolean; { Yes/No question prompt }
 FUNCTION InKey: Word;
 PROCEDURE WKey;
 { string stuff}
 PROCEDURE BackSpace;
 PROCEDURE DoBackSpace(Start,Finish: Byte);
-PROCEDURE LCmds(Len,c: Byte; c1,c2: AStr);
-PROCEDURE LCmds3(Len,c: Byte; c1,c2,c3: AStr);
+PROCEDURE LCmds(Len,c: Byte; c1,c2: AStr); { 2 column command list }
+PROCEDURE LCmds3(Len,c: Byte; c1,c2,c3: AStr); { 3 column command list }
 PROCEDURE Messages(MsgNum,I: Integer; S: AStr);
 FUNCTION ConvertBytes(BytesToConvert: LongInt; OneChar: Boolean): STRING;
 FUNCTION ConvertKB(KBToConvert: LongInt; OneChar: Boolean): STRING;
@@ -650,7 +649,7 @@ FUNCTION PadLeftStr(InString: STRING; MaxLen: Byte): STRING;
 FUNCTION PadRightStr(InString: STRING; MaxLen: Byte): STRING;
 FUNCTION PadLeftInt(L: LongInt; MaxLen: Byte): STRING;
 FUNCTION PadRightInt(L: LongInt; MaxLen: Byte): STRING;
-FUNCTION lRGLNGStr(StrNum: LongInt; PassValue: Boolean): AStr;
+FUNCTION lRGLNGStr(StrNum: LongInt; PassValue: Boolean): AStr; {}
 FUNCTION StripLeadSpace(S: STRING): STRING;
 FUNCTION StripTrailSpace(S: STRING): STRING;
 FUNCTION SemiCmd(S: AStr; B: Byte): STRING;
@@ -660,23 +659,23 @@ FUNCTION FormattedTime(TimeUsed: LongInt): STRING;
 FUNCTION FormatNumber(L: LongInt): STRING;
 FUNCTION ToLower(S: STRING): STRING; { Convert string to lowercase } { LeeW: Moved from OneLiner }
 FUNCTION LennMCI(CONST InString: STRING): Integer; { Returns string length minus MCIs and color codes }
-FUNCTION Substitute(Src: STRING; CONST Old,New: STRING): STRING;
+FUNCTION Substitute(Src: STRING; CONST Old,New: STRING): STRING; { Replace part of a string }
 FUNCTION BSlash(InString: AStr; b: Boolean): AStr;
 FUNCTION AllCaps(InString: STRING): STRING; { Returns string in all uppercase }
 FUNCTION Caps(InString: STRING): STRING; { Returns string with first letters of words capitalized }
-PROCEDURE Star(InString: AStr); { Display string with * infront }
+PROCEDURE Star(InString: AStr); { Display string with * indent }
 PROCEDURE Prompt(CONST InString: STRING);
 FUNCTION SQOutSp(InString: STRING): STRING;
-FUNCTION Centre(InString: AStr): STRING;
+FUNCTION Centre(InString: AStr): STRING; { Pads string to be centered on screen }
 PROCEDURE Print(CONST InString: STRING);
 PROCEDURE NL; { Carriage return }
 PROCEDURE Prt(CONST Instring: STRING);
-FUNCTION AOnOff(b: Boolean; CONST s1,s2: AStr): STRING;
-FUNCTION ShowOnOff(b: Boolean): STRING;
-FUNCTION ShowYesNo(b: Boolean): STRING;
+FUNCTION AOnOff(b: Boolean; CONST s1,s2: AStr): STRING; { Returns strings depending on boolean state }
+FUNCTION ShowOnOff(b: Boolean): STRING; { "On" or "Off" depending on boolean state }
+FUNCTION ShowYesNo(b: Boolean): STRING; { "Yes" or "No" depending on boolean state }
 PROCEDURE PrintMain(CONST ss: STRING);
 PROCEDURE PrintACR(InString: STRING);
-{ art files stuff }
+{ Art files }
 PROCEDURE PrintF(FileName: AStr); {>}
 PROCEDURE PrintFile(FileName: AStr); {>}
 PROCEDURE pfl(FN: AStr);
@@ -743,9 +742,26 @@ END;
 FUNCTION UpdateCRC32(CRC: LongInt; VAR Buffer; Len: Word): LongInt; EXTERNAL;
 {$L CRC32.OBJ }
 
-FUNCTION CheckPW: Boolean;
+{FUNCTION CheckPW: Boolean;
 BEGIN
-  CheckPW := Common1.CheckPW;
+  CheckPW := Common3.CheckPW;
+END;}
+FUNCTION CheckPW: Boolean;
+VAR
+  Password: STR20;
+BEGIN
+  IF (NOT General.SysOpPWord) OR (InWFCMenu) OR (General.SysOpPW = '') THEN
+  BEGIN
+    CheckPW := TRUE;
+    Exit;
+  END;
+  CheckPW := FALSE;
+  lRGLngStr(33,FALSE); {"SysOp Password:"}
+  InputMain(Password,SizeOf(Password)-1,[IsPassword]); {GetPassword(Password,20);}
+  IF (Password = General.SysOpPW) THEN
+    CheckPW := TRUE
+  ELSE IF (InCom) AND (Password <> '') THEN
+    SysOpLog('^8[!] ^0Entered incorrect SysOp Password! "^1'+Password+'^0"');
 END;
 
 PROCEDURE NewCompTables;
@@ -761,26 +777,6 @@ END;
 PROCEDURE InitTrapFile;
 BEGIN
   Common1.InitTrapFile;
-END;
-
-PROCEDURE Local_Input1(VAR S: STRING; MaxLen: Byte; LowerCase: Boolean);
-BEGIN
-  Common3.Local_Input1(S,MaxLen,LowerCase);
-END;
-
-PROCEDURE Local_Input(VAR S: STRING; MaxLen: Byte);
-BEGIN
-  Common3.Local_Input(S,MaxLen);
-END;
-
-PROCEDURE Local_InputL(VAR S: STRING; MaxLen: Byte);
-BEGIN
-  Common3.Local_InputL(S,MaxLen);
-END;
-
-PROCEDURE Local_OneK(VAR C: Char; S: STRING);
-BEGIN
-  Common3.Local_OneK(C,S);
 END;
 
 PROCEDURE SysOpShell;
@@ -816,11 +812,6 @@ END;
 PROCEDURE TLeft;
 BEGIN
   Common2.TLeft;
-END;
-
-PROCEDURE OneK(VAR C: Char; ValidKeys: AStr; DisplayKey,LineFeed: Boolean);
-BEGIN
-  Common3.OneK(C,ValidKeys,DisplayKey,LineFeed);
 END;
 
 PROCEDURE OneK1(VAR C: Char; ValidKeys: AStr; DisplayKey,LineFeed: Boolean);
@@ -896,11 +887,6 @@ END;
 PROCEDURE InputMain(VAR s: STRING; MaxLen: Byte; InputFlags: InputFlagSet);
 BEGIN
   Common3.InputMain(s,MaxLen,InputFlags);
-END;
-
-PROCEDURE Input(VAR s: STRING; MaxLen: Byte);
-BEGIN
-  Common3.Input(s,MaxLen);
 END;
 
 PROCEDURE Com_Flush_Recv;
@@ -998,16 +984,16 @@ VAR
 BEGIN
   MinSpaceOk := TRUE;
   IF (DiskKBFree(Path) <= MinSpace) THEN
-  BEGIN
-    NL;
-    Star('Insufficient disk space.');
-    Drive := Chr(ExtractDriveNumber(Path) + 64);
-    IF (Drive = '@') THEN
-      SysOpLog('^8--->^1 '+S+' failure: Main BBS drive full.')
-    ELSE
-      SysOpLog('^8--->^1 '+S+' failure: '+Drive+' Drive full.');
-    MinSpaceOk := FALSE;
-  END;
+    BEGIN
+      NL;
+      Star('Insufficient disk space!');
+      Drive := Chr(ExtractDriveNumber(Path) + 64);
+      IF (Drive = '@') THEN
+        SysOpLog('^8[!]^0 '+S+' failure: Main BBS drive ('+Drive+':\) is full!')
+      ELSE
+        SysOpLog('^8[!]^0 '+S+' failure: '+Drive+' drive is full!');
+      MinSpaceOk := FALSE;
+    END;
   CheckDriveSpace := MinSpaceOk;
 END;
 
@@ -1166,29 +1152,34 @@ BEGIN
     BlockRead(RGStrFile,S[0],1);
     BlockRead(RGStrFile,S[1],Ord(S[0]));
     Inc(TotLoad,(Length(S) + 1));
-	{ -- }
-	CASE StrNum OF
-	  201 :	FOR b := 0 TO 0 DO { $ENTER_STATE_PROVINCE }
-		  	  IF (LangStringArray[b] <> '') THEN
-				S := Substitute(S,'@'+IntToStr(b),LangStringArray[b]);
-	  177 :	FOR b := 0 TO 1 DO { $FORWARDING_TO }
-		  	  IF (LangStringArray[b] <> '') THEN
-				S := Substitute(S,'@'+IntToStr(b),LangStringArray[b]);
-	END;
-	{ -- }
+    { -- }
+    CASE StrNum OF
+      201 : FOR b := 0 TO 0 DO { $ENTER_STATE_PROVINCE }
+              IF (LangStringArray[b] <> '') THEN
+                S := Substitute(S,'@'+IntToStr(b),LangStringArray[b]);
+      177 : FOR b := 0 TO 1 DO { $FORWARDING_TO }
+              IF (LangStringArray[b] <> '') THEN
+                S := Substitute(S,'@'+IntToStr(b),LangStringArray[b]);
+                (*
+       32 : FOR b := 0 TO 1 DO { $READ_QUESTION_PROMPT }
+              IF (LangStringArray[b] <> '') THEN
+                S := Substitute(S,'@'+IntToStr(b),LangStringArray[b]);
+                *)
+    END;
+    { -- }
     IF (PassValue) THEN
       BEGIN
-		IF (S[Length(s)] = '@') THEN
+        IF (S[Length(s)] = '@') THEN
           Dec(S[0]);
       END
     ELSE
       BEGIN
-		IF (S[Length(S)] = '@') THEN
-		  BEGIN
-			Dec(S[0]);
-			Prt(S);
-		  END
-		ELSE
+        IF (S[Length(S)] = '@') THEN
+          BEGIN
+            Dec(S[0]);
+            Prt(S);
+          END
+        ELSE
           PrintACR(S);
       END;
   UNTIL (TotLoad >= StrPointer.TextSize) OR (Abort) OR (HangUp);
@@ -1196,16 +1187,16 @@ BEGIN
   LastError := IOResult;
   lRGLNGStr := S;
   FOR b := 0 TO 9 DO
-	IF (LangStringArray[b] <> '') THEN
-	  LangStringArray[b] := '';
+    IF (LangStringArray[b] <> '') THEN
+      LangStringArray[b] := '';
   { ^ LeeW: Clear passed strings here, check if there's better way to do this -- dispose? }
 END;
-
+{
 PROCEDURE GetPassword(VAR PW: AStr; Len: Byte);
 BEGIN
   Common3.GetPassword(PW,Len);
 END;
-
+}
 PROCEDURE MakeDir(VAR Path: PathStr; AskMakeDir: Boolean);
 VAR
   CurDir: PathStr;
@@ -1284,7 +1275,7 @@ BEGIN
      6 : MsgStr := '^8No '+S+' to position!^0';
      7 : MsgStr := '^8Invalid drive!^0';
      8 : MsgStr := '^8Invalid record number order!^0';
-	 9 : MsgStr := '^8This can only be changed locally!^0'
+     9 : MsgStr := '^8This can only be changed locally!^0'
   END;
   PrintACR(MsgStr);
   PauseScr(FALSE);
@@ -1596,10 +1587,14 @@ VAR
 BEGIN
   FOR Counter := Start TO Finish DO
   BEGIN
+    BackSpace;
+  {
     IF (OutCom) THEN
       SerialOut(^H' '^H);
     IF (WantOut) THEN
       Write(^H' '^H);
+      }
+      
   END;
 END;
 
@@ -2030,7 +2025,7 @@ END;
 
 FUNCTION MsgSysOp: Boolean;
 BEGIN
-  MsgSysOp := (CoSysOp) OR (AACS(General.MSOP)) OR (AACS(MemMsgArea.SysOpACS));
+    MsgSysOp := (CoSysOp) OR (AACS(General.MSOP)) OR (AACS(MemMsgArea.SysOpACS))
 END;
 
 FUNCTION FileSysOp: Boolean;
@@ -2389,24 +2384,24 @@ VAR
   SaveWhereX : Byte;
 BEGIN
   IF (OkANSI OR OkAvatar) THEN
-	BEGIN
+    BEGIN
       IF (WhereX+MaxLen > ThisUser.LineLen) THEN
-		NL;
+        NL;
       UserColor(3);
       SaveWhereX := WhereX;
       IF (OutCom) THEN
-		FOR Counter := 1 TO MaxLen DO
+        FOR Counter := 1 TO MaxLen DO
           Com_Send(' ');
-	  IF (WantOut) THEN
-		FOR Counter := 1 TO MaxLen DO
+      IF (WantOut) THEN
+        FOR Counter := 1 TO MaxLen DO
           Write(' ');
       GoToXY(SaveWhereX,WhereY);
       IF (OutCom) THEN
-		IF (OkAvatar) THEN
+        IF (OkAvatar) THEN
           SerialOut(^y+^H+Chr(MaxLen))
         ELSE
           SerialOut(#27+'['+IntToStr(MaxLen)+'D');
-	END;
+    END;
 END;
 
 FUNCTION InKey: Word;
@@ -2457,20 +2452,20 @@ BEGIN
             c := CInKey;
         END;
         CASE Char(c) OF
-          'A' : InKey := F_UP;		{ Up Arrow }
-          'B' : InKey := F_DOWN;	{ Down Arrow }
-          'C' : InKey := F_RIGHT;	{ Right Arrow }
-          'D' : InKey := F_LEFT;	{ Left Arrow }
-          'H' : InKey := F_HOME;	{ Home }
-          'K' : InKey := F_END;		{ END - PROCOMM+ }
-          'R' : InKey := F_END;		{ END - GT }
+          'A' : InKey := F_UP;      { Up Arrow }
+          'B' : InKey := F_DOWN;    { Down Arrow }
+          'C' : InKey := F_RIGHT;   { Right Arrow }
+          'D' : InKey := F_LEFT;    { Left Arrow }
+          'H' : InKey := F_HOME;    { Home }
+          'K' : InKey := F_END;     { END - PROCOMM+ }
+          'R' : InKey := F_END;     { END - GT }
           '4' : BEGIN
                   InKey := F_END;
                   c := CInKey;
                 END;
-          'r' : InKey := F_PGUP;	{ PgUp }
-          'q' : InKey := F_PGDN;	{ PgDn }
-          'n' : InKey := F_INS;		{ Ins }
+          'r' : InKey := F_PGUP;    { PgUp }
+          'q' : InKey := F_PGDN;    { PgDn }
+          'n' : InKey := F_INS;     { Ins }
         END;
         Exit;
       END;
@@ -2906,9 +2901,9 @@ FUNCTION AOnOff(b: Boolean; CONST s1,s2:AStr): STRING; {ASSEMBLER;}
   POP  ds}
 BEGIN
   IF (b) THEN
-	AOnOff := s1
+    AOnOff := s1
   ELSE 
-	AOnOff := s2;
+    AOnOff := s2;
 END;
 
 FUNCTION ShowOnOff(b: Boolean): STRING;
@@ -2934,60 +2929,60 @@ VAR
   
   PROCEDURE PrintYesNo;
   BEGIN
-  	    IF (DYNY) THEN
-		  BEGIN
-			Prt('^7'+lRGLngStr(96,TRUE)+'^0'); { Yes selected }
-			Prt('^6'+lRGLngStr(97,TRUE)+'^0'); 
-	      END
-	    ELSE
-	      BEGIN
-			Prt('^6'+lRGLngStr(96,TRUE)+'^0'); 
-		    Prt('^7'+lRGLngStr(97,TRUE)+'^0'); { No selected }
-		  END;
+        IF (DYNY) THEN
+          BEGIN
+            Prt('^7'+lRGLngStr(96,TRUE)+'^0'); { Yes selected }
+            Prt('^6'+lRGLngStr(97,TRUE)+'^0'); 
+          END
+        ELSE
+          BEGIN
+            Prt('^6'+lRGLngStr(96,TRUE)+'^0'); 
+            Prt('^7'+lRGLngStr(97,TRUE)+'^0'); { No selected }
+          END;
   END;
   
 BEGIN
   IF (OkANSI) AND (General.UseFileAreaLightBar) THEN
-	BEGIN
-	  IF (NOT HangUp) THEN
-		BEGIN
-		  REPEAT
-			PrintYesNo;
-			W := GetKey;
-			IF ((W = 89) OR (W = 121)) OR ((W=F_LEFT) AND (DYNY=FALSE)) THEN
-			  DYNY := TRUE;
-			IF ((W = 78) OR (W = 110)) OR ((W=F_RIGHT) AND (DYNY=TRUE)) THEN
-			  DYNY := FALSE;
-			DoBackspace(0,LennMCI(lRGLngStr(96,TRUE))+LennMCI(lRGLngStr(96,TRUE))-2);
-		  UNTIL (W=13) OR (W=89) OR (W=121) OR (W=78) OR (W=110); { Y/N/Enter }
-		  PrintYesNo;
-		  YN := (DYNY) AND (NOT HangUp);
-		  NL;
-		END;
-	END
+    BEGIN
+      IF (NOT HangUp) THEN
+        BEGIN
+          REPEAT
+            PrintYesNo;
+            W := GetKey;
+            IF ((W = 89) OR (W = 121)) OR ((W=F_LEFT) AND (DYNY=FALSE)) THEN
+              DYNY := TRUE;
+            IF ((W = 78) OR (W = 110)) OR ((W=F_RIGHT) AND (DYNY=TRUE)) THEN
+              DYNY := FALSE;
+            DoBackspace(0,LennMCI(lRGLngStr(96,TRUE))+LennMCI(lRGLngStr(96,TRUE))-2);
+          UNTIL (W=13) OR (W=89) OR (W=121) OR (W=78) OR (W=110) OR (HangUp); { Y/N/Enter }
+          PrintYesNo;
+          YN := (DYNY) AND (NOT HangUp);
+          NL;
+        END;
+    END
   ELSE
-	BEGIN
-	  IF (NOT HangUp) THEN
-		BEGIN
-		  UserColor(0);
-		  Prompt(SQOutSp(ShowYesNo(DYNY)));
-		  REPEAT
-			Cmd := UpCase(Char(GetKey));
-		  UNTIL (Cmd IN ['Y','N',^M]) OR (HangUp);
-		  IF (DYNY) AND (Cmd <> 'N') THEN
-			Cmd := 'Y';
-		  IF (DYNY) AND (Cmd = 'N') THEN
-			Prompt(#8#8#8'No ')
-		  ELSE IF (NOT DYNY) AND (Cmd = 'Y') THEN
-			Prompt(#8#8'Yes');
-	    { IF (Cmd = 'N') AND (Len <> 0) THEN
-			DoBackSpace(1,Len)
-		  ELSE }
-			NL;
-		  UserColor(0);
-		  YN := (Cmd = 'Y') AND (NOT HangUp);
-		END;
-	END;
+    BEGIN
+      IF (NOT HangUp) THEN
+        BEGIN
+          UserColor(0);
+          Prompt(SQOutSp(ShowYesNo(DYNY)));
+          REPEAT
+            Cmd := UpCase(Char(GetKey));
+          UNTIL (Cmd IN ['Y','N',^M]) OR (HangUp);
+          IF (DYNY) AND (Cmd <> 'N') THEN
+            Cmd := 'Y';
+          IF (DYNY) AND (Cmd = 'N') THEN
+            Prompt(#8#8#8'No ')
+          ELSE IF (NOT DYNY) AND (Cmd = 'Y') THEN
+            Prompt(#8#8'Yes');
+        { IF (Cmd = 'N') AND (Len <> 0) THEN
+            DoBackSpace(1,Len)
+          ELSE }
+            NL;
+          UserColor(0);
+          YN := (Cmd = 'Y') AND (NOT HangUp);
+        END;
+    END;
 END;
 
 FUNCTION PYNQ(CONST InString: AStr; MaxLen: Byte; DYNY: Boolean): Boolean;
@@ -3152,12 +3147,12 @@ BEGIN
                   Inc(i,2);
                   PauseScr(FALSE)
                 END
-					(* LeeW: Added ANSI read & store position MCI %00 - %09 *)
-					ELSE IF (UpCase(s[i + 1]) IN ['0'..'9']) AND (UpCase(s[i + 2]) IN ['0'..'9']) THEN
+                    (* LeeW: Added ANSI read & store position MCI %00 - %09 *)
+                    ELSE IF (UpCase(s[i + 1]) IN ['0'..'9']) AND (UpCase(s[i + 2]) IN ['0'..'9']) THEN
                       BEGIN
-						MCIPosRecArray[StrToInt(s[i+1]+s[i+2])].X := WhereX;
-						MCIPosRecArray[StrToInt(s[i+1]+s[i+2])].Y := WhereY;
-						Inc(i,2);
+                        MCIPosRecArray[StrToInt(s[i+1]+s[i+2])].X := WhereX;
+                        MCIPosRecArray[StrToInt(s[i+1]+s[i+2])].Y := WhereY;
+                        Inc(i,2);
                       END
                     (* LeeW: Added ANSI go to position MCI %XY00;00% *)
                     ELSE IF (UpCase(s[i + 1]) = 'X') AND (UpCase(s[i + 2]) = 'Y') THEN
@@ -3486,8 +3481,8 @@ VAR
 BEGIN
   GetDate(Year,Month,MDay,WDay);
   CASE B OF
-	1 : VerLine := '^0Renegade Bulletin Board System, Version ^1'+General.Version;
-	2 : VerLine := '^0Copyright (c) 1991-'+IntToStr(Year)+' The Renegade Development Team';
+    1 : VerLine := '^0Renegade Bulletin Board System, Version ^1'+General.Version;
+    2 : VerLine := '^0Copyright (c) 1991-'+IntToStr(Year)+' The Renegade Development Team';
   END;
 END;
 
@@ -3596,7 +3591,7 @@ VAR
       'N' : ACS := (ThisNode = VSI);
       'O' : ACS := SysOpAvailable;
       'P' : ACS := ((User.lCredit - User.Debit) >= VSI);
-	  'Q' : ACS := (CurMenu = VSI); { LeeW: Added - Menu # }
+      'Q' : ACS := (CurMenu = VSI); { LeeW: Added - Menu # }
       'R' : ACS := (TACCH(UpCase(VS[1])) IN User.ACFlags);
       'S' : ACS := (User.SL >= VSI) OR (TempSysOp);
       'T' : ACS := (NSL DIV 60 >= VSI);
@@ -3725,17 +3720,17 @@ CONST
   SaveNDescription: STRING[50] = 'Miscellaneous'; { LeeW: Shouldn't this be lRGLngStr(147,)? }
 BEGIN
   IF (General.MultiNode) THEN
-	BEGIN
+    BEGIN
       LoadNode(ThisNode);
       IF (SaveVars) THEN
-		BEGIN
-		  SaveNDescription := NodeR.ActivityDesc;
-		  NodeR.ActivityDesc := NActivityDesc
-		END
+        BEGIN
+          SaveNDescription := NodeR.ActivityDesc;
+          NodeR.ActivityDesc := NActivityDesc
+        END
       ELSE
-		NodeR.ActivityDesc := SaveNDescription;
+        NodeR.ActivityDesc := SaveNDescription;
    (* IF (UserOn) THEN
-		BEGIN *)
+        BEGIN *)
       NodeR.User := UserNum;
       NodeR.UserName := ThisUser.Name;
       NodeR.Sex := ThisUser.Sex;
@@ -3743,7 +3738,7 @@ BEGIN
       NodeR.CityState := ThisUser.CityState;
       NodeR.LogonTime := TimeOn;
       NodeR.Channel := ChatChannel;
-	(* END; *)
+    (* END; *)
     SaveNode(ThisNode);
   END;
 END;
@@ -3791,20 +3786,20 @@ VAR
 BEGIN
   FO := (FileRec(UserFile).Mode <> FMClosed);
   IF (NOT FO) THEN
-	BEGIN
+    BEGIN
       Reset(UserFile);
       IF (IOResult <> 0) THEN
-		BEGIN
-		  SysOpLog('Error opening USERS.DAT.');
-		  Exit;
-		END;
-	END;
+        BEGIN
+          SysOpLog('Error opening USERS.DAT.');
+          Exit;
+        END;
+    END;
 
   IF (UserNumber <> UserNum) OR (NOT UserOn) THEN
-	BEGIN
+    BEGIN
       Seek(UserFile,UserNumber);
       Read(UserFile,User);
-	END
+    END
   ELSE
     User := ThisUser;
 
@@ -3821,14 +3816,14 @@ VAR
 BEGIN
   FO := (FileRec(UserFile).Mode <> FMClosed);
   IF (NOT FO) THEN
-	BEGIN
+    BEGIN
       Reset(UserFile);
       IF (IOResult <> 0) THEN
-		BEGIN
-		  SysOpLog('Error opening USERS.DAT.');
-		  Exit;
-		END;
-	END;
+        BEGIN
+          SysOpLog('Error opening USERS.DAT.');
+          Exit;
+        END;
+    END;
 
   Seek(UserFile,UserNumber);
   Write(UserFile,User);
@@ -3839,18 +3834,18 @@ BEGIN
   IF (UserNumber = UserNum) THEN
     ThisUser := User
   ELSE
-	BEGIN
+    BEGIN
       IF (General.MultiNode) THEN
-		BEGIN
-		  NodeNumber := OnNode(UserNumber);
-		  IF (NodeNumber > 0) THEN
-			BEGIN
-			  LoadNode(NodeNumber);
-			  Include(NodeR.Status,NUpdate);
-			  SaveNode(NodeNumber);
-			END;
-		END;
-	END;
+        BEGIN
+          NodeNumber := OnNode(UserNumber);
+          IF (NodeNumber > 0) THEN
+            BEGIN
+              LoadNode(NodeNumber);
+              Include(NodeR.Status,NUpdate);
+              SaveNode(NodeNumber);
+            END;
+        END;
+    END;
   LastError := IOResult;
 END;
 
@@ -4407,7 +4402,7 @@ BEGIN
                   'D' : Add := AOnOff(General.PerCall,'call','day ');
                   }
                   'L' : Add := ^L;
-                  'M' : Add := IntToStr(Msg_On);
+                  'M' : Add := IntToStr(Msg_On); { Current message number }
                   'N' : IF FindConference(CurrentConf,Conference) THEN
                           Add := Conference.Name
                         ELSE
@@ -4476,8 +4471,8 @@ BEGIN
           'G' : CASE UpCase(S[Index + 2]) OF
                   'N' : AOnOff((Sex = 'M'),'Mr.','Ms.');
                 END;
-                (*
           'H' : CASE UpCase(S[Index + 2]) OF
+                  'M' : Add := IntToStr(HiMsg); { Highest message number }
                   {
                   '1' : Add := CTim(General.lLowTime);
                   '2' : Add := CTim(General.HiTime);
@@ -4488,9 +4483,7 @@ BEGIN
                   '7' : Add := CTim(General.MinBaudDLLowTime);
                   '8' : add := CTim(General.MinBaudDLHiTime);
                   }
-                { 'M' : Add := IntToStr(HiMsg); } { LeeW: Removed - seemed useless }
                 END;
-                *)
           'I' : CASE UpCase(S[Index + 2]) OF
                   'L' : Add := IntToStr(Illegal);
                   'P' : Add := ThisUser.CallerID; { LeeW: We should change this to %ID, seems more fitting?? }
@@ -4569,11 +4562,12 @@ BEGIN
                           Add := 'Open';
                   '9' : Add := ShowOnOff(Color IN ACFlags);
                   {
-                  'F' : Add := ShowOnOff(FileAreaLightBar in ThisUser.SFlags);
-                  'M' : Add := ShowOnOff(MsgAreaLightBar in ThisUser.SFlags);
-                  'N' : Add := ShowOnOff(NAvail IN NodeR.Status);             
-                  'Z' : Add := General.FileArcInfo[ThisUser.DefArcType].ext;
-                  }
+                  'F' : Add := ShowOnOff(FileAreaLightBar in ThisUser.SFlags); 
+                  'M' : Add := ShowOnOff(MsgAreaLightBar in ThisUser.SFlags); {LeeW - Add lightbars %OL}
+                  
+                  'N' : Add := ShowOnOff(NAvail IN NodeR.Status); {LeeW: Can we make this say 'Available'/'Not Available'?}
+                  'Z' : Add := General.FileArcInfo[ThisUser.DefArcType].EXT;
+                  
                    END;
           'P' : CASE UpCase(S[Index + 2]) OF
                   {
@@ -4617,8 +4611,8 @@ BEGIN
                   '1' : Add := lRGLngStr(41,TRUE); {FString.UserDefEd[Ord(S[Index + 2]) - 48]; }
                   '2' : Add := lRGLngStr(42,TRUE); {FString.UserDefEd[Ord(S[Index + 2]) - 48]; }
                   '3' : Add := lRGLngStr(43,TRUE); {FString.UserDefEd[Ord(S[Index + 2]) - 48]; }
-				  'A' : Add := AOnOff((SysOpAvailable), 'available','unavailable' );
-                  'C' : Add := FormatNumber(General.CallerNum);
+                  'A' : Add := AOnOff((SysOpAvailable), 'available','unavailable' );
+                  'C' : Add := FormatNumber(General.CallerNum-1);
                   'L' : Add := IntToStr(SL);
                   'N' : Add := General.SysOpName;
                   'X' : Add := AOnOff((Sex = 'M'),'Male','Female');
@@ -4635,7 +4629,7 @@ BEGIN
                   'N' : Add := Liner.NodeTelnetURL;
                   'O' : Add := IntToStr(General.TimeAllow[SL] - TLToday);
                   'T' : Add := FormatNumber(TTimeOn);
-                  'U' : Add := IntToStr(General.NumUsers);
+                  'U' : Add := IntToStr(General.NumUsers-1); {LeeW: fixed?}
                 END;
           'U' : CASE UpCase(S[Index + 2]) OF
                   'A' : Add := IntToStr(AgeUser(BirthDate));

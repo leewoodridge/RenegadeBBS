@@ -175,7 +175,7 @@ BEGIN
   Print('Filespec:');
   Prt(':');
   MPL(12);
-  Input(FileName,12);
+  InputMain(FileName,SizeOf(FileName)-1,[UpperOnly]);
   IF (FileName = '') THEN
   BEGIN
     NL;
@@ -190,7 +190,7 @@ BEGIN
     NL;
     Print('Enter commandline (example: "REZIP"): ');
     Prt(':');
-    Input(ReZipCmd,78);
+    InputMain(ReZipCmd,SizeOf(ReZipCmd)-1,[UpperOnly]);
     IF (ReZipCmd = '') THEN
     BEGIN
       NL;

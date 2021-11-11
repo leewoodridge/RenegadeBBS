@@ -14,10 +14,10 @@ Lee Woodridge
             - moved ansig and clear_eol to COMMON
  10/16/2021 - Answering chat call will use splitchat if user has ANSI support, linechat otherwise
  10/16/2021 - SysOp can now display file when chatting with user. ONLY sysop can execute the cmd, not user.
-			  before was only allowing /type cmd if chatting with sysop
-			- Added "Buf := ^M" after line/split chat exit, is equiv to pressing enter after chat to refresh screen
-			  maybe there's a better way to do this??? should keep eye on it incase unintended consequences
-				- skips to next if reading messages, same behavior for file listing expected
+              before was only allowing /type cmd if chatting with sysop
+            - Added "Buf := ^M" after line/split chat exit, is equiv to pressing enter after chat to refresh screen
+              maybe there's a better way to do this??? should keep eye on it incase unintended consequences
+                - skips to next if reading messages, same behavior for file listing expected
 }
 
 UNIT Chat;
@@ -121,7 +121,7 @@ BEGIN
               #32 : BEGIN
                       Chatted := TRUE;
                       ChatAttempts := 0;
-					  IF (OkANSI) THEN
+                      IF (OkANSI) THEN
                         SysOpSplitChat
                       ELSE
                         SysOpLineChat;
@@ -319,12 +319,12 @@ BEGIN
   ChatTime := GetPackDateTime;
   DOSANSIOn := FALSE;
   IF (General.MultiNode) THEN
-	BEGIN
+    BEGIN
       LoadNode(ThisNode);
       SaveNAvail := (NAvail IN Noder.Status);
       Exclude(Noder.Status,NAvail);
       SaveNode(ThisNode);
-	END;
+    END;
   SavePrintingFile := PrintingFile;
   InChat := TRUE;
   ChatCall := FALSE;
@@ -342,64 +342,63 @@ BEGIN
   UserColor({10}General.SysOpColor);
   WColor := TRUE;
   IF (ChatReason <> '') THEN
-	BEGIN
+    BEGIN
       lStatus_Screen(100,ChatReason,FALSE,S);
       ChatReason := '';
-	END;
+    END;
   REPEAT
     InLi1(S);
     IF (S[1] = '/') THEN
       S := AllCaps(S);
     IF (Copy(S,1,6) = '/TYPE ') AND (WColor) THEN
-	  BEGIN
-		S := Copy(S,7,(Length(S) - 6));
-		IF (S <> '') THEN
-		  BEGIN
-			PrintFile(S);
-			IF (NoFile) THEN
-			Print('*File not found*');
-		END;
+      BEGIN
+        S := Copy(S,7,(Length(S) - 6));
+        IF (S <> '') THEN
+          BEGIN
+            PrintFile(S);
+            IF (NoFile) THEN
+            Print('*File not found*');
+        END;
       END
     ELSE IF ((S = '/HELP') OR (S = '/?')) THEN
-	  BEGIN
-		IF (WColor) THEN
+      BEGIN
+        IF (WColor) THEN
           Print('^1/TYPE D:\PATH\FILENAME.EXT^0: Display file');
         (*
-		Print('^5/BYE^3:   Hang up');
-        Print('^5/CLS^3:   Clear the screen');
-        Print('^5/PAGE^3:  Page the SysOp and User');
-        Print('^5/Q^3:     Exit chat mode');
-		NL;
-		*)
-		lRGLngStr(65,FALSE);
+        Print('/BYE  : Hang up');
+        Print('/CLS  : Clear the screen');
+        Print('/PAGE : Page the SysOp and User');
+        Print('/Q    : Exit chat mode');
+        *)
+        lRGLngStr(65,FALSE);
       END
     ELSE IF (S = '/CLS') THEN
       CLS
     ELSE IF (S = '/PAGE') THEN
-	  BEGIN
-		FOR Counter := 650 TO 700 DO
-		  BEGIN
-			Sound(Counter);
-			Delay(4);
-			NoSound;
-		  END;
-		REPEAT
+      BEGIN
+        FOR Counter := 650 TO 700 DO
+          BEGIN
+            Sound(Counter);
+            Delay(4);
+            NoSound;
+          END;
+        REPEAT
           Dec(Counter);
           Sound(Counter);
           Delay(2);
           NoSound;
-		UNTIL (Counter = 200);
+        UNTIL (Counter = 200);
         Prompt(^G^G);
       END
     ELSE IF (S = '/BYE') THEN
-	  BEGIN
-		Print('Hanging up ...');
-		HangUp := TRUE;
+      BEGIN
+        Print('Hanging up ...');
+        HangUp := TRUE;
       END
     ELSE IF (S = '/Q') THEN
-	  BEGIN
-		InChat := FALSE;
-		Print('Chat Aborted ...');
+      BEGIN
+        InChat := FALSE;
+        Print('Chat Aborted ...');
       END;
     IF (CFO) THEN
       WriteLn(ChatFile,S);
@@ -409,29 +408,29 @@ BEGIN
   IF (NoFile) THEN
     lRGLngStr(3,FALSE); (* Print('^5'+FString.lEndChat); *)
   IF (General.MultiNode) THEN
-	BEGIN
+    BEGIN
       LoadNode(ThisNode);
       IF (SaveNAvail) THEN
-		Include(Noder.Status,NAvail);
+        Include(Noder.Status,NAvail);
       SaveNode(ThisNode);
-	END;
+    END;
   ChatTime := (GetPackDateTime - ChatTime);
   IF (ChopTime = 0) THEN
     Inc(FreeTime,ChatTime);
   TLeft;
   S := 'Chatted for '+FormattedTime(ChatTime);
   IF (CFO) THEN
-	BEGIN
+    BEGIN
       S := S+'  -{ Recorded in Chat';
       IF (ChatSeparate IN ThisUser.SFlags) THEN
-		S := S + IntToStr(UserNum);
+        S := S + IntToStr(UserNum);
       S := S+'.LOG }-';
-	END;
+    END;
   SysOpLog(S);
   InChat := FALSE;
   Echo := SaveEcho;
   IF ((HangUp) AND (CFO)) THEN
-	BEGIN
+    BEGIN
       WriteLn(ChatFile);
       WriteLn(ChatFile,'=> User disconnected');
       WriteLn(ChatFile);
@@ -442,7 +441,7 @@ BEGIN
   IF (InVisEdit) THEN
     Buf := ^L
   ELSE
-	  Buf := ^M; { LeeW: Added - Carriage feed, to refresh menu after }
+      Buf := ^M; { LeeW: Added - Carriage feed, to refresh menu after }
   MCIAllowed := SaveMCIAllowed;
 END;
 
@@ -467,10 +466,10 @@ BEGIN
   {
   PrintF('SPLTCHAT');
   IF NoFile THEN 
-	BEGIN
-	  SysOpLog('SPLTCHAT.ANS file missing from MISC directory');
-	  EXIT;
-	END;  }
+    BEGIN
+      SysOpLog('SPLTCHAT.ANS file missing from MISC directory');
+      EXIT;
+    END;  }
   CLS;
   ANSIG(1,1);
   UserColor(1);
@@ -820,24 +819,24 @@ BEGIN
             SaveWhereY := WhereY;
             IF (ChatHelp) THEN
               BEGIN
-				ANSIG(1,12);
-				UserColor(1);
-				FOR Counter := 1 TO 79 DO
-				OutKey(#196);
-				ANSIG(31,12);
-				Prompt('^1[ ^2CTRL+Z for Help^1 ]');
+                ANSIG(1,12);
+                UserColor(1);
+                FOR Counter := 1 TO 79 DO
+                OutKey(#196);
+                ANSIG(31,12);
+                Prompt('^1[ ^2CTRL+Z for Help^1 ]');
                 ANSIG(SaveWhereX,SaveWhereY);
                 ChatHelp := FALSE;
               END
             ELSE
               BEGIN
                 ChatHelp := TRUE;
-				ANSIG(1,12);
-				UserColor(1);
-				FOR Counter := 1 TO 79 DO
-				  OutKey(#196);
-				ANSIG(10,12);
-				Prompt('[ ^2CTRL+^1Q^2 = Quit, ^1G^2 = Hang Up, ^1X^2 = Del Line, ^1W^2 = Del Word^1 ]');
+                ANSIG(1,12);
+                UserColor(1);
+                FOR Counter := 1 TO 79 DO
+                  OutKey(#196);
+                ANSIG(10,12);
+                Prompt('[ ^2CTRL+^1Q^2 = Quit, ^1G^2 = Hang Up, ^1X^2 = Del Line, ^1W^2 = Del Word^1 ]');
                 ANSIG(SaveWhereX,SaveWhereY);
               END;
                 IF (WColor) THEN
@@ -886,7 +885,7 @@ BEGIN
   IF (InVisEdit) THEN
     Buf := ^L
   ELSE
-	Buf := ^M; { LeeW: Added - Carriage feed, to refresh menu after }
+    Buf := ^M; { LeeW: Added - Carriage feed, to refresh menu after }
   MCIAllowed := SaveMCIAllowed;
 END;
 END.

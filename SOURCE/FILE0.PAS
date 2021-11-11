@@ -147,7 +147,7 @@ BEGIN
     Print('File area: ^1'+MemFileArea.AreaName+' #'+IntToStr(CompFileArea(FArea,0))+'^0');
     NL;
     Prt('Password: ');
-    GetPassword(PW,20);
+    InputMain(PW,SizeOf(PW)-1,[IsPassword]); {GetPassword(PW,20);}
     IF (PW <> MemFileArea.Password) THEN
     BEGIN
       NL;

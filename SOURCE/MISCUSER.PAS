@@ -1,5 +1,5 @@
 {$A+,B-,D+,E-,F+,I-,L+,N-,O+,R-,S+,V-}
-
+{lfinduserws changed username string from astr to string[36]}
 UNIT MiscUser;
 
 INTERFACE
@@ -22,7 +22,7 @@ PROCEDURE lFindUserWS(VAR UserNum: Integer);
 VAR
   User: UserRecordType;
   UserIDX: UserIDXRec;
-  UserName: AStr;
+  UserName: STRING[36];
   Cmd: Char;
   Counter,
   NumIDX: Integer;
@@ -30,7 +30,7 @@ VAR
   Asked: Boolean;
 BEGIN
   MPL(36);
-  Input(UserName,36);
+  InputMain(UserName,SizeOf(UserName)-1,[UpperOnly]);
   IF (UserName = 'SYSOP') THEN
     UserName := '1';
   UserNum := StrToInt(UserName);
@@ -75,7 +75,7 @@ BEGIN
             Asked := TRUE;
           END;
           Prompt('^0Did you mean ^1'+Caps(UserIDX.Name)+'^0? ');
-          OneK(Cmd,'QYN'^M,TRUE,TRUE);
+          LOneK('',Cmd,'QYN'^M,TRUE,TRUE);
           Done := TRUE;
           CASE Cmd OF
             'Q' : UserNum := -1;
@@ -140,7 +140,7 @@ VAR
 BEGIN
   UserNum := 0;
   TempUserName := '';
-  Input(TempUserName,36);
+  InputMain(TempUserName,SizeOf(TempUserName)-1,[UpperOnly]);
   IF (TempUserName = 'NEW') THEN
   BEGIN
     UserNum := -1;

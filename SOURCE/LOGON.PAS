@@ -373,170 +373,135 @@ VAR
 BEGIN
   Ok := TRUE;
   IF (NOT (FastLogon AND (NOT General.LocalSec))) THEN
-  BEGIN
-    IF (IEMSIRec.Pw = '') THEN
     BEGIN
-      (*
-      Prompt(FString.Yourpassword);
-      *)
-      lRGLngStr(183,FALSE);
-      GetPassword(UserPw,20);
-    END
-    ELSE
-    BEGIN
-      UserPW := IEMSIRec.Pw;
-      IEMSIRec.Pw := '';
+      IF (IEMSIRec.Pw = '') THEN
+        BEGIN
+          lRGLngStr(183,FALSE); {"Password:"}
+          InputMain(UserPW,SizeOf(UserPW)-1,[IsPassword]); {GetPassword(UserPw,20);}
+        END
+      ELSE
+        BEGIN
+          UserPW := IEMSIRec.Pw;
+          IEMSIRec.Pw := '';
+        END;
+      IF (General.Phonepw) THEN
+        IF (IEMSIRec.Ph = '') THEN
+          BEGIN
+            lRGLngStr(184,FALSE); {"(xxx)xxx-"}
+            InputMain(PhonePW,SizeOf(PhonePW)-1,[IsPassword]); {GetPassword(PhonePW,4);}
+          END
+        ELSE
+          BEGIN
+            PhonePW := Copy(IEMSIRec.Ph,Length(IEMSIRec.Ph) - 3,4);
+            IEMSIRec.Ph := '';
+          END
+        ELSE
+          PhonePW := Copy(ThisUser.Ph,Length(ThisUser.Ph) - 3,4);
     END;
-    IF (General.Phonepw) THEN
-      IF (IEMSIRec.Ph = '') THEN
-      BEGIN
-        (*
-        Prompt(FString.YourPhoneNumber);
-        *)
-        lRGLngStr(184,FALSE);
-        GetPassword(PhonePW,4);
-      END
-      ELSE
-      BEGIN
-        PhonePW := Copy(IEMSIRec.Ph,Length(IEMSIRec.Ph) - 3,4);
-        IEMSIRec.Ph := '';
-      END
-      ELSE
-        PhonePW := Copy(ThisUser.Ph,Length(ThisUser.Ph) - 3,4);
-  END;
   IF (NOT (FastLogon AND (NOT General.LocalSec))) AND ((ThisUser.Pw <> Crc32(UserPW)) OR
      (Copy(ThisUser.Ph,Length(ThisUser.Ph) - 3,4) <> PhonePW)) THEN
-  BEGIN
-    ok := FALSE;
-    (*
-    Prompt(FString.ILogon);
-    *)
-    lRGLngStr(119,FALSE);
-    IF (NOT HangUp) AND (UserNum <> 0) THEN
     BEGIN
-      S := '* Illegal logon attempt! Tried: '+Caps(ThisUser.Name)+' #'+IntToStr(UserNum)+' PW='+UserPw;
-      IF (General.Phonepw) THEN
-        S := S + ', PH#='+PhonePW;
-      SendShortMessage(1,S);
-      SL1(S);
-    END;
-    Inc(ThisUser.Illegal);
-    IF (UserNum <> - 1) THEN
-      SaveURec(ThisUser,UserNum);
-    Inc(Tries);
-    IF (Tries >= General.MaxLogonTries) THEN
-    BEGIN
-      IF (General.NewUserToggles[20] = 0) OR (General.ForgotPWQuestion = '') OR (ThisUser.ForgotPWAnswer = '') OR 
-         (CoSysOp) THEN
-        HangUp := TRUE
-      ELSE
-      BEGIN
-        (*
-        Print('|03Please answer the following question to logon to the BBS.');
-        Print('|03'+General.ForgotPWQuestion);
-        Prt(': ');
-        *)
-        lRGLngStr(186,FALSE);
-        MPL(40);
-        Input(ForgotPW,40);
-        IF (ForgotPW <> ThisUser.ForgotPWAnswer) THEN
+      Ok := FALSE;
+      lRGLngStr(119,FALSE); (*Prompt(FString.ILogon);*)
+      IF (NOT HangUp) AND (UserNum <> 0) THEN
         BEGIN
-          S := '* Invalid forgot password response: '+ForgotPW;
-          SL1(S);
+          S := '* Illegal logon attempt! Tried: '+Caps(ThisUser.Name)+' #'+IntToStr(UserNum)+' PW='+UserPw;
+          IF (General.Phonepw) THEN
+            S := S + ', PH#='+PhonePW;
           SendShortMessage(1,S);
-          HangUp := TRUE
-        END
-        ELSE
-        BEGIN
-          S := '* Entered correct forgot password response.';
           SL1(S);
-          SendShortMessage(1,S);
-          CStuff(13,1,ThisUser); { Password }
-          Ok := TRUE;
-          Tries := 0;
         END;
-      END;
+      Inc(ThisUser.Illegal);
+      IF (UserNum <> - 1) THEN
+        SaveURec(ThisUser,UserNum);
+      Inc(Tries);
+      IF (Tries >= General.MaxLogonTries) THEN
+        BEGIN
+          IF (General.NewUserQToggles[14] = FALSE) OR (General.ForgotPWQuestion = '') OR (ThisUser.ForgotPWAnswer = '') OR 
+             (CoSysOp) THEN
+            HangUp := TRUE
+          ELSE
+            BEGIN
+              lRGLngStr(186,FALSE); { Forgot Password Question Prompt }
+              MPL(40);
+              InputMain(ForgotPW,SizeOf(ForgotPW)-1,[UpperOnly]);
+              IF (ForgotPW <> ThisUser.ForgotPWAnswer) THEN
+                BEGIN
+                  S := '* Invalid forgot password response: '+ForgotPW;
+                  SL1(S);
+                  SendShortMessage(1,S);
+                  HangUp := TRUE
+                END
+              ELSE
+                BEGIN
+                  S := '* Entered correct forgot password response.';
+                  SL1(S);
+                  SendShortMessage(1,S);
+                  CStuff(13,1,ThisUser); { Password }
+                  Ok := TRUE;
+                  Tries := 0;
+                END;
+            END;
+        END;
     END;
-  END;
   IF (Ok) THEN
     lStatus_Screen(General.Curwindow,'',FALSE,S);
   IF ((AACS(General.SPW)) AND (General.SysOpPW <> '') AND (Ok) AND (InCom) AND (NOT HangUp)) THEN
-  BEGIN
-    (*
-    Prompt(FString.SysOpPrompt);
-    *)
-    lRGLngStr(185,FALSE);
-    GetPassword(SysOpPW,20);
-    IF (SysOpPW <> General.SysOpPW) THEN
     BEGIN
-      (*
-      Prompt(FString.ILogon);
-      *)
-      lRGLngStr(119,FALSE);
-      SL1('* Illegal System password: '+SysOpPw);
-      Inc(Tries);
-      IF (Tries >= General.MaxLogonTries) THEN
-        HangUp := TRUE;
-      Ok := FALSE;
+      lRGLngStr(185,FALSE); (*Prompt(FString.SysOpPrompt);*)
+      InputMain(SysOpPW,SizeOf(SysOpPW)-1,[IsPassword]); {GetPassword(SysOpPW,20);}
+      IF (SysOpPW <> General.SysOpPW) THEN
+        BEGIN
+          lRGLngStr(119,FALSE); (*Prompt(FString.ILogon);*)
+          SL1('* Illegal System password: '+SysOpPw);
+          Inc(Tries);
+          IF (Tries >= General.MaxLogonTries) THEN
+            HangUp := TRUE;
+          Ok := FALSE;
+        END;
     END;
-  END;
   IF (Ok) AND NOT (AACS(Liner.LogonACS)) THEN
-  BEGIN
-    PrintF('NONODE');
-    IF (NoFile) THEN
-      (*
-      Print('You don''t have the required ACS to logon to this node!');
-      *)
-      lRGLngStr(120,FALSE);
-    SysOpLog(ThisUser.Name+': Attempt to logon node '+IntToStr(ThisNode)+' without access.');
-    HangUp := TRUE;
-  END;
-  IF ((Ok) AND (General.ShuttleLog) AND (LockedOut IN ThisUser.SFlags)) THEN
-  BEGIN
-    PrintF(ThisUser.LockedFile);
-    IF (NoFile) THEN
-      (*
-      Print('You have been locked out of the BBS by the SysOp.');
-      *)
-      lRGLngStr(121,FALSE);
-    SysOpLog(ThisUser.Name+': Attempt to access system when locked out^8 <--');
-    HangUp := TRUE;
-  END;
-  IF (UserNum > 0) AND (Onnode(UserNum) > 0) AND NOT (Cosysop) THEN
-  BEGIN
-     PrintF('MULTILOG');
-     IF (NoFile) THEN
-       (*
-       Print('You are already logged in on another node!');
-       *)
-       lRGLngStr(122,FALSE);
-     HangUp := TRUE;
-  END;
-  IF (NOT FastLogon) AND (Ok) AND (NOT HangUp) AND (General.Birthdatecheck > 0) AND
-    (ThisUser.LoggedOn MOD General.Birthdatecheck = 0) THEN
-  BEGIN
-    (*
-    Prt('Please verify your date of birth (mm/dd/yyyy): ');
-    *)
-    lRGLngStr(187,FALSE);
-    Inputformatted('',Birthday,'##/##/####',FALSE);
-    IF (Date2Pd(Birthday) <> ThisUser.Birthdate) THEN
     BEGIN
-      Dec(ThisUser.LoggedOn);
-      PrintF('WRNGBDAY');
+      PrintF('NONODE');
       IF (NoFile) THEN
-        (*
-        Print('You entered an incorrect birthdate.');
-        *)
-        lRGLngStr(123,FALSE);
-      SL1('*'+ThisUser.Name+' Failed birthday verification. Tried = '+Birthday+' Actual = '+Pd2Date(ThisUser.Birthdate));
-      SendShortMessage(1,ThisUser.Name+' failed birthday verification on '+DateStr);
-      InResponseTo := '\'#1'Failed birthdate check';
-      MHeader.Status := [];
-      SeMail(1,MHeader);
+        lRGLngStr(120,FALSE); (*Print('You don''t have the required ACS to logon to this node!');*)
+      SysOpLog(ThisUser.Name+': Attempt to logon node '+IntToStr(ThisNode)+' without access.');
       HangUp := TRUE;
     END;
-  END;
+  IF ((Ok) AND (General.ShuttleLog) AND (LockedOut IN ThisUser.SFlags)) THEN
+    BEGIN
+      PrintF(ThisUser.LockedFile);
+      IF (NoFile) THEN
+        lRGLngStr(121,FALSE); (*Print('You have been locked out of the BBS by the SysOp.');*)
+      SysOpLog(ThisUser.Name+': Attempt to access system when locked out^8 <--');
+      HangUp := TRUE;
+    END;
+  IF (UserNum > 0) AND (Onnode(UserNum) > 0) AND NOT (Cosysop) THEN
+    BEGIN
+      PrintF('MULTILOG');
+      IF (NoFile) THEN
+        lRGLngStr(122,FALSE); (*Print('You are already logged in on another node!');*)
+      HangUp := TRUE;
+    END;
+  IF (NOT FastLogon) AND (Ok) AND (NOT HangUp) AND (General.Birthdatecheck > 0) AND
+     (ThisUser.LoggedOn MOD General.Birthdatecheck = 0) THEN
+    BEGIN
+      lRGLngStr(187,FALSE); (*Prt('Please verify your date of birth (mm/dd/yyyy): ');*)
+      Inputformatted('',Birthday,'##/##/####',FALSE);
+      IF (Date2Pd(Birthday) <> ThisUser.Birthdate) THEN
+        BEGIN
+          Dec(ThisUser.LoggedOn);
+          PrintF('WRNGBDAY');
+          IF (NoFile) THEN
+            lRGLngStr(123,FALSE); (*Print('You entered an incorrect birthdate.');*)
+          SL1('*'+ThisUser.Name+' Failed birthday verification. Tried = '+Birthday+' Actual = '+Pd2Date(ThisUser.Birthdate));
+          SendShortMessage(1,ThisUser.Name+' failed birthday verification on '+DateStr);
+          InResponseTo := '\'#1'Failed birthdate check';
+          MHeader.Status := [];
+          SeMail(1,MHeader);
+          HangUp := TRUE;
+        END;
+    END;
   UserOn := Ok;
 END;
 
@@ -807,11 +772,8 @@ BEGIN
     BEGIN
       IF (General.MinBaudOverride <> '') THEN
       BEGIN
-        (*
-        Prt('Baud rate override password: ');
-        *)
-        lRGLngStr(180,FALSE);
-        GetPassword(OverridePW,20);
+        lRGLngStr(180,FALSE); (*Prt('Baud rate override password: ');*)
+        InputMain(OverridePW,SizeOf(OverridePW)-1,[IsPassword]); {GetPassword(OverridePW,20);}
       END;
       IF (General.MinBaudOverride = '') OR (OverRidePW <> General.MinBaudOverride) THEN
       BEGIN
@@ -829,11 +791,8 @@ BEGIN
     BEGIN
       IF (General.MinBaudOverride <> '') THEN
       BEGIN
-        (*
-        Prt('Baud rate override password: ');
-        *)
-        lRGLngStr(180,FALSE);
-        GetPassword(OverridePW,20);
+        lRGLngStr(180,FALSE); (*Prt('Baud rate override password: ');*)
+        InputMain(OverridePW,SizeOf(OverridePW)-1,[IsPassword]); {GetPassword(OverridePW,20);}
       END;
       IF (General.MinBaudOverride = '') OR (OverridePW <> General.MinBaudOverride) THEN
       BEGIN

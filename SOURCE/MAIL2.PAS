@@ -1,5 +1,9 @@
 {$A+,B-,D+,E-,F+,I-,L+,N-,O+,R-,S+,V-}
-
+{
+ReadAllMessages now using lRGLngStr, was commented out for some reason
+Added SysOp log for non global newscan
+Added global new scan lang strings that weren't being used
+}
 UNIT Mail2;
 
 INTERFACE
@@ -368,9 +372,9 @@ BEGIN
                   NL;
                   Prt('Message editing [^1?^2=^1Help^2]: ');
                   IF (MsgSysOp) THEN
-                    Onek(Cmd1,'QADEFOPRSTV?'^M,TRUE,TRUE)
+                    LOnek('',Cmd1,'QADEFOPRSTV?'^M,TRUE,TRUE)
                   ELSE
-                    Onek(Cmd1,'QDEFOST?'^M,TRUE,TRUE);
+                    LOnek('',Cmd1,'QDEFOST?'^M,TRUE,TRUE);
                   CASE Cmd1 OF
                     (*
                     'D' : FOR Counter := 1 TO 6 DO
@@ -506,7 +510,7 @@ BEGIN
                             Print('^03. System name: ^1'+MHeader.From.Name);
                             NL;
                             Prt('Edit name [^11^2-^13^2,^1<CR>^2=^1Quit^2]: ');
-                            Onek(Cmd1,^M'123',TRUE,TRUE);
+                            lOnek('',Cmd1,^M'123',TRUE,TRUE);
                             CASE Cmd1 OF
                               '1' : BEGIN
                                       NL;
@@ -611,7 +615,7 @@ BEGIN
                             Print('^03. System name: ^1'+MHeader.MTo.Name);
                             NL;
                             Prt('Edit name [^11^2-^13^2,^1<CR>^2=^1Quit^2]: ');
-                            Onek(Cmd1,^M'123',TRUE,TRUE);
+                            lOnek('',Cmd1,^M'123',TRUE,TRUE);
                             CASE Cmd1 OF
                               '1' : BEGIN
                                       NL;
@@ -954,76 +958,67 @@ BEGIN
     MsgArea := -1;
   InitMsgArea(MsgArea);
   IF (HiMsg = 0) THEN
-  BEGIN
-    Print('%LFNo messages on ^1'+MemMsgArea.Name+'^0.');
-    IF (Novice IN ThisUser.ACFlags) THEN
-      PauseScr(FALSE);
-  END
-  ELSE
-  BEGIN
-
-    Msg_On := 1;
-    Inputstr := '?';
-    REPEAT
-      IF (InputStr = '?') THEN
-        ListMessages(MsgArea <> -1);
-      NL;
-      { Prompt(FString.ReadQ); }
-      Prt('Select message (^11^2-^1'+IntToStr(HiMsg)+'^2) [^1?^2=^1First^2,^1<CR>^2=^1Next^2,^1Q^2=^1Quit^2)]: ');
-      (*
-      lRGLngStr(32,FALSE);
-      *)
-      ScanInput(InputStr,'Q?'^M);
-
-      IF (InputStr = 'Q') THEN
-        Msg_On := 0
-      ELSE
-      BEGIN
-
-        IF (InputStr = ^M) THEN
-        BEGIN
-          InputStr := '?';
-          IF (Msg_On >= HiMsg) THEN
-            Msg_On := 1;
-        END
-        ELSE IF (InputStr = '?') THEN
-        BEGIN
-          Msg_On := 1;
-          InputStr := '?';
-        END
-        ELSE
-        BEGIN
-          Msg_On := StrToInt(InputStr);
-          IF (Msg_On >= 1) AND (Msg_On <= HIMsg) THEN
-            InputStr := 'Q'
-          ELSE
-          BEGIN
-            NL;
-            Print('^8The range must be from 1 to '+IntToStr(HiMsg)+'^0');
-            PauseScr(FALSE);
-            Msg_On := 1;
-            InputStr := '?';
-          END;
-        END;
-      END;
-    UNTIL (InputStr = 'Q') OR (HangUp);
-
-    IF (Msg_On >= 1) AND (Msg_On <= HiMsg) AND (NOT HangUp) THEN
     BEGIN
-      IF (MsgArea <> -1) THEN
-      BEGIN
-        LoadLastReadRecord(LastReadRecord);
-        TempLastRead := LastReadRecord.LastRead;
-      END;
-      MainRead(FALSE,FALSE,(MsgArea <> -1));
-      IF (MsgArea <> -1) THEN
-      BEGIN
-        LastReadRecord.LastRead := TempLastRead;
-        SaveLastReadRecord(LastReadRecord);
-      END;
+      Print('%LFNo messages on ^1'+MemMsgArea.Name+'^0.');
+      IF (Novice IN ThisUser.ACFlags) THEN
+        PauseScr(FALSE);
+    END
+  ELSE
+    BEGIN
+      Msg_On := 1;
+      Inputstr := '?';
+      REPEAT
+        IF (InputStr = '?') THEN
+          ListMessages(MsgArea <> -1);
+        NL;
+        lRGLngStr(32,FALSE);
+        ScanInput(InputStr,'Q?'^M);
+        IF (InputStr = 'Q') THEN
+          Msg_On := 0
+        ELSE
+          BEGIN
+            IF (InputStr = ^M) THEN
+              BEGIN
+                InputStr := '?';
+                IF (Msg_On >= HiMsg) THEN
+                  Msg_On := 1;
+              END
+            ELSE IF (InputStr = '?') THEN
+              BEGIN
+                Msg_On := 1;
+                InputStr := '?';
+              END
+            ELSE
+              BEGIN
+                Msg_On := StrToInt(InputStr);
+                IF (Msg_On >= 1) AND (Msg_On <= HIMsg) THEN
+                  InputStr := 'Q'
+                ELSE
+                  BEGIN
+                    NL;
+                    Print('^8The range must be from 1 to '+IntToStr(HiMsg)+'^0');
+                    PauseScr(FALSE);
+                    Msg_On := 1;
+                    InputStr := '?';
+                  END;
+              END;
+          END;
+      UNTIL (InputStr = 'Q') OR (HangUp);
+      IF (Msg_On >= 1) AND (Msg_On <= HiMsg) AND (NOT HangUp) THEN
+        BEGIN
+          IF (MsgArea <> -1) THEN
+            BEGIN
+              LoadLastReadRecord(LastReadRecord);
+              TempLastRead := LastReadRecord.LastRead;
+            END;
+          MainRead(FALSE,FALSE,(MsgArea <> -1));
+          IF (MsgArea <> -1) THEN
+            BEGIN
+              LastReadRecord.LastRead := TempLastRead;
+              SaveLastReadRecord(LastReadRecord);
+            END;
+        END;
     END;
-
-  END;
   MsgArea := SaveReadMsgArea;
   LoadMsgArea(MsgArea);
 END;
@@ -1044,9 +1039,15 @@ BEGIN
     WHILE (MsgNum <= MaxMsgs) AND (NOT Done) DO
     BEGIN
       LoadHeader(MsgNum,MHeader);
-      IF (LastReadRecord.LastRead < MHeader.Date) THEN
+      IF (LastReadRecord.LastRead < MHeader.Date) AND NOT (MDeleted IN MHeader.Status) THEN {leew: added mdeleted}
+      
+      { add this instead
+          CantBeSeen := (NOT MsgSysOp) AND ((UnValidated IN MHeader.Status) OR (MDeleted IN MHeader.Status) OR
+                  ((Prvt IN MHeader.Status) AND NOT (ToYou(MHeader) OR FromYou(MHeader))));
+      }
         Done := TRUE
       ELSE
+      {(UnValidated IN MHeader.Status)(Prvt IN MHeader.Status) leew more maybe}
       BEGIN
         IF (MsgNum < MaxMsgs) THEN
           Inc(MsgNum,1)
@@ -1187,7 +1188,7 @@ BEGIN
     REPEAT
       NL;
       Prt('Scan method (^1?^2=^1Help^2): ');
-      Onek(Cmd,'QFTSAY?'^M,TRUE,TRUE);
+      LOneK('',Cmd,'QFTSAY?'^M,TRUE,TRUE);
       IF (Cmd = '?') THEN
       BEGIN
         NL;
@@ -1202,7 +1203,7 @@ BEGIN
     IF (Cmd <> 'Y') THEN
     BEGIN
       Prt('Text to scan for: ');
-      Input(ScanFor,40);
+      InputMain(ScanFor,SizeOf(ScanFor)-1,[UpperOnly]);
       IF (ScanFor = '') THEN
         Exit;
       NL;
@@ -1345,24 +1346,24 @@ VAR
     IF (MsgArea <> MArea1) THEN
       ChangeMsgArea(MArea1);
     IF (MsgArea = MArea1) THEN
-    BEGIN
-      InitMsgArea(MsgArea);
-      IF (LastReadRecord.NewScan) OR ((MAForceRead IN MemMsgArea.MAFlags) AND (NOT CoSysOp)) THEN
       BEGIN
-        TempLastRead := LastReadRecord.LastRead;
-        Lil := 0;
-        { Prompt('^1'+FString.NewScan1);}
-        lRGLngStr(8,FALSE);
-        Msg_On := FirstNew;
-        IF (Msg_On > 0) THEN
-          MainRead(FALSE,FALSE,(MsgArea <> -1));
-
-        LastReadRecord.LastRead := TempLastRead;
-        SaveLastReadRecord(LastReadRecord);
-
-        (*  Add backarase *)
+        InitMsgArea(MsgArea);
+        IF (LastReadRecord.NewScan) OR ((MAForceRead IN MemMsgArea.MAFlags) AND (NOT CoSysOp)) THEN
+          BEGIN
+            TempLastRead := LastReadRecord.LastRead;
+            Lil := 0;
+            lRGLngStr(8,FALSE); {"Scanning ..."}
+            Msg_On := FirstNew;
+            IF (Msg_On > 0) THEN
+              MainRead(FALSE,FALSE,(MsgArea <> -1));
+            LastReadRecord.LastRead := TempLastRead;
+            SaveLastReadRecord(LastReadRecord);
+            (*  Add backarase *)
+            lRGLngStr(9,FALSE); {"Done!"}
+          END;
+        IF NOT (Global) THEN
+          SysOpLog('New scan of message area #'+IntToStr(MsgArea)); {LeeW: Add name}
       END;
-    END;
   END;
 
 BEGIN
@@ -1382,18 +1383,19 @@ BEGIN
   IF (NOT Global) THEN
     NewScan(MArea)
   ELSE
-  BEGIN
-    MArea := 1;
-    WHILE (MArea >= 1) AND (MArea <= NumMsgAreas) AND (NOT Abort) AND (NOT HangUp) DO
     BEGIN
-      NewScan(MArea);
-      WKey;
-      Inc(MArea);
+      MArea := 1;
+      lRGLngStr(35,FALSE); { Global newscan begin }
+      WHILE (MArea >= 1) AND (MArea <= NumMsgAreas) AND (NOT Abort) AND (NOT HangUp) DO
+        BEGIN
+          NewScan(MArea);
+          WKey;
+          Inc(MArea);
+        END;
+      lRGLngStr(36,FALSE); { Global newscan end }
+      SysOpLog('Global new scan of message areas');
     END;
-    SysOpLog('Global new scan of message areas');
-  END;
   MsgArea := SaveMsgArea;
   LoadMsgArea(MsgArea);
 END;
-
 END.

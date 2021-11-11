@@ -1,8 +1,8 @@
 {$A+,B-,D+,E-,F+,I-,L+,N-,O+,R-,S+,V-}
 {
 Lee Woodridge
- 09/21/2021	- Added  DirInfo: SearchRec; to UploadFile VARS, was breaking mass uploads
-			- Indenting...
+ 09/21/2021 - Added  DirInfo: SearchRec; to UploadFile VARS, was breaking mass uploads
+            - Indenting...
  10/25/2021 - Changed DLOAD.EXT to DOWNLOAD.EXT
 }
 
@@ -24,11 +24,11 @@ FUNCTION DLInTime: Boolean;
 FUNCTION BatchDLQueuedFiles(TransferFlags: TransferFlagSet): Boolean;
 PROCEDURE DL(CONST FileName: Str12; TransferFlags: TransferFlagSet);
 PROCEDURE GetFileDescription(VAR FileInfo: FileInfoRecordType; VAR ExtendedArray: ExtendedDescriptionArray; 
-							 VAR NumExtDesc: Byte; VAR ToSysOp: Boolean);
+                             VAR NumExtDesc: Byte; VAR ToSysOp: Boolean);
 PROCEDURE WriteFV(FileInfo: FileInfoRecordType;DirFileRecNum: Integer; ExtendedArray: ExtendedDescriptionArray);
 PROCEDURE UpdateFileInfo(VAR FileInfo: FileInfoRecordType; CONST FN: Str12; VAR GotPts: Integer);
 PROCEDURE ArcStuff(VAR Ok,Convt: Boolean; VAR FSize,ConvTime: LongInt; ITest: Boolean; CONST FilePath: AStr; 
-				   VAR FileName: Str12; VAR Descr: AStr);
+                   VAR FileName: Str12; VAR Descr: AStr);
 PROCEDURE DownloadFile(FileName: Str12; TransferFlags: TransferFlagSet);
 PROCEDURE UploadFile;
 PROCEDURE LFileAreaList(VAR FArea,NumFAreas: Integer; AdjPageLen: Byte; ShowScan: Boolean);
@@ -60,10 +60,10 @@ VAR
 BEGIN
   ChargePoints := FALSE;
   IF (FArea <> -1) AND (NOT (FANoRatio IN MemFileArea.FAFlags)) AND
-					   (NOT AACS(General.NoFileCredits)) AND
-					   (NOT (FNoCredits IN ThisUser.ACFlags)) AND
-					   (General.FileCreditRatio) THEN
-	ChargePoints := TRUE;
+                       (NOT AACS(General.NoFileCredits)) AND
+                       (NOT (FNoCredits IN ThisUser.ACFlags)) AND
+                       (General.FileCreditRatio) THEN
+    ChargePoints := TRUE;
   ChargeFilePoints := ChargePoints;
 END;
 
@@ -73,8 +73,8 @@ VAR
 BEGIN
   ChargeRatio := FALSE;
   IF (FArea <> -1) AND (NOT (FANoRatio IN MemFileArea.FAFlags)) AND (NOT AACS(General.NoDLRatio)) AND
-	 (NOT (FNoDLRatio IN ThisUser.ACFlags)) AND (General.ULDLRatio) THEN
-	ChargeRatio := TRUE;
+     (NOT (FNoDLRatio IN ThisUser.ACFlags)) AND (General.ULDLRatio) THEN
+    ChargeRatio := TRUE;
   ChargeFileRatio := ChargeRatio;
 END;
 
@@ -84,23 +84,23 @@ VAR
   FilePointCredit: LongInt;
 BEGIN
   IF (General.RewardSystem) AND (FileInfo.OwnerNum >= 1) AND (FileInfo.OwnerNum <= (MaxUsers - 1)) AND
-	 (FileInfo.OwnerNum <> UserNum) THEN
-	BEGIN
-	  LoadURec(User,FileInfo.OwnerNum);
-	  FilePointCredit := Trunc(FileInfo.FilePoints * (General.RewardRatio DIV 100));
-	  IF (CRC32(FileInfo.OwnerName) = CRC32(User.Name)) AND (FilePointCredit > 0) THEN
-		BEGIN
-		  IF ((User.FilePoints + FilePointCredit) < 2147483647) THEN
-			Inc(User.FilePoints,FilePointCredit)
-		  ELSE
-			User.FilePoints := 2147483647;
-		  SaveURec(User,FileInfo.OwnerNum);
-		  SysOpLog('^1 - Credits: '+FormatNumber(FilePointCredit)+' fp to "^1'+Caps(User.Name)+'^1".');
-		  SendShortMessage(FileInfo.OwnerNum,'You received '+FormatNumber(FilePointCredit)+
-						   ' '+Plural('file point',FilePointCredit)+' for the download of '
-						   +SQOutSp(FileInfo.FileName));
-		END;
-	END;
+     (FileInfo.OwnerNum <> UserNum) THEN
+    BEGIN
+      LoadURec(User,FileInfo.OwnerNum);
+      FilePointCredit := Trunc(FileInfo.FilePoints * (General.RewardRatio DIV 100));
+      IF (CRC32(FileInfo.OwnerName) = CRC32(User.Name)) AND (FilePointCredit > 0) THEN
+        BEGIN
+          IF ((User.FilePoints + FilePointCredit) < 2147483647) THEN
+            Inc(User.FilePoints,FilePointCredit)
+          ELSE
+            User.FilePoints := 2147483647;
+          SaveURec(User,FileInfo.OwnerNum);
+          SysOpLog('^1 - Credits: '+FormatNumber(FilePointCredit)+' fp to "^1'+Caps(User.Name)+'^1".');
+          SendShortMessage(FileInfo.OwnerNum,'You received '+FormatNumber(FilePointCredit)+
+                           ' '+Plural('file point',FilePointCredit)+' for the download of '
+                           +SQOutSp(FileInfo.FileName));
+        END;
+    END;
 END;
 
 FUNCTION OKDL(CONST FileInfo: FileInfoRecordType): Boolean;
@@ -110,48 +110,48 @@ VAR
 BEGIN
   OKDL := TRUE;
   IF (FIIsRequest IN FileInfo.FIFlags) THEN
-	BEGIN
-	  PrintF('REQFILE');
-	  IF (NoFile) THEN
-		BEGIN
-		  NL;
-		  Print('^1You must request this from '+General.SysOpName+'!^0');
-		END;
-	  NL;
-	  IF (PYNQ('Request this file now? ',0,FALSE)) THEN
-		BEGIN
-		  InResponseTo := #1'Request "'+SQOutSp(FileInfo.FileName)+'" from area #'+IntToStr(CompFileArea(FileArea,0));
-		  MHeader.Status := [];
-		  SEMail(1,MHeader);
-		END;
-	  OKDL := FALSE;
-	END
+    BEGIN
+      PrintF('REQFILE');
+      IF (NoFile) THEN
+        BEGIN
+          NL;
+          Print('^1You must request this from '+General.SysOpName+'!^0');
+        END;
+      NL;
+      IF (PYNQ('Request this file now? ',0,FALSE)) THEN
+        BEGIN
+          InResponseTo := #1'Request "'+SQOutSp(FileInfo.FileName)+'" from area #'+IntToStr(CompFileArea(FileArea,0));
+          MHeader.Status := [];
+          SEMail(1,MHeader);
+        END;
+      OKDL := FALSE;
+    END
   ELSE IF (FIResumeLater IN FileInfo.FIFlags) AND (NOT FileSysOp) THEN
-	BEGIN
-	  NL;
-	  Print('^8You are not the uploader of this file!^0');
-	  OKDL := FALSE;
-	END
+    BEGIN
+      NL;
+      Print('^8You are not the uploader of this file!^0');
+      OKDL := FALSE;
+    END
   ELSE IF (FINotVal IN FileInfo.FIFlags) AND (NOT AACS(General.DLUNVal)) THEN
-	BEGIN
-	  NL;
-	  Print('^8Your access level does not permit downloading unvalidated files!^0');
-	  OKDL := FALSE;
-	END
+    BEGIN
+      NL;
+      Print('^8Your access level does not permit downloading unvalidated files!^0');
+      OKDL := FALSE;
+    END
   ELSE IF (FileInfo.FilePoints > 0) AND (ThisUser.FilePoints < FileInfo.FilePoints) AND
-		  ChargeFilePoints(FileArea) THEN
-	BEGIN
-	  NL;
-	  Print('^8'+lRGLngStr(26,TRUE)+'^0'{FString.NoFileCredits});
-	  OKDL := FALSE;
-	END
+          ChargeFilePoints(FileArea) THEN
+    BEGIN
+      NL;
+      Print('^8'+lRGLngStr(26,TRUE)+'^0'{FString.NoFileCredits});
+      OKDL := FALSE;
+    END
   ELSE IF ((FileInfo.FileSize DIV Rate) > NSL) THEN
-	BEGIN
-	  NL;
-	  Print('^8Insufficient time left online to download this file!^0');
-	  Print(Ctim(NSL));
-	  OKDL := FALSE;
-	END;
+    BEGIN
+      NL;
+      Print('^8Insufficient time left online to download this file!^0');
+      Print(Ctim(NSL));
+      OKDL := FALSE;
+    END;
 END;
 
 PROCEDURE DLX(FileInfo: FileInfoRecordType; DirFileRecNum: Integer; VAR TransferFlags: TransferFlagSet);
@@ -164,79 +164,80 @@ BEGIN
   Abort := FALSE;
   Next := FALSE;
   IF (IsFileAttach IN TransferFlags) THEN
-	BEGIN
-	  NL;
-	  Print('^2The following has been attached:^0');
-	END;
+    BEGIN
+      NL;
+      Print('^2The following has been attached:^0');
+    END;
   NL;
   DisplayFileInfo(FileInfo,FALSE);
   IF (IsFileAttach IN TransferFlags) THEN
-	IF (InCom) THEN
-	  BEGIN
-		NL;
-		IF (NOT PYNQ('Download file now? ',0,FALSE)) THEN
-		  Exit;
-	  END
+    IF (InCom) THEN
+      BEGIN
+        NL;
+        IF (NOT PYNQ('Download file now? ',0,FALSE)) THEN
+          Exit;
+      END
     ELSE IF (NOT CoSysOp) THEN
-	  Exit
-	ELSE
-	  BEGIN
-		NL;
-		IF (NOT PYNQ('Move file now? ',0,FALSE)) THEN
-		  Exit;
-	  END;
+      Exit
+    ELSE
+      BEGIN
+        NL;
+        IF (NOT PYNQ('Move file now? ',0,FALSE)) THEN
+          Exit;
+      END;
   IF (NOT OKDL(FileInfo)) THEN
-	Include(TransferFlags,IsPaused)
+    Include(TransferFlags,IsPaused)
   ELSE
-	BEGIN
-	  DownloadPath := '';
-	  IF (Exist(MemFileArea.DLPath+FileInfo.FileName)) THEN
-		BEGIN
-		  DownloadPath := MemFileArea.DLPath;
-		  IF (FACDRom IN MemFileArea.FAFlags) THEN
-			Include(TransferFlags,IsCDRom);
-		END
-	  ELSE IF (Exist(MemFileArea.ULPath+FileInfo.FileName)) THEN
-		DownloadPath := MemFileArea.ULPath;
-	  IF (DownloadPath = '') THEN
-		BEGIN
-		  NL;
-		  Print('^8File does not actually exist.^0');
-		  SysOpLog('File missing: '+SQOutSp(DownloadPath+FileInfo.FileName));
-		  Exit;
-		END;
-	  IF (InCom) THEN
-		Send(FileInfo,DirFileRecNum,DownloadPath,TransferFlags)
-	  ELSE IF (NOT CoSysOp) THEN
-		Include(TransferFlags,IsPaused)
-	  ELSE
-		BEGIN
-		  CopyPath := '';
-		  InputPath('%LF^2Enter the destination path (^1End with a ^2"^1\^2"):%LF^2:',CopyPath,FALSE,TRUE,Changed);
-		  IF (CopyPath = '') THEN
-			Include(TransferFlags,IsPaused)
-		  ELSE
-			BEGIN
-			  NL;
-			  IF (NOT CopyMoveFile(NOT (IsFileAttach IN TransferFlags),+AOnOff(IsFileAttach IN TransferFlags,
-				 '^0Moving ... ','^0Copying ... '),DownloadPath+SQOutSp(FileInfo.FileName),CopyPath+SQOutSp(FileInfo.FileName),TRUE)) THEN
-				Include(TransferFlags,IsPaused);
-			END;
-		END;
-	END;
+    BEGIN
+      DownloadPath := '';
+      IF (Exist(MemFileArea.DLPath+FileInfo.FileName)) THEN
+        BEGIN
+          DownloadPath := MemFileArea.DLPath;
+          IF (FACDRom IN MemFileArea.FAFlags) THEN
+            Include(TransferFlags,IsCDRom);
+        END
+      ELSE IF (Exist(MemFileArea.ULPath+FileInfo.FileName)) THEN
+        DownloadPath := MemFileArea.ULPath;
+      IF (DownloadPath = '') THEN
+        BEGIN
+          NL;
+          Print('^8File does not actually exist.^0');
+          SysOpLog('File missing: '+SQOutSp(DownloadPath+FileInfo.FileName));
+          Exit;
+        END;
+      IF (InCom) THEN
+        Send(FileInfo,DirFileRecNum,DownloadPath,TransferFlags)
+      ELSE IF (NOT CoSysOp) THEN
+        Include(TransferFlags,IsPaused)
+      ELSE
+        BEGIN
+          CopyPath := '';
+          InputPath('%LF^2Enter the destination path (^1End with a ^2"^1\^2"):%LF^2:',CopyPath,FALSE,TRUE,Changed);
+          IF (CopyPath = '') THEN
+            Include(TransferFlags,IsPaused)
+          ELSE
+            BEGIN
+              NL;
+              IF (NOT CopyMoveFile(NOT (IsFileAttach IN TransferFlags),+AOnOff(IsFileAttach IN TransferFlags,
+                 '^0Moving ... ','^0Copying ... '),DownloadPath+SQOutSp(FileInfo.FileName),
+                                                   CopyPath+SQOutSp(FileInfo.FileName),TRUE)) THEN
+                Include(TransferFlags,IsPaused);
+            END;
+        END;
+    END;
   IF (IsPaused IN TransferFlags) AND (NOT (IsFileAttach IN TransferFlags)) THEN
-	BEGIN
-	  NL;
-	  Prompt('^0Press [^1Enter^0] to Continue or [^1Q^0]uit: ');
-	  Onek(Cmd,'Q'^M,TRUE,TRUE);
-	  IF (Cmd = 'Q') THEN
-		BEGIN
-		  Include(TransferFlags,IsKeyboardAbort);
-		  Abort := TRUE;
-		END;
-	END;
+    BEGIN
+      NL;
+      Prompt('^0Press [^1Enter^0] to Continue or [^1Q^0]uit: ');
+      LOneK('',Cmd,'Q'^M,TRUE,TRUE);
+      IF (Cmd = 'Q') THEN
+        BEGIN
+          Include(TransferFlags,IsKeyboardAbort);
+          Abort := TRUE;
+        END;
+    END;
   IF (IsPaused IN TransferFLags) THEN
-	Exclude(TransferFlags,IsPaused);
+    Exclude(TransferFlags,IsPaused);
 END;
 
 { Indented to here - LeeW }
@@ -388,7 +389,7 @@ BEGIN
           }
           lRGLngStr(31,FALSE);
         MPL(12);
-        Input(FileName,12);
+        InputMain(FileName,SizeOf(FileName)-1,[UpperOnly]);
         IF (FileName = '') THEN
         BEGIN
           NL;
@@ -638,7 +639,7 @@ BEGIN
 
     IF (Ok) AND ((OldArcType <> NewArcType) OR General.Recompress) AND (NewArcType <> 0) THEN
     BEGIN
-      Convt := InCom; 	{* don't convert IF local AND non-file-SysOp *}
+      Convt := InCom;   {* don't convert IF local AND non-file-SysOp *}
 
       IF (FileSysOp) THEN
       BEGIN
@@ -975,7 +976,7 @@ BEGIN
       BEGIN
         NL;
         Prompt('^8[Q]uit or Upload this? (Y/N) ['+SQOutSp(ShowYesNo(DirFileRecNum = -1))+']: ');
-        OneK(Cmd,'QYN'^M,FALSE,FALSE);
+        LOneK('',Cmd,'QYN'^M,FALSE,FALSE);
         IF (DirFileRecNum <> -1) THEN
           UploadOk := (Cmd = 'Y')
         ELSE
@@ -1369,7 +1370,7 @@ BEGIN
     }
     lRGLngStr(24,FALSE);
     MPL(12);
-    Input(FileName,12);
+    InputMain(FileName,SizeOf(FileName)-1,[UpperOnly]);
     FileName := SQOutSp(FileName);
     IF (FileName = '') THEN
     BEGIN
@@ -1561,7 +1562,7 @@ BEGIN
   Print('Enter file name to download (x:\path\filename.ext)');
   Prt(': ');
   MPL(52);
-  Input(PathFileName,52);
+  InputMain(PathFileName,SizeOf(PathFileName)-1,[UpperOnly]);
   IF (PathFileName = '') THEN
   BEGIN
     NL;

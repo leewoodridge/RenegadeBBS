@@ -99,7 +99,7 @@ USES
       inc(I);
     end;
     *)
-	
+    
 PROCEDURE AutoExecCmd(AutoCmd: AStr);
 VAR
   NewMenuCmd: AStr;
@@ -164,29 +164,29 @@ BEGIN
   LoadMenu;
   NACC := FALSE;
   IF (NOT AACS(MemMenu.ACS)) OR (MemMenu.Password <> '') THEN
-  BEGIN
-    NACC := TRUE;
-    IF (MemMenu.Password <> '') THEN
     BEGIN
-      NL;
-      Prt('Password: ');
-      GetPassword(s,20);
-      IF (s = MemMenu.Password) THEN
-        NACC := FALSE;
+      NACC := TRUE;
+      IF (MemMenu.Password <> '') THEN
+        BEGIN
+          NL;
+          Prt('Password: ');
+          InputMain(s,SizeOf(s)-1,[IsPassword]); {GetPassword(s,20);}
+          IF (s = MemMenu.Password) THEN
+            NACC := FALSE;
+        END;
+      IF (NACC) THEN
+        BEGIN
+          PrintF('NOACCESS');
+          IF (NoFile) THEN
+            BEGIN
+              NL;
+              Print('Access denied.');
+              PauseScr(FALSE);
+            END;
+          CurMenu := FallBackMenu;
+          LoadMenu;
+        END;
     END;
-    IF (NACC) THEN
-    BEGIN
-      PrintF('NOACCESS');
-      IF (NoFile) THEN
-      BEGIN
-        NL;
-        Print('Access denied.');
-        PauseScr(FALSE);
-      END;
-      CurMenu := FallBackMenu;
-      LoadMenu;
-    END;
-  END;
   IF (NOT NACC) THEN
     CheckHelpLevel;
 END;
@@ -593,9 +593,9 @@ BEGIN
 
   CASE Cmd[1] OF
     '^' : CASE Cmd[2] OF { Command for testing }
-			'^' : BEGIN
-				  END;
-		  END;
+            '^' : BEGIN
+                  END;
+          END;
     '$' : CASE Cmd[2] OF
             'D' : Deposit;
             'W' : Withdraw;
@@ -632,7 +632,7 @@ BEGIN
                       Prt(': ')
                     ELSE
                       Prt(SemiCmd(MenuOption,2));
-                    GetPassword(TempStr,20);
+                    InputMain(TempStr,20,[IsPassword]); {GetPassword(TempStr,20);}
                     IF (TempStr <> SemiCmd(MenuOption,1)) THEN
                     BEGIN
                       Done := TRUE;
@@ -661,8 +661,6 @@ BEGIN
     '1' : CASE Cmd[2] OF
             'L' : OneLiners;
           END;
-  
-
     'A' : CASE Cmd[2] OF
             'A','C','M','T' :
                   DoArcCommand(Cmd[2]);
@@ -674,7 +672,6 @@ BEGIN
           END;
     'B' : CASE Cmd[2] OF
             '?' : BatchDLULInfo;
-
             'C' : IF (UpCase(MenuOption[1]) = 'U') THEN
                     ClearBatchULQueue
                   ELSE
@@ -688,7 +685,6 @@ BEGIN
                     RemoveBatchULFiles
                   ELSE
                     RemoveBatchDLFiles;
-
             'U' : BatchUpload(FALSE,0);
           ELSE
             NoCmd := TRUE;
@@ -959,9 +955,9 @@ BEGIN
                       SysOpLog('* File Area Editor');
                       FileAreaEditor;
                     END;
-			  'G' : BEGIN
-				  	  ColorConfiguration;
-					END;
+              'G' : BEGIN
+                      ColorConfiguration;
+                    END;
               'V' : BEGIN
                       SysOpLog('* Vote Editor');
                       VotingEditor;
@@ -976,17 +972,17 @@ BEGIN
                       SysOpLog('* Conference Editor');
                       ConferenceEditor;
                     END;
-			  'S' : BEGIN
-					  SysOpLog('* Validation Editor');
-					  ValidationEditor;
-					END;
-			  'T' : BEGIN
-					  mem[Seg0040:$0017] := mem[Seg0040:$0017] XOR 16;
-					  IF (SysOpAvailable) THEN
-						SysOpLog('* Turned ON chat availablity')
-					  ELSE
-						SysOpLog('* Turned OFF chat availablity');
-					END;
+              'S' : BEGIN
+                      SysOpLog('* Validation Editor');
+                      ValidationEditor;
+                    END;
+              'T' : BEGIN
+                      mem[Seg0040:$0017] := mem[Seg0040:$0017] XOR 16;
+                      IF (SysOpAvailable) THEN
+                        SysOpLog('* Turned ON chat availablity')
+                      ELSE
+                        SysOpLog('* Turned OFF chat availablity');
+                    END;
               'U' : BEGIN
                       SysOpLog('* User Editor');
                       UserEditor(UserNum);

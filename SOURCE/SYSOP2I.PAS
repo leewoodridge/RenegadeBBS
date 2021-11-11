@@ -33,7 +33,7 @@ BEGIN
       PrintACR('^0H. Max msgs per base   : ^1'+IntToStr(MaxQWKBase));
       PrintACR('^0I. ACS for Network .REP: ^1'+QWKNetworkACS);
       Prt('%LFEnter selection [^1A^2-^1I^2,^1Q^2=^1Quit^2]: ');
-      OneK(Cmd,'QABCDEFGHI'^M,TRUE,TRUE);
+      LOneK('',Cmd,'QABCDEFGHI'^M,TRUE,TRUE);
       CASE Cmd OF
         'A' : InputWN1('%LFQWK Packet name: ',PacketName,(SizeOf(PacketName) - 1),[InterActiveEdit],Changed);
         'B' : InputWN1('%LF^0Welcome screen file d:\path\name (^1Do not enter ^0"^1.EXT^0"):%LF^2: ',

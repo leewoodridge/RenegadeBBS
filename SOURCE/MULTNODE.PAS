@@ -158,7 +158,7 @@ VAR
   SaveMCIAlllowed: Boolean;
   { Only check if we're bored and not slicing }
 BEGIN
-  IF (MaxChatRec > NodeChatLastRec) THEN
+  IF (MaxChatRec > NodeChatLastRec) AND (NOT HangUp) THEN
   BEGIN
     FOR Counter := 1 TO (LennMCI(MLC) + 5) DO
       BackSpace;
@@ -179,7 +179,8 @@ BEGIN
     Close(f);
     LastError := IOResult;
     NodeChatLastRec := MaxChatRec;
-    Prompt('^3'+MLC);
+    UserColor(0); {changed from caret code}
+    Prompt(MLC);
   END;
 END;
 

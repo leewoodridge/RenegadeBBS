@@ -2,7 +2,7 @@
 UNIT Bulletin;
 {
 Lee Woodridge
- 09/28/2021 Fixed lastcaller ~TO MCI. Now displays N/A if user hasn't logged off yet
+ 09/28/2021 Fixed lastcaller ~TO MCI. Now displays "-" if user hasn't logged off yet
 }
 INTERFACE
 
@@ -70,9 +70,7 @@ END;
 
 FUNCTION FindOnlyOnce: Boolean;
 VAR
-  (*
-  DirInfo: SearchRec;
-  *)
+ {DirInfo: SearchRec;}
   DT: DateTime;
 BEGIN
   FindOnlyOnce := FALSE;
@@ -91,9 +89,7 @@ TYPE
 VAR
   BulletinArray: ^BulletinType;
   DT: DateTime;
-  (*
-  DirInfo: SearchRec;
-  *)
+ {DirInfo: SearchRec;}
   BullCount,
   Biggest,
   LenOfBullPrefix,
@@ -275,7 +271,7 @@ BEGIN
     Option('U','ser name match string       ',UName);
     NL;
     Prompt('^2Enter choice (^1A^2,^1C^2,^1D^2,^1G^2,^1R^2,^1S^2,^1U^2) [^1L^2]ist [^1Q^2]uit: ');
-    OneK(Cmd,'QACDGLRSU'^M,TRUE,TRUE);
+    LOneK('',Cmd,'QACDGLRSU'^M,TRUE,TRUE);
     NL;
     IF (Cmd IN ['A','C','D','G','R','S','U']) THEN
     BEGIN
@@ -296,11 +292,11 @@ BEGIN
     CASE Cmd OF
       'A' : BEGIN
               Mpl(3);
-              Input(Age,3);
+              InputMain(Age,SizeOf(Age)-1,[UpperOnly]);
             END;
       'C' : BEGIN
               Mpl(30);
-              Input(City,30);
+              InputMain(City,SizeOf(City)-1,[UpperOnly]);
             END;
       'D' : BEGIN
               Mpl(8);
@@ -315,19 +311,19 @@ BEGIN
             END;
       'G' : BEGIN
               Mpl(1);
-              Input(Gender,1);
+              InputMain(Gender,SizeOf(Gender)-1,[UpperOnly]);
             END;
       'R' : BEGIN
               Mpl(36);
-              Input(RName,36);
+              InputMain(RName,SizeOf(RName)-1,[UpperOnly]);
             END;
       'S' : BEGIN
               Mpl(2);
-              Input(State,2);
+              InputMain(State,SizeOf(State)-1,[UpperOnly]);
             END;
       'U' : BEGIN
               Mpl(36);
-              Input(UName,36);
+              InputMain(UName,SizeOf(UName)-1,[UpperOnly]);
             END;
     END;
   UNTIL (Cmd IN ['L','Q',^M]) OR (HangUp);
@@ -346,7 +342,7 @@ BEGIN
     IF (NOT ReadBuffer(FN+'M')) THEN
       Exit;
     PrintF(FN+'H');
-	{LeeW: Add fallback}
+    {LeeW: Add fallback}
     Reset(UserFile);
     RecNum := 1;
     WHILE (RecNum <= (FileSize(UserFile) - 1)) AND (NOT Abort) AND (NOT HangUp) DO
@@ -436,10 +432,10 @@ BEGIN
           END;
     'T' : CASE S[2] OF
             'O' : WITH LastCallerPtr^ DO
-					IF (LogOffTime=0) THEN
-					  TodaysCallerMCI := 'Online'
-					ELSE
-					  TodaysCallerMCI := IntToStr((LogoffTime - LogonTime) DIV 60);
+                    IF (LogOffTime=0) THEN
+                      TodaysCallerMCI := '-'
+                    ELSE
+                      TodaysCallerMCI := IntToStr((LogoffTime - LogonTime) DIV 60);
           END;
     'U' : CASE S[2] OF
             'K' : TodaysCallerMCI := IntToStr(LastCallerPtr^.UK);
@@ -540,7 +536,7 @@ BEGIN
     END
     ELSE
       PrintACR(Centre(S));
-  UNTIL (TotLoad >= StrPointer.TextSize) OR EOF(RGStrFile);
+  UNTIL (TotLoad >= StrPointer.TextSize) OR EOF(RGStrFile) OR (HangUp);
   Close(RGStrFile);
   LastError := IOResult;
   IF (Exist(General.MiscPath+'QUOTEFTR.*')) THEN
@@ -553,7 +549,7 @@ BEGIN
   END;
   IF (NOT General.UserAddQuote) THEN
     PauseScr(FALSE)
-  ELSE IF (PYNQ('Would you like to add a quote? ',0,FALSE)) THEN
+  ELSE IF (PYNQ('Would you like to add a quote? ',0,FALSE)) AND (NOT HangUp) THEN
   BEGIN
     PrintF('QUOTE');
     InResponseTo := '';

@@ -2,6 +2,8 @@
 {
 LeeW
  09/21/2021 - Fixed move file operation so rg no longer creates dupe description on failure
+ 
+ inputmain for filepoints different field lengths???
 }
 UNIT File10;
 
@@ -150,7 +152,7 @@ BEGIN
     NL;
     Prt('File points for file (^10^2-^1999^2,^1<CR>^2=^1Skip^2,^1Q^2=^1Quit^2): ');
     MPL(3);
-    Input(InputStr,3);
+    InputMain(InputStr,3,[UpperOnly]);
     IF (InputStr <> '') THEN
     BEGIN
       IF (InputStr = 'Q') THEN
@@ -174,7 +176,7 @@ BEGIN
         NL;
         Prt('File points for user (^1-'+IntToStr(User.FilePoints)+'^2 to ^1999^2): ');
         MPL(4);
-        Input(InputStr,4);
+        InputMain(InputStr,4,[UpperOnly]);
         IF (InputStr <> '') AND (StrToInt(InputStr) >= -User.FilePoints) AND (StrToInt(InputStr) <= 999) THEN
         BEGIN
 
@@ -216,14 +218,14 @@ BEGIN
     ELSE
     BEGIN
       Prt('Edit files (^1?^2=^1Help^2): ');
-      OneK(Cmd,'Q1234567DEGHIMNPRTUVW?'^M,TRUE,TRUE);
+      LOneK('',Cmd,'Q1234567DEGHIMNPRTUVW?'^M,TRUE,TRUE);
     END;
     CASE Cmd OF
       '1' : BEGIN
               NL;
               Prt('New file name: ');
               MPL((SizeOf(FileInfo.FileName) - 1));
-              Input(InputStr,(SizeOf(FileInfo.FileName) - 1));
+              InputMain(InputStr,(SizeOf(FileInfo.FileName) - 1),[UpperOnly]);
               IF (InputStr = '') THEN
               BEGIN
                 NL;
@@ -654,8 +656,8 @@ BEGIN
                         Print('Done!^0');
                         Cmd := 'N';
                         END
-						ELSE
-						Cmd := 'N';
+                        ELSE
+                        Cmd := 'N';
                       END;
                     END;
                     FileArea := SaveFileArea;
@@ -870,7 +872,7 @@ BEGIN
   Print('^2[^1M^2]anual, [^1A^2]utomatic, [^1P^2]oint entry, [^1Q^2]uit');
   NL;
   Prt('File validation: ');
-  OneK(Cmd,'QMAP',TRUE,TRUE);
+  LOneK('',Cmd,'QMAP',TRUE,TRUE);
   IF (Cmd <> 'Q') THEN
   BEGIN
     SaveFileArea := FileArea;

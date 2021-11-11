@@ -1,6 +1,6 @@
 {
 LeeW: search for ** to find proposed changes to data files
-
+TODO: add user flag to force password change next logon 
 10/07/2021 - Updated names of user flags so they're intuitive; ARFlags, ACFlags, StatusFlags
 }
 CONST
@@ -34,7 +34,7 @@ CONST
   MaxSchemes = 255;
   MaxValKeys = 92;
   MaxConfKeys = 27;
-
+(*
   User_String_Ask  = ' ';         {Ask for user string fields}
   User_String_None = '';          {None for user string fields}
 
@@ -49,7 +49,7 @@ CONST
 
   User_Phone_Ask  = ' ';          {Ask for user phone fields}
   User_Phone_None = '';           {None for user phone fields}
-
+*)
 TYPE
   AStr = STRING[160];
   Str1 = STRING[1];
@@ -173,12 +173,12 @@ TYPE
   SecurityRangeType = ARRAY [0..255] OF LongInt; { Access tables }
 
   UserIDXRec = {$IFDEF WIN32} PACKED {$ENDIF} RECORD { USERS.IDX : Sorted names listing }
-    Name: STRING[36]; { the user's name }
-    Number,           { user number }
+    Name: STRING[36]; { Users handle }
+    Number,           { Users number }
     Left,             { Left node }
     Right: Integer;   { Right node }
-    RealName,         { User's real name? }
-    Deleted: Boolean; { deleted or not }
+    RealName,         { Users real name }
+    Deleted: Boolean; { Deleted? }
   END;
 
   UserRecordType = {$IFDEF WIN32} PACKED {$ENDIF} RECORD { USERS.DAT : User records }
@@ -261,7 +261,7 @@ TYPE
     UnUsedLongInt1,              { / }
     UnUsedLongInt2: LongInt;     { / }
 
-    TeleConfEcho,                { TeleConference echo? } (**REMOVE--UNUSED**)
+    TeleConfEcho,                { TeleConference echo? } (**REMOVE--UNUSEDor will be when teleconf finished**)
     TeleConfInt,                 { TeleConference interrupt? } (**REMOVE--UNUSED**)
     GetOwnQWK,                   { Own messages in QWK? }
     ScanFilesQWK,                { New files in QWK? }
@@ -379,7 +379,7 @@ TYPE
 
   ValidationRecordType = {$IFDEF WIN32} PACKED {$ENDIF} RECORD
     Key,                     { Key '!' to '~' }
-    ExpireTo: Char;          { validation level to expire to }
+    ExpireTo: Char;          { Validation level to expire to }
     Description: STRING[30]; { Validation level description }
     UserMsg: STRING[78];     { Message sent to user upon validation }
     NewSL,                   { New SL }
@@ -408,7 +408,7 @@ TYPE
     TempPath,                       { Temporary files path }
     ProtPath,                       { Protocols path }
     ArcsPath,                       { Archivers path }
-    TextPath,  	                    { Text path - language files, quotes, taglines }
+    TextPath,                       { Text path - language files, quotes, taglines }
     FileAttachPath,                 { File attachments path }
     QWKLocalPath,                   { QWK: Path for local usage }
     DefEchoPath,                    { Default EchoMail path }
@@ -424,7 +424,7 @@ TYPE
     SysOpPW,                        { SysOp password }
     NewUserPW,                      { New user password }
     MinBaudOverride: STRING[20];    { Override minimum baud rate password }
-    
+    { ACS }
     QWKNetworkACS,                  { QWK network REP ACS }
     LastOnDatACS,                   {  }
     SOP,                            { SysOp }
@@ -467,10 +467,10 @@ TYPE
     SliceTimer,                     {  }
     MaxBatchDLFiles,                {  }
     MaxBatchULFiles,                {  }
-    Text_Color,                     { color OF standard text } {**CHANGE THESE TO STRING[6] "|00|00" **}
-    Quote_Color,                    { color OF quoted text }
-    Tear_Color,                     { color OF tear line }
-    Origin_Color,                   { color OF origin line }
+    Text_Color,                     { Color of standard text } {**CHANGE THESE TO STRING[6] "|00|00" **}
+    Quote_Color,                    { Color of quoted text } {^}
+    Tear_Color,                     { Color of tear line } {^}
+    Origin_Color,                   { Color of origin line } {^}
     BackSysOpLogs,                  { days to keep SYSOP##.LOG }
     EventWarningTime,               { minutes before event to warn user }
     WFCBlankTime,                   { minutes before blanking WFC menu }
@@ -485,12 +485,12 @@ TYPE
     FileListingMenu,                { ^ }
     MessageReadMenu,                { ^ }
     CurWindow,                      { Type of SysOp window in use }
-    SwapTo,                         { Swap where? }
+    SwapTo,                         { Swap to where? }
     UnUsedByte1,                    { / }
     UnUsedByte2: Byte;              { / }
     
-    lLowTime,                       { SysOp begin minute (in minutes) }
-    HiTime,                         { SysOp END time }
+    lLowTime,                       { SysOp chat hours start time }
+    HiTime,                         { End time }
     DLLowTime,                      { normal downloading hours begin.. }
     DLHiTime,                       { ..and END }
     MinBaudLowTime,                 { minimum baud calling hours begin.. }
@@ -543,29 +543,29 @@ TYPE
     LocalSec,                       { use local security? }
     GlobalTrap,                     { trap everyone's activity? }
     AutoChatOpen,                   { automatically open chat buffer? }
-    AutoMInLogon,                   { Auto-Message at logon? }
+    AutoMInLogon,                   { Auto-message during logon? }
     BullInLogon,                    { bulletins at logon? }
     YourInfoInLogon,                { "Your Info" at logon? }
     OffHookLocalLogon,              { phone off-hook for local logons? }
-    ForceVoting,                    { manditory voting? } (* NOT HOOKED UP, BUT I INTEND TO *)
+    ForceVoting,                    { Is voting mandatory? } (* NOT HOOKED UP, BUT I INTEND TO *)
     CompressBases,                  { "compress" file/msg area numbers? }
-    SearchDup,                      { search for dupes files when UL? }
+    SearchDup,                      { Search for dupes on UL? }
     ForceBatchDL,                   {  }
     ForceBatchUL,                   {  }
     LogonQuote,                     {  }
     UserAddQuote,                   {  }
     StripCLog,                      { strip colors from SysOp log? }
-    SKludge,                        { show kludge lines? }
-    SSeenby,                        { show SEEN-BY lines? }
-    SOrigin,                        { show origin line? }
-    AddTear,                        { show tear line? }
-    ShuttleLog,                     { Use Shuttle Logon? }
+    SKludge,                        { Show kludge lines? }
+    SSeenby,                        { Show seen-by lines? }
+    SOrigin,                        { Show origin line? }
+    AddTear,                        { Show tear line? }
+    ShuttleLog,                     { Use shuttle logon? }
     ClosedSystem,                   { Allow new users? }
     SwapShell,                      { Swap on shell? }
-    UseEMS,                         { use EMS for overlay }
-    UseBios,                        { use BIOS for video output }
-    UseIEMSI,                       { use IEMSI }
-    ULDLRatio,                      { use UL/DL ratios? }
+    UseEMS,                         { Use EMS for overlay? }
+    UseBios,                        { Use BIOS for video output? }
+    UseIEMSI,                       { Use IEMSI handshakes? }
+    ULDLRatio,                      { Are UL/DL ratios active? }
     FileCreditRatio,                { use auto file-credit compensation? }
     ValidateAllFiles,               { validate files automatically? }
     FileDIZ,                        { Search for and import FILE_ID.DIZ? }
@@ -602,7 +602,7 @@ TYPE
         Point: Word;
       END;
 
-    NewUserToggles:                 { Toggles for new user application questions }
+    NewUserToggles:                 { OLD Toggles for new user application questions ** UNUSED -- REMOVE **}
       ARRAY [1..20] OF Byte;
 
     Macro:                          { SysOp macros }
@@ -617,6 +617,12 @@ TYPE
     PostRatio,                      { Posts per call ratio }
     DLOneday,                       { Max daily downloads (#) }
     DLKOneDay: SecurityRangeType;   { Max daily downloads (kB) }
+    
+    { **** FIELDS BELOW HAVE BEEN ADDED AFTER V1.25 **** }
+    
+    NewUserQToggles:                { Toggles for new user application questions }
+      ARRAY [1..30] OF Boolean;
+    
   END; { END OF GENERALREC }
 
   ShortMessageRecordType = {$IFDEF WIN32} PACKED {$ENDIF} RECORD { SHORTMSG.DAT : One-line messages }
@@ -892,7 +898,7 @@ TYPE
   SchemeRec = {$IFDEF WIN32} PACKED {$ENDIF} RECORD { SCHEME.DAT }
     Description: STRING[30]; { Color scheme description }
     Color:                   { Colors in scheme }
-	  ARRAY [1..200] OF Byte;
+      ARRAY [1..200] OF Byte;
   END;
 
   {   1 - 10 SYSTEM COLORS

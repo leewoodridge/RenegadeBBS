@@ -1,12 +1,13 @@
 {$A+,B-,D+,E-,F+,I-,L+,N-,O+,R-,S-,V-}
 {
 11/4/2021 - moved input procs to COMMON3
+          - Won't ask for sysop pw if blank
+          - indentation
 }
 UNIT Common1;
 
 INTERFACE
 
-FUNCTION CheckPW: Boolean;
 PROCEDURE NewCompTables;
 PROCEDURE Wait(b: Boolean);
 PROCEDURE InitTrapFile;
@@ -21,25 +22,6 @@ USES
   File0,
   Mail0,
   TimeFunc;
-
-FUNCTION CheckPW: Boolean;
-VAR
-  Password: STR20;
-BEGIN
-  IF (NOT General.SysOpPWord) OR (InWFCMenu) THEN
-  BEGIN
-    CheckPW := TRUE;
-    Exit;
-  END;
-  CheckPW := FALSE;
-  { Prompt(FString.SysOpPrompt); }
-  lRGLngStr(33,FALSE);
-  GetPassword(Password,20);
-  IF (Password = General.SysOpPW) THEN
-    CheckPW := TRUE
-  ELSE IF (InCom) AND (Password <> '') THEN
-    SysOpLog('--> SysOp Password Failure = '+Password+' ***');
-END;
 
 PROCEDURE NewCompTables;
 VAR
@@ -56,11 +38,13 @@ BEGIN
   SaveReadMsgArea := ReadMsgArea;
   SaveReadFileArea := ReadFileArea;
   Reset(FileAreaFile);
+  LastError := IOResult;
   IF (IOResult <> 0) THEN
-  BEGIN
-    SysOpLog('Error opening FBASES.DAT (Procedure: NewCompTables)');
-    Exit;
-  END;
+    BEGIN
+      {SysOpLog('[E] Unable to open FBASES.DAT'+ErrorCodeHelp(LastError));}{leew}
+      SysOpLog('Error opening FBASES.DAT (Procedure: NewCompTables)');
+      Exit;
+    END;
   NumFileAreas := FileSize(FileAreaFile);
   Assign(FileCompArrayFile,TempDir+'FACT'+IntToStr(ThisNode)+'.DAT');
   ReWrite(FileCompArrayFile);
@@ -146,6 +130,7 @@ BEGIN
   Close(FileCompArrayFile);
   LastError := IOResult;
   Reset(MsgAreaFile);
+  LastError := IOResult;
   IF (IOResult <> 0) THEN
   BEGIN
     SysOpLog('Error opening MBASES.DAT (Procedure: NewCompTables)');
@@ -249,17 +234,16 @@ PROCEDURE Wait(b: Boolean);
 CONST
   SaveCurrentColor: Byte = 0;
 BEGIN
-  IF (B) THEN
-  BEGIN
-    SaveCurrentColor := CurrentColor;
-    { Prompt(FString.lWait); }
-    lRGLngStr(4,FALSE);
-  END
+  IF (b) THEN
+    BEGIN
+      SaveCurrentColor := CurrentColor;
+      lRGLngStr(4,FALSE); {"Please Wait"}
+    END
   ELSE
-  BEGIN
-    BackErase(LennMCI(lRGLngStr(4,TRUE){FString.lWait}));
-    SetC(SaveCurrentColor);
-  END;
+    BEGIN
+      BackErase(LennMCI(lRGLngStr(4,TRUE)));
+      SetC(SaveCurrentColor);
+    END;
 END;
 
 PROCEDURE InitTrapFile;
@@ -268,19 +252,19 @@ BEGIN
   IF (General.GlobalTrap) OR (TrapActivity IN ThisUser.SFlags) THEN
     Trapping := TRUE;
   IF (Trapping) THEN
-  BEGIN
-    IF (TrapSeparate IN ThisUser.SFlags) THEN
-      Assign(TrapFile,General.LogsPath+'TRAP'+IntToStr(UserNum)+'.LOG')
-    ELSE
-      Assign(TrapFile,General.LogsPath+'TRAP.LOG');
-    Append(TrapFile);
-    IF (IOResult = 2) THEN
     BEGIN
-      ReWrite(TrapFile);
-      WriteLn(TrapFile);
+      IF (TrapSeparate IN ThisUser.SFlags) THEN
+        Assign(TrapFile,General.LogsPath+'TRAP'+IntToStr(UserNum)+'.LOG')
+      ELSE
+        Assign(TrapFile,General.LogsPath+'TRAP.LOG');
+      Append(TrapFile);
+      IF (IOResult = 2) THEN
+        BEGIN
+          ReWrite(TrapFile);
+          WriteLn(TrapFile);
+        END;
+      WriteLn(TrapFile,'***** Renegade User Audit - '+Caps(ThisUser.Name)+' on at '+DateStr+' '+TimeStr+' *****');
     END;
-    WriteLn(TrapFile,'***** Renegade User Audit - '+Caps(ThisUser.Name)+' on at '+DateStr+' '+TimeStr+' *****');
-  END;
 END;
 
 PROCEDURE SysOpShell;
@@ -296,12 +280,11 @@ BEGIN
   GetDir(0,SavePath);
   SaveTimer := Timer;
   IF (UserOn) THEN
-  BEGIN
-    { Prompt(FString.ShellDOS1); }
-    lRGLngStr(12,FALSE);
-    Com_Flush_Send;
-    Delay(100);
-  END;
+    BEGIN
+      lRGLngStr(12,FALSE); {"SysOp has shelled to DOS, Please wait"}
+      Com_Flush_Send;
+      Delay(100);
+    END;
   SaveWhereX := WhereX;
   SaveWhereY := WhereY;
   Window(1,1,80,25);
@@ -323,22 +306,22 @@ BEGIN
   TextAttr := SaveCurCo;
   GoToXY(SaveWhereX,SaveWhereY);
   IF (UserOn) THEN
-  BEGIN
-    IF (NOT InChat) THEN
-      FreeTime := ((FreeTime + Timer) - SaveTimer);
-    Update_Screen;
-    FOR SaveCurCo := 1 TO LennMCI(lRGLngStr(12,TRUE){FString.ShellDOS1}) DO
-      BackSpace;
-  END;
+    BEGIN
+      IF (NOT InChat) THEN
+        FreeTime := ((FreeTime + Timer) - SaveTimer);
+      Update_Screen;
+      FOR SaveCurCo := 1 TO LennMCI(lRGLngStr(12,TRUE){FString.ShellDOS1}) DO
+        BackSpace;
+    END;
 END;
 
 PROCEDURE ReDrawForANSI;
 BEGIN
   IF (DOSANSIOn) THEN
-  BEGIN
-    DOSANSIOn := FALSE;
-    Update_Screen;
-  END;
+    BEGIN
+      DOSANSIOn := FALSE;
+      Update_Screen;
+    END;
   TextAttr := 7;
   CurrentColor := 7;
   IF (OutCom) THEN
@@ -347,6 +330,4 @@ BEGIN
     ELSE IF (OkANSI) THEN
       SerialOut(#27+'[0m');
 END;
-
 END.
-

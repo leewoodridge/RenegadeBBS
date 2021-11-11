@@ -78,44 +78,44 @@ BEGIN
         Abort := FALSE;
         Next := FALSE;
         ConfigHeader('Main BBS Configuration');
-        PrintACR(PadLeftStr('^0(^1A^0) BBS name/number   : ^1'+General.BBSName+' ^0(^1'+General.BBSPhone+'^0)',79));
-        PrintACR(PadLeftStr('^0(^1B^0) Telnet URL        : ^1'+Liner.NodeTelnetURL,79));
-        PrintACR(PadLeftStr('^0(^1C^0) SysOps name       : ^1'+General.SysOpName,39)+
+        PrintACR(PadLeftStr('^0(^1A^0) BBS Name          : ^1'+General.BBSName,79));
+        PrintACR(PadLeftStr('^0(^1B^0) BBS Phone/ Telnet : ^1'+General.BBSPhone+'^0 / ^1'+Liner.NodeTelnetURL,79));
+        PrintACR(PadLeftStr('^0(^1C^0) SysOps Name       : ^1'+General.SysOpName,39)+' '+
                  PadLeftStr('^0(^1D^0) Renegade Version  : ^1'+General.Version,39));
-        PrintACR(PadLeftStr('^0(^1E^0) SysOp chat hours  : ^1'+PHours('Always allowed',
-                                                                      General.lLowTime,General.HiTime),39)+
-                 PadLeftStr('^0(^1F^0) Min baud hours    : ^1'+PHours('Always allowed',
+        PrintACR(PadLeftStr('^0(^1E^0) SysOp Chat Hours  : ^1'+PHours('Always allowed',
+                                                                      General.lLowTime,General.HiTime),39)+' '+
+                 PadLeftStr('^0(^1F^0) Min Baud Hours    : ^1'+PHours('Always allowed',
                                                                       General.MinBaudLowTime,General.MinBaudHiTime),39));
-        PrintACR(PadLeftStr('^0(^1G^0) Reg DL hours      : ^1'+PHours('Always allowed',
-                                                                      General.DLLowTime,General.DLHiTime),39)+
-                 PadLeftStr('^0(^1H^0) Min baud DL hrs   : ^1'+PHours('Always allowed',
+        PrintACR(PadLeftStr('^0(^1G^0) Reg DL Hours      : ^1'+PHours('Always allowed',
+                                                                      General.DLLowTime,General.DLHiTime),39)+' '+
+                 PadLeftStr('^0(^1H^0) Min Baud DL Hours : ^1'+PHours('Always allowed',
                                                                       General.MinBaudDLLowTime,General.MinBaudDLHiTime),39));
-        PrintACR(PadLeftStr('^0(^1I^0) BBS Passwords ...',39)+
-                 PadLeftStr('^0(^1J^0) Pre-event warning : ^1'+IntToStr(General.EventWarningTime)+' seconds',39));
-        PrintACR(PadLeftStr('^0(^1K^0) System Menus ...',39)+
+        PrintACR(PadLeftStr('^0(^1I^0) BBS Passwords ...',39)+' '+
+                 PadLeftStr('^0(^1J^0) Pre-Event Warning : ^1'+IntToStr(General.EventWarningTime)+' seconds',39));
+        PrintACR(PadLeftStr('^0(^1K^0) System Menus ...',39)+' '+
                  PadLeftStr('^0(^1L^0) Bulletin Prefix   : ^1'+General.BulletPrefix,39));
-        PrintACR(PadLeftStr('^0(^1M^0) MultiNode support : ^1'+ShowOnOff(General.MultiNode),39)+
-                 PadLeftStr('^0(^1N^0) Network mode      : ^1'+ShowOnOff(General.NetworkMode),39));
+        PrintACR(PadLeftStr('^0(^1M^0) Multi-Node Mode   : ^1'+ShowOnOff(General.MultiNode),39)+' '+
+                 PadLeftStr('^0(^1N^0) Network Mode      : ^1'+ShowOnOff(General.NetworkMode),39));
         NL;
-        PrintACR('^0(^10^0) Data files                : ^1'+General.DataPath);
-        PrintACR('^0(^11^0) Miscellaneous (Art) files : ^1'+General.MiscPath);
-        PrintACR('^0(^12^0) Message area data files   : ^1'+General.MsgPath);
-        PrintACR('^0(^13^0) Mail Nodelist (V7) files  : ^1'+General.NodePath);
-        PrintACR('^0(^14^0) Log files                 : ^1'+General.LogsPath);
-        PrintACR('^0(^15^0) Temporary files           : ^1'+General.TempPath);
-        PrintACR('^0(^16^0) Protocol files            : ^1'+General.ProtPath);
-        PrintACR('^0(^17^0) Archiver files            : ^1'+General.ArcsPath);
-        PrintACR('^0(^18^0) File attachments          : ^1'+General.FileAttachPath);
-        PrintACR('^0(^19^0) Text/Language files       : ^1'+General.TextPath);
+        PrintACR('^0(^10^0) Data Files                : ^1'+General.DataPath);
+        PrintACR('^0(^11^0) Miscellaneous (Art) Files : ^1'+General.MiscPath);
+        PrintACR('^0(^12^0) Message Area Data Files   : ^1'+General.MsgPath);
+        PrintACR('^0(^13^0) Mail Nodelist (V7) Files  : ^1'+General.NodePath);
+        PrintACR('^0(^14^0) Log Files                 : ^1'+General.LogsPath);
+        PrintACR('^0(^15^0) Temporary Files           : ^1'+General.TempPath);
+        PrintACR('^0(^16^0) Protocol Files            : ^1'+General.ProtPath);
+        PrintACR('^0(^17^0) Archiver Files            : ^1'+General.ArcsPath);
+        PrintACR('^0(^18^0) File Attachments          : ^1'+General.FileAttachPath);
+        PrintACR('^0(^19^0) Text/Language Files       : ^1'+General.TextPath);
         NL;
-        LOneK('Enter selection [^1A^2-^1N^2,^10^2-^19^2,^1Q^2=^1Quit^2]: ',Cmd,'QABCDEFGHIJKLMN0123456789'^M,TRUE,TRUE);
+        LOneK('^2BBS Configuration [^1A^2-^1N^2,^10^2-^19^2,(^1Q^2)uit]: ',Cmd,'QABCDEFGHIJKLMN0123456789'^M,TRUE,TRUE);
         CASE Cmd OF
-          'A' : BEGIN
-                  InputWNWC('%LFNew BBS name: ',BBSName,(SizeOf(BBSName) - 1),Changed);
-                  InputFormatted('%LFNew BBS phone number: ',BBSPhone,'###-###-####',FALSE);
+          'A' : InputWNWC('%LFNew BBS name: ',BBSName,(SizeOf(BBSName) - 1),Changed);
+          'B' : BEGIN
+                  InputFormatted('%LFNew BBS Phone Number: ',BBSPhone,'###-###-####',FALSE);
+                  InputWN1('%LF^0New Telnet URL:%LF^2: ',Liner.NodeTelnetURL,(SizeOf(Liner.NodeTelnetURL) - 1),
+                           [InteractiveEdit],Changed);
                 END;
-          'B' : InputWN1('%LF^0New Telnet Url:%LF^2: ',Liner.NodeTelnetURL,(SizeOf(Liner.NodeTelnetURL) - 1),
-                [InteractiveEdit],Changed);
           'C' : InputWN1('%LFNew SysOp name: ',SysOpName,(SizeOf(SysOpName) - 1),[InterActiveEdit],Changed);
           'D' : lRGLngStr(110,FALSE);
           'E' : IF (InCom) THEN
@@ -188,17 +188,16 @@ BEGIN
                   ELSE
                     LocalSec := PYNQ('%LFDo you want local security to remain on? ',0,FALSE);
                 END;
-          '0' : InputPath('%LF^0New data files path (^1End with a ^0"^1\^0"):%LF^2: ',DataPath,TRUE,FALSE,Changed);
-          '1' : InputPath('%LF^0New miscellaneous files path (^1End with a ^0"^1\^0"):%LF^2: ',MiscPath,TRUE,FALSE,Changed);
-          '2' : InputPath('%LF^0New message files path (^1End with a ^0"^1\^0"):%LF^2: ',MsgPath,TRUE,FALSE,Changed);
-          '3' : InputPath('%LF^0New nodelist files path (^1End with a ^0"^1\^0"):%LF^2: ',NodePath,TRUE,FALSE,Changed);
-          '4' : InputPath('%LF^0New sysop log files path (^1End with a ^0"^1\^0"):%LF^2: ',LogsPath,TRUE,FALSE,Changed);
-          '5' : InputPath('%LF^0New temporary files path (^1End with a ^0"^1\^0"):%LF^2: ',TempPath,FALSE,FALSE,Changed);
-          '6' : InputPath('%LF^0New protocol files path (^1End with a ^0"^1\^0"):%LF^2: ',ProtPath,TRUE,FALSE,Changed);
-          '7' : InputPath('%LF^0New archive files path (^1End with a ^0"^1\^0"):%LF^2: ',ArcsPath,TRUE,FALSE,Changed);
-          '8' : InputPath('%LF^0New file attach files path (^1End with a ^0"^1\^0"):%LF^2: ',
-                FileAttachPath,TRUE,FALSE,Changed);
-          '9' : InputPath('%LF^0New string files path (^1End with a ^0"^1\^0"):%LF^2: ',TextPath,TRUE,FALSE,Changed);
+          '0' : InputPath('%LF^0Enter new data files path%LF',DataPath,TRUE,FALSE,Changed);
+          '1' : InputPath('%LF^0Enter new miscellaneous files path%LF',MiscPath,TRUE,FALSE,Changed);
+          '2' : InputPath('%LF^0Enter new message files path%LF',MsgPath,TRUE,FALSE,Changed);
+          '3' : InputPath('%LF^0Enter new nodelist files path%LF',NodePath,TRUE,FALSE,Changed);
+          '4' : InputPath('%LF^0Enter new log files path%LF',LogsPath,TRUE,FALSE,Changed);
+          '5' : InputPath('%LF^0Enter new temporary files path%LF',TempPath,FALSE,FALSE,Changed);
+          '6' : InputPath('%LF^0Enter new protocol files path%LF',ProtPath,TRUE,FALSE,Changed);
+          '7' : InputPath('%LF^0Enter new archiver files path%LF',ArcsPath,TRUE,FALSE,Changed);
+          '8' : InputPath('%LF^0Enter new file attach files path%LF',FileAttachPath,TRUE,FALSE,Changed);
+          '9' : InputPath('%LF^0Enter new string files path%LF',TextPath,TRUE,FALSE,Changed);
         END;
       END;
   UNTIL (Cmd = 'Q') OR (HangUp);

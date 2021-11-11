@@ -5,6 +5,7 @@ Lee Woodridge
             - AUTO.ASC renamed to AUTOM.ASC to keep with standard filenaming convention
             - Now uses AUTOH.EXT/AUTOT.EXT, if available
             - All strings in RGLNG
+ 11/10/2021 - added hangup checks to loops to prevent lockups
 }
 UNIT AutoMsg;
 
@@ -57,17 +58,15 @@ BEGIN
       IF (NoFile) THEN
         BEGIN
           lRGLngStr(104,FALSE);
-          WHILE WhereX < ThisUser.LineLen DO
+          WHILE (WhereX < ThisUser.LineLen) AND (NOT HangUp) DO
             Prt(lRGLngStr(11,TRUE));
           NL;
         END;
-        
       REPEAT
         ReadLn(AutoMsgFile,TempStr);
         PrintACR('^1'+TempStr);
       UNTIL EOF(AutoMsgFile) OR (Abort) OR (HangUp);
       Close(AutoMsgFile);
-      
       TempStr := lRGLngStr(10,TRUE);
       TempStr := Substitute(TempStr,'@U',TempAuthor); { Add username }
       GetFileDateTime(General.MiscPath+'AUTOM.ASC',DatePacked);
@@ -75,11 +74,10 @@ BEGIN
       WITH DateUnpacked DO
         TempStr := Substitute(TempStr,'@D',IntToStr(Month)+'/'+IntToStr(Day)+'/'+IntToStr(Year)); { Add date }
       Print(TempStr); {" ─ Posted by [USERNAME] on [DATE]"}
-      
       PrintF('AUTOT');
       IF (NoFile) THEN
         BEGIN
-          WHILE WhereX < ThisUser.LineLen DO
+          WHILE (WhereX < ThisUser.LineLen) AND (NOT HangUp) DO
             Prt(lRGLngStr(11,TRUE));
           NL;
         END;

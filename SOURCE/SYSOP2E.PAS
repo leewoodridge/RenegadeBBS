@@ -61,7 +61,7 @@ BEGIN
       PrintACR('^02. Mins before TimeOut bell : ^1'+AOnOff((TimeOutBell = -1),'Off',PadLeftInt(TimeOutBell,3)));
       PrintACR('^03. Mins before TimeOut      : ^1'+AOnOff((TimeOut = -1),'Off',PadLeftInt(TimeOut,3)));
       Prt('%LFEnter selection [^1A^2-^1P^2,^1R^2-^1Z^2,^11^2-^13^2,^1Q^2=^1Quit^2]: ');
-      OneK(Cmd,'QABCDEFGHIJKLMNOPRSTUVWXYZ123'^M,TRUE,TRUE);
+      LOneK('',Cmd,'QABCDEFGHIJKLMNOPRSTUVWXYZ123'^M,TRUE,TRUE);
       CASE Cmd OF
         'A' : AllowAlias := NOT AllowAlias;
         'B' : BEGIN
@@ -113,7 +113,7 @@ BEGIN
         '1'..'3' :
               BEGIN
                 Prt('%LFSelect option [^1E^2=^1Enable^2,^1D^2=^1Disable^2,^1<CR>^2=^1Quit^2]: ');
-                OneK(Cmd1,^M'ED',TRUE,TRUE);
+                LOneK('',Cmd1,^M'ED',TRUE,TRUE);
                 IF (Cmd1 IN ['E','D']) THEN
                 BEGIN
                   CASE Cmd1 OF

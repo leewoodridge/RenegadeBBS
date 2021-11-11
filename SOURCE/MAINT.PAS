@@ -1,4 +1,7 @@
 {$A+,B-,D+,E-,F+,I-,L+,N-,O+,R-,S+,V-}
+{
+added a bunch of hangup checks, in an attempt to remove artifacts printed after
+}
 UNIT Maint;
 
 INTERFACE
@@ -11,7 +14,7 @@ PROCEDURE UpdateGeneral;
 IMPLEMENTATION
 
 USES
-  Automsg,
+  AutoMsg,
   Bulletin,
   Common,
   CUser,
@@ -39,85 +42,64 @@ VAR
 
   PROCEDURE UpdateUserInformation;
   VAR
-    UpdateArray: ARRAY [0..10] OF Integer;
-    Counter,
-    Counter1: Integer;
+    AnyDone: BOOLEAN; { Any updates need to be done? }
+    UpdateArray: ARRAY [2..14] OF BOOLEAN; { Which updates need doing? }
+    Counter: Integer;
   BEGIN
-    FOR Counter := 0 TO 10 DO
-      UpdateArray[Counter] := 0;
-    Counter := 0;
-    IF (ThisUser.RealName = User_String_Ask) THEN
-    BEGIN
-      UpdateArray[1] := 10;
-      Inc(Counter);
-    END;
-    IF (ThisUser.Street = User_String_Ask) THEN
-    BEGIN
-      UpdateArray[2] := 1;
-      Inc(Counter);
-    END;
-    IF (ThisUser.CityState = User_String_Ask) THEN
-    BEGIN
-      UpdateArray[0] := 23;
-      UpdateArray[3] := 4;
-      Inc(Counter);
-    END;
-    IF (ThisUser.ZipCode = User_String_Ask) THEN
-    BEGIN
-      UpdateArray[0] := 23;
-      UpdateArray[4] := 14;
-      Inc(Counter);
-    END;
-    IF (ThisUser.BirthDate = User_Date_Ask) THEN
-    BEGIN
-      UpdateArray[5] := 2;
-      Inc(Counter);
-    END;
-    IF (ThisUser.Ph = User_Phone_Ask) THEN
-    BEGIN
-      UpdateArray[6] := 8;
-      Inc(Counter);
-    END;
-    IF (ThisUser.UsrDefStr[1] = User_String_Ask) THEN
-    BEGIN
-      UpdateArray[7] := 5;
-      Inc(Counter);
-    END;
-    IF (ThisUser.UsrDefStr[2] = User_String_Ask) THEN
-    BEGIN
-      UpdateArray[8] := 6;
-      Inc(Counter);
-    END;
-    IF (ThisUser.UsrDefStr[3] = User_String_Ask) THEN
-    BEGIN
-      UpdateArray[9] := 13;
-      Inc(Counter);
-    END;
-    IF (ThisUser.ForgotPWAnswer = User_String_Ask) THEN
-    BEGIN
-      UpdateArray[10] := 30;
-      Inc(Counter);
-    END;
-    IF (Counter <> 0) THEN
-    BEGIN
-      CLS;
-      NL;
-      Print('Please update the following information:');
-      Counter := 0;
-      WHILE (Counter <= 10) AND (NOT HangUp) DO
-      BEGIN
-        IF (UpDateArray[Counter] <> 0) THEN
+    FOR Counter := 2 TO 14 DO
+      UpdateArray[Counter] := FALSE; { Reset }
+    AnyDone := FALSE; { Reset }
+      
+    IF (ThisUser.RealName = '') AND (General.NewUserQToggles[02] = TRUE) THEN
+      UpdateArray[2] := TRUE;
+      {
+    IF (ThisUser.Country = '') AND (General.NewUserQToggles[03] = TRUE) THEN
+      UpdateArray[3] := TRUE;
+      }
+    IF (ThisUser.Street = '') AND (General.NewUserQToggles[04] = TRUE) THEN
+      UpdateArray[4] := TRUE;
+    IF (ThisUser.CityState = '') AND (General.NewUserQToggles[05] = TRUE) THEN
+      UpdateArray[5] := TRUE;
+    IF (ThisUser.ZipCode = '') AND (General.NewUserQToggles[06] = TRUE) THEN
+      UpdateArray[6] := TRUE;
+    IF (ThisUser.Ph = '') AND (General.NewUserQToggles[07] = TRUE) THEN
+      UpdateArray[7] := TRUE;
+    IF (ThisUser.Birthdate = -1869054590) AND (General.NewUserQToggles[08] = TRUE) THEN
+      UpdateArray[8] := TRUE;
+    IF (ThisUser.Sex = #0) AND (General.NewUserQToggles[09] = TRUE) THEN
+      UpdateArray[9] := TRUE;
+    IF (ThisUser.UsrDefStr[1] = '') AND (General.NewUserQToggles[10] = TRUE) THEN
+      UpdateArray[10] := TRUE;
+    IF (ThisUser.UsrDefStr[2] = '') AND (General.NewUserQToggles[11] = TRUE) THEN
+      UpdateArray[11] := TRUE;
+    IF (ThisUser.UsrDefStr[3] = '') AND (General.NewUserQToggles[12] = TRUE) THEN
+      UpdateArray[12] := TRUE;
+    IF (ThisUser.ForgotPWAnswer = '') AND (General.ForgotPWQuestion <> '') AND
+       (General.NewUserQToggles[14] = TRUE) THEN { Forgot PW Answer }
+      UpdateArray[14] := TRUE;
+      
+      {
+    IF (ThisUser. = '') AND (General.NewUserQToggles[] = TRUE) THEN
+      UpdateArray[] := TRUE;
+      }
+      
+    FOR Counter := 2 TO 14 DO
+      IF (UpdateArray[Counter]) AND (NOT HangUp) THEN
         BEGIN
-          Update_Screen;
-          CStuff(UpdateArray[Counter],1,ThisUser);
+          IF AnyDone = FALSE THEN
+            BEGIN
+              AnyDone := TRUE;
+              Print('Please update the following information ...'); { LeeW: Add to lng }
+            END;
+          CStuff(Counter,1,ThisUser);
         END;
-        Inc(Counter);
+    IF (AnyDone) AND (NOT HangUp) THEN
+      BEGIN
+        Print('%LFThank you!'); { LeeW: Add to lng }
+        Update_Screen;
+        (*PauseScr(FALSE); { LeeW: Testing }*)
       END;
-      NL;
-      Print('Thank you!');
-      NL;
-      PauseScr(FALSE);
-    END;
+      
   END;
 
   FUNCTION CheckBirthday: Boolean;
@@ -197,39 +179,39 @@ VAR
 
 BEGIN
   IF (General.MultiNode) THEN
-  BEGIN
-    LoadNode(ThisNode);
-    IF AACS(General.Invisible) AND PYNQ(lRGLngStr(45,TRUE){FString.AskInvisibleLoginStr},0,FALSE) THEN
     BEGIN
-      IsInvisible := TRUE;
-      Include(NodeR.Status,NInvisible);
-      SysOpLog('Selected invisible mode.');
-    END
-    ELSE
-      IsInvisible := FALSE;
-    FillChar(NodeR.Invited,SizeOf(NodeR.Invited),0);
-    FillChar(NodeR.Booted,SizeOf(NodeR.Booted),0);
-    FillChar(NodeR.Forget,SizeOf(NodeR.Forget),0);
-    Include(NodeR.Status,NAvail);
-    SaveNode(ThisNode);
-    Update_Node(lRGLngStr(147,TRUE),TRUE);
-    FOR Counter := 1 TO MaxNodes DO
-    BEGIN
-      LoadNode(Counter);
-      NodeR.Forget[ThisNode DIV 8] := NodeR.Forget[ThisNode DIV 8] - [ThisNode MOD 8];
-      SaveNode(Counter);
+      LoadNode(ThisNode);
+      IF AACS(General.Invisible) AND PYNQ(lRGLngStr(45,TRUE){FString.AskInvisibleLoginStr},0,FALSE) THEN
+        BEGIN
+          IsInvisible := TRUE;
+          Include(NodeR.Status,NInvisible);
+          SysOpLog('Selected invisible mode.');
+        END
+      ELSE
+        IsInvisible := FALSE;
+      FillChar(NodeR.Invited,SizeOf(NodeR.Invited),0);
+      FillChar(NodeR.Booted,SizeOf(NodeR.Booted),0);
+      FillChar(NodeR.Forget,SizeOf(NodeR.Forget),0);
+      Include(NodeR.Status,NAvail);
+      SaveNode(ThisNode);
+      Update_Node(lRGLngStr(147,TRUE),TRUE);
+      FOR Counter := 1 TO MaxNodes DO
+        BEGIN
+          LoadNode(Counter);
+          NodeR.Forget[ThisNode DIV 8] := NodeR.Forget[ThisNode DIV 8] - [ThisNode MOD 8];
+          SaveNode(Counter);
+        END;
     END;
-  END;
 
   ConfSystem := TRUE;
 
   IF (ThisUser.LastConf IN ConfKeys) THEN
     CurrentConf := ThisUser.LastConf
   ELSE
-  BEGIN
-    CurrentConf := '@';
-    ThisUser.LastConf := CurrentConf;
-  END;
+    BEGIN
+      CurrentConf := '@';
+      ThisUser.LastConf := CurrentConf;
+    END;
 
   PublicReadThisCall := 0;
   ExtraTime := 0;
@@ -252,58 +234,51 @@ BEGIN
     Inc(TodayCallers);
 
   IF (SLogSeparate IN ThisUser.SFlags) THEN
-  BEGIN
-    Assign(SysOpLogFile1,General.LogsPath+'SLOG'+IntToStr(UserNum)+'.LOG');
-    Append(SysOpLogFile1);
-    IF (IOResult = 2) THEN
     BEGIN
-      ReWrite(SysOpLogFile1);
+      Assign(SysOpLogFile1,General.LogsPath+'SLOG'+IntToStr(UserNum)+'.LOG');
       Append(SysOpLogFile1);
-      TempStr := '';
-      TempStr1 := '';
-      FOR Counter := 1 TO (26 + Length(ThisUser.Name)) DO
-      BEGIN
-        TempStr := TempStr + '_';
-        TempStr1 := TempStr1 + ' ';
-      END;
-      WriteLn(SysOpLogFile1,'');
-      WriteLn(SysOpLogFile1,'  '+TempStr);
-      WriteLn(SysOpLogFile1,'>>'+TempStr1+'<<');
-      WriteLn(SysOpLogFile1,'>> Renegade SysOp Log for '+Caps(ThisUser.Name)+': <<');
-      WriteLn(SysOpLogFile1,'>>'+TempStr+'<<');
-      WriteLn(SysOpLogFile1,'');
-    END;
-    WriteLn(SysOpLogFile1);
-
-    TempStr := '^1Logon ^1['+Dat+']^2 (';
-
-    IF (ComPortSpeed > 0) THEN
-    BEGIN
-      TempStr := TempStr + IntToStr(ActualSpeed)+' baud';
-
-      IF (Reliable) THEN
-        TempStr := TempStr + '/Reliable)'
+      IF (IOResult = 2) THEN
+        BEGIN
+          ReWrite(SysOpLogFile1);
+          Append(SysOpLogFile1);
+          TempStr := '';
+          TempStr1 := '';
+          FOR Counter := 1 TO (26 + Length(ThisUser.Name)) DO
+            BEGIN
+              TempStr := TempStr + '_';
+              TempStr1 := TempStr1 + ' ';
+            END;
+          WriteLn(SysOpLogFile1,'');
+          WriteLn(SysOpLogFile1,'  '+TempStr);
+          WriteLn(SysOpLogFile1,'>>'+TempStr1+'<<');
+          WriteLn(SysOpLogFile1,'>> Renegade SysOp Log for '+Caps(ThisUser.Name)+': <<');
+          WriteLn(SysOpLogFile1,'>>'+TempStr+'<<');
+          WriteLn(SysOpLogFile1,'');
+        END;
+      WriteLn(SysOpLogFile1);
+      TempStr := '^1Logon ^1['+Dat+']^2 (';
+      IF (ComPortSpeed > 0) THEN
+        BEGIN
+          TempStr := TempStr + IntToStr(ActualSpeed)+' baud';
+          IF (Reliable) THEN
+            TempStr := TempStr + '/Reliable)'
+          ELSE
+            TempStr := TempStr + ')';
+          IF (CallerIDNumber > '') THEN
+            BEGIN
+              IF (NOT Telnet) THEN
+                TempStr := TempStr + ' Number: '+CallerIDNumber
+              ELSE
+                TempStr := TempStr + ' IP Number: '+CallerIDNumber;
+            END;
+        END
       ELSE
-        TempStr := TempStr + ')';
-
-      IF (CallerIDNumber > '') THEN
-      BEGIN
-        IF (NOT Telnet) THEN
-          TempStr := TempStr + ' Number: '+CallerIDNumber
-        ELSE
-          TempStr := TempStr + ' IP Number: '+CallerIDNumber;
-      END;
-    END
-    ELSE
-      TempStr := TempStr + 'Keyboard)';
-
-    IF (General.StripCLog) THEN
-      TempStr := StripColor(TempStr);
-
-    WriteLn(SysOpLogFile1,TempStr);
-
-    Close(SysOpLogFile1);
-  END;
+        TempStr := TempStr + 'Keyboard)';
+      IF (General.StripCLog) THEN
+        TempStr := StripColor(TempStr);
+      WriteLn(SysOpLogFile1,TempStr);
+      Close(SysOpLogFile1);
+    END;
 
   TempStr := '^1'+IntToStr(General.CallerNum)+'^2 -- ^1'+Caps(ThisUser.Name)+'^2 -- ^1'+'Today '+IntToStr(ThisUser.OnToday);
   IF (Trapping) THEN
@@ -313,11 +288,11 @@ BEGIN
   LastError := IOResult;
 
   IF ((CoSysOp) AND (NOT FastLogon) AND (ComPortSpeed > 0)) THEN
-  BEGIN
-    IF PYNQ(lRGLngStr(57,TRUE){FString.QuickLogon},0,FALSE) THEN
-      FastLogon := TRUE;
-    NL;
-  END;
+    BEGIN
+      IF PYNQ(lRGLngStr(57,TRUE),0,FALSE) THEN {"Fast Logon?"}
+        FastLogon := TRUE;
+      NL;
+    END;
 
   Assign(LastCallerFile,General.DataPath+'LASTON.DAT');
   IF Exist(General.DataPath+'LASTON.DAT') THEN
@@ -326,44 +301,42 @@ BEGIN
     ReWrite(LastCallerFile);
   FillChar(LastCaller,SizeOf(LastCaller),#0);
   WITH LastCaller DO
-  BEGIN
-    Node := ThisNode;
-    Caller := General.CallerNum;
-    UserName := Caps(ThisUser.Name);
-    UserID := UserNum;
-    Location := ThisUser.CityState;
-    IF (ComPortSpeed <> 0) THEN
-      Speed := ActualSpeed
-    ELSE
-      Speed := 0;
-    LogonTime := TimeOn;
-    LogoffTime := 0;
-    NewUser := WasNewUser;
-    Invisible := IsInvisible;
-  END;
+    BEGIN
+      Node := ThisNode;
+      Caller := General.CallerNum;
+      UserName := Caps(ThisUser.Name);
+      UserID := UserNum;
+      Location := ThisUser.CityState;
+      IF (ComPortSpeed <> 0) THEN
+        Speed := ActualSpeed
+      ELSE
+        Speed := 0;
+      LogonTime := TimeOn;
+      LogoffTime := 0;
+      NewUser := WasNewUser;
+      Invisible := IsInvisible;
+    END;
   IF AACS(General.LastOnDatACS) THEN
-  BEGIN
-    Seek(LastCallerFile,FileSize(LastCallerFile));
-    Write(LastCallerFile,LastCaller);
-  END;
+    BEGIN
+      Seek(LastCallerFile,FileSize(LastCallerFile));
+      Write(LastCallerFile,LastCaller);
+    END;
   Close(LastCallerFile);
   LastError := IOResult;
 
   SaveGeneral(TRUE);
 
   IF (NOT FastLogon) AND (NOT HangUp) THEN
-  BEGIN
-
-    PrintF('LOGON');
-    Counter := 0;
-    REPEAT
-      Inc(Counter);
-      PrintF('LOGON'+IntToStr(Counter));
-    UNTIL (Counter = 9) OR (NoFile) OR (HangUp);
-
-    PrintF('SL'+IntToStr(ThisUser.SL));
-
-    PrintF('DSL'+IntToStr(ThisUser.DSL));
+    BEGIN
+      PrintF('LOGON');
+      Counter := 0;
+      REPEAT
+        Inc(Counter);
+        PrintF('LOGON'+IntToStr(Counter));
+      UNTIL (Counter = 9) OR (NoFile) OR (HangUp);
+      
+      PrintF('SL'+IntToStr(ThisUser.SL));
+      PrintF('DSL'+IntToStr(ThisUser.DSL));
 
     FOR Cmd := 'A' TO 'Z' DO
       IF (Cmd IN ThisUser.ARFlags) THEN
@@ -371,117 +344,117 @@ BEGIN
 
     PrintF('USER'+IntToStr(UserNum));
 
-    IF (FindOnlyOnce) THEN
+    IF (FindOnlyOnce) AND (NOT HangUp) THEN
       PrintF('ONCEONLY');
 
     UpdateUserInformation;
 
-    IF (General.LogonQuote) THEN
+    IF (General.LogonQuote) AND (NOT HangUp) THEN
       RGQuote('LGNQUOTE');
+      
+    IF (CheckBirthday) AND (NOT HangUp) THEN
+      BEGIN
+        ShowBDay(IntToStr(UserNum));
+        IF (NoFile) THEN
+          ShowBDay('');
+        IF (NoFile) THEN
+          IF (BSince) THEN
+            BEGIN
+              NL;
+              Print('^1Happy Birthday, '+Caps(ThisUser.Name)+' !!!');
+              Print('^1(a little late, but it''s the thought that counts!)');
+              NL;
+            END
+          ELSE
+            BEGIN
+              NL;
+              Print('^1Happy Birthday, '+Caps(ThisUser.Name)+' !!!');
+              Print('^1You turned '+IntToStr(AgeUser(ThisUser.BirthDate))+' today!!');
+              NL;
+            END;
+        PauseScr(FALSE);
+      END;
 
-    IF (CheckBirthday) THEN
-    BEGIN
-      ShowBDay(IntToStr(UserNum));
-      IF (NoFile) THEN
-        ShowBDay('');
-      IF (NoFile) THEN
-        IF (BSince) THEN
-        BEGIN
-          NL;
-          Print('^1Happy Birthday, '+Caps(ThisUser.Name)+' !!!');
-          Print('^1(a little late, but it''s the thought that counts!)');
-          NL;
-        END
-        ELSE
-        BEGIN
-          NL;
-          Print('^1Happy Birthday, '+Caps(ThisUser.Name)+' !!!');
-          Print('^1You turned '+IntToStr(AgeUser(ThisUser.BirthDate))+' today!!');
-          NL;
-        END;
-      PauseScr(FALSE);
-      CLS;
-    END;
-
-    NL;
-    IF (General.AutoMInLogon) THEN
+    {NL;}
+    
+    IF (General.AutoMInLogon) AND (NOT HangUp) THEN
       ReadAutoMsg;
-    NL;
-
-    IF (General.YourInfoInLogon) THEN
-    BEGIN
+      
+    {NL;}
+    
+    IF (General.YourInfoInLogon) AND (NOT HangUp) THEN
       PrintF('YOURINFO');
-      NL;
-    END;
+      
+    {NL;}
 
     LIL := 0;
 
-    IF (General.BullInLogon) AND (NewBulletins) THEN
-    BEGIN
-      NL;
-      IF PYNQ(lRGLngStr(56,TRUE){FString.ShowBulletins},0,FALSE) THEN
-        Bulletins('')
-      ELSE
-        NL;
-    END;
-
-    IF (NOT (RVoting IN ThisUser.ACFlags)) THEN
-    BEGIN
-      Counter := UnVotedTopics;
-      IF (Counter > 0) THEN
+    IF (General.BullInLogon) AND (NewBulletins) AND (NOT HangUp)THEN
       BEGIN
         NL;
-        Prompt('^1You have not voted on ^9'+IntToStr(Counter)+'^1 voting '+Plural('question',Counter));
-        NL;
+        IF PYNQ(lRGLngStr(56,TRUE){FString.ShowBulletins},0,FALSE) THEN
+          Bulletins('')
+        ELSE
+          NL;
       END;
-    END;
 
-    IF Exist(General.DataPath+'BATCHDL.DAT') THEN
-    BEGIN
-      Assign(BatchDLFile,General.DataPath+'BATCHDL.DAT');
-      Reset(BatchDLFile);
-      RecNum := 1;
-      WHILE (RecNum <= FileSize(BatchDLFile)) DO
+    IF (NOT (RVoting IN ThisUser.ACFlags)) AND (NOT HangUp) THEN
       BEGIN
-        Seek(BatchDLFile,(RecNum - 1));
-        Read(BatchDLFile,BatchDL);
-        IF (BatchDL.BDLUserNum = UserNum) THEN
-        BEGIN
-          Inc(NumBatchDLFiles);
-          Inc(BatchDLTime,BatchDL.BDLTime);
-          Inc(BatchDLSize,BatchDL.BDLFSize);
-          Inc(BatchDLPoints,BatchDL.BDLPoints);
-        END;
-        Inc(RecNum);
+        Counter := UnVotedTopics;
+        IF (Counter > 0) THEN
+          BEGIN
+            NL;
+            Prompt('^1You have not voted on ^9'+IntToStr(Counter)+'^1 voting '+Plural('question',Counter));
+            NL;
+          END;
       END;
-      Close(BatchDLFile);
-      LastError := IOResult;
-    END;
 
-    IF Exist(General.DataPath+'BATCHUL.DAT') THEN
-    BEGIN
-      Assign(BatchULFile,General.DataPath+'BATCHUL.DAT');
-      Reset(BatchULFile);
-      RecNum := 1;
-      WHILE (RecNum <= FileSize(BatchULFile)) DO
+    IF Exist(General.DataPath+'BATCHDL.DAT') AND (NOT HangUp) THEN
       BEGIN
-        Seek(BatchULFile,(RecNum - 1));
-        Read(BatchULFile,BatchUL);
-        IF (BatchUL.BULUserNum = UserNum) THEN
-          Inc(NumBatchULFiles);
-        Inc(RecNum);
+        Assign(BatchDLFile,General.DataPath+'BATCHDL.DAT');
+        Reset(BatchDLFile);
+        RecNum := 1;
+        WHILE (RecNum <= FileSize(BatchDLFile)) DO
+          BEGIN
+            Seek(BatchDLFile,(RecNum - 1));
+            Read(BatchDLFile,BatchDL);
+            IF (BatchDL.BDLUserNum = UserNum) THEN
+              BEGIN
+                Inc(NumBatchDLFiles);
+                Inc(BatchDLTime,BatchDL.BDLTime);
+                Inc(BatchDLSize,BatchDL.BDLFSize);
+                Inc(BatchDLPoints,BatchDL.BDLPoints);
+              END;
+            Inc(RecNum);
+          END;
+        Close(BatchDLFile);
+        LastError := IOResult;
       END;
-      Close(BatchULFile);
-      LastError := IOResult;
-    END;
 
-    IF (NumBatchDLFiles > 0) AND (General.ForceBatchDL) THEN
+    IF Exist(General.DataPath+'BATCHUL.DAT') AND (NOT HangUp) THEN
+      BEGIN
+        Assign(BatchULFile,General.DataPath+'BATCHUL.DAT');
+        Reset(BatchULFile);
+        RecNum := 1;
+        WHILE (RecNum <= FileSize(BatchULFile)) DO
+          BEGIN
+            Seek(BatchULFile,(RecNum - 1));
+            Read(BatchULFile,BatchUL);
+            IF (BatchUL.BULUserNum = UserNum) THEN
+              Inc(NumBatchULFiles);
+            Inc(RecNum);
+          END;
+        Close(BatchULFile);
+        LastError := IOResult;
+      END;
+
+    IF (NumBatchDLFiles > 0) AND (General.ForceBatchDL) AND (NOT HangUp) THEN
       REPEAT
         NL;
         Print('^2You must (^1D^2)ownload, (^1R^2)emove or (^1C^2)lear your batch queued files.');
         NL;
         Prt('Select option: ');
-        OneK(Cmd,'DRC',TRUE,TRUE);
+        LOneK('',Cmd,'DRC',TRUE,TRUE);
         CASE Cmd OF
           'D' : BatchDownload;
           'R' : RemoveBatchDLFiles;
@@ -489,13 +462,13 @@ BEGIN
         END;
       UNTIL (NumBatchDLFiles = 0) OR (FileSysOp) OR (HangUp);
 
-    IF (NumBatchULFiles > 0) AND (General.ForceBatchUL) THEN
+    IF (NumBatchULFiles > 0) AND (General.ForceBatchUL) AND (NOT HangUp) THEN
       REPEAT
         NL;
         Print('^2You must (^1U^2)pload, (^1R^2)emove or (^1C^2)lear your batch queued files.');
         NL;
         Prt('Select option: ');
-        OneK(Cmd,'URC',TRUE,TRUE);
+        LOneK('',Cmd,'URC',TRUE,TRUE);
         CASE Cmd OF
           'U' : BatchUpload(FALSE,0);
           'R' : RemoveBatchULFiles;
@@ -508,19 +481,18 @@ BEGIN
     IF (LIL <> 0) THEN
       PauseScr(FALSE);
 
-    NL;
+    {NL;}
     Update_Screen;
   END;
 
   FindChopTime;
 
-
-  IF (SMW IN ThisUser.ACFlags) THEN
-  BEGIN
-    ReadShortMessage;
-    NL;
-    PauseScr(FALSE);
-  END;
+  IF (SMW IN ThisUser.ACFlags) AND (NOT HangUp) THEN
+    BEGIN
+      ReadShortMessage;
+      NL;
+      PauseScr(FALSE);
+    END;
 
   IF ((Alert IN ThisUser.ACFlags) AND (SysOpAvailable)) THEN
     ChatCall := TRUE;
@@ -529,26 +501,26 @@ BEGIN
     IF (RMsg IN ThisUser.ACFlags) THEN
       ReadMail
     ELSE
-    BEGIN
-      IF PYNQ('Read your private messages? ',0,TRUE) THEN
-        ReadMail;
-    END;
-
-  IF (General.PasswordChange > 0) THEN
-    IF ((DayNum(DateStr) - ThisUser.PasswordChanged) >= General.PasswordChange) THEN
-    BEGIN
-      PrintF('PWCHANGE');
-      IF (NoFile) THEN
       BEGIN
-        NL;
-        Print('You must select a new password every '+IntToStr(General.PasswordChange)+' days.');
-        NL;
+        IF PYNQ('Read your private messages? ',0,TRUE) THEN
+          ReadMail;
       END;
-      CStuff(13,1,ThisUser); { Password -- LeeW: Changed to 1, mandatory}
-    END;
+
+  IF (General.PasswordChange > 0) AND (NOT HangUp) THEN
+    IF ((DayNum(DateStr) - ThisUser.PasswordChanged) >= General.PasswordChange) THEN
+      BEGIN
+        PrintF('PWCHANGE');
+        IF (NoFile) THEN
+          BEGIN
+            NL;
+            Print('You must select a new password every '+IntToStr(General.PasswordChange)+' days.');
+            NL;
+          END;
+        CStuff(13,1,ThisUser); { Password -- LeeW: Changed to 1, mandatory}
+      END;
 
   FastLogon := FALSE;
-END;
+END; {LogonMaint}
 
 PROCEDURE LogoffMaint;
 VAR

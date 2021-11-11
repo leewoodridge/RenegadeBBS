@@ -261,7 +261,7 @@ VAR
                         REPEAT
                           Prt('%LFNew command keys [^1?^2=^1List^2]: ');
                           MPL(2);
-                          Input(TempS1,2);
+                          InputMain(TempS1,2,[UpperOnly]);
                           IF (TempS1 = '?') THEN
                           BEGIN
                             CLS;

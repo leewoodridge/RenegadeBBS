@@ -226,7 +226,7 @@ BEGIN
     ShowProts(CmdStr,UL,DL,Batch,Resume);
     { Prompt('%DFPROTLIST%^2Selection^1: ');}
     lRGLngStr(17,FALSE);;
-    OneK(Cmd,CmdStr,TRUE,TRUE);
+    LOneK('',Cmd,CmdStr,TRUE,TRUE);
     RecNum := FindProt(Cmd,UL,DL,Batch,Resume);
     IF (RecNum = -99) THEN
     BEGIN

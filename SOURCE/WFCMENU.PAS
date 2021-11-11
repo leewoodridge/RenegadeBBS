@@ -406,155 +406,155 @@ BEGIN
   IF (AnswerBaud > 0) THEN
     Exit;
   IF (NOT BlankMenuNow) AND (SysOpOn) THEN
-	BEGIN
+    BEGIN
       IF (SysOpOn) THEN
-		BEGIN
-		  Update_Logo(WFC,ScreenAddr[0],WFC_LENGTH);
-		  IF (General.NetworkMode) THEN
-			Update_Logo(WFCNET,ScreenAddr[(3*2)+(19*160)-162],WFCNET_LENGTH);
-		  LoadURec(ThisUser,1);
-		  TextAttr := 31;
-		  GoToXY(4,1);
-		  Write(PadRightStr(TimeStr,8));
-		  GoToXY(68,1);
-		  Write(DateStr);
-		  
-		{ GoToXY(59,1);
-		  Write('V'+Build); }
-		  
-		  Assign(HistoryFile,General.DataPath+'HISTORY.DAT');
-		  IF (NOT Exist(General.DataPath+'HISTORY.DAT')) THEN
-			BEGIN
-			  ReWrite(HistoryFile);
-			  WITH History DO
-				BEGIN
-				  Date := Date2PD(DateStr);
-				  Active := 0;
-				  Callers := 0;
-				  NewUsers := 0;
-				  Posts := 0;
-				  EMail := 0;
-				  FeedBack := 0;
-				  Errors := 0;
-				  Uploads := 0;
-				  Downloads := 0;
-				  UK := 0;
-				  Dk := 0;
-				  FOR L := 0 TO 20 DO
-					UserBaud[L] := 0;
-				END;
-			  Write(HistoryFile,History);
-			END
-		  ELSE
-			BEGIN
-			  Reset(HistoryFile);
-			  Seek(HistoryFile,(FileSize(HistoryFile) - 1));
-			  Read(HistoryFile,History);
-			END;
-		  Close(HistoryFile);
-		  WITH History DO
-			BEGIN
-			  TextAttr := 19;
-			  GoToXY(14,04);
-			  Write(PadRightInt(Callers,5));
-			  GoToXY(14,05);
-			  Write(PadRightInt(Posts,5));
-			  GoToXY(14,06);
-			  Write(PadRightInt(EMail,5));
-			  GoToXY(14,07);
-			  Write(PadRightInt(NewUsers,5));
-			  GoToXY(14,08);
-			  Write(PadRightInt(FeedBack,5));
-			  GoToXY(14,09);
-			  Write(PadRightInt(Uploads,5));
-			  TextAttr := 31;
-			  S := ConvertBytes(UK * 1024,FALSE);
-			  GoToXY(04,10);
-			  Write(Copy(S,(Pos(' ',S) + 1),Length(S))+' UL');
-			  TextAttr := 19;
-			  GoToXY(14,10);
-			  Write(PadRightStr(Copy(S,1,(Pos(' ',S) - 1)),5));
-			  GoToXY(14,11);
-			  Write(PadRightInt(Downloads,5));
-			  TextAttr := 31;
-			  S := ConvertBytes(DK * 1024,FALSE);
-			  GoToXY(04,12);
-			  Write(Copy(S,(Pos(' ',S) + 1),Length(S))+' DL');
-			  TextAttr := 19;
-			  GoToXY(14,12);
-			  Write(PadRightStr(Copy(S,1,(Pos(' ',S) - 1)),5));
-			  GoToXY(14,14);
-			  Write(PadRightInt(Active,5));
-			  GoToXY(14,15);
-			  CASE OverlayLocation OF
-				0 : Write(' Disk');
-				1 : Write('  EMS');
-				2 : Write('  XMS');
-			  END;
-			  GoToXY(14,13);
-			  L := DiskKBFree(StartDir);
-			  IF (L < General.MinSpaceForUpload) OR (L < General.MinSpaceForPost) THEN
-				TextAttr := 156;
-			 Write(PadRightInt(Errors,5));
-			 
-	       { Write(PadRightStr(ConvertKB(L,FALSE),8));
-			 TextAttr := 19; }
+        BEGIN
+          Update_Logo(WFC,ScreenAddr[0],WFC_LENGTH);
+          IF (General.NetworkMode) THEN
+            Update_Logo(WFCNET,ScreenAddr[(3*2)+(19*160)-162],WFCNET_LENGTH);
+          LoadURec(ThisUser,1);
+          TextAttr := 31;
+          GoToXY(4,1);
+          Write(PadRightStr(TimeStr,8));
+          GoToXY(68,1);
+          Write(DateStr);
+          
+        { GoToXY(59,1);
+          Write('V'+Build); }
+          
+          Assign(HistoryFile,General.DataPath+'HISTORY.DAT');
+          IF (NOT Exist(General.DataPath+'HISTORY.DAT')) THEN
+            BEGIN
+              ReWrite(HistoryFile);
+              WITH History DO
+                BEGIN
+                  Date := Date2PD(DateStr);
+                  Active := 0;
+                  Callers := 0;
+                  NewUsers := 0;
+                  Posts := 0;
+                  EMail := 0;
+                  FeedBack := 0;
+                  Errors := 0;
+                  Uploads := 0;
+                  Downloads := 0;
+                  UK := 0;
+                  Dk := 0;
+                  FOR L := 0 TO 20 DO
+                    UserBaud[L] := 0;
+                END;
+              Write(HistoryFile,History);
+            END
+          ELSE
+            BEGIN
+              Reset(HistoryFile);
+              Seek(HistoryFile,(FileSize(HistoryFile) - 1));
+              Read(HistoryFile,History);
+            END;
+          Close(HistoryFile);
+          WITH History DO
+            BEGIN
+              TextAttr := 19;
+              GoToXY(14,04);
+              Write(PadRightInt(Callers,5));
+              GoToXY(14,05);
+              Write(PadRightInt(Posts,5));
+              GoToXY(14,06);
+              Write(PadRightInt(EMail,5));
+              GoToXY(14,07);
+              Write(PadRightInt(NewUsers,5));
+              GoToXY(14,08);
+              Write(PadRightInt(FeedBack,5));
+              GoToXY(14,09);
+              Write(PadRightInt(Uploads,5));
+              TextAttr := 31;
+              S := ConvertBytes(UK * 1024,FALSE);
+              GoToXY(04,10);
+              Write(Copy(S,(Pos(' ',S) + 1),Length(S))+' UL');
+              TextAttr := 19;
+              GoToXY(14,10);
+              Write(PadRightStr(Copy(S,1,(Pos(' ',S) - 1)),5));
+              GoToXY(14,11);
+              Write(PadRightInt(Downloads,5));
+              TextAttr := 31;
+              S := ConvertBytes(DK * 1024,FALSE);
+              GoToXY(04,12);
+              Write(Copy(S,(Pos(' ',S) + 1),Length(S))+' DL');
+              TextAttr := 19;
+              GoToXY(14,12);
+              Write(PadRightStr(Copy(S,1,(Pos(' ',S) - 1)),5));
+              GoToXY(14,14);
+              Write(PadRightInt(Active,5));
+              GoToXY(14,15);
+              CASE OverlayLocation OF
+                0 : Write(' Disk');
+                1 : Write('  EMS');
+                2 : Write('  XMS');
+              END;
+              GoToXY(14,13);
+              L := DiskKBFree(StartDir);
+              IF (L < General.MinSpaceForUpload) OR (L < General.MinSpaceForPost) THEN
+                TextAttr := 156;
+             Write(PadRightInt(Errors,5));
+             
+           { Write(PadRightStr(ConvertKB(L,FALSE),8));
+             TextAttr := 19; }
 
-			  IF (General.DaysOnline = 0) THEN
-				Inc(General.DaysOnline);
-			  GoToXY(34,04);
-			  Str(((General.TotalCalls + Callers) / General.DaysOnline):2:2,s);
-			  Write(PadRightStr(s,5));
-			  GoToXY(34,05);
-			  Str(((General.TotalPosts + Posts) / General.DaysOnline):2:2,s);
-			  Write(PadRightStr(s,5));
-			  GoToXY(34,06);
-			  Str(((General.TotalUloads + Uploads) / General.DaysOnline):2:2,s);
-			  Write(PadRightStr(s,5));
-			  GoToXY(34,07);
-			  Str(((General.TotalDloads + Downloads) / General.DaysOnline):2:2,s);
-			  Write(PadRightStr(s,5));
-			  GoToXY(34,08);
-			  Str(((General.TotalUsage + Active) / General.DaysOnline) / 14.0:2:2,s);
-			  Write(PadRightStr(s,4),'%');
-			  GoToXY(53,04);
-			  Write(PadRightInt(General.CallerNum,6));
-			  GoToXY(53,05);
-			  Write(PadRightInt((General.TotalPosts + Posts),6));
-			  GoToXY(53,06);
-			  Write(PadRightInt((General.TotalUloads + Uploads),6));
-			  GoToXY(53,07);
-			  Write(PadRightInt((General.TotalDloads + Downloads),6));
-			  GoToXY(53,08);
-			  Write(PadRightInt(General.DaysOnline,6));
-			  GoToXY(73,04);
-			  Write(PadRightInt(ThisNode,5));
-			  GoToXY(73,05);
-			  CASE Tasker OF
-				None  : Write('  DOS');
-				DV    : Write('   DV');
-				Win   : Write('  Win');
-				OS2   : Write(' OS/2');
-				Win32 : Write('Win32');
-				DOS5N : Write('DOS/N');
-			  END;
-			  GoToXY(73,06);
-			  Write(PadRightInt(Errors,5));
-			  IF (ThisUser.Waiting > 0) THEN
-				TextAttr := 156;
-			  GoToXY(73,07);
-			  Write(PadRightInt(ThisUser.Waiting,5));
-			  TextAttr := 19;
-			  GoToXY(73,08);
-			  Write(PadRightInt(General.NumUsers,5));
-			  IF (General.TotalUsage < 1) OR (General.DaysOnline < 1) THEN
-				UpdateGeneral;
-			  TextAttr := 7;
-			END;
-		END
-	  ELSE
-		Update_Logo(WFC0,ScreenAddr[0],WFC0_LENGTH);
-	END;
+              IF (General.DaysOnline = 0) THEN
+                Inc(General.DaysOnline);
+              GoToXY(34,04);
+              Str(((General.TotalCalls + Callers) / General.DaysOnline):2:2,s);
+              Write(PadRightStr(s,5));
+              GoToXY(34,05);
+              Str(((General.TotalPosts + Posts) / General.DaysOnline):2:2,s);
+              Write(PadRightStr(s,5));
+              GoToXY(34,06);
+              Str(((General.TotalUloads + Uploads) / General.DaysOnline):2:2,s);
+              Write(PadRightStr(s,5));
+              GoToXY(34,07);
+              Str(((General.TotalDloads + Downloads) / General.DaysOnline):2:2,s);
+              Write(PadRightStr(s,5));
+              GoToXY(34,08);
+              Str(((General.TotalUsage + Active) / General.DaysOnline) / 14.0:2:2,s);
+              Write(PadRightStr(s,4),'%');
+              GoToXY(53,04);
+              Write(PadRightInt(General.CallerNum,6));
+              GoToXY(53,05);
+              Write(PadRightInt((General.TotalPosts + Posts),6));
+              GoToXY(53,06);
+              Write(PadRightInt((General.TotalUloads + Uploads),6));
+              GoToXY(53,07);
+              Write(PadRightInt((General.TotalDloads + Downloads),6));
+              GoToXY(53,08);
+              Write(PadRightInt(General.DaysOnline,6));
+              GoToXY(73,04);
+              Write(PadRightInt(ThisNode,5));
+              GoToXY(73,05);
+              CASE Tasker OF
+                None  : Write('  DOS');
+                DV    : Write('   DV');
+                Win   : Write('  Win');
+                OS2   : Write(' OS/2');
+                Win32 : Write('Win32');
+                DOS5N : Write('DOS/N');
+              END;
+              GoToXY(73,06);
+              Write(PadRightInt(Errors,5));
+              IF (ThisUser.Waiting > 0) THEN
+                TextAttr := 156;
+              GoToXY(73,07);
+              Write(PadRightInt(ThisUser.Waiting,5));
+              TextAttr := 19;
+              GoToXY(73,08);
+              Write(PadRightInt(General.NumUsers,5));
+              IF (General.TotalUsage < 1) OR (General.DaysOnline < 1) THEN
+                UpdateGeneral;
+              TextAttr := 7;
+            END;
+        END
+      ELSE
+        Update_Logo(WFC0,ScreenAddr[0],WFC0_LENGTH);
+    END;
 END;
 
 PROCEDURE WFCMenus;
@@ -650,7 +650,7 @@ VAR
       TextAttr := 25;
       Write('Password: ');
       TextAttr := 17;
-      GetPassword(PW,20);
+      InputMain(PW,SizeOf(PW)-1,[IsPassword]); {GetPassword(PW,20);}
       ClrScr;
       CPW := (PW = General.SysOpPW);
     END

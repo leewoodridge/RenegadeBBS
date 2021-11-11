@@ -1,22 +1,31 @@
 {$M 35500,0,131072}
 
-{                             R E N E G A D E                                }
-{                             ===============                                }
+{     (                                         }
+{    )\ )                           (           }
+{   (()/(  (         (  (  (     )  )\ )  (     }
+{    \(_))))\ (     ))\ )\))( ( /( (()/( ))\    }
+{   (_)) /((_))\ ) /((_|(_))\ )(_)) ((_))(( )   }
+{   | _ \_)) _(_/((_)) \( )(_|(_)_  _| (_))/    }
+{   |   / -_) ' \)) -_)/ _` |/ _` / _` / -_)    }
+{   |_|_\___|_||_|\___|\__, |\__,_\__,_\___|    }
+{   ------------------ |___/ ----------------   }
+{   B U L L E T I N   B O A R D   S Y S T E M   }
+{   -----------------------------------------   }
 
-{$A+} { Align Data for faster execution }
-{$B-} { Shortcut Boolean eval }
-{$D+} { No Debug Info }
-{$E-} { No Math-Co library }
-{$F+} { Force Far Calls }
+{$A+} { Align data for faster execution }
+{$B-} { Shortcut boolean eval }
+{$D+} { No debug info }
+{$E-} { No math-co library }
+{$F+} { Force far calls }
 {$I-} { Disable I/O check }
-{$L+} { Local Symbols, Ignored IF D-, don't need cause of D- }
-{$N-} { No Math-Co use }
-{$P+} { Allow OpenString }
-{$O+} { Use Overlays? }
+{$L+} { Local symbols }
+{$N-} { No math-co use }
+{$P+} { Allow openstring }
+{$O+} { Use overlays }
 {$Q-} { No overflow check }
 {$R-} { No range check }
-{$S-} { Don't Check stack usage }
-{$V-} { Variable string Length allowed }
+{$S-} { Don't check stack usage }
+{$V-} { Variable string length allowed }
 {$X+} { Allow extended syntax }
 
 PROGRAM Renegade;
@@ -59,7 +68,6 @@ USES
 
 CONST
   NeedToHangUp: Boolean = FALSE;
-
 VAR
   ExitSave: Pointer;
   GeneralF: FILE OF GeneralRecordType;
@@ -76,84 +84,68 @@ VAR
 BEGIN
   ExitProc := ExitSave;
   IF (ErrorAddr <> NIL) THEN
-  BEGIN
-
-    CHDir(StartDir);
-
-    IF (General.Multinode) AND (ThisNode > 0) THEN
-      Assign(SysOpLogFile,TempDir+'TEMPLOG.'+IntToStr(ThisNode) )
-    ELSE
-      Assign(SysOpLogFile,General.LogsPath+'SYSOP.LOG');
-
-    Append(SysOpLogFile);
-    S := '^8*>>^8 Runtime error '+IntToStr(ExitCode)+' at '+DateStr+' '+TimeStr+ '^8 <<*^1'+' (Check ERROR.LOG)';
-    WriteLn(SysOpLogFile,S);
-    Flush(SysOpLogFile);
-    Close(SysOpLogFile);
-
-    IF (TextRec(Trapfile).Mode = FMOutPut) THEN
     BEGIN
-      WriteLn(Trapfile,S);
-      Flush(Trapfile);
-      Close(Trapfile);
-    END;
-
-    Assign(TextFile,'ERROR.LOG');
-    Append(TextFile);
-    IF (IOResult <> 0) THEN
-      ReWrite(TextFile);
-
-    WriteLn(TextFile,'อออออออออออออออออออออออออออออออออออออออออออออออออออออออออออออออออออออออออออออออ');
-    WriteLn(TextFile,'Critical error Log file - Contains screen images at instant of error.');
-    WriteLn(TextFile,'The "ฒ" character shows the cursor position at time of error.');
-    WriteLn(TextFile,'อออออออออออออออออออออออออออออออออออออออออออออออออออออออออออออออออออออออออออออออ');
-    WriteLn(TextFile);
-    WriteLn(TextFile);
-    WriteLn(TextFile,'ฏ>ฏ error #'+IntToStr(ExitCode)+' at '+DateStr+' '+TimeStr+' version: '+General.Version);
-
-    IF (UserOn) THEN
-    BEGIN
-      Write(TextFile,'ฏ>ฏ User "'+AllCaps(ThisUser.name)+' #'+IntToStr(UserNum)+'" was on ');
-      IF (ComPortSpeed > 0) THEN
-        WriteLn(TextFile,'at '+IntToStr(ActualSpeed)+ 'baud')
+      CHDir(StartDir);
+      IF (General.Multinode) AND (ThisNode > 0) THEN
+        Assign(SysOpLogFile,TempDir+'TEMPLOG.'+IntToStr(ThisNode) )
       ELSE
-        WriteLn(TextFile,'Locally');
+        Assign(SysOpLogFile,General.LogsPath+'SYSOP.LOG');
+      Append(SysOpLogFile);
+      S := '^8*>>^8 Runtime error '+IntToStr(ExitCode)+' at '+DateStr+' '+TimeStr+ '^8 <<*^1'+' (Check ERROR.LOG)';
+      WriteLn(SysOpLogFile,S);
+      Flush(SysOpLogFile);
+      Close(SysOpLogFile);
+      IF (TextRec(Trapfile).Mode = FMOutPut) THEN
+        BEGIN
+          WriteLn(Trapfile,S);
+          Flush(Trapfile);
+          Close(Trapfile);
+        END;
+      Assign(TextFile,'ERROR.LOG');
+      Append(TextFile);
+      IF (IOResult <> 0) THEN
+        ReWrite(TextFile);
+      WriteLn(TextFile,'อออออออออออออออออออออออออออออออออออออออออออออออออออออออออออออออออออออออออออออออ');
+      WriteLn(TextFile,'Critical error Log file - Contains screen images at instant of error.');
+      WriteLn(TextFile,'The "ฒ" character shows the cursor position at time of error.');
+      WriteLn(TextFile,'อออออออออออออออออออออออออออออออออออออออออออออออออออออออออออออออออออออออออออออออ');
+      WriteLn(TextFile);
+      WriteLn(TextFile);
+      WriteLn(TextFile,'ฏ>ฏ error #'+IntToStr(ExitCode)+' at '+DateStr+' '+TimeStr+' version: '+General.Version);
+      IF (UserOn) THEN
+        BEGIN
+          Write(TextFile,'ฏ>ฏ User "'+AllCaps(ThisUser.name)+' #'+IntToStr(UserNum)+'" was on ');
+          IF (ComPortSpeed > 0) THEN
+            WriteLn(TextFile,'at '+IntToStr(ActualSpeed)+ 'baud')
+          ELSE
+            WriteLn(TextFile,'Locally');
+        END;
+      Close(TextFile);
+      ScreenDump('ERROR.LOG');
+      Assign(TextFile,'CRITICAL.ERR');
+      ReWrite(TextFile);
+      Close(TextFile);
+      SetFAttr(TextFile,DOS.Hidden);
+      Print('^8* SYSTEM MALFUNCTION *');
+      LoadNode(ThisNode);
+      Noder.Status := [];
+      Noder.User := 0;
+      SaveNode(ThisNode);
+      Com_Flush_Send;
+      DTR(FALSE);
+      Com_DeInstall;
+      Halt(ExitErrors);
     END;
-    Close(TextFile);
-
-    ScreenDump('ERROR.LOG');
-
-    Assign(TextFile,'CRITICAL.ERR');
-    ReWrite(TextFile);
-    Close(TextFile);
-    SetFAttr(TextFile,DOS.Hidden);
-
-    Print('^8* SYSTEM MALFUNCTION *');
-
-    LoadNode(ThisNode);
-    Noder.Status := [];
-    Noder.User := 0;
-    SaveNode(ThisNode);
-
-    Com_Flush_Send;
-    DTR(FALSE);
-    Com_DeInstall;
-
-    Halt(ExitErrors);
-
-  END;
 END;
 
 PROCEDURE ReadP;
 VAR
   d: astr;
   Counter: Integer;
-
   FUNCTION SC(s: astr; i: Integer): Char;
   BEGIN
     SC := UpCase(s[i]);
   END;
-
 BEGIN
   Reliable := FALSE;
   Telnet := FALSE;
@@ -338,244 +330,195 @@ BEGIN
     ScreenSize := 8000;
 
   IF (FileBBSOnly) OR (PackBasesOnly) OR (SortFilesOnly) OR (MakeQWKFor > 0) OR (UpQWKFor > 0) THEN
-  BEGIN
-    WFCMDefine;
-    TempPause := FALSE;
-    IF (MakeQWKFor > 0) THEN
     BEGIN
-      UserNum := MakeQWKFor;
-      LoadURec(ThisUser,MakeQWKFor);
-      NewFileDate := ThisUser.LastOn;
-      Downloadpacket;
-      SaveURec(ThisUser,MakeQWKFor);
+      WFCMDefine;
+      TempPause := FALSE;
+      IF (MakeQWKFor > 0) THEN
+        BEGIN
+          UserNum := MakeQWKFor;
+          LoadURec(ThisUser,MakeQWKFor);
+          NewFileDate := ThisUser.LastOn;
+          Downloadpacket;
+          SaveURec(ThisUser,MakeQWKFor);
+        END;
+      IF (UpQWKFor > 0) THEN
+        BEGIN
+          UserNum := UpQWKFor;
+          LoadURec(ThisUser,UpQWKFor);
+          Uploadpacket(TRUE);
+          SaveURec(ThisUser,UpQWKFor);
+        END;
+      IF (PackBasesOnly) THEN
+        BEGIN
+          DoShowPackMessageAreas;
+          NL;
+          Print('^1Message areas packed.'); {leew: this should be in the proc}
+        END;
+      IF (SortFilesOnly) THEN
+        Sort;
+      IF (FileBBSOnly) THEN
+        CheckFilesBBS;
+      Halt(0);
     END;
-
-    IF (UpQWKFor > 0) THEN
-    BEGIN
-      UserNum := UpQWKFor;
-      LoadURec(ThisUser,UpQWKFor);
-      Uploadpacket(TRUE);
-      SaveURec(ThisUser,UpQWKFor);
-    END;
-
-    IF (PackBasesOnly) THEN
-    BEGIN
-      DoShowPackMessageAreas;
-      NL;
-      Print('^1Message areas packed.');
-    END;
-
-    IF (SortFilesOnly) THEN
-      Sort;
-
-    IF (FileBBSOnly) THEN
-      CheckFilesBBS;
-
-    Halt(0);
-  END;
 
   GetMem(MemCmd,MaxCmds * SizeOf(MemCmdRec));
 
   REPEAT
-
-   IF (NeedToHangUp) THEN
-    BEGIN
-      NeedToHangUp := FALSE;
-      DoPhoneHangUp(FALSE);
-    END;
-
+    IF (NeedToHangUp) THEN
+      BEGIN
+        NeedToHangUp := FALSE;
+        DoPhoneHangUp(FALSE);
+      END;
     WFCMenus;
-
     UserOn := FALSE;
     UserNum := 0;
-
     IF (NOT DoneDay) THEN
-    BEGIN
-
-      lStatus_Screen(100,'User logging in.',FALSE,S);
-
-      LastScreenSwap := 0;
-
-      IF (GetUser) THEN
-        NewUser;
-
-      IF (NOT HangUp) THEN
       BEGIN
-
-        NumBatchDLFiles := 0;
-        NumBatchULFiles := 0;
-        BatchDLPoints := 0;
-        BatchDLSize := 0;
-        BatchDLTime := 0;
-
-        LogonMaint;
-
+        lStatus_Screen(100,'User logging in.',FALSE,S);
+        LastScreenSwap := 0;
+        IF (GetUser) THEN
+          NewUser;
         IF (NOT HangUp) THEN
-        BEGIN
-
-          NewFileDate := ThisUser.LastOn;
-
-          IF (MsgAreaAC(ThisUser.LastMsgArea)) THEN
-            MsgArea := ThisUser.LastMsgArea
-          ELSE
           BEGIN
-            FOR Counter := 1 TO NumMsgAreas DO
-              IF (MsgAreaAC(Counter)) THEN
+            NumBatchDLFiles := 0;
+            NumBatchULFiles := 0;
+            BatchDLPoints := 0;
+            BatchDLSize := 0;
+            BatchDLTime := 0;
+            LogonMaint;
+            IF (NOT HangUp) THEN
               BEGIN
-                MsgArea := Counter;
-                Counter := NumMsgAreas;
+                NewFileDate := ThisUser.LastOn;
+                IF (MsgAreaAC(ThisUser.LastMsgArea)) THEN
+                  MsgArea := ThisUser.LastMsgArea
+                ELSE
+                  BEGIN
+                    FOR Counter := 1 TO NumMsgAreas DO
+                      IF (MsgAreaAC(Counter)) THEN
+                        BEGIN
+                          MsgArea := Counter;
+                          Counter := NumMsgAreas;
+                        END;
+                  END;
+                IF (FileAreaAC(ThisUser.LastFileArea)) THEN
+                  FileArea := ThisUser.LastFileArea
+                ELSE
+                  BEGIN
+                    FOR Counter := 1 TO NumFileAreas DO
+                      IF (FileAreaAC(Counter)) THEN
+                        BEGIN
+                          FileArea := Counter;
+                          Counter := NumFileAreas;
+                        END;
+                  END;
+                NewCompTables;
+                MenuStackPtr := 0;
+                FOR Counter := 1 TO MaxMenus DO
+                  MenuStack[Counter] := 0;
+                IF (Novice in ThisUser.ACFlags) THEN
+                  CurHelpLevel := 2
+                ELSE
+                  CurHelpLevel := 1;
+                GlobalCmds := 0;
+                NumCmds := 0;
+                CurMenu := 0;
+                FallBackMenu := 0;
+                IF (General.GlobalMenu <> 0) THEN
+                  BEGIN
+                    CurMenu := General.GlobalMenu;
+                    LoadMenu;
+                    GlobalCmds := NumCmds;
+                  END;
+                IF (ThisUser.UserStartMenu = 0) THEN
+                  CurMenu := General.AllStartMenu
+                ELSE
+                  CurMenu := ThisUser.UserStartMenu;
+                LoadMenu;
+                AutoExecCmd('FIRSTCMD');
               END;
+            WHILE (NOT HangUp) DO
+              MenuExec;
           END;
-
-          IF (FileAreaAC(ThisUser.LastFileArea)) THEN
-            FileArea := ThisUser.LastFileArea
-          ELSE
+        IF (QuitAfterDone) THEN
           BEGIN
-            FOR Counter := 1 TO NumFileAreas DO
-              IF (FileAreaAC(Counter)) THEN
+            IF (ExitErrorLevel = 0) THEN
+              ExitErrorLevel := ExitNormal;
+            HangUp := TRUE;
+            DoneDay := TRUE;
+            NeedToHangUp := TRUE;
+          END;
+        LogOffMaint;
+        IF (General.Multinode) THEN
+          BEGIN
+            Assign(TextFile,General.LogsPath+'SYSOP.LOG');
+            IF Exist(General.LogsPath+'SYSOP.LOG') THEN
+              Append(TextFile)
+            ELSE
+              ReWrite(TextFile);
+            Reset(SysOpLogFile);
+            WHILE NOT EOF(SysOpLogFile) DO
               BEGIN
-                FileArea := Counter;
-                Counter := NumFileAreas;
+                ReadLn(SysOpLogFile,S);
+                WriteLn(TextFile,S);
               END;
+            Close(SysOpLogFile);
+            Close(TextFile);
+            ReWrite(SysOpLogFile);
+            Close(SysOpLogFile);
+            LastError := IOResult;
           END;
-
-          NewCompTables;
-
-          MenuStackPtr := 0;
-
-          FOR Counter := 1 TO MaxMenus DO
-            MenuStack[Counter] := 0;
-
-          IF (Novice in ThisUser.ACFlags) THEN
-            CurHelpLevel := 2
-          ELSE
-            CurHelpLevel := 1;
-
-          GlobalCmds := 0;
-          NumCmds := 0;
-          CurMenu := 0;
-          FallBackMenu := 0;
-
-          IF (General.GlobalMenu <> 0) THEN
-          BEGIN
-            CurMenu := General.GlobalMenu;
-            LoadMenu;
-            GlobalCmds := NumCmds;
-          END;
-
-          IF (ThisUser.UserStartMenu = 0) THEN
-            CurMenu := General.AllStartMenu
-          ELSE
-            CurMenu := ThisUser.UserStartMenu;
-
-          LoadMenu;
-
-          AutoExecCmd('FIRSTCMD');
-
-        END;
-
-        WHILE (NOT HangUp) DO
-          MenuExec;
-
+        IF (Com_Carrier) AND (NOT DoneDay) THEN
+          IF (InCom) THEN
+            NeedToHangUp := TRUE;
       END;
-
-      IF (QuitAfterDone) THEN
-      BEGIN
-        IF (ExitErrorLevel = 0) THEN
-          ExitErrorLevel := ExitNormal;
-        HangUp := TRUE;
-        DoneDay := TRUE;
-        NeedToHangUp := TRUE;
-      END;
-
-      LogOffMaint;
-
-      IF (General.Multinode) THEN
-      BEGIN
-        Assign(TextFile,General.LogsPath+'SYSOP.LOG');
-        IF Exist(General.LogsPath+'SYSOP.LOG') THEN
-          Append(TextFile)
-        ELSE
-          ReWrite(TextFile);
-        Reset(SysOpLogFile);
-        WHILE NOT EOF(SysOpLogFile) DO
-        BEGIN
-          ReadLn(SysOpLogFile,S);
-          WriteLn(TextFile,S);
-        END;
-        Close(SysOpLogFile);
-        Close(TextFile);
-        ReWrite(SysOpLogFile);
-        Close(SysOpLogFile);
-        LastError := IOResult;
-      END;
-
-      IF (Com_Carrier) AND (NOT DoneDay) THEN
-        IF (InCom) THEN
-          NeedToHangUp := TRUE;
-
-    END;
-
   UNTIL (DoneDay);
-
   FreeMem(MemCmd,MaxCmds * SizeOf(MemCmdRec));
-
   IF (MCIBuffer <> NIL) THEN
     Dispose(MCIBuffer);
-
   IF (MemEventArray[NumEvents] <> NIL) THEN
     FOR Counter1 := 1 TO NumEvents DO
       IF (MemEventArray[Counter1] <> NIL) THEN
         Dispose(MemEventArray[Counter1]);
-
   IF (NeedToHangUp) THEN
-  BEGIN
-    IF (HangUpTelnet) THEN
-      DoTelnetHangUp(TRUE);
-    IF (NOT HangUpTelnet) THEN
-      DoPhoneHangUp(FALSE);
-  END;
-
-  IF (General.Multinode) THEN
-  BEGIN
-    Assign(TextFile,General.LogsPath+'SYSOP.LOG');
-    IF Exist(General.LogsPath+'SYSOP.LOG') THEN
-      Append(TextFile)
-    ELSE
-      ReWrite(TextFile);
-    Reset(SysOpLogFile);
-    WHILE NOT EOF(SysOpLogFile) DO
     BEGIN
-      ReadLn(SysOpLogFile,S);
-      WriteLn(TextFile,S);
+      IF (HangUpTelnet) THEN
+        DoTelnetHangUp(TRUE);
+      IF (NOT HangUpTelnet) THEN
+        DoPhoneHangUp(FALSE);
     END;
-    Close(SysOpLogFile);
-    Close(TextFile);
-    ReWrite(SysOpLogFile);
-    Close(SysOpLogFile);
-    LastError := IOResult;
-  END;
-
+  IF (General.Multinode) THEN
+    BEGIN
+      Assign(TextFile,General.LogsPath+'SYSOP.LOG');
+      IF Exist(General.LogsPath+'SYSOP.LOG') THEN
+        Append(TextFile)
+      ELSE
+        ReWrite(TextFile);
+      Reset(SysOpLogFile);
+      WHILE NOT EOF(SysOpLogFile) DO
+        BEGIN
+          ReadLn(SysOpLogFile,S);
+          WriteLn(TextFile,S);
+        END;
+      Close(SysOpLogFile);
+      Close(TextFile);
+      ReWrite(SysOpLogFile);
+      Close(SysOpLogFile);
+      LastError := IOResult;
+    END;
   IF (General.Multinode) THEN
     Kill(TempDir+'TEMPLOG.'+IntToStr(ThisNode));
-
   Window(1,1,MaxDisplayCols,MaxDisplayRows);
   TextBackGround(0);
   TextColor(7);
   ClrScr;
   TextColor(14);
-
   IF (NewEchoMail) AND (ExitErrorLevel = 0) THEN
     ExitErrorLevel := 2;
-
   LoadNode(ThisNode);
   Noder.Status := [];
   SaveNode(ThisNode);
-
   PurgeDir(TempDir,FALSE);
-
   Com_DeInstall;
-
   WriteLn('Exiting with errorlevel ',ExitErrorLevel);
   Halt(ExitErrorLevel);
 END.

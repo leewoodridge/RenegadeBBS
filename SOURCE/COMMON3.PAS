@@ -1,14 +1,22 @@
 {$A+,B-,D+,E-,F+,I-,L+,N-,O+,R-,S-,V-,X-}
 {
 10/21/2021 updating color codes
-add inputvalidation for inputformatted, maybe have it pass '' if incomplete?
-
-inputflags : add different types like dir, filename etc, notabortable, askblank
+11/4/2021
 
 remove redundant procs
-	- Removed InputWC, now using printmain with [ColorAllowed] param
-	- Removed InputCaps
-	- Removed InputL, now using printmain with no param
+    - Removed InputWC, now using printmain with [ColorAllowed] param
+    - Removed InputCaps
+    - Removed InputL, now using printmain with no param
+    11/5/2021
+    - Removed Input, now using printmain with [UpperOnly] param
+    - Removed Local_OneK -- was unused
+    - Moved Local_Input1 to COMMON2 (nested in lStatus_screen)
+- converted all OneK to LoneK, same proc except prompt string
+- converted all getpassword calls to inputmain with [IsPassword] param
+
+todo:
+add inputvalidation for inputformatted, maybe have it pass '' if incomplete?
+inputflags : add different types like dir, filename etc, notabortable, askblank
 }
 UNIT Common3;
 
@@ -19,29 +27,25 @@ USES
 
 PROCEDURE InputMain(VAR S: STRING; MaxLen: Byte; InputFlags: InputFlagSet);
 {/}
-PROCEDURE InputDefault		(VAR S: STRING; v: STRING; MaxLen: Byte; InputFlags: InputFlagSet; LineFeed: Boolean);
-PROCEDURE InputFormatted	(DisplayStr: AStr; VAR InputStr: STRING; Format: STRING; Abortable: Boolean);
-PROCEDURE InputLongIntWC	(S: AStr; VAR L: LongInt; InputFlags: InputFlagSet; LowNum,HighNum: LongInt; VAR Changed: Boolean);
-PROCEDURE InputLongIntWOC	(S: AStr; VAR L: LongInt; InputFlags: InputFlagSet; LowNum,HighNum: LongInt);
-PROCEDURE InputWordWC		(S: AStr; VAR W: Word; 	  InputFlags: InputFlagSet; LowNum,HighNum: Word; VAR Changed: Boolean);
-PROCEDURE InputWordWOC		(S: AStr; VAR W: Word; 	  InputFlags: InputFlagSet; LowNum,HighNum: Word);
-PROCEDURE InputIntegerWC	(S: AStr; VAR I: Integer; InputFlags: InputFlagSet; LowNum,HighNum: Integer; VAR Changed: Boolean);
-PROCEDURE InputIntegerWOC	(S: AStr; VAR I: Integer; InputFlags: InputFlagSet; LowNum,HighNum: Integer);
-PROCEDURE InputByteWC		(S: AStr; VAR B: Byte; InputFlags: InputFlagSet; LowNum,HighNum: Byte; VAR Changed: Boolean);
-PROCEDURE InputByteWOC		(S: AStr; VAR B: Byte; InputFlags: InputFlagSet; LowNum,HighNum: Byte);
-PROCEDURE InputWN1			(DisplayStr: AStr; VAR InputStr: AStr; MaxLen: Byte; InputFlags: InputFlagSet; VAR Changed: Boolean);
-PROCEDURE InputWNWC			(DisplayStr: AStr; VAR InputStr: AStr; MaxLen: Byte; VAR Changed: Boolean);
-PROCEDURE Input(VAR S: STRING; MaxLen: Byte); {** remove this, change calls to inputmain with upperonly param}
+PROCEDURE InputDefault(VAR S: STRING; v: STRING; MaxLen: Byte; InputFlags: InputFlagSet; LineFeed: Boolean);
+PROCEDURE InputFormatted(DisplayStr: AStr; VAR InputStr: STRING; Format: STRING; Abortable: Boolean);
+PROCEDURE InputLongIntWC(S: AStr; VAR L: LongInt; InputFlags: InputFlagSet; LowNum,HighNum: LongInt; VAR Changed: Boolean);
+PROCEDURE InputLongIntWOC(S: AStr; VAR L: LongInt; InputFlags: InputFlagSet; LowNum,HighNum: LongInt);
+PROCEDURE InputWordWC(S: AStr; VAR W: Word;    InputFlags: InputFlagSet; LowNum,HighNum: Word; VAR Changed: Boolean);
+PROCEDURE InputWordWOC(S: AStr; VAR W: Word;    InputFlags: InputFlagSet; LowNum,HighNum: Word);
+PROCEDURE InputIntegerWC(S: AStr; VAR I: Integer; InputFlags: InputFlagSet; LowNum,HighNum: Integer; VAR Changed: Boolean);
+PROCEDURE InputIntegerWOC(S: AStr; VAR I: Integer; InputFlags: InputFlagSet; LowNum,HighNum: Integer);
+PROCEDURE InputByteWC(S: AStr; VAR B: Byte; InputFlags: InputFlagSet; LowNum,HighNum: Byte; VAR Changed: Boolean);
+PROCEDURE InputByteWOC(S: AStr; VAR B: Byte; InputFlags: InputFlagSet; LowNum,HighNum: Byte);
+PROCEDURE InputWN1(DisplayStr: AStr; VAR InputStr: AStr; MaxLen: Byte; InputFlags: InputFlagSet; VAR Changed: Boolean);
+PROCEDURE InputWNWC(DisplayStr: AStr; VAR InputStr: AStr; MaxLen: Byte; VAR Changed: Boolean);
 { LeeW: Below was moved from COMMON/COMMON1 }
-PROCEDURE GetPassword(VAR PW: AStr; Len: Byte);
 PROCEDURE InputPath(CONST DisplayStr: AStr; VAR DirPath: Str40; CreateDir,AllowExit: Boolean; VAR Changed: Boolean);
+
+{PROCEDURE InputPath2(S: STRING; VAR Path: STRING; AskMkDir, Abortable: Boolean; VAR Changed: Boolean);}
+
 PROCEDURE MPL(MaxLen: Byte); { Print input field }
-PROCEDURE Local_Input1(VAR S: STRING; MaxLen: Byte; LowerCase: Boolean);
-PROCEDURE Local_Input(VAR S: STRING; MaxLen: Byte);
-PROCEDURE Local_InputL(VAR S: STRING; MaxLen: Byte);
-PROCEDURE Local_OneK(VAR C: Char; S: STRING);
-PROCEDURE OneK(VAR C: Char; ValidKeys: AStr; DisplayKey,LineFeed: Boolean);
-PROCEDURE OneK1(VAR C: Char; ValidKeys: AStr; DisplayKey,LineFeed: Boolean);
+PROCEDURE OneK1(VAR C: Char; ValidKeys: AStr; DisplayKey,LineFeed: Boolean); { allows lowercase input }
 PROCEDURE LOneK(DisplayStr: AStr; VAR C: Char; ValidKeys: AStr; DisplayKey,LineFeed: Boolean);
 
 IMPLEMENTATION
@@ -49,15 +53,7 @@ IMPLEMENTATION
 USES
   CRT,
   DOS;
-
-PROCEDURE GetPassword(VAR PW: AStr; Len: Byte);
-BEGIN
-  PW := '';
-  Echo := FALSE;
-  Input(PW,Len);
-  Echo := TRUE;
-END;
-
+  
 PROCEDURE InputPath(CONST DisplayStr: AStr; VAR DirPath: Str40; CreateDir,AllowExit: Boolean; VAR Changed: Boolean);
 VAR
   TempDirPath: Str40;
@@ -67,7 +63,7 @@ BEGIN
   REPEAT
     TempDirPath := DirPath;
     Changed := FALSE;
-    InputWN1(DisplayStr,TempDirPath,39,[UpperOnly,InterActiveEdit],Changed);
+    InputWN1(DisplayStr,TempDirPath,39,[UpperOnly,InteractiveEdit],Changed);
     TempDirPath := SQOutSp(TempDirPath);
 
     IF (Length(TempDirPath) = 1) THEN
@@ -155,98 +151,24 @@ VAR
   SaveWhereX : Byte;
 BEGIN
   IF (OkANSI OR OkAvatar) THEN
-	BEGIN
+    BEGIN
       IF (WhereX+MaxLen > ThisUser.LineLen) THEN
-		NL;
+        NL;
       UserColor(3);
       SaveWhereX := WhereX;
       IF (OutCom) THEN
-		FOR Counter := 1 TO MaxLen DO
+        FOR Counter := 1 TO MaxLen DO
           Com_Send(' ');
-	  IF (WantOut) THEN
-		FOR Counter := 1 TO MaxLen DO
+      IF (WantOut) THEN
+        FOR Counter := 1 TO MaxLen DO
           Write(' ');
       GoToXY(SaveWhereX,WhereY);
       IF (OutCom) THEN
-		IF (OkAvatar) THEN
+        IF (OkAvatar) THEN
           SerialOut(^y+^H+Chr(MaxLen))
         ELSE
           SerialOut(#27+'['+IntToStr(MaxLen)+'D');
-	END;
-END;
-
-PROCEDURE Local_Input1(VAR S: STRING; MaxLen: Byte; LowerCase: Boolean);
-VAR
-  C: Char;
-  B: Byte;
-BEGIN
-  B := 1;
-  REPEAT
-    C := ReadKey;
-    IF (NOT LowerCase) THEN
-      C := UpCase(C);
-    IF (C IN [#32..#255]) THEN
-      IF (B <= MaxLen) THEN
-      BEGIN
-        S[B] := C;
-        Inc(B);
-        Write(C);
-      END
-      ELSE
-    ELSE
-      CASE C of
-        ^H : IF (B > 1) THEN
-             BEGIN
-               Write(^H' '^H);
-               C := ^H;
-               Dec(B);
-             END;
-     ^U,^X : WHILE (B <> 1) DO
-             BEGIN
-               Write(^H' '^H);
-               Dec(B);
-             END;
-      END;
-  UNTIL (C IN [^M,^N]);
-  S[0] := Chr(B - 1);
-  IF (WhereY <= Hi(WindMax) - Hi(WindMin)) THEN
-    WriteLn;
-END;
-
-PROCEDURE Local_Input(VAR S: STRING; MaxLen: Byte);
-BEGIN
-  Local_Input1(S,MaxLen,FALSE);
-END;
-
-PROCEDURE Local_InputL(VAR S: STRING; MaxLen: Byte);
-BEGIN
-  Local_Input1(S,MaxLen,TRUE);
-END;
-
-PROCEDURE Local_OneK(VAR C: Char; S: STRING);
-BEGIN
-  REPEAT
-    C := UpCase(ReadKey)
-  UNTIL (Pos(C,S) > 0);
-  WriteLn(C);
-END;
-
-PROCEDURE OneK(VAR C: Char; ValidKeys: AStr; DisplayKey,LineFeed: Boolean);
-BEGIN
-  MPL(1);
-  TempPause := (Pause IN ThisUser.ACFlags);
-  REPEAT
-    C := UpCase(Char(GetKey));
-  UNTIL (Pos(C,ValidKeys) > 0) OR (HangUp);
-  IF (HangUp) THEN
-    C := ValidKeys[1];
-  IF (DisplayKey) THEN
-    OutKey(C);
-  IF (Trapping) THEN
-    OutTrap(C);
-  UserColor(0);
-  IF (LineFeed) THEN
-    NL;
+    END;
 END;
 
 PROCEDURE OneK1(VAR C: Char; ValidKeys: AStr; DisplayKey,LineFeed: Boolean);
@@ -612,31 +534,34 @@ VAR
 BEGIN
 (*
   IF (NOT (NoInputField IN InputFlags)) THEN
-	MPL(MaxLen); { LeeW: Added }
+    MPL(MaxLen); { LeeW: Added }
 *)
-  FirstKey := FALSE;
 
-  IF (NOT (InterActiveEdit IN InputFlags)) OR NOT (OkANSI OR OkAvatar) THEN
-  BEGIN
-    S := '';
-    Cp := 1;
-    Cl := 0;
-  END
-  ELSE
-  BEGIN
-    Cp := Length(S);
-    Cl := Length(S);
-    IF (Cp = 0) THEN
-      Cp := 1;
-    MPrompt(S);
-    IF (Length(S) > 0) THEN
+  IF (IsPassword IN InputFlags) THEN
+    Echo := FALSE;
+
+  FirstKey := FALSE;
+  IF (NOT (InterActiveEdit IN InputFlags)) OR (IsPassword IN InputFlags) OR NOT (OkANSI OR OkAvatar) THEN
     BEGIN
-      Cursor_Left;
-      IF (Cp <= MaxLen) THEN  (* Was Cp < MaxLen *)
-        Cursor_Right;
+      S := '';
+      Cp := 1;
+      Cl := 0;
+    END
+  ELSE
+    BEGIN
+      Cp := Length(S);
+      Cl := Length(S);
+      IF (Cp = 0) THEN
+        Cp := 1;
+      MPrompt(S);
+      IF (Length(S) > 0) THEN
+        BEGIN
+          Cursor_Left;
+          IF (Cp <= MaxLen) THEN  (* Was Cp < MaxLen *)
+            Cursor_Right;
+        END;
+      FirstKey := TRUE;
     END;
-    FirstKey := TRUE;
-  END;
 
   SaveS := S;
   InsertMode := FALSE;
@@ -653,18 +578,18 @@ BEGIN
 
     CASE c OF
       8 : IF (Cp > 1) THEN
-          BEGIN
-            Dec(Cl);
-            Dec(Cp);
-            Delete(S,Cp,1);
-            BackSpace;
-            IF (Cp < Cl) THEN
             BEGIN
-              MPrompt(Copy(S,Cp,255)+' ');
-              FOR Counter := Cp TO (Cl + 1) DO
-                Cursor_Left;
+              Dec(Cl);
+              Dec(Cp);
+              Delete(S,Cp,1);
+              BackSpace;
+              IF (Cp < Cl) THEN
+                BEGIN
+                  MPrompt(Copy(S,Cp,255)+' ');
+                  FOR Counter := Cp TO (Cl + 1) DO
+                    Cursor_Left;
+                END;
             END;
-          END;
      24 : BEGIN
             FOR Counter := Cp TO Cl DO
               OutKey(' ');
@@ -676,58 +601,59 @@ BEGIN
      32..255:
           BEGIN
             IF (NOT (NumbersOnly IN InputFlags)) THEN
-            BEGIN
-              IF (UpperOnly IN InputFlags) THEN
-                c := Ord(UpCase(Char(c)));
-              IF (CapWords IN InputFlags) THEN
-                IF (Cp > 1) THEN
-                BEGIN
-                  IF (S[Cp - 1] IN [#32..#64]) THEN
-                    c := Ord(UpCase(Char(c)))
-                  ELSE IF (c IN [Ord('A')..Ord('Z')]) THEN
-                    Inc(c,32);
-                END
-                ELSE
-                  c := Ord(UpCase(Char(c)));
-            END;
-            IF (NOT (NumbersOnly IN InputFlags)) OR (c IN [45,48..57]) THEN
-            BEGIN
-              IF ((InsertMode) AND (Cl < MaxLen)) OR ((NOT InsertMode) AND (Cp <= MaxLen)) THEN
               BEGIN
-                OutKey(Char(c));
-                IF (InsertMode) THEN
-                BEGIN
-                  Is := Char(c);
-                  MPrompt(Copy(S,Cp,255));
-                  Insert(Is,S,Cp);
-                  FOR Counter := Cp TO Cl DO
-                    Cursor_Left;
-                END
-                ELSE
-                  S[Cp]:= Char(c);
-                IF (InsertMode) OR ((Cp - 1) = Cl) THEN
-                  Inc(Cl);
-                Inc(Cp);
-                IF (Trapping) THEN
-                  Write(TrapFile,Char(c));
+                IF (UpperOnly IN InputFlags) OR (IsPassword IN InputFlags) THEN
+                  c := Ord(UpCase(Char(c)));
+                IF (CapWords IN InputFlags) THEN
+                  IF (Cp > 1) THEN
+                    BEGIN
+                      IF (S[Cp - 1] IN [#32..#64]) THEN
+                        c := Ord(UpCase(Char(c)))
+                      ELSE IF (c IN [Ord('A')..Ord('Z')]) THEN
+                        Inc(c,32);
+                    END
+                  ELSE
+                    c := Ord(UpCase(Char(c)));
               END;
-            END;
+            IF (NOT (NumbersOnly IN InputFlags)) OR (c IN [45,48..57]) THEN
+            {leew other input val here?}
+              BEGIN
+                IF ((InsertMode) AND (Cl < MaxLen)) OR ((NOT InsertMode) AND (Cp <= MaxLen)) THEN
+                  BEGIN
+                    OutKey(Char(c));
+                    IF (InsertMode) THEN
+                      BEGIN
+                        Is := Char(c);
+                        MPrompt(Copy(S,Cp,255));
+                        Insert(Is,S,Cp);
+                        FOR Counter := Cp TO Cl DO
+                          Cursor_Left;
+                      END
+                    ELSE
+                      S[Cp]:= Char(c);
+                    IF (InsertMode) OR ((Cp - 1) = Cl) THEN
+                      Inc(Cl);
+                    Inc(Cp);
+                    IF (Trapping) THEN
+                      Write(TrapFile,Char(c));
+                  END;
+              END;
           END;
       F_END :
           WHILE (Cp < (Cl + 1)) AND (Cp <= MaxLen) DO
             Cursor_Right;
      F_HOME :
           WHILE (Cp > 1) DO
-          BEGIN
-            Cursor_Left;
-            Dec(Cp);
-          END;
+            BEGIN
+              Cursor_Left;
+              Dec(Cp);
+            END;
      F_LEFT :
           IF (Cp > 1) THEN
-          BEGIN
-            Cursor_Left;
-            Dec(Cp);
-          END;
+            BEGIN
+              Cursor_Left;
+              Dec(Cp);
+            END;
     F_RIGHT :
           IF (Cp <= Cl) THEN
             Cursor_Right;
@@ -738,32 +664,31 @@ BEGIN
           END;
       F_DEL :
           IF (Cp > 0) AND (Cp <= Cl) THEN
-          BEGIN
-            Dec(Cl);
-            Delete(S,Cp,1);
-            MPrompt(Copy(S,Cp,255)+' ');
-            FOR Counter := Cp TO (Cl + 1) DO
-              Cursor_Left;
-          END;
+            BEGIN
+              Dec(Cl);
+              Delete(S,Cp,1);
+              MPrompt(Copy(S,Cp,255)+' ');
+              FOR Counter := Cp TO (Cl + 1) DO
+                Cursor_Left;
+            END;
     END;
     S[0] := Chr(Cl);
   UNTIL (c = 13) OR (HangUp);
+  {
   IF ((Redisplay IN InputFlags) AND (S = '')) THEN
-  BEGIN
-    S := SaveS;
-    MPrompt(S);
-  END;
-
+    BEGIN
+      S := SaveS;
+      MPrompt(S);
+    END;
+    }
+    
+  IF (IsPassword IN InputFlags) THEN
+    Echo := TRUE;
+    
   UserColor(0);
-
   IF (NOT (NoLineFeed IN InputFlags)) THEN
     NL;
   MLC := '';
   SetCursor(FALSE);
-END;
-
-PROCEDURE Input(VAR S: STRING; MaxLen: Byte);
-BEGIN
-  InputMain(S,MaxLen,[UpperOnly]);
 END;
 END.

@@ -50,7 +50,7 @@ BEGIN
   NL;
   Print('SysOp Logs available for up to '+IntToStr(General.BackSysOpLogs)+' days ago.');
   Prt('Date (MM/DD/YYYY) or # days ago (0-'+IntToStr(General.BackSysOpLogs)+') [0]: ');
-  Input(TempStr,10);
+  InputMain(TempStr,SizeOf(TempStr)-1,[UpperOnly]);
   IF (Length(TempStr) = 10) AND (DayNum(TempStr) > 0) THEN
     Day := (DayNum(DateStr) - DayNum(TempStr))
   ELSE
