@@ -31,11 +31,11 @@ To Save: /S  To Quote: /Q  To Abort: /A  Help: /?
 $
 
 $NewScan_Begin
-%CLScanning ... [%MB - %HM]@
+^0Scanning... "^1%MB^0" (^1%HM ^0messages) ... @
 $
 
 $NewScan_Done
-@
+Done!
 $
 
 ; @U = Username, @D = Date
@@ -53,7 +53,7 @@ $SysOp_Shelling_To_DOS
 $
 
 $Read_Mail
-%LFRead Mail (?=Help): @
+^2%LFReading Private Mail [(^1?^2)Help]: @
 $
 
 $Paging_SysOp
@@ -134,7 +134,7 @@ $Batch_Download_Flagging
 $
 
 $Read_Question_Prompt
-[%MB]%LFBegin reading at [1-%HM] (Q=Quit): @
+^2[^1%MB^2]%LFBegin Reading At [^11^2-^1%HM^2,<^1CR^2>Next/Refresh,(^1Q^2)uit]: @
 $
 
 $System_Password_Prompt
@@ -145,11 +145,11 @@ $Default_Message_To
 Press [ENTER] for ALL:%LF
 $
 
-$Newscan_All
+$Newscan_Global_Begin
 [ Global NewScan Beginning ]
 $
 
-$Newscan_Done
+$Newscan_Global_Complete
 [ Global NewScan Completed ]
 $
 
@@ -283,10 +283,10 @@ $File_Area_Name_Header_Ratio
 $
 
 $Sysop_Chat_Help
-/BYE:   Hang up
-/CLS:   Clear the screen
-/PAGE:  Page the SysOp and User
-/Q:     Exit chat mode%LF
+^1/BYE^0:   Hang up
+^1/CLS^0:   Clear the screen
+^1/PAGE^0:  Page SysOp and User
+^1/Q^0:     Exit chat%LF
 $
 
 $New_Scan_Char_Message
@@ -764,6 +764,7 @@ $Forwarding_To
 $
 
 $QWK_Config
+%LFQWK Mail Configuration%LF%LFAvailable archive formats: %LF
 $
 
 $Baud_Override_PW
