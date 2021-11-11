@@ -1,7 +1,13 @@
 # Renegade Bulletin Board System
 Copyright (c) 1991-2021 The Renegade Development Team ─ Cott Lang, Patrick Spence, Gary Hall, Jeff Herrings, T.J. McMillen, Chris Hoppman, Lee Palmer, and Lee Woodridge.
 #
-  * redid most of cuser procs, updateuserinfo maint working now, newuserquestion toggles working now
+  * redo most cuser procs
+  * redo updateuserinfo maint
+  * added more fields you can clear to user editor
+  * redo newuser question toggles menu
+  * converted all onek to lonek
+  * converted all getpassword calls to inputmain with ispassword param
+  * removed redundant input procs - inputwc,inputcaps,inputl,input,local_onek
   * moving input procs to COMMON3
   * *T menu cmd to toggle sysop chat availability
   * %SA display sysop chat availability
