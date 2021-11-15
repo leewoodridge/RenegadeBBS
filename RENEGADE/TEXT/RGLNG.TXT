@@ -627,7 +627,7 @@ Waiting For Logon
 $
 
 $Node_Activity_Waiting_Two
--
+            -
 $
 
 $Node_Activity_Logging_On
@@ -1001,4 +1001,24 @@ $
 
 $QWK_New_Files
 %LF^2Do you want new file list in your QWK packet? @
+$
+
+$Update_Info
+^0Please update the following information ...
+$
+
+$Update_Info_Done
+%LF^0Thank you!%LF%PA
+$
+
+$Force_Batch_DL
+^2You must (^1D^2)ownload, (^1R^2)emove, or (^1C^2)lear your batch queued files : 
+$
+
+$Force_Batch_UL
+^2You must (^1U^2)pload, (^1R^2)emove, or (^1C^2)lear your batch queued files : 
+$
+
+$Quote_Add
+Would you like to add a quote? 
 $
