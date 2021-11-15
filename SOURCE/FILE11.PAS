@@ -859,7 +859,7 @@ BEGIN
   lRGLngStr(22,FALSE);
   Prt(': ');
   MPL(20);
-  InputMain(SearchString,SizeOf(SearchString)-1,[UpperOnly]);
+  InputMain(SearchString,SizeOf(SearchString)-1,[CapAll]);
   IF (SearchString = '') THEN
   BEGIN
     Print('%LFAborted.');
@@ -1211,7 +1211,7 @@ VAR
   Changed: Boolean;
 BEGIN
   TempPath := '';
-  InputPath('%LF^2Enter file path for temporary directory (^1End with a ^2"^1\^2"):%LF^2:',TempPath,TRUE,TRUE,Changed);
+  InputPath('%LF^2Enter file path for temporary directory:%LF^2:',TempPath,TRUE,TRUE,Changed);
   IF (TempPath = '') THEN
   BEGIN
     Print('%LFAborted.');
@@ -1229,7 +1229,7 @@ BEGIN
     FileName := 'TEMPFILE';
     DLPath := TempPath;
     ULPath := TempPath;
-    MaxFiles := 2000;
+    MaxFiles := 32767; { LeeW: Changed this to 16b integer max }
     Password := '';
     ArcType := 1;
     CmtType := 1;

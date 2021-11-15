@@ -25,6 +25,7 @@ Lee Woodridge
             - %SC reporting +1 more caller, fixed?
  11/05/2021 - Removed ReDisplay from inputflags, unused, seems useless
               Added IsPassword inputflag, masks input, replaces getpassword proc
+ 11/11/2021 - removed hungup, was nonfunctional, 
 *)
 UNIT Common;
 
@@ -173,15 +174,15 @@ TYPE
 
   InputFlagType =(
     { Formatting }
-    UpperOnly,       { Capitalize entire string } {CapAll}
-    ColorsAllowed,   { Colors allowed -- does nothing except no mpl}
-    CapWords,        { Capitalize first character of words }
+    CapAll,          { Forces capitalization of entire string }
+    CapWords,        { Forces capitalization of first character of words }
     { Interface }
-    DisplayValue,    {  }
+    DisplayValue,    { Displays current value at end of input prompt }
     InteractiveEdit, { Interactive editing }
+	NoInputField,    { No MPL() }
     NoLineFeed,      { No linefeed after <CR> pressed }
     { Input type }
-    NumbersOnly,     { Numeric values only } {IsNumber}
+    NumbersOnly,     { Numeric values only } {IsNumberOnly}
     NegativeAllowed, { Negative numbers allowed }
     IsPassword       { Masks input with echo char - LeeW: Added }
     ); 
@@ -234,8 +235,8 @@ CONST
   Echo: Boolean = TRUE;                   { Is text being echoed? (FALSE=use echo char) }
   HangUp: Boolean = TRUE;                 { Has user hung up? }
   TimedOut: Boolean = FALSE;              { Has user timed out? }
-  NoFile: Boolean = TRUE;                 { Did last PFL() FILE not exist? }
-  SLogging: Boolean = TRUE;               { are we outputting TO the SysOp log? }
+  NoFile: Boolean = TRUE;                 { Did last PFL() file not exist? }
+  SLogging: Boolean = TRUE;               { Are we outputting to the SysOp log? }
   SysOpOn: Boolean = TRUE;                { is SysOp logged onto the WFC menu? }
   WantOut: Boolean = TRUE;                { output Text locally? }
   WColor: Boolean = TRUE;                 { Was last key pressed by SysOp? (Chat) }
@@ -250,11 +251,11 @@ CONST
   CROff: Boolean = FALSE;                 { are CRs turned off? }
   CtrlJOff: Boolean = FALSE;              { turn color TO #1 after ^Js?? }
   DoneAfterNext: Boolean = FALSE;         { offhook AND Exit after Next logoff?  }
-  DoneDay: Boolean = FALSE;               { are we done now? ready TO drop TO DOS?}
+  DoneDay: Boolean = FALSE;               { are we done now? ready TO drop TO DOS? }
   DOSANSIOn: Boolean = FALSE;             { output chrs TO DOS FOR ANSI codes?!!? }
-  FastLogon: Boolean = FALSE;             { IF a FAST LOGON is requested }
-  HungUp: Boolean = FALSE;                { did User drop carrier? }
-  InCom: Boolean = FALSE;                 { accepting input from com? }
+  FastLogon: Boolean = FALSE;             { Is user opting for fast logon? }
+  (*HungUp: Boolean = FALSE;              { did User drop carrier? } THE FUNCTIONALITY FOR THIS HAS BEEN PREVIOUSLY REMOVED**)
+  InCom: Boolean = FALSE;                 { Are we accepting input from com? }
   InWFCMenu: Boolean = FALSE;             { are we IN the WFC menu? }
   LastCommandGood: Boolean = FALSE;       { was last command a REAL command? }
   LastCommandOvr: Boolean = FALSE;        { override Pause? (NO Pause?) }
@@ -270,17 +271,17 @@ CONST
   NewMenuToLoad: Boolean = FALSE;         { menu command returns TRUE IF new menu TO load }
   OvrUseEMS: Boolean = TRUE;              { Use EMS for overlay? }
   OverlayLocation: Byte = 0;              { 0=Normal(Disk?), 1=EMS, 2=XMS }
-  OutCom: Boolean = FALSE;                { outputting TO com? }
+  OutCom: Boolean = FALSE;                { Are we outputting to com? }
   DirFileopen1: Boolean = TRUE;           { whether DirFile has been opened before }
   ExtFileOpen1: Boolean = TRUE;           {  }
-  PrintingFile: Boolean = FALSE;          { are we printing a FILE? }
-  AllowContinue: Boolean = FALSE;         { Allow Continue prompts? }
-  QuitAfterDone: Boolean = FALSE;         { quit after Next User logs off? }
-  Reading_A_Msg: Boolean = FALSE;         { is User reading a message? }
-  ReadingMail: Boolean = FALSE;           { reading private mail? }
-  ShutUpChatCall: Boolean = FALSE;        { was chat call "SHUT UP" FOR this call? }
+  PrintingFile: Boolean = FALSE;          { Are we printing a file? }
+  AllowContinue: Boolean = FALSE;         { Allow continue prompts? }
+  QuitAfterDone: Boolean = FALSE;         { Are we quitting to DOS after user logs off? }
+  Reading_A_Msg: Boolean = FALSE;         { Is user reading a public message? }
+  ReadingMail: Boolean = FALSE;           { Is user reading private mail? }
+  ShutUpChatCall: Boolean = FALSE;        { Has chat paging been squelched for this call? }
   Trapping: Boolean = FALSE;              { are we Trapping users Text? }
-  UserOn: Boolean = FALSE;                { is there a User on right now? }
+  UserOn: Boolean = FALSE;                { Is there a user online right now? }
   WasNewUser: Boolean = FALSE;            { did a NEW User log on? }
   Write_Msg: Boolean = FALSE;             { is User writing a message? }
   NewEchoMail: Boolean = FALSE;           { has new echomail been entered? }
@@ -290,11 +291,10 @@ CONST
   ExitNormal: Byte = 0;                   { Error level for normal exit }
   TodayCallers: Integer = 0;              { new system callers }
   lTodaynumUsers: Integer = 0;            { new number OF users }
-  ThisNode: Byte = 0;                     { node number }
-  AnswerBaud: LongInt = 0;                { baud rate TO answer the phone at }
-  ExtEventTime: Word = 0;                 { # minutes before External event }
+  ThisNode: Byte = 0;                     { Node number }
+  AnswerBaud: LongInt = 0;                { Baud rate to answer phone at }
+  ExtEventTime: Word = 0;                 { Number of minutes before external event }
   IsInvisible: Boolean = FALSE;           { Run IN invisible Mode? }
-
   SaveNAvail: Boolean = FALSE;         {  }
   LastWFCX: Byte = 1;                  {  }
   LastWFCY: Byte = 1;                  {  }
@@ -312,21 +312,21 @@ VAR
   LightBarFirstCmd: Boolean;           {  }
   Telnet: Boolean;                     {  }
   HangUpTelnet: Boolean;               {  }
-  DatFilePath: STRING[40];             { Path to RENEGADE.DAT }
+  DatFilePath: STRING[40];             { Path of RENEGADE.DAT }
   Interrupt14: Pointer;                { far ptr TO interrupt 14 }
   Ticks: LongInt ABSOLUTE $0040:$006C; {  }
   IEMSIRec: IEMSIRecord;               {  }
   FossilPort: Word;                    {  }
   SockHandle: STRING;                  { Telnet Handle }
-  CallerIDNumber: STRING[40];          { Caller ID STRING obtained from modem }
-  ActualSpeed: LongInt;                { Actual connect rate }
+  CallerIDNumber: STRING[40];          { Caller ID string obtained from modem }
+  ActualSpeed: LongInt;                { Actual connection rate }
   Reliable: Boolean;                   { error correcting connection? }
   ComPortSpeed: LongInt;               { com port rate }
   LastError: Integer;                  { Results from last IOResult, when needed }
   General: GeneralRecordType;          { configuration information }
   DirInfo: SearchRec;                  {  }
-  Buf: STRING[255];         { macro buffer }
-  MLC: STRING[255];         { multiline FOR chat }
+  Buf: STRING[255];        			   { macro buffer }
+  MLC: STRING[255];         		   { multiline FOR chat }
   ChatReason,               { last chat reason }
   LastLineStr,              { "last-line" STRING FOR Word-wrapping }
   StartDir: AStr;           { Directory BBS was executed from }
@@ -334,8 +334,8 @@ VAR
   InResponseTo: STRING[40]; { reason FOR reply }
   LastDIRFileName: Str12;   { last filename FOR recno/nrecno }
   LastDIRRecNum,            { last record # FOR recno/nrecno }
-  CurrentColor,             { current ANSI color }
-  ExiterrorLevel,           { errorLEVEL TO Exit WITH }
+  CurrentColor,             { Current ANSI color }
+  ExitErrorLevel,           { Errorlevel to exit with }
   TShuttleLogon,            { type OF special Shuttle Logon command }
   TFilePrompt,              { type OF special FILE Prompt command }
   TReadPrompt,              { type OF special Read Prompt command }
@@ -595,7 +595,7 @@ PROCEDURE DoPhoneHangUp(ShowIt: Boolean);
 PROCEDURE DoTelnetHangUp(ShowIt: Boolean);
 PROCEDURE DoPhoneOffHook(ShowIt: Boolean);
 { Logging stuff }
-PROCEDURE sl1(s: AStr); { Write entry to SysOp log }
+PROCEDURE SL1(s: AStr); { Write entry to SysOp log }
 PROCEDURE SysOpLog(s: AStr); { Write entry to SysOp log with indent (user actions) }
 PROCEDURE InitTrapFile;
 PROCEDURE OutTrap(c: Char); {leew: was missing}
@@ -624,7 +624,6 @@ PROCEDURE OneK1(VAR C: Char; ValidKeys: AStr; DisplayKey,LineFeed: Boolean); { a
 PROCEDURE LOneK(DisplayStr: AStr; VAR C: Char; ValidKeys: AStr; DisplayKey,LineFeed: Boolean); { single key input prompt }
 PROCEDURE MPL(MaxLen: Byte); { Print input field }
 PROCEDURE InputPath(CONST DisplayStr: AStr; VAR DirPath: Str40; CreateDir,AllowExit: Boolean; VAR Changed: Boolean);
-{PROCEDURE GetPassword(VAR PW: AStr; Len: Byte);}
 { END OF COMMON3 }
 FUNCTION GetKey: Word;
 PROCEDURE ScanInput(VAR s: AStr; CONST Allowed: AStr);
@@ -649,12 +648,12 @@ FUNCTION PadLeftStr(InString: STRING; MaxLen: Byte): STRING;
 FUNCTION PadRightStr(InString: STRING; MaxLen: Byte): STRING;
 FUNCTION PadLeftInt(L: LongInt; MaxLen: Byte): STRING;
 FUNCTION PadRightInt(L: LongInt; MaxLen: Byte): STRING;
-FUNCTION lRGLNGStr(StrNum: LongInt; PassValue: Boolean): AStr; {}
+FUNCTION lRGLNGStr(StrNum: LongInt; PassValue: Boolean): AStr; { Prints/passes string from language file (RGLNG) }
 FUNCTION StripLeadSpace(S: STRING): STRING;
 FUNCTION StripTrailSpace(S: STRING): STRING;
 FUNCTION SemiCmd(S: AStr; B: Byte): STRING;
 FUNCTION MCI(CONST s: STRING): STRING;
-FUNCTION Plural(InString: STRING; Number: Byte): STRING;
+FUNCTION Plural(InString: STRING; Number: Byte): STRING; { Passes string, or string + s if byte value > 1 }
 FUNCTION FormattedTime(TimeUsed: LongInt): STRING;
 FUNCTION FormatNumber(L: LongInt): STRING;
 FUNCTION ToLower(S: STRING): STRING; { Convert string to lowercase } { LeeW: Moved from OneLiner }
@@ -669,7 +668,7 @@ FUNCTION SQOutSp(InString: STRING): STRING;
 FUNCTION Centre(InString: AStr): STRING; { Pads string to be centered on screen }
 PROCEDURE Print(CONST InString: STRING);
 PROCEDURE NL; { Carriage return }
-PROCEDURE Prt(CONST Instring: STRING);
+PROCEDURE Prt(CONST InString: STRING);
 FUNCTION AOnOff(b: Boolean; CONST s1,s2: AStr): STRING; { Returns strings depending on boolean state }
 FUNCTION ShowOnOff(b: Boolean): STRING; { "On" or "Off" depending on boolean state }
 FUNCTION ShowYesNo(b: Boolean): STRING; { "Yes" or "No" depending on boolean state }
@@ -748,13 +747,13 @@ BEGIN
 END;}
 FUNCTION CheckPW: Boolean;
 VAR
-  Password: STR20;
+  Password: STRING[20];
 BEGIN
   IF (NOT General.SysOpPWord) OR (InWFCMenu) OR (General.SysOpPW = '') THEN
-  BEGIN
-    CheckPW := TRUE;
-    Exit;
-  END;
+	BEGIN
+      CheckPW := TRUE;
+      Exit;
+	END;
   CheckPW := FALSE;
   lRGLngStr(33,FALSE); {"SysOp Password:"}
   InputMain(Password,SizeOf(Password)-1,[IsPassword]); {GetPassword(Password,20);}
@@ -3982,9 +3981,7 @@ END;
 
 PROCEDURE PurgeDir(s: AStr; SubDirs: Boolean);
 VAR
-  (*
-  DirInfo1: SearchRec;
-  *)
+  (* DirInfo1: SearchRec; *)
   odir: STRING[80];
 BEGIN
   s := FExpand(s);
@@ -3993,16 +3990,16 @@ BEGIN
   GetDir(ExtractDriveNumber(s),odir);
   ChDir(s);
   IF (IOResult <> 0) THEN
-  BEGIN
-    ChDir(odir);
-    Exit;
-  END;
+	BEGIN
+      ChDir(odir);
+      Exit;
+	END;
   FindFirst('*.*',AnyFile - Directory - VolumeID,DirInfo);  (* Directory & VolumnID added *)
   WHILE (DOSError = 0) DO
-  BEGIN
-    Kill(FExpand(DirInfo.Name));
-    FindNext(DirInfo);
-  END;
+    BEGIN
+	  Kill(FExpand(DirInfo.Name));
+      FindNext(DirInfo);
+	END;
   ChDir(odir);
   IF (SubDirs) THEN
     RmDir(s);
@@ -4085,63 +4082,63 @@ END;
 PROCEDURE DoTelnetHangUp(ShowIt: Boolean);
 BEGIN
   IF (NOT LocalIOOnly) THEN
-  BEGIN
-    IF (ShowIt) AND (NOT BlankMenuNow) THEN
     BEGIN
+      IF (ShowIt) AND (InWFCMenu) AND (NOT BlankMenuNow) THEN {LeeW: Added InWFCMenu}
+		BEGIN
+		  TextColor(15);
+		  TextBackGround(1);
+		  GotoXY(32,17);
+		  Prt('Hanging up node..');
+		END;
+      Com_Flush_Recv;
+      DTR(FALSE);
+	END;
+  IF (ShowIt) AND (InWFCMenu) AND (SysOpOn) AND (NOT BlankMenuNow) THEN {LeeW: Added InWFCMenu}
+	BEGIN
       TextColor(15);
       TextBackGround(1);
-      GotoXY(32,17);
-      Prt('Hanging up node..');
-    END;
-    Com_Flush_Recv;
-    DTR(FALSE);
-  END;
-  IF (ShowIt) AND (SysOpOn) AND (NOT BlankMenuNow) THEN
-  BEGIN
-    TextColor(15);
-    TextBackGround(1);
-    GotoXY(1,17);
-    ClrEOL;
-  END;
+      GoToXY(1,17);
+      ClrEOL;
+	END;
 END;
 
-PROCEDURE dophoneHangup(ShowIt: Boolean);
+PROCEDURE DoPhoneHangUp(ShowIt: Boolean);
 VAR
   c: Char;
-  Try: Integer;
+  TryNum: Integer;
   SaveTimer: LongInt;
 BEGIN
   IF (NOT LocalIOOnly) THEN
-  BEGIN
-    IF (ShowIt) AND (NOT BlankMenuNow) THEN
-    BEGIN
+	BEGIN
+      IF (ShowIt) AND (InWFCMenu) AND (NOT BlankMenuNow) THEN {LeeW: Added InWFCMenu}
+		BEGIN
+		  TextColor(15);
+		  TextBackGround(1);
+		  GotoXY(32,17);
+		  Write('Hanging up phone...');
+		END;
+      TryNum := 0;
+      WHILE (TryNum < 3) AND (NOT KeyPressed) DO
+		BEGIN
+		  Com_Flush_Recv;
+		  Com_Send_Str(Liner.HangUp);
+		  SaveTimer := Timer;
+		  WHILE (ABS(Timer - SaveTimer) <= 2) AND (Com_Carrier) DO
+			BEGIN
+			  c := CInKey;
+			  IF (c > #0) AND (InWFCMenu) THEN
+				WriteWFC(c);
+			END;
+		  Inc(TryNum);
+		END;
+	END;
+  IF (ShowIt) AND (InWFCMenu) AND (SysOpOn) AND (NOT BlankMenuNow) THEN {LeeW: Added InWFCMenu}
+	BEGIN
       TextColor(15);
       TextBackGround(1);
-      GotoXY(32,17);
-      Write('Hanging up phone...');
-    END;
-    Try := 0;
-    WHILE (Try < 3) AND (NOT KeyPressed) DO
-    BEGIN
-      Com_Flush_Recv;
-      Com_Send_Str(Liner.HangUp);
-      SaveTimer := Timer;
-      WHILE (ABS(Timer - SaveTimer) <= 2) AND (Com_Carrier) DO
-      BEGIN
-        c := CInKey;
-        IF (c > #0) AND (InWFCMenu) THEN
-          WriteWFC(c);
-      END;
-      Inc(Try);
-    END;
-  END;
-  IF (ShowIt) AND (SysOpOn) AND (NOT BlankMenuNow) THEN
-  BEGIN
-    TextColor(15);
-    TextBackGround(1);
-    GotoXY(1,17);
-    ClrEOL;
-  END;
+      GotoXY(1,17);
+      ClrEOL;
+	END;
 END;
 
 PROCEDURE DoPhoneOffHook(ShowIt: Boolean);

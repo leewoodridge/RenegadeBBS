@@ -79,8 +79,8 @@ BEGIN
     BEGIN
       Seek(ValidationFile,(RecNumToList1 - 1));
       Read(ValidationFile,Validation);
-      TempStr := TempStr + PadLeftStr(' ^1'+PadLeftInt(RecNumToList1,3)+' '+
-                                      ' ^1'+PadLeftStr(Validation.Key,1)+{' '+}
+      TempStr := TempStr + PadLeftStr(' ^1'+PadLeftInt(RecNumToList1,4)+
+                                      ' ^1'+PadLeftStr(Validation.Key,1)+
                                       ' ^1'+Validation.Description,39);
       Inc(NumOnLine);
       IF (NumOnLine = 2) THEN
@@ -238,12 +238,12 @@ BEGIN
               TempAR := (TempAR + Validation.NewAR)
             ELSE
               TempAR := Validation.NewAR;
-            Print('^0AR : ^1'+PadLeftStr(DisplayARFlags(User.ARFlags,'5','1'),30)+'^0AR : ^1'+DisplayArFlags(TempAR,'5','1'));
+            Print('^0AR : ^1'+PadLeftStr(DisplayARFlags(User.ARFlags,'4','5'),30)+'^0AR : ^1'+DisplayARFlags(TempAR,'4','5'));
             TempAC := User.ACFlags;
             IF (NOT Validation.SoftAC) THEN
               TempAC := (TempAC - Settings);
             TempAC := (TempAC + (Validation.NewAC * Settings));
-            Print('^0AC : ^1'+PadLeftStr(DisplayACFlags(User.ACFlags,'5','1'),30)+'^0AC : ^1'+DisplayACFlags(TempAC,'5','1'));
+            Print('^0AC : ^1'+PadLeftStr(DisplayACFlags(User.ACFlags,'4','5'),30)+'^0AC : ^1'+DisplayACFlags(TempAC,'4','5'));
             Print('^0FP : ^1'+PadLeftInt(User.FilePoints,30)+'^0FP : ^1'+IntToStr(User.FilePoints + Validation.NewFP));
             Print('^0Crd: ^1'+PadLeftInt(User.lCredit,30)+'^0Crd: ^1'+IntToStr(User.lCredit + Validation.NewCredit));
             Print('^0Mnu: ^1'+PadLeftInt(User.UserStartMenu,30)+'^0Mnu: ^1'+IntToStr(Validation.NewMenu));
@@ -400,7 +400,7 @@ VAR
     ELSE
     BEGIN
       RecNumToDelete := -1;
-      InputIntegerWOC('%LFValidation record to delete?',RecNumToDelete,[NumbersOnly],1,NumValKeys);
+      InputIntegerWOC('%LF^2Validation record to delete?',RecNumToDelete,[NumbersOnly],1,NumValKeys);
       IF (RecNumToDelete >= 1) AND (RecNumToDelete <= NumValKeys) THEN
       BEGIN
         Reset(ValidationFile);
@@ -410,15 +410,15 @@ VAR
         LastError := IOResult;
         IF (TempValidation1.Key = '!') THEN
         BEGIN
-          Print('%LFYou can not delete the new user validation key.');
+          Print('%LF^8You can not delete the new user validation key.^0');
           PauseScr(FALSE);
         END
         ELSE
         BEGIN
-          Print('%LFValidation: ^1'+TempValidation1.Description);
-          IF PYNQ('%LFAre you sure you want to delete it? ',0,FALSE) THEN
+          Print('%LF^0Validation: ^1'+TempValidation1.Description);
+          IF PYNQ('%LF^2Are you sure you want to delete it? ',0,FALSE) THEN
           BEGIN
-            Print('%LF[> Deleting validation record ...');
+            Print('%LF^9[> Deleting validation record ...^0');
             FOR RecNum := 1 TO (MaxUsers - 1) DO
             BEGIN
               LoadURec(User,RecNum);
@@ -492,58 +492,58 @@ VAR
           PrintACR('^0(^1C^0) Message     : ^1'+AOnOff(UserMsg='','*None*',UserMsg));
           PrintACR('^0(^1D^0) SL          : ^1'+IntToStr(NewSL));
           PrintACR('^0(^1E^0) DSL         : ^1'+IntToStr(NewDSL));
-          PrintACR('^0(^1G^0) AR Flags    : ^1'+DisplayARFlags(NewAR,'1','0')+
+          PrintACR('^0(^1F^0) AR Flags    : ^1'+DisplayARFlags(NewAR,'4','5')+
                    '^0 Upgrade: ^1'+AOnOff(SoftAR,'Soft','Hard'));
-          PrintACR('^0(^1H^0) AC Flags    : ^1'+DisplayACFlags(NewAC,'1','0')+
+          PrintACR('^0(^1G^0) AC Flags    : ^1'+DisplayACFlags(NewAC,'4','5')+
                    '^0 Upgrade: ^1'+AOnOff(SoftAC,'Soft','Hard'));
-          PrintACR('^0(^1I^0) File Points : ^1'+IntToStr(NewFP));
-          PrintACR('^0(^1K^0) Credits     : ^1'+IntToStr(NewCredit));
-          PrintACR('^0(^1M^0) Start Menu  : ^1'+IntToStr(NewMenu));
-          PrintACR('^0(^1N^0) Expiration  : Days: ^1'+AOnOff((Expiration > 0),IntToStr(Expiration),'No Expiration')+
+          PrintACR('^0(^1H^0) File Points : ^1'+IntToStr(NewFP));
+          PrintACR('^0(^1I^0) Credits     : ^1'+IntToStr(NewCredit));
+          PrintACR('^0(^1J^0) Start Menu  : ^1'+IntToStr(NewMenu));
+          PrintACR('^0(^1K^0) Expiration  : Days: ^1'+AOnOff((Expiration > 0),IntToStr(Expiration),'No Expiration')+
                    '^0 Level: ^1'+AOnOff((ExpireTo IN ['!'..'~']),ExpireTo,'No Change'));
         END;
         IF (NOT Editing) THEN
-          CmdStr := 'ABCDEGHIKMN'
+          CmdStr := 'ABCDEFGHIJK'
         ELSE
-          CmdStr := 'ABCDEGHIKMN[]FJL';
+          CmdStr := 'ABCDEFGHIJK[]{};';
         NL;
-        LOneK('Modify Validation Level [^1[]FLJ^2,(^1?^2)Help,(^1Q^2)uit]: ',Cmd1,'Q?'+CmdStr{+^M},TRUE,TRUE);
+        LOneK('Modify Validation Level [^1[]{};^2,(^1?^2)Help,(^1Q^2)uit]: ',Cmd1,'Q?'+CmdStr+^M,TRUE,TRUE);
         CASE Cmd1 OF
           'A' : BEGIN
-                  Print('%LF^8You can not modify the validation key.');
+                  Print('%LF^8You can not modify the validation key.^0');
                   PauseScr(FALSE);
                 END;
           'B' : IF (Validation.Key = '!') THEN
                 BEGIN
-                  Print('%LF^8You can not modify the new user description.');
+                  Print('%LF^8You can not modify the new user description.^0');
                   PauseScr(FALSE);
                 END
                 ELSE
                   REPEAT
                     TempValidation1.Description := Description;
                     Ok := TRUE;
-                    InputWN1('%LFNew description: ',Description,(SizeOf(Description) - 1),[InterActiveEdit],Changed);
+                    InputWN1('%LF^2New description: ',Description,(SizeOf(Description) - 1),[InterActiveEdit],Changed);
                     CheckValidationLevel(Validation,1,1,Ok);
                     IF (NOT Ok) THEN
                       Description := TempValidation1.Description;
                   UNTIL (Ok) OR (HangUp);
-          'C' : InputWN1('%LF^0New user message:%LF^2:',UserMsg,(SizeOf(UserMsg) - 1),[InterActiveEdit],Changed);
+          'C' : InputWN1('%LF^2New user message:%LF',UserMsg,(SizeOf(UserMsg) - 1),[InterActiveEdit],Changed);
           'D' : BEGIN
                   LoadURec(User,0);
                   REPEAT
-                    InputByteWC('%LFEnter new SL',NewSL,[DisplayValue,NumbersOnly],User.SL,255,Changed);
+                    InputByteWC('%LF^2Enter new SL: ',NewSL,[InteractiveEdit,NumbersOnly],User.SL,255,Changed);
                   UNTIL (NewSL >= User.SL) OR (HangUp);
                 END;
           'E' : BEGIN
                   LoadURec(User,0);
                   REPEAT
-                    InputByteWC('%LFEnter new DSL',NewDSL,[DisplayValue,NumbersOnly],User.DSL,255,Changed);
+                    InputByteWC('%LF^2Enter new DSL: ',NewDSL,[InteractiveEdit,NumbersOnly],User.DSL,255,Changed);
                   UNTIL (NewDSL >= User.DSL) OR (HangUp);
                 END;
-          'G' : BEGIN
+          'F' : BEGIN
                   REPEAT
-                    LOneK('%LFToggle which AR flag? ('+DisplayARFlags(NewAR,'5','4')+'^2)'+
-                        ' [^1*^2=^1All^2,^1?^2=^1Help^2,^1<CR>^2=^1Quit^2]: ',
+                    LOneK('%LF^2Toggle which AR flag? ('+DisplayARFlags(NewAR,'4','5')+'^2)'+
+                        ' [(^1*^2)All,(^1?)^2Help,<^1CR^2>Quit]: ',
                         Cmd1,^M'ABCDEFGHIJKLMNOPQRSTUVWXYZ*?',TRUE,TRUE);
                     IF (Cmd1 = '?') THEN
                       PrintF('ARFLAGS')
@@ -554,38 +554,38 @@ VAR
                         ToggleARFlag(Cmd2,NewAr,Changed);
                   UNTIL (Cmd1 = ^M) OR (HangUp);
                   SaveUpgrade := SoftAR;
-                  SoftAR := NOT PYNQ('%LFShould the AR upgrade be hard? ',0,FALSE);
+                  SoftAR := NOT PYNQ('%LF^2Should the AR upgrade be hard? ',0,FALSE);
                   IF (SaveUpgrade <> SoftAR) THEN
                     Changed := TRUE;
                   Cmd1 := #0;
                 END;
-          'H' : BEGIN
+          'G' : BEGIN
                   REPEAT
-                    LOneK('%LFToggle which AC flag? ('+DisplayACFlags(NewAC,'5','4')+'^2)'+
-                        ' [^1?^2=^1Help^2,^1<CR>^2=^1Quit^2]: ',Cmd1,^M'LCVUA*PEKM1234?',TRUE,TRUE);
+                    LOneK('%LF^2Toggle which AC flag? ('+DisplayACFlags(NewAC,'4','5')+'^2)'+
+                        ' [(^1?^2)Help,<^1CR^2>Quit]: ',Cmd1,^M'LCVUA*PEKM1234?',TRUE,TRUE);
                     IF (Cmd1 = '?') THEN
                       PrintF('ACFLAGS')
                     ELSE IF (Cmd1 <> ^M) THEN
                       ToggleACFlags(Cmd1,NewAC,Changed);
                   UNTIL (Cmd1 = ^M) OR (HangUp);
                   SaveUpgrade := SoftAC;
-                  SoftAC := NOT PYNQ('%LFShould the AC upgrade be hard? ',0,FALSE);
+                  SoftAC := NOT PYNQ('%LF^2Should the AC upgrade be hard? ',0,FALSE);
                   IF (SaveUpgrade <> SoftAC) THEN
                     Changed := TRUE;
                   Cmd1 := #0;
                 END;
-          'I' : InputLongIntWC('%LFEnter additional file points',NewFP,
-                               [DisplayValue,NumbersOnly],0,2147483647,Changed);
-          'K' : InputLongIntWC('%LFEnter additional credit',NewCredit,[DisplayValue,NumbersOnly],0,2147483647,Changed);
-          'M' : FindMenu('%LFEnter start menu (^10^2=^1Default^2)',NewMenu,0,NumMenus,Changed);
-          'N' : IF (Validation.Key = '!') THEN
+          'H' : InputLongIntWC('%LF^2Enter additional file points',NewFP,
+                               [InteractiveEdit,NumbersOnly],0,2147483647,Changed);
+          'I' : InputLongIntWC('%LF^2Enter additional credit',NewCredit,[InteractiveEdit,NumbersOnly],0,2147483647,Changed);
+          'J' : FindMenu('%LF^2Enter start menu (^10^2=^1Default^2)',NewMenu,0,NumMenus,Changed);
+          'K' : IF (Validation.Key = '!') THEN
                   BEGIN
                     Print('%LF^8You can not modify the new user expiration days or level.');
                     PauseScr(FALSE);
                   END
                 ELSE
                   BEGIN
-                    InputWordWC('%LF^2Enter days until expiration',Expiration,[InterActiveEdit{DisplayValue},
+                    InputWordWC('%LF^2Enter days until expiration',Expiration,[InterActiveEdit,
                         NumbersOnly],0,65535,Changed);
                     IF (Expiration <> 0) THEN
                       BEGIN
@@ -594,7 +594,7 @@ VAR
                           IF (Cmd2 IN ValKeys) THEN
                             IF (NOT (Cmd2 = Key)) THEN
                               OneKCmds := OneKCmds + Cmd2;
-                        Prt('%LF^2Enter expiration level (^1!^2-^1P^2,^1R^2-^1p^2,^1r^2-^1~^2) [<Space>Abort]: ');
+                        Prt('%LF^2Enter expiration level (^1!^2-^1P^2,^1R^2-^1p^2,^1r^2-^1~^2) [<^1SPACE^2>Abort]: ');
                         OneK1(Cmd1,^M' '+OneKCmds,TRUE,TRUE);
                         IF (Cmd1 = ' ') THEN
                           BEGIN
@@ -631,19 +631,19 @@ VAR
                   Messages(3,0,'');
                   Cmd1 := #0;
                 END;
-          'F' : IF (RecNumToEdit <> 1) THEN
+          '{' : IF (RecNumToEdit <> 1) THEN
                   RecNumToEdit := 1
                 ELSE
                 BEGIN
                   Messages(2,0,'');
                   Cmd1 := #0;
                 END;
-          'J' : BEGIN
-                  InputIntegerWOC('%LFJump to entry',RecNumToEdit,[NumbersOnly],1,NumValKeys);
+          ';' : BEGIN
+                  InputIntegerWOC('%LF^2Jump to which validation level?',RecNumToEdit,[NumbersOnly],1,NumValKeys);
                   IF (RecNumToEdit < 1) OR (RecNumToEdit > NumValKeys) THEN
                     Cmd1 := #0;
                 END;
-          'L' : IF (RecNumToEdit <> NumValKeys) THEN
+          '}' : IF (RecNumToEdit <> NumValKeys) THEN
                   RecNumToEdit := NumValKeys
                 ELSE
                 BEGIN
@@ -660,13 +660,13 @@ VAR
                   }
                   BEGIN
                     NL;
-                    LCmds(17,1,'[Previous Record',']Next Record');
-                    LCmds(17,1,'First Record','Last Record');
-                    LCmds(17,1,'Jump To Record',''{'Quit and save'});
+                    LCmds(18,1,'[ Previous Record','] Next Record');
+                    LCmds(18,1,'{ First Record','} Last Record');
+                    LCmds(18,1,'; Jump To Record',''{'Quit and save'});
                   END;
                 END;
         END;
-      UNTIL (Pos(Cmd1,'Q[]FJL') <> 0) OR (HangUp);
+      UNTIL (Pos(Cmd1,'Q[]{};') <> 0) OR (HangUp);
   END;
 
   PROCEDURE InsertValidationLevel(TempValidation1: ValidationRecordType; Cmd1: Char; RecNumToInsertBefore: Integer);
@@ -682,14 +682,14 @@ VAR
     ELSE
       BEGIN
         RecNumToInsertBefore := -1;
-        InputIntegerWOC('%LFValidation record to insert before?',RecNumToInsertBefore,[NumbersOnly],1,(NumValKeys + 1));
+        InputIntegerWOC('%LF^2Validation record to insert before?',RecNumToInsertBefore,[NumbersOnly],1,(NumValKeys + 1));
         IF (RecNumToInsertBefore >= 1) AND (RecNumToInsertBefore <= (NumValKeys + 1)) THEN
           BEGIN
             OneKCmds := '';
             FOR Cmd1 := '!' TO '~' DO
               IF (NOT (Cmd1 IN ValKeys)) AND (NOT (Cmd1 = 'Q')) AND (NOT (Cmd1 = 'q')) THEN
                 OneKCmds := OneKCmds + Cmd1;
-            Prt('%LFChoose validation key (^1!^2-^1P^2,^1R^2-^1p^2,^1r^2-^1~^2) [^1<CR>^2=^1Quit^2]: ');
+            Prt('%LF^2Choose validation key (^1!^2-^1P^2,^1R^2-^1p^2,^1r^2-^1~^2) [<^1CR^2>Quit]: ');
             OneK1(Cmd1,^M+OneKCmds,TRUE,TRUE);
             IF (Cmd1 <> ^M) THEN
               BEGIN
@@ -707,10 +707,10 @@ VAR
                   EditValidationLevel(TempValidation1,TempValidation1,Cmd1,RecNumToEdit,Changed,FALSE);
                   CheckValidationLevel(TempValidation1,1,1,Ok);
                   IF (NOT OK) THEN
-                    IF (NOT PYNQ('%LFContinue inserting validation record? ',0,TRUE)) THEN
+                    IF (NOT PYNQ('%LF^2Continue inserting validation record? ',0,TRUE)) THEN
                       Abort := TRUE;
                 UNTIL (OK) OR (Abort) OR (HangUp);
-                IF (NOT Abort) AND (PYNQ('%LFIs this what you want? ',0,FALSE)) THEN
+                IF (NOT Abort) AND (PYNQ('%LF^2Is this what you want? ',0,FALSE)) THEN
                   BEGIN
                     Include(ValKeys,Cmd1);
                     Print('%LF^9[> Inserting validation record ...^0');

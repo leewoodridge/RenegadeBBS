@@ -206,7 +206,7 @@ BEGIN
   Buf := '';
   HangUp := FALSE;
   ChatCall := FALSE;
-  HungUp := FALSE;
+  {HungUp := FALSE;}
   TimedOut := FALSE;
   Rate := 3840;
   ANSIDetected := FALSE;
@@ -698,7 +698,7 @@ VAR
     ClrScr;
     TempPause := FALSE;
     DoShowPackMessageAreas;
-    SysOpLog('Message areas packed');
+    {SysOpLog('Message areas packed');}
     WFCDraw;
   END;
 
@@ -873,7 +873,7 @@ BEGIN
     FastLogon := FALSE;
     ActualSpeed := 0;
     HangUp := FALSE;
-    HungUp := FALSE;
+    {HungUp := FALSE;}
     InResponseTo := '';
     LastAuthor := 0;
     CFO := FALSE;

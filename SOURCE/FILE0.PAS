@@ -50,6 +50,7 @@ BEGIN
   Read(FileCompArrayFile,CompFileArray);
   Close(FileCompArrayFile);
   CompFileArea := CompFileArray[ArrayNum];
+  { LeeW: Add code here to show temp file area from F@ menucmd, show 0 maybe }
 END;
 
 FUNCTION GetCPS(TotalBytes,TransferTime: LongInt): LongInt;
@@ -411,7 +412,7 @@ END;
 PROCEDURE GetFileName(VAR FileName: Str12);
 BEGIN
   MPL(12);
-  InputMain(FileName,12,[NoLineFeed,UpperOnly]);
+  InputMain(FileName,12,[NoLineFeed,CapAll]);
   IF (FileName <> '') THEN
     NL
   ELSE
@@ -563,34 +564,32 @@ VAR
   SaveTimer: LongInt;
 BEGIN
   NL;
-  Print('Press <^1CR^0> to logoff now.');
-  Print('Press <^1Esc^0> to abort logoff.');
+  Print('^0Press <^1CR^0> to logoff now, or <^1ESC^0> to abort');
   NL;
-  Prompt('|12Hanging up in: ^99');
+  Prompt('^0Hanging up in: ^89');
   SaveTimer := Timer;
   Cmd := #0;
   Counter := 9;
   WHILE (Counter > 0) AND NOT (Cmd IN [#13,#27]) AND (NOT HangUp) DO
-  BEGIN
-    IF (NOT Empty) THEN
-      Cmd := Char(InKey);
-    IF (Timer <> SaveTimer) THEN
     BEGIN
-      Dec(Counter);
-      Prompt(^H+IntToStr(Counter));
-      SaveTimer := Timer;
-    END
-    ELSE
-      ASM
-        Int 28h
-      END;
-  END;
+	  IF (NOT Empty) THEN
+		Cmd := Char(InKey);
+      IF (Timer <> SaveTimer) THEN
+		BEGIN
+		  Dec(Counter);
+		  Prompt(^H+IntToStr(Counter));
+		  SaveTimer := Timer;
+		END
+      ELSE
+		ASM
+          Int 28h
+		END;
+	END;
   IF (Cmd <> #27) THEN
-  BEGIN
-    HangUp := TRUE;
-    OutCom := FALSE;
-  END;
+	BEGIN
+      HangUp := TRUE;
+      OutCom := FALSE;
+	END;
   UserColor(0);
 END;
-
 END.

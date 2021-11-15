@@ -308,6 +308,7 @@ BEGIN
             END
           ELSE
             BEGIN { Failed to load overlays to EMS }
+			  WriteLn;
               CASE OvrResult OF
               { OvrError       : WriteLn('Overlay manager error');
                 OvrNotFound    : WriteLn('Overlay file not found'); }
@@ -349,11 +350,7 @@ BEGIN
           SaveURec(ThisUser,UpQWKFor);
         END;
       IF (PackBasesOnly) THEN
-        BEGIN
-          DoShowPackMessageAreas;
-          NL;
-          Print('^1Message areas packed.'); {leew: this should be in the proc}
-        END;
+        DoShowPackMessageAreas;
       IF (SortFilesOnly) THEN
         Sort;
       IF (FileBBSOnly) THEN
@@ -472,6 +469,28 @@ BEGIN
             NeedToHangUp := TRUE;
       END;
   UNTIL (DoneDay);
+  
+  SL1('');
+  SL1('^0Renegade '+General.Version+' Node ^1'+IntToStr(ThisNode)+'^0 shut down on ^1'+Dat+'^0'); {LeeW: Added}
+  
+  Window(1,1,MaxDisplayCols,MaxDisplayRows);
+  TextBackGround(0);
+  TextColor(7);
+  ClrScr;
+  {TextColor(14);}
+
+
+  IF (NeedToHangUp) THEN
+    BEGIN
+	  Write(' - Disconnecting ... ');
+      IF (HangUpTelnet) THEN
+        DoTelnetHangUp(TRUE);
+      IF (NOT HangUpTelnet) THEN
+        DoPhoneHangUp(FALSE);
+	  WriteLn('Done!');
+    END;
+  
+  Write(' - Releasing memory ... ');
   FreeMem(MemCmd,MaxCmds * SizeOf(MemCmdRec));
   IF (MCIBuffer <> NIL) THEN
     Dispose(MCIBuffer);
@@ -479,15 +498,12 @@ BEGIN
     FOR Counter1 := 1 TO NumEvents DO
       IF (MemEventArray[Counter1] <> NIL) THEN
         Dispose(MemEventArray[Counter1]);
-  IF (NeedToHangUp) THEN
-    BEGIN
-      IF (HangUpTelnet) THEN
-        DoTelnetHangUp(TRUE);
-      IF (NOT HangUpTelnet) THEN
-        DoPhoneHangUp(FALSE);
-    END;
+  WriteLn('Done!');
+		
+  
   IF (General.Multinode) THEN
     BEGIN
+	  Write(' - Merging log files ... ');
       Assign(TextFile,General.LogsPath+'SYSOP.LOG');
       IF Exist(General.LogsPath+'SYSOP.LOG') THEN
         Append(TextFile)
@@ -504,21 +520,34 @@ BEGIN
       ReWrite(SysOpLogFile);
       Close(SysOpLogFile);
       LastError := IOResult;
+	  {/}
+	  Kill(TempDir+'TEMPLOG.'+IntToStr(ThisNode));
+	  WriteLn('Done!');
     END;
-  IF (General.Multinode) THEN
-    Kill(TempDir+'TEMPLOG.'+IntToStr(ThisNode));
-  Window(1,1,MaxDisplayCols,MaxDisplayRows);
-  TextBackGround(0);
-  TextColor(7);
-  ClrScr;
-  TextColor(14);
+	 
   IF (NewEchoMail) AND (ExitErrorLevel = 0) THEN
     ExitErrorLevel := 2;
+	
+  Write(' - Resetting node status ... ');
   LoadNode(ThisNode);
   Noder.Status := [];
   SaveNode(ThisNode);
+  WriteLn('Done!');
+  
+  Write(' - Purging temporary directory ... ');
   PurgeDir(TempDir,FALSE);
+  IF (LastError = 0) THEN
+    WriteLn('Done!')
+  ELSE
+	WriteLn('Failure!'); { LeeW: Give more info }
+  
+  Write(' - Unloading communications driver ... ');
   Com_DeInstall;
+  WriteLn('Done!');
+  
+  WriteLn('');
   WriteLn('Exiting with errorlevel ',ExitErrorLevel);
+  WriteLn('');
+  {read(s);}
   Halt(ExitErrorLevel);
 END.

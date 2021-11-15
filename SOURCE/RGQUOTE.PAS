@@ -1,8 +1,8 @@
 PROGRAM RGQUOTE;
 
 USES
-  Crt,
-  Dos;
+  CRT,
+  DOS;
 
 TYPE
   StrPointerRec = RECORD

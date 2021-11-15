@@ -196,6 +196,7 @@ VAR
   MArea: Integer;
 BEGIN
   TempPause := FALSE;
+  
   SysOpLog('Packed all message areas');
   NL;
   Star('Packing all message areas');
@@ -217,7 +218,10 @@ BEGIN
       Break;
   END;
   Close(MsgAreaFile);
-  lil := 0;
+  
+	NL;
+	Print('^1Message areas packed.');
+	lil := 0;
 END;
 
 PROCEDURE PackMessageAreas;

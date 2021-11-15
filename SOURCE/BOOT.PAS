@@ -210,7 +210,7 @@ VAR
 BEGIN { INITP1 }
   FindBadPaths;
 
-  TextColor(Yellow);
+  {TextColor(Yellow);}
 {  Write('Opening and checking NODE'+IntToStr(ThisNode)+'.DAT ... ');}
   Assign(LineFile,General.DataPath+'NODE'+IntToStr(ThisNode)+'.DAT');
   Reset(LineFile);
@@ -221,14 +221,14 @@ BEGIN { INITP1 }
     IF (LastError = 2) THEN
     BEGIN
       WriteLn('File missing!');
-      TextColor(Yellow);
+      {TextColor(Yellow);}
       Write('Creating missing file NODE'+IntToStr(ThisNode)+'.DAT ... ');
       ReWrite(LineFile);
     END
     ELSE
     BEGIN
       WriteLn('Records missing!');
-      TextColor(Yellow);
+      {TextColor(Yellow);}
       Write('Inserting missing NODE'+IntToStr(ThisNode)+'.DAT records ... ');
     END;
     FillChar(Liner,SizeOf(Liner),0);
@@ -355,7 +355,7 @@ BEGIN { INITP1 }
   Assign(SysOpLogFile1,General.LogsPath+'SLOGXXXX.LOG');
   SL1('');
   SL1('');
-  SL1('^7--> ^5Renegade '+General.Version+' Node '+IntToStr(ThisNode)+' Loaded on '+dat+'^7 <--');
+  SL1('^0Renegade '+General.Version+' Node ^1'+IntToStr(ThisNode)+'^0 loaded on ^1'+Dat+'^0');
 
   Assign(UserFile,General.DataPath+'USERS.DAT');
 
@@ -447,7 +447,7 @@ BEGIN { INITP1 }
   LastError := IOResult;
 
   (* Done - 01/04/08 - Lee Palmer *)
-  TextColor(Yellow);
+  {TextColor(Yellow);}
 {  Write('Opening and checking MEMAIL.DAT ... ');}
   Assign(EmailFile,General.DataPath+'MEMAIL.DAT');
   Reset(EmailFile);
@@ -458,14 +458,14 @@ BEGIN { INITP1 }
     IF (LastError = 2) THEN
     BEGIN
       WriteLn('File missing!');
-      TextColor(Yellow);
+      {TextColor(Yellow);}
       Write('Creating missing file MEMAIL.DAT ... ');
       ReWrite(EmailFile);
     END
     ELSE
     BEGIN
       WriteLn('Records missing!');
-      TextColor(Yellow);
+      {TextColor(Yellow);}
       Write('Inserting missing MEMAIL.DAT records ... ');
     END;
     FillChar(MemMsgArea,SizeOf(MemMsgArea),0);
@@ -502,7 +502,7 @@ BEGIN { INITP1 }
 {  WriteLn('Done.');}
 
   (* Done - 01/04/08 - Lee Palmer *)
-  TextColor(Yellow);
+  {TextColor(Yellow);}
 {  Write('Opening and checking MBASES.DAT ... ');}
   Assign(MsgAreaFile,General.DataPath+'MBASES.DAT');
   Reset(MsgAreaFile);
@@ -513,14 +513,14 @@ BEGIN { INITP1 }
     IF (LastError = 2) THEN
     BEGIN
       WriteLn('File missing!');
-      TextColor(Yellow);
+      {TextColor(Yellow);}
       Write('Creating missing file MBASES.DAT ... ');
       ReWrite(MsgAreaFile);
     END
     ELSE
     BEGIN
       WriteLn('Records missing!');
-      TextColor(Yellow);
+      {TextColor(Yellow);}
       Write('Inserting missing MBASES.DAT records ... ');
     END;
     FillChar(MemMsgArea,SizeOf(MemMsgArea),0);
@@ -558,7 +558,7 @@ BEGIN { INITP1 }
 {  WriteLn('Done.');  }
 
   (* Done - 08/11/08 - Lee Palmer *)
-  TextColor(Yellow);
+  {TextColor(Yellow);}
 {  Write('Opening and checking CONFRENC.DAT ... ');}
   Assign(ConferenceFile,General.DataPath+'CONFRENC.DAT');
   Reset(ConferenceFile);
@@ -569,14 +569,14 @@ BEGIN { INITP1 }
     IF (LastError = 2) THEN
     BEGIN
       WriteLn('File missing!');
-      TextColor(Yellow);
+      {TextColor(Yellow);}
       Write('Creating missing file CONFRENC.DAT ... ');
       ReWrite(ConferenceFile);
     END
     ELSE
     BEGIN
       WriteLn('Records missing!');
-      TextColor(Yellow);
+      {TextColor(Yellow);}
       Write('Inserting missing CONFRENC.DAT records ... ');
     END;
     FillChar(Conference,SizeOf(Conference),0);
@@ -603,7 +603,7 @@ BEGIN { INITP1 }
 {  WriteLn('Done.');}
 
   (* Done - 01/04/08 - Lee Palmer *)
-  TextColor(Yellow);
+  {TextColor(Yellow);}
 {  Write('Opening and checking FBASES.DAT ... ');}
   Assign(FileAreaFile,General.DataPath+'FBASES.DAT');
   Reset(FileAreaFile);
@@ -614,14 +614,14 @@ BEGIN { INITP1 }
     IF (LastError = 2) THEN
     BEGIN
       WriteLn('File missing!');
-      TextColor(Yellow);
+      {TextColor(Yellow);}
       Write('Creating missing file FBASES.DAT ... ');
       ReWrite(FileAreaFile);
     END
     ELSE
     BEGIN
       WriteLn('Records missing!');
-      TextColor(Yellow);
+      {TextColor(Yellow);}
       Write('Inserting missing FBASES.DAT records ... ');
     END;
     FillChar(MemFileArea,SizeOf(MemFileArea),0);
@@ -648,7 +648,7 @@ BEGIN { INITP1 }
 {  WriteLn('Done.');  }
 
   (* Done - 01/04/08 - Lee Palmer *)
-  TextColor(Yellow);
+  {TextColor(Yellow);}
 {  Write('Opening and checking PROTOCOL.DAT ... ');}
   Assign(ProtocolFile,General.DataPath+'PROTOCOL.DAT');
   Reset(ProtocolFile);
@@ -659,14 +659,14 @@ BEGIN { INITP1 }
     IF (LastError = 2) THEN
     BEGIN
       WriteLn('File missing!');
-      TextColor(Yellow);
+      {TextColor(Yellow);}
       Write('Creating missing file PROTOCOL.DAT ... ');
       ReWrite(ProtocolFile);
     END
     ELSE
     BEGIN
       WriteLn('Records missing!');
-      TextColor(Yellow);
+      {TextColor(Yellow);}
       Write('Inserting missing PROTOCOL.DAT records ... ');
     END;
     FillChar(Protocol,SizeOf(Protocol),0);
@@ -700,7 +700,7 @@ BEGIN { INITP1 }
 {  WriteLn('Done.');}
 
   (* Done - 01/04/08 - Lee Palmer *)
-  TextColor(Yellow);
+  {TextColor(Yellow);}
 {  Write('Opening and checking SCHEME.DAT ... ');    }
   Assign(SchemeFile,General.DataPath+'SCHEME.DAT');
   Reset(SchemeFile);
@@ -711,14 +711,14 @@ BEGIN { INITP1 }
     IF (LastError = 2) THEN
     BEGIN
       WriteLn('File missing!');
-      TextColor(Yellow);
+      {TextColor(Yellow);}
       Write('Creating missing file SCHEME.DAT ... ');
       ReWrite(SchemeFile);
     END
     ELSE
     BEGIN
       WriteLn('Records missing!');
-      TextColor(Yellow);
+      {TextColor(Yellow);}
       Write('Inserting missing SCHEME.DAT records ... ');
     END;
     FillChar(Scheme,SizeOf(Scheme),0);
@@ -745,7 +745,7 @@ BEGIN { INITP1 }
 {  WriteLn('Done.');  }
 
   (* Done - 01/04/08 - Lee Palmer *)
-  TextColor(Yellow);
+  {TextColor(Yellow);}
 {  Write('Opening and checking VOTING.DAT ... ');}
   Assign(VotingFile,General.DataPath+'VOTING.DAT');
   Reset(VotingFile);
@@ -754,7 +754,7 @@ BEGIN { INITP1 }
   BEGIN
     TextColor(Red);
     WriteLn('File missing!');
-    TextColor(Yellow);
+    {TextColor(Yellow);}
     Write('Creating missing file VOTING.DAT ... ');
     ReWrite(VotingFile);
   END;
@@ -763,7 +763,7 @@ BEGIN { INITP1 }
   LastError := IOResult;
 {  WriteLn('Done.');}
 
-  TextColor(Yellow);
+  {TextColor(Yellow);}
 {  Write('Opening and checking VALIDATE.DAT ... ');}
   Assign(ValidationFile,General.DataPath+'VALIDATE.DAT');
   Reset(ValidationFile);
@@ -774,14 +774,14 @@ BEGIN { INITP1 }
     IF (LastError = 2) THEN
     BEGIN
       WriteLn('File missing!');
-      TextColor(Yellow);
+      {TextColor(Yellow);}
       Write('Creating missing file VALIDATE.DAT ... ');
       ReWrite(ValidationFile);
     END
     ELSE
     BEGIN
       WriteLn('Records missing!');
-      TextColor(Yellow);
+      {TextColor(Yellow);}
       Write('Inserting missing VALIDATE.DAT records ... ');
     END;
     LoadURec(User,0);

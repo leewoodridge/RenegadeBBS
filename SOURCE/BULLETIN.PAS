@@ -292,11 +292,11 @@ BEGIN
     CASE Cmd OF
       'A' : BEGIN
               Mpl(3);
-              InputMain(Age,SizeOf(Age)-1,[UpperOnly]);
+              InputMain(Age,SizeOf(Age)-1,[CapAll]);
             END;
       'C' : BEGIN
               Mpl(30);
-              InputMain(City,SizeOf(City)-1,[UpperOnly]);
+              InputMain(City,SizeOf(City)-1,[CapAll]);
             END;
       'D' : BEGIN
               Mpl(8);
@@ -311,19 +311,19 @@ BEGIN
             END;
       'G' : BEGIN
               Mpl(1);
-              InputMain(Gender,SizeOf(Gender)-1,[UpperOnly]);
+              InputMain(Gender,SizeOf(Gender)-1,[CapAll]);
             END;
       'R' : BEGIN
               Mpl(36);
-              InputMain(RName,SizeOf(RName)-1,[UpperOnly]);
+              InputMain(RName,SizeOf(RName)-1,[CapAll]);
             END;
       'S' : BEGIN
               Mpl(2);
-              InputMain(State,SizeOf(State)-1,[UpperOnly]);
+              InputMain(State,SizeOf(State)-1,[CapAll]);
             END;
       'U' : BEGIN
               Mpl(36);
-              InputMain(UName,SizeOf(UName)-1,[UpperOnly]);
+              InputMain(UName,SizeOf(UName)-1,[CapAll]);
             END;
     END;
   UNTIL (Cmd IN ['L','Q',^M]) OR (HangUp);
@@ -480,7 +480,8 @@ BEGIN
   IF (NOT Abort) THEN
     PrintF(MenuOptions+'T');
   AllowContinue := FALSE;
-  SysOpLog('Viewed Todays Callers.');
+  
+  SysOpLog('Viewed todays callers'+AOnOff(InWFCMenu,' from WFC menu',''));
   LastError := IOResult;
 END;
 
@@ -513,14 +514,14 @@ BEGIN
   Read(StrPointerFile,StrPointer);
   Close(StrPointerFile);
   LastError := IOResult;
-  IF (Exist(General.MiscPath+'QUOTEHDR.*')) THEN
-    PrintF('QUOTEHDR')
+  IF (Exist(General.MiscPath+'QUOTEH.*')) THEN
+    PrintF('QUOTEH')
   ELSE
-  BEGIN
-    NL;
-    Print('|03[컴컴컴컴컴컴컴컴컴컴컴? |11And Now |03... |11A Quote For You! |03]컴컴컴컴컴컴컴컴컴컴컴]');
-    NL;
-  END;
+	BEGIN
+      NL;
+      Print('|03[컴컴컴컴컴컴컴컴컴컴컴? |11And Now |03... |11A Quote For You! |03]컴컴컴컴컴컴컴컴컴컴컴]');
+      NL;
+    END;
   TotLoad := 0;
   Assign(RGStrFile,General.TextPath+MenuOption+'.DAT');
   Reset(RGStrFile,1);
@@ -530,63 +531,63 @@ BEGIN
     BlockRead(RGStrFile,S[1],Ord(S[0]));
     Inc(TotLoad,(Length(S) + 1));
     IF (S[Length(S)] = '@') THEN
-    BEGIN
-      Dec(S[0]);
-      Prt(Centre(S));
-    END
+      BEGIN
+        Dec(S[0]);
+        Prt(Centre(S));
+      END
     ELSE
       PrintACR(Centre(S));
   UNTIL (TotLoad >= StrPointer.TextSize) OR EOF(RGStrFile) OR (HangUp);
   Close(RGStrFile);
   LastError := IOResult;
-  IF (Exist(General.MiscPath+'QUOTEFTR.*')) THEN
-    PrintF('QUOTEFTR')
+  IF (Exist(General.MiscPath+'QUOTET.*')) THEN
+    PrintF('QUOTET')
   ELSE
-  BEGIN
-    NL;
-    Print('|03[컴컴컴컴컴컴컴컴컴컴컴컴컴컴컴컴컴컴컴컴컴컴컴컴컴컴컴컴컴컴컴컴컴컴컴컴컴컴?');
-    NL;
-  END;
+	BEGIN
+      NL;
+      Print('|03[컴컴컴컴컴컴컴컴컴컴컴컴컴컴컴컴컴컴컴컴컴컴컴컴컴컴컴컴컴컴컴컴컴컴컴컴컴컴?');
+      NL;
+	END;
   IF (NOT General.UserAddQuote) THEN
     PauseScr(FALSE)
-  ELSE IF (PYNQ('Would you like to add a quote? ',0,FALSE)) AND (NOT HangUp) THEN
-  BEGIN
-    PrintF('QUOTE');
-    InResponseTo := '';
-    MHeader.Status := [];
-    IF (InputMessage(TRUE,FALSE,'New Quote',MHeader,General.TextPath+MenuOption+'.TMP',78,500)) then
-      IF Exist(General.TextPath+MenuOption+'.TMP') THEN
-      BEGIN
-        Assign(F,General.TextPath+MenuOption+'.NEW');
-        Reset(F);
-        IF (IOResult <> 0) THEN
-          ReWrite(F)
-        ELSE
-          Append(F);
-        Assign(F1,General.TextPath+MenuOption+'.TMP');
-        Reset(F1);
-        IF (IOResult <> 0) THEN
-          Exit;
-        WriteLn(F,'New quote from: '+Caps(ThisUser.Name)+' #'+IntToStr(UserNum)+'.');
-        WriteLn(F,'');
-        WriteLn(F,'$');
-        WHILE (NOT EOF(F1)) DO
-        BEGIN
-          ReadLn(F1,S);
-          WriteLn(F,S);
-        END;
-        WriteLn(F,'$');
-        WriteLn(F,'');
-        WriteLn(F);
-        Close(F);
-        Close(F1);
-        Kill(General.TextPath+MenuOption+'.TMP');
-        NL;
-        Print('^8Your new quote was saved.');
-        PauseScr(FALSE);
-        SendShortMessage(1,Caps(ThisUser.Name)+' added a new quote to "'+MenuOption+'.NEW".');
-      END;
-  END;
+  ELSE IF (PYNQ(lRGLngStr(179,TRUE),0,FALSE)) AND (NOT HangUp) THEN {"Would you like to add a quote?"}
+	BEGIN
+      PrintF('QUOTEADD');
+      InResponseTo := '';
+      MHeader.Status := [];
+      IF (InputMessage(TRUE,FALSE,'New Quote',MHeader,General.TextPath+MenuOption+'.TMP',78,500)) then
+		IF Exist(General.TextPath+MenuOption+'.TMP') THEN
+		  BEGIN
+			Assign(F,General.TextPath+MenuOption+'.NEW');
+			Reset(F);
+			IF (IOResult <> 0) THEN
+			  ReWrite(F)
+			ELSE
+			  Append(F);
+			Assign(F1,General.TextPath+MenuOption+'.TMP');
+			Reset(F1);
+			IF (IOResult <> 0) THEN
+			  Exit;
+			WriteLn(F,'New quote from: '+Caps(ThisUser.Name)+' #'+IntToStr(UserNum)+'.');
+			WriteLn(F,'');
+			WriteLn(F,'$');
+			WHILE (NOT EOF(F1)) DO
+			  BEGIN
+				ReadLn(F1,S);
+				WriteLn(F,S);
+			  END;
+			WriteLn(F,'$');
+			WriteLn(F,'');
+			WriteLn(F);
+			Close(F);
+			Close(F1);
+			Kill(General.TextPath+MenuOption+'.TMP');
+			NL;
+			lRGLngStr(155,FALSE); {"Saved!"} {Print('^9Your quote has been saved!');}
+			PauseScr(FALSE);
+			SendShortMessage(1,Caps(ThisUser.Name)+' added a new quote to "'+MenuOption+'.NEW".');
+		  END;
+	END;
 END;
 
 END.

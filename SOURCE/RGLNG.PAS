@@ -7,11 +7,19 @@ Lee Woodridge
             - Added Auto Message strings (98-104) to LNG
  10/12/2021 - Added Teleconf Normal(11),Anonymous(12),Global(13),Private(14) to MAIN
  11/01/2021 - All string files combined into 1
-            - #193 unused -- replace with something
-              #179 left blank so easier to convert -- add something here
+            - #193 unused -- replace with something NOT UNTIL I FINISH MULTINODE CHAT
             - Too many nested IF, ELSE IF statements causing internal stack overflow 
                 - temp fixed by starting over after each section but
                   should consider changing to CASE, if that'll fix it -- have to look into this
+                  NO, NO STRINGS IN CASE... hmmm
+ 11/12/2021 - 234/235 added updateuserinfo strings
+			  236 force batch dl, 237 force batch ul
+			  179 add quote prompt
+                  
+bug where if a string is empty, like:
+$TEST_STRING
+$
+it will use the NEXT STRING below instead of printing/passing blank string
 }
 PROGRAM RGLNG;
 
@@ -447,7 +455,9 @@ BEGIN
               ELSE IF (S = 'FORWARDING_TO') THEN
                 RgStrNum := 177
               ELSE IF (S = 'QWK_CONFIG') THEN
-                RgStrNum := 178;
+                RgStrNum := 178
+              ELSE IF (S = 'QUOTE_ADD') THEN
+                RgStrNum := 179;
               {// END OF NOTE, START OF MAIN }
               IF (S = 'BAUD_OVERRIDE_PW') THEN
                 RGStrNum := 180 
@@ -557,6 +567,14 @@ BEGIN
                 RGStrNum := 232
               ELSE IF (S = 'QWK_NEW_FILES') THEN
                 RGStrNum := 233
+              ELSE IF (S = 'UPDATE_INFO') THEN
+                RgStrNum := 234
+              ELSE IF (S = 'UPDATE_INFO_DONE') THEN
+                RgStrNum := 235
+			  ELSE IF (S = 'FORCE_BATCH_DL') THEN
+                RgStrNum := 236
+			  ELSE IF (S = 'FORCE_BATCH_UL') THEN
+                RgStrNum := 237
               {// END OF COMB }
                 (*
               ELSE IF (S = '') THEN
