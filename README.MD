@@ -1,6 +1,7 @@
 # Renegade Bulletin Board System
 Copyright (c) 1991-2021 The Renegade Development Team ─ Cott Lang, Patrick Spence, Gary Hall, Jeff Herrings, T.J. McMillen, Chris Hoppman, Lee Palmer, and Lee Woodridge.
 #
+  * Added language strings for UpdateUserInfo proc, force_batch_ul, force_batch_dl, add quote prompt
   * added a bunch of hangup checks to prevent leftover jibberish after disconnect
   * redo most cuser procs
   * redo updateuserinfo maint
