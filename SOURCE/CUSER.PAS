@@ -60,7 +60,7 @@ VAR
     ELSE
       lRGLngStr(196,FALSE); {"Enter real name"}
     MPL((SizeOf(User.Name)-1));
-    InputMain(TmpName,(SizeOf(User.Name)-1),[UpperOnly]);
+    InputMain(TmpName,(SizeOf(User.Name)-1),[CapAll]);
     WHILE (TmpName[1] IN [' ','0'..'9']) AND (Length(TmpName) > 0) DO
       Delete(TmpName,1,1);
     WHILE (TmpName[Length(TmpName)] = ' ') DO
@@ -207,12 +207,8 @@ VAR
     TmpCityState,
     TmpCityState1: AStr;
   BEGIN
-    CASE How OF
-      1 : IF TmpCountryCode = 0 THEN { New user application OR maintenance }
-            AskCountry;
-      2 : AskCountry; { 'OP' Menu command }
-      3 : TmpCountryCode := 1; { User editor }
-    END;
+    IF (How <> 1) OR (TmpCountryCode=0) THEN
+      AskCountry;
     {/}
     CASE TmpCountryCode OF
       1, 2  : BEGIN
@@ -241,7 +237,7 @@ VAR
                     LangStringArray[0] := AOnOff((TmpCountryCode = 1),'state','province');
                     lRGLngStr(201,FALSE); {"Enter state/province abbreviation"}
                     MPL(2);
-                    InputMain(TmpCityState1,2,[UpperOnly]);
+                    InputMain(TmpCityState1,2,[CapAll]);
                     IF (Length(TmpCityState1) < 2) THEN
                       Exit;
                     TmpCityState := TmpCityState+', '+TmpCityState1;
@@ -276,7 +272,7 @@ VAR
       3 : BEGIN
             lRGLngStr(204,FALSE); {"Enter postal code"}
             MPL((SizeOf(User.ZipCode) - 1));
-            InputMain(TmpZipCode,(SizeOf(User.ZipCode) - 1),[UpperOnly]);
+            InputMain(TmpZipCode,(SizeOf(User.ZipCode) - 1),[CapAll]);
           END;
     END;
     IF (TmpZipCode <> '') OR ((Length(TmpZipCode) > 2) AND (TmpCountryCode=3)) THEN
@@ -307,7 +303,7 @@ VAR
       1, 2 :  BEGIN
                 InputFormatted('',TmpPhone,'(###)###-####',(How <> 1));
                 TmpPhone[5] := '-';
-                TmpPhone := Copy(TmpPhone,2,Length(User.Ph));
+                TmpPhone := Copy(TmpPhone,2,Length(TmpPhone));
               END;
       3    :  BEGIN
                 MPL(SizeOf(User.Ph)-1);
