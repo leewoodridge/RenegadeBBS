@@ -374,3 +374,22 @@ $
 $Quote_Add
 Would you like to add a quote? 
 $
+
+$Public_Messages_Header
+%CLÚÄÄÄÄÄÄÂÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÂÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÂÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÂÄÄÄÄÄÄÄÄ¿
+³ Msg# ³ Sender            ³ Receiver           ³  Subject           ³! Posted ³
+ÀÄÄÄÄÄÄÁÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÁÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÁÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÁÄÄÄÄÄÄÄÄÙ
+$
+
+$User_Not_Found
+^8User not found^0
+$
+
+@0 = User Name
+$User_Search_Ask
+^0Did you mean ^1@0^0? 
+$
+
+$Quote_Header
+%CL^4And now... A quote for you!
+$
