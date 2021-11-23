@@ -1,8 +1,9 @@
 {$A+,B-,D+,E-,F+,I-,L+,N-,O+,R-,S+,V-}
 {
-ReadAllMessages now using lRGLngStr, was commented out for some reason
+ReadAllMessages prompt now using lRGLngStr, was commented out for some reason
 Added SysOp log for non global newscan
 Added global new scan lang strings that weren't being used
+Added reading public messages list header to language file
 }
 UNIT Mail2;
 
@@ -153,10 +154,13 @@ BEGIN
     Exit;
   Abort := FALSE;
   Next := FALSE;
+  {
   CLS;
-  PrintACR('旼컴컴컫컴컴컴컴컴컴컴컴컴컫컴컴컴컴컴컴컴컴컴컴쩡컴컴컴컴컴컴컴컴컴쩡컴컴컴커');
-  PrintACR('? Msg# ? Sender            ? Receiver           ?  '+'Subject           ?! Posted ?');
-  PrintACR('읕컴컴컨컴컴컴컴컴컴컴컴컴컨컴컴컴컴컴컴컴컴컴컴좔컴컴컴컴컴컴컴컴컴좔컴컴컴켸');
+  PrintACR('????????????????????????????????????????????????????????????????????????????Ŀ');
+  PrintACR('? Msg# ? Sender            ? Receiver           ?  '+'Subject           ?! Posted ?');
+  PrintACR('??????????????????????????????????????????????????????????????????????????????');
+  }
+  lRGLngStr(238,FALSE); { Public messages list header }
   Dec(Msg_On);
   NumDone := 0;
   WHILE ((NumDone < (PageLength - 7)) AND (Msg_On >= 0) AND (Msg_On < TempHiMsg) AND (NOT Abort) AND (NOT HangUp)) DO
@@ -372,9 +376,9 @@ BEGIN
                   NL;
                   Prt('Message editing [^1?^2=^1Help^2]: ');
                   IF (MsgSysOp) THEN
-                    LOnek('',Cmd1,'QADEFOPRSTV?'^M,TRUE,TRUE)
+                    InputChar('',Cmd1,'QADEFOPRSTV?'^M,[CapAll])
                   ELSE
-                    LOnek('',Cmd1,'QDEFOST?'^M,TRUE,TRUE);
+                    InputChar('',Cmd1,'QDEFOST?'^M,[CapAll]);
                   CASE Cmd1 OF
                     (*
                     'D' : FOR Counter := 1 TO 6 DO
@@ -389,7 +393,7 @@ BEGIN
                     'S' : IF (MHeader.FileAttached = 0) OR (MsgSysOp) THEN
                           BEGIN
                             Prt('Subj: ');
-                            InputDefault(MHeader.Subject,MHeader.Subject,40,[ColorsAllowed],FALSE)
+                            InputDefault(MHeader.Subject,MHeader.Subject,40,[NoInputField],FALSE)
                           END
                           ELSE
                             Print('Sorry, you can''t edit that.');
@@ -505,27 +509,32 @@ BEGIN
                     'F' : IF (MHeader.From.Anon > 0) OR (MsgSysOp) THEN
                           BEGIN
                             NL;
-                            Print('^01. Posted from: ^1'+MHeader.From.A1S);
-                            Print('^02. Real name  : ^1'+MHeader.From.Real);
-                            Print('^03. System name: ^1'+MHeader.From.Name);
+                            Print('^0(^11^0) Posted From : ^1'+MHeader.From.A1S);
+                            Print('^0(^12^0) Real Name   : ^1'+MHeader.From.Real);
+                            Print('^0(^13^0) System Name : ^1'+MHeader.From.Name);
                             NL;
-                            Prt('Edit name [^11^2-^13^2,^1<CR>^2=^1Quit^2]: ');
-                            lOnek('',Cmd1,^M'123',TRUE,TRUE);
+                            InputChar('^2Edit Names [^11^2-^13^2,<^1CR^2>Quit]: ',Cmd1,^M'123',[CapAll]);
                             CASE Cmd1 OF
                               '1' : BEGIN
-                                      NL;
+                                      InputString('%LF^2Posted From: ',MHeader.From.A1S,36,[InteractiveEdit,
+                                                  NoBlankPrompt,NoLineFeed],Changed);
+                                    { NL;
                                       Prt('Posted from: ');
-                                      InputDefault(MHeader.From.A1S,MHeader.From.A1S,36,[],FALSE);
+                                      InputDefault(MHeader.From.A1S,MHeader.From.A1S,36,[],FALSE); }
                                     END;
                               '2' : BEGIN
-                                      NL;
+                                      InputString('%LF^2Real Name: ',MHeader.From.Real,36,[InteractiveEdit,
+                                                  NoBlankPrompt,NoLineFeed],Changed);
+                                    { NL;
                                       Prt('Real name: ');
-                                      InputDefault(MHeader.From.Real,MHeader.From.Real,36,[],FALSE);
+                                      InputDefault(MHeader.From.Real,MHeader.From.Real,36,[],FALSE); }
                                     END;
                               '3' : BEGIN
-                                      NL;
+                                      InputString('%LF^2System Name: ',MHeader.From.Name,36,[InteractiveEdit,
+                                                  NoBlankPrompt,NoLineFeed],Changed);
+                                    { NL;
                                       Prt('System name: ');
-                                      InputDefault(MHeader.From.Name,MHeader.From.Name,36,[],FALSE);
+                                      InputDefault(MHeader.From.Name,MHeader.From.Name,36,[],FALSE); }
                                     END;
                             END;
                             Cmd1 := #0;
@@ -602,35 +611,41 @@ BEGIN
                           END
                           ELSE
                           BEGIN
-                            NL;
+                            InputString('%LF^2Subj: ',MHeader.Subject,40,[InteractiveEdit],Changed);
+                          { NL;
                             Prt('Subj: ');
-                            InputDefault(MHeader.Subject,MHeader.Subject,40,[ColorsAllowed],FALSE);
+                            InputDefault(MHeader.Subject,MHeader.Subject,40,[NoInputField],FALSE); }
                             SysOpLog('Message subject has been modified.');
                           END;
 
                     'T' : BEGIN
                             NL;
-                            Print('^01. Posted to  : ^1'+MHeader.MTo.A1S);
-                            Print('^02. Real name  : ^1'+MHeader.MTo.Real);
-                            Print('^03. System name: ^1'+MHeader.MTo.Name);
+                            Print('^0(^11^0) Posted To   : ^1'+MHeader.MTo.A1S);
+                            Print('^0(^12^0) Real Name   : ^1'+MHeader.MTo.Real);
+                            Print('^0(^13^0) System Name : ^1'+MHeader.MTo.Name);
                             NL;
-                            Prt('Edit name [^11^2-^13^2,^1<CR>^2=^1Quit^2]: ');
-                            lOnek('',Cmd1,^M'123',TRUE,TRUE);
+                            InputChar('^2Edit Names [^11^2-^13^2,<^1CR^2>Quit]: ',Cmd1,^M'123',[CapAll]);
                             CASE Cmd1 OF
                               '1' : BEGIN
-                                      NL;
+                                      InputString('%LF^2Posted To: ',MHeader.MTo.A1S,36,[InteractiveEdit,
+                                                  NoBlankPrompt,NoLineFeed],Changed);
+                                    { NL;
                                       Prt('Posted to: ');
-                                      InputDefault(MHeader.MTo.A1S,MHeader.MTo.A1S,36,[],FALSE);
+                                      InputDefault(MHeader.MTo.A1S,MHeader.MTo.A1S,36,[],FALSE); }
                                     END;
                               '2' : BEGIN
-                                      NL;
+                                      InputString('%LF^2Real Name: ',MHeader.MTo.Real,36,[InteractiveEdit,
+                                                  NoBlankPrompt,NoLineFeed],Changed);
+                                    { NL;
                                       Prt('Real name: ');
-                                      InputDefault(MHeader.MTo.Real,MHeader.MTo.Real,36,[],FALSE);
+                                      InputDefault(MHeader.MTo.Real,MHeader.MTo.Real,36,[],FALSE); }
                                     END;
                               '3' : BEGIN
-                                      NL;
+                                      InputString('%LF^2System Name: ',MHeader.MTo.Name,36,[InteractiveEdit,
+                                                  NoBlankPrompt,NoLineFeed],Changed);
+                                    { NL;
                                       Prt('System name: ');
-                                      InputDefault(MHeader.MTo.Name,MHeader.MTo.Name,36,[],FALSE);
+                                      InputDefault(MHeader.MTo.Name,MHeader.MTo.Name,36,[],FALSE); }
                                     END;
                             END;
                             Cmd1 := #0;
@@ -1187,8 +1202,7 @@ BEGIN
   IF (Cmd = #0) THEN
     REPEAT
       NL;
-      Prt('Scan method (^1?^2=^1Help^2): ');
-      LOneK('',Cmd,'QFTSAY?'^M,TRUE,TRUE);
+      InputChar('Scan method (^1?^2=^1Help^2): ',Cmd,'QFTSAY?'^M,[CapAll]);
       IF (Cmd = '?') THEN
       BEGIN
         NL;
@@ -1203,7 +1217,7 @@ BEGIN
     IF (Cmd <> 'Y') THEN
     BEGIN
       Prt('Text to scan for: ');
-      InputMain(ScanFor,SizeOf(ScanFor)-1,[UpperOnly]);
+      InputMain(ScanFor,SizeOf(ScanFor)-1,[CapAll]);
       IF (ScanFor = '') THEN
         Exit;
       NL;

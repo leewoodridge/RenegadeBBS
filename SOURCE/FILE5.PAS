@@ -398,8 +398,7 @@ VAR
     ELSE IF (s = 'RECEIVE') THEN
     BEGIN
       Prt('File Name: ');
-      MPL(12);
-      InputMain(s,12,[UpperOnly]);
+      InputMain(s,12,[CapAll]);
       s := StripName(s);
       Receive(s,'',FALSE,Junk,junk2,junk3,TransferTime);
       IF (Junk) THEN
@@ -682,8 +681,7 @@ VAR
               Ok := TRUE
             ELSE
             BEGIN
-              Prt('Upload? (Yes,No,All,Quit): ');
-              LOneK('',Cmd,'QYNA',TRUE,TRUE);
+              InputChar('Upload? (Yes,No,All,Quit): ',Cmd,'QYNA',[CapAll]);
               Ok := (Cmd = 'Y') OR (Cmd = 'A');
               FlagAll := (Cmd = 'A');
               Abort := (Cmd = 'Q');
@@ -693,7 +691,6 @@ VAR
           ELSE
           BEGIN
             Prompt(' ^9'+PadRightInt(FArrayRecNum1,2)+' ^1'+DirInfo.Name+' ^2'+GetFileStats(FileInfo)+' ');
-            MPL(50);
             InputMain(FileInfo.Description,SizeOf(FileInfo.Description)-1,[]);
             Ok := TRUE;
             IF (FileInfo.Description <> '') AND (FileInfo.Description[1] = '.') THEN
@@ -731,7 +728,6 @@ VAR
               REPEAT
                 Inc(Counter);
                 Prt(PadLeftStr('',28));
-                MPL(50);
                 InputMain(ExtendedArray[Counter],SizeOf(ExtendedArray[Counter])-1,[]);
                 IF (ExtendedArray[Counter] = '') THEN
                   Counter := MaxExtDesc;

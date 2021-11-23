@@ -4,6 +4,7 @@ Lee Woodridge
  09/21/2021 - Added  DirInfo: SearchRec; to UploadFile VARS, was breaking mass uploads
             - Indenting...
  10/25/2021 - Changed DLOAD.EXT to DOWNLOAD.EXT
+ 11/21/2021 - changed local upload prompts aesthetics
 }
 
 UNIT File1;
@@ -228,8 +229,7 @@ BEGIN
   IF (IsPaused IN TransferFlags) AND (NOT (IsFileAttach IN TransferFlags)) THEN
     BEGIN
       NL;
-      Prompt('^0Press [^1Enter^0] to Continue or [^1Q^0]uit: ');
-      LOneK('',Cmd,'Q'^M,TRUE,TRUE);
+      InputChar('^0Press [^1Enter^0] to Continue or [^1Q^0]uit: ',Cmd,'Q'^M,[CapAll]);
       IF (Cmd = 'Q') THEN
         BEGIN
           Include(TransferFlags,IsKeyboardAbort);
@@ -388,8 +388,7 @@ BEGIN
           Prt('File name: ');
           }
           lRGLngStr(31,FALSE);
-        MPL(12);
-        InputMain(FileName,SizeOf(FileName)-1,[UpperOnly]);
+        InputMain(FileName,SizeOf(FileName)-1,[CapAll]);
         IF (FileName = '') THEN
         BEGIN
           NL;
@@ -428,8 +427,7 @@ BEGIN
   END;
   REPEAT
     Prt(': ');
-    MPL(MaxLen);
-    InputMain(FileInfo.Description,SizeOf(FileInfo.Description) - 1,[ColorsAllowed]);
+    InputMain(FileInfo.Description,SizeOf(FileInfo.Description)-1,[]);
     IF ((FileInfo.Description[1] = '/') OR (RValidate IN ThisUser.ACFlags)) AND (ToSysOp) THEN
     BEGIN
       IF (General.ToSysOpDir >= 1) AND (General.ToSysOpDir <= NumFileAreas) THEN
@@ -447,7 +445,6 @@ BEGIN
   REPEAT
     Inc(NumExtDesc);
     Prt(': ');
-    MPL(50);
     InputMain(ExtendedArray[NumExtDesc],SizeOf(ExtendedArray[NumExtDesc])-1,[]);
   UNTIL (ExtendedArray[NumExtDesc] = '') OR (NumExtDesc = MaxExtDesc) OR (HangUp);
 END;
@@ -975,25 +972,25 @@ BEGIN
       IF (LocBatUp) THEN
       BEGIN
         NL;
-        Prompt('^8[Q]uit or Upload this? (Y/N) ['+SQOutSp(ShowYesNo(DirFileRecNum = -1))+']: ');
-        LOneK('',Cmd,'QYN'^M,FALSE,FALSE);
+        InputChar('^2Upload this? (^1Y^2/^1N^2/^1Q^2) [^1'+SQOutSp(ShowYesNo(DirFileRecNum = -1))+'^2]: ',
+              Cmd,'QYN'^M,[CapAll]);
         IF (DirFileRecNum <> -1) THEN
           UploadOk := (Cmd = 'Y')
         ELSE
           UploadOk := (Cmd IN ['Y',^M]);
         Abort := (Cmd = 'Q');
-        IF (Abort) THEN
+     (* IF (Abort) THEN
           Print('^1Quit')
         ELSE IF (NOT UploadOk) THEN
           Print('^1No')
         ELSE
-          Print('^1Yes');
+          Print('^1Yes'); *)
         UserColor(0);
       END
       ELSE
       BEGIN
         NL;
-        UploadOk := PYNQ('Upload this? (Y/N) ['+SQOutSp(ShowYesNo(DirFileRecNum = -1))+']: ',0,(DirFileRecNum = -1));
+        UploadOk := PYNQ('^2Upload this?',0,(DirFileRecNum = -1));
       END;
       DirFileRecNum := 0;
     END;
@@ -1369,8 +1366,7 @@ BEGIN
     Prt('File name: ');
     }
     lRGLngStr(24,FALSE);
-    MPL(12);
-    InputMain(FileName,SizeOf(FileName)-1,[UpperOnly]);
+    InputMain(FileName,SizeOf(FileName)-1,[CapAll]);
     FileName := SQOutSp(FileName);
     IF (FileName = '') THEN
     BEGIN
@@ -1561,8 +1557,7 @@ BEGIN
   NL;
   Print('Enter file name to download (x:\path\filename.ext)');
   Prt(': ');
-  MPL(52);
-  InputMain(PathFileName,SizeOf(PathFileName)-1,[UpperOnly]);
+  InputMain(PathFileName,SizeOf(PathFileName)-1,[CapAll]);
   IF (PathFileName = '') THEN
   BEGIN
     NL;

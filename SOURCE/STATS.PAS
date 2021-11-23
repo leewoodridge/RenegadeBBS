@@ -325,7 +325,7 @@ BEGIN
   BEGIN
     Counter := -1;
     NL;
-    InputIntegerWOC('Download which file',Counter,1,20);
+    InputInteger('Download which file',Counter,1,20,Changed);
     IF (Counter <> -1) THEN
       IF (Top20File[Counter].DirNum <> -1) AND (Top20File[Counter].DirRecNum <> -1) THEN
       BEGIN

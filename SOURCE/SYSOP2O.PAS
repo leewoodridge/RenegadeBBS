@@ -64,19 +64,19 @@ BEGIN
     END;
     NL;
     ShowSecRange(DisplayValue);
-    LOneK('%LFRange settings [^1S^2=^1Set^2,^1T^2=^1Toggle^2,^1Q^2=^1Quit^2]: ',Cmd,'QST'^M,TRUE,TRUE);
+    InputChar('%LFRange settings [^1S^2=^1Set^2,^1T^2=^1Toggle^2,^1Q^2=^1Quit^2]: ',Cmd,'QST'^M,[CapAll]);
     CASE Cmd OF
       'S' : BEGIN
               FromValue := -1;
-              InputIntegerWOC('%LFFrom?',FromValue,[NumbersOnly],0,255);
+              InputInteger('%LFFrom?',FromValue,[NumbersOnly],0,255,Changed);
               IF (FromValue >= 0) AND (FromValue <= 255) THEN
               BEGIN
                 ToValue := -1;
-                InputIntegerWOC('%LFTo?',ToValue,[NumbersOnly],0,255);
+                InputInteger('%LFTo?',ToValue,[NumbersOnly],0,255,Changed);
                 IF (ToValue >= 0) AND (ToValue <= 255) THEN
                 BEGIN
                   NewValue := -1;
-                  InputLongIntWOC('%LFValue to set?',NewValue,[NumbersOnly],0,32767);
+                  InputLongInt('%LFValue to set?',NewValue,[NumbersOnly],0,32767,Changed);
                   IF (NewValue >= 0) AND (NewValue <= 32767) THEN
                     FOR Counter := FromValue TO ToValue DO
                       Sec[Counter] := NewValue;

@@ -26,13 +26,11 @@ BEGIN
   Prt('File name: ');
   IF (FileSysOp) THEN
     BEGIN
-      MPL(50);
-      InputMain(FSpec,50,[UpperOnly]);
+      InputMain(FSpec,50,[CapAll]);
     END
   ELSE
     BEGIN
-      MPL(12);
-      InputMain(FSpec,12,[UpperOnly]);
+      InputMain(FSpec,12,[CapAll]);
       FSplit(FSpec,Dir,Name,Ext);
       FSpec := Name+Ext;
     END;
@@ -301,7 +299,7 @@ BEGIN
       PL;
       REPEAT
         Prt(':');
-        InputMain(S,10,[UpperOnly]);
+        InputMain(S,10,[CapAll]);
         IF (S = '') THEN
           S := '+';
         IF (StrToInt(S) > 0) THEN

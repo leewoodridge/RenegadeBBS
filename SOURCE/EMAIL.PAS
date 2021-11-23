@@ -121,35 +121,31 @@ VAR
     IF (UNum1 = 0) OR (UNum1 = UserNum) THEN
       Exit;
     IF ((UNum1 >= 1) AND (UNum1 <= (MaxUsers - 1))) THEN
-    BEGIN
-      LoadURec(User,UNum1);
-      IF (UNum1 = 1) THEN
       BEGIN
-        Inc(ThisUser.FeedBack);
-
-        IF (FeedBackPostsToday < 255) THEN
-          Inc(FeedBackPostsToday);
-
-      END
-      ELSE
-      BEGIN
-        Inc(ThisUser.EmailSent);
-        AdjustBalance(General.CreditEmail);
-
-        IF (PrivatePostsToday < 255) THEN
-          Inc(PrivatePostsToday);
-
+        LoadURec(User,UNum1);
+        IF (UNum1 = 1) THEN
+          BEGIN
+            Inc(ThisUser.FeedBack);
+            IF (FeedBackPostsToday < 255) THEN
+              Inc(FeedBackPostsToday);
+          END
+        ELSE
+          BEGIN
+            Inc(ThisUser.EmailSent);
+            AdjustBalance(General.CreditEmail);
+            IF (PrivatePostsToday < 255) THEN
+              Inc(PrivatePostsToday);
+          END;
+        Inc(User.Waiting);
+        SaveURec(User,UNum1);
       END;
-      Inc(User.Waiting);
-      SaveURec(User,UNum1);
-    END;
     WITH MHeader.MTO DO
-    BEGIN
-      UserNum := UNum1;
-      A1S := AllCaps(User.Name);
-      Real := AllCaps(User.RealName);
-      Name := AllCaps(User.Name);
-    END;
+      BEGIN
+        UserNum := UNum1;
+        A1S := AllCaps(User.Name);
+        Real := AllCaps(User.RealName);
+        Name := AllCaps(User.Name);
+      END;
     SaveHeader((HiMsg + 1),MHeader);
   END;
 
@@ -165,173 +161,150 @@ VAR
       Exit;
     CASE Cmd1 OF
       '1' : BEGIN
-              { Print(FString.MassEmail); }
-              lRGLngStr(48,FALSE);
+              lRGLngStr(48,FALSE); { Print(FString.MassEmail); }
               SysOpLog('Mass-private message sent to: (by ACS "'+MassACS+'")');
               FOR UNum1 := 1 TO (MaxUsers - 1) DO
-              BEGIN
-                LoadURec(User,UNum1);
-                IF (AACS1(User,UNum1,MassACS)) AND (UNum1 <> UserNum) AND (NOT (Deleted IN User.SFlags))
-                   AND (NOT (LockedOut IN User.SFlags)) THEN
                 BEGIN
-                  SendIt(UNum1);
+                  LoadURec(User,UNum1);
+                  IF (AACS1(User,UNum1,MassACS)) AND (UNum1 <> UserNum) AND (NOT (Deleted IN User.SFlags))
+                     AND (NOT (LockedOut IN User.SFlags)) THEN
+                    BEGIN
+                      SendIt(UNum1);
+                      SysOpLog('   '+Caps(User.Name));
+                      Print('   '+Caps(User.Name));
+                    END;
+                END;
+            END;
+      '2' : BEGIN
+              lRGLngStr(49,FALSE); { Print(FString.MassEmailAll); }
+              SysOpLog('Mass-private message sent to ALL USERS.');
+              FOR UNum1 := 1 TO (MaxUsers - 1) DO
+                BEGIN
+                  LoadURec(User,UNum1);
+                  IF (UNum1 <> UserNum) AND (NOT (Deleted IN User.SFlags))
+                     AND (NOT (LockedOut IN User.SFlags)) THEN
+                    SendIt(UNum1);
+                END;
+            END;
+      '3' : BEGIN
+              lRGLngStr(48,FALSE); { Print(FString.MassEmail); }
+              SysOpLog('Mass-private message sent to:');
+              FOR UNum1 := 1 TO NumMassMailList DO
+                BEGIN
+                  SendIt(MaxMailListArray[UNum1]);
                   SysOpLog('   '+Caps(User.Name));
                   Print('   '+Caps(User.Name));
                 END;
-              END;
-            END;
-      '2' : BEGIN
-              { Print(FString.MassEmailAll); }
-              lRGLngStr(49,FALSE);
-              SysOpLog('Mass-private message sent to ALL USERS.');
-              FOR UNum1 := 1 TO (MaxUsers - 1) DO
-              BEGIN
-                LoadURec(User,UNum1);
-                IF (UNum1 <> UserNum) AND (NOT (Deleted IN User.SFlags))
-                   AND (NOT (LockedOut IN User.SFlags)) THEN
-                  SendIt(UNum1);
-              END;
-            END;
-      '3' : BEGIN
-              { Print(FString.MassEmail); }
-              lRGLngStr(48,FALSE);
-              SysOpLog('Mass-private message sent to:');
-              FOR UNum1 := 1 TO NumMassMailList DO
-              BEGIN
-                SendIt(MaxMailListArray[UNum1]);
-                SysOpLog('   '+Caps(User.Name));
-                Print('   '+Caps(User.Name));
-              END;
             END;
     END;
   END;
 
 BEGIN
   EmailOK := TRUE;
-
   IF ((REmail IN ThisUser.ACFlags) OR (NOT AACS(General.NormPrivPost))) AND (NOT CoSysOp) THEN
-  BEGIN
-    NL;
-    Print('^7Your access privledges do not include sending private messages!^1');
-    EmailOk := FALSE;
-  END
-  ELSE IF ((PrivatePostsToday >= General.MaxPrivPost) AND (NOT CoSysOp)) THEN
-  BEGIN
-    NL;
-    Print('^7You have already sent the maximum private messages allowed per day!^1');
-    EmailOk := FALSE;
-  END
-  ELSE IF (AccountBalance < General.CreditEmail) AND (General.CreditEmail > 0) AND (NOT (FNoCredits IN ThisUser.ACFlags)) THEN
-  BEGIN
-    NL;
-    Print('^7Insufficient account balance to send private messages!^1');
-    EmailOk := FALSE;
-  END;
-
-  IF (NOT EmailOk) THEN
-  BEGIN
-    IF (InWFCMenu) THEN
-      PauseScr(FALSE);
-    Exit;
-  END;
-
-  IF (NOT MassMail) THEN
-  BEGIN
-    IF (AACS(General.NetMailACS)) AND PYNQ(lRGLngStr(51,TRUE){FString.IsNetMail},0,FALSE) THEN
     BEGIN
-
-      PrintF('NETMHELP');
-
-      SysOpName := '';
-
-      WITH MHeader.From DO
-        GetNetAddress(SysOpName,Zone,Net,Node,Point,Fee,FALSE);
-
-      IF (SysOpName = '') THEN
-        Exit;
-
-      MHeader.From.Name := SysOpName;
-
-      MHeader.Status := [NetMail];
-
-      SaveEmailSent := ThisUser.EmailSent;
-
-      SEMail(0,MHeader);
-
-      IF (ThisUser.EmailSent > SaveEmailSent) THEN
-        Inc(ThisUser.Debit,Fee);
-
+      NL;
+      Print('^7Your access privledges do not include sending private messages!^1');
+      EmailOk := FALSE;
     END
-    ELSE
+  ELSE IF ((PrivatePostsToday >= General.MaxPrivPost) AND (NOT CoSysOp)) THEN
     BEGIN
-
-      { Print(FString.SendEMail); }
-      lRGLngStr(47,FALSE);
       NL;
-      Print('Enter User Number, Name, or Partial Search String.');
-      Prt(': ');
-      lFindUserWS(UNum);
-      IF (UNum < 1) THEN
-      BEGIN
-        NL;
+      Print('^7You have already sent the maximum private messages allowed per day!^1');
+      EmailOk := FALSE;
+    END
+  ELSE IF (AccountBalance < General.CreditEmail) AND (General.CreditEmail > 0) AND (NOT (FNoCredits IN ThisUser.ACFlags)) THEN
+    BEGIN
+      NL;
+      Print('^7Insufficient account balance to send private messages!^1');
+      EmailOk := FALSE;
+    END;
+  IF (NOT EmailOk) THEN
+    BEGIN
+      IF (InWFCMenu) THEN
         PauseScr(FALSE);
-      END
-      ELSE
-      BEGIN
-        MHeader.Status := [];
-        SEMail(UNum,MHeader);
-      END;
+      Exit;
     END;
-  END
-  ELSE
-  BEGIN
-    InResponseTo := '';
-    NumMassMailList := 0;
-    FillChar(MaxMailListArray,SizeOf(MaxMailListArray),0);
-    NL;
-    Print('Mass private message: Send message to multiple users.');
-    IF (NOT CoSysOp) THEN
-      Cmd := '3'
-    ELSE
+  IF (NOT MassMail) THEN
     BEGIN
-      NL;
-      Print('(1) Send to users with a certain ACS.');
-      Print('(2) Send to all system users.');
-      Print('(3) Send private messages to a list of users.');
-      NL;
-      Prt('Your choice [^51^4-^53^4,^5Q^4=^5Quit^4]: ');
-      LOneK('',Cmd,'Q123',TRUE,TRUE);
-    END;
-    CASE Cmd OF
-      '1' : BEGIN
+      IF (AACS(General.NetMailACS)) AND PYNQ(lRGLngStr(51,TRUE){FString.IsNetMail},0,FALSE) THEN
+        BEGIN
+          PrintF('NETMHELP');
+          SysOpName := '';
+          WITH MHeader.From DO
+            GetNetAddress(SysOpName,Zone,Net,Node,Point,Fee,FALSE);
+          IF (SysOpName = '') THEN
+            Exit;
+          MHeader.From.Name := SysOpName;
+          MHeader.Status := [NetMail];
+          SaveEmailSent := ThisUser.EmailSent;
+          SEMail(0,MHeader);
+          IF (ThisUser.EmailSent > SaveEmailSent) THEN
+            Inc(ThisUser.Debit,Fee);
+        END
+      ELSE
+        BEGIN
+          lRGLngStr(47,FALSE); { Private message title }
+          lFindUserWS(UNum);
+          IF (UNum < 1) THEN
+            BEGIN
               NL;
-              Prt('Enter ACS: ');
-              MPL((SizeOf(ACString) - 1));
-              InputMain(MassACS,(SizeOf(ACString) - 1),[]);
-              IF (MassACS <> '') THEN
-              BEGIN
-                NL;
-                Print('Users marked by ACS "'+MassACS+'":');
-                Abort := FALSE;
-                Next := FALSE;
-                Reset(UserFile);
-                UNum := 1;
-                WHILE (UNum <= (MaxUsers - 1)) AND (NOT Abort) AND (NOT HangUp) DO
-                BEGIN
-                  LoadURec(User,UNum);
-                  IF (AACS1(User,UNum,MassACS)) AND (UNum <> UserNum) AND (NOT (Deleted IN User.SFlags))
-                     AND (NOT (LockedOut IN User.SFlags)) THEN
-                  BEGIN
-                    PrintACR('   '+Caps(User.Name));
-                    Inc(NumMassMailList);
-                  END;
-                  Inc(UNum);
-                  WKey;
-                END;
-                Close(UserFile);
-              END;
+              PauseScr(FALSE);
+            END
+          ELSE
+            BEGIN
+              MHeader.Status := [];
+              SEMail(UNum,MHeader);
             END;
-      '2' : BEGIN
+        END;
+    END
+  ELSE
+    BEGIN
+      InResponseTo := '';
+      NumMassMailList := 0;
+      FillChar(MaxMailListArray,SizeOf(MaxMailListArray),0);
+      NL;
+      Print('Mass private message: Send message to multiple users.');
+      IF (NOT CoSysOp) THEN
+        Cmd := '3'
+      ELSE
+        BEGIN
+          NL;
+          Print('(1) Send to users with a certain ACS.');
+          Print('(2) Send to all system users.');
+          Print('(3) Send private messages to a list of users.');
+          NL;
+          InputChar('Your choice [^51^4-^53^4,^5Q^4=^5Quit^4]: ',Cmd,'Q123',[CapAll]);
+        END;
+      CASE Cmd OF
+        '1' : BEGIN
+                NL;
+                Prt('Enter ACS: ');
+                InputMain(MassACS,(SizeOf(ACString) - 1),[]);
+                IF (MassACS <> '') THEN
+                  BEGIN
+                    NL;
+                    Print('Users marked by ACS "'+MassACS+'":');
+                    Abort := FALSE;
+                    Next := FALSE;
+                    Reset(UserFile);
+                    UNum := 1;
+                    WHILE (UNum <= (MaxUsers - 1)) AND (NOT Abort) AND (NOT HangUp) DO
+                      BEGIN
+                        LoadURec(User,UNum);
+                        IF (AACS1(User,UNum,MassACS)) AND (UNum <> UserNum) AND (NOT (Deleted IN User.SFlags))
+                           AND (NOT (LockedOut IN User.SFlags)) THEN
+                          BEGIN
+                            PrintACR('   '+Caps(User.Name));
+                            Inc(NumMassMailList);
+                          END;
+                        Inc(UNum);
+                        WKey;
+                      END;
+                    Close(UserFile);
+                  END;
+              END;
+        '2' : BEGIN
               NL;
               Print('All users marked for mass-private messages.');
               Abort := FALSE;
@@ -361,8 +334,10 @@ BEGIN
                 AND (CoSysOp) DO
               BEGIN
                 NL;
+                {
                 Print('Enter User Number, Name, or Partial Search String.');
                 Prt(': ');
+                }
                 lFindUserWS(UNum);
                 FOR Counter := 1 TO NumMassMailList DO
                   IF (MaxMailListArray[Counter] = UNum) THEN
@@ -560,7 +535,7 @@ BEGIN
                      IntToStr(General.AKA[Counter].Node)+
                      AOnOff((General.AKA[Counter].Point > 0),'.'+IntToStr(General.AKA[Counter].Point),''));
           END;
-        InputByteWOC('%LFUse which AKA',Counter,[NumbersOnly],1,20);
+        InputByte('%LFUse which AKA',Counter,[NumbersOnly],1,20,Changed);
         IF (Counter >= 1) OR (Counter <= 20) THEN
           Counter1 := (Counter - 1);
       END;
@@ -834,7 +809,7 @@ BEGIN
             ReadMsg(MessageArray[SNum],SNum,MNum);
           END;
           { Prt(FString.ReadingEmail); }
-          LOneK(lRGLngStr(13,TRUE),Cmd,'Q-ADFGLNRSUVXZM?'^M,TRUE,TRUE);
+          InputChar(lRGLngStr(13,TRUE),Cmd,'Q-ADFGLNRSUVXZM?'^M,[CapAll]);
           CASE Cmd OF
             '-' : IF (SNum > 1) THEN
                     Dec(SNum)
@@ -869,7 +844,7 @@ BEGIN
                     END;
                   END;
             'F' : ForwardMessage(MessageArray[SNum]);
-            'G' : InputByteWOC('%LFGoto message',SNum,[NumbersOnly],1,MNum);
+            'G' : InputByte('%LFGoto message',SNum,[NumbersOnly],1,MNum,Changed);
             'M' : IF (NOT MsgSysOp) THEN
                     Print('%LF^7You do not have the required access level for this option!^1%LF%PA')
                   ELSE
@@ -1043,9 +1018,9 @@ BEGIN
       NL;
       Prt('Private messages sent [^5?^4=^5Help^4]: ');
       IF (CoSysOp) THEN
-        LOneK('',Cmd,'Q-ADENX?'^M,TRUE,TRUE)
+        InputChar('',Cmd,'Q-ADENX?'^M,[CapAll])
       ELSE
-        LOneK('',Cmd,'Q-ADEN?'^M,TRUE,TRUE);
+        InputChar('',Cmd,'Q-ADEN?'^M,[CapAll]);
       CASE Cmd OF
         '-' : BEGIN
                 PreviousMsgNum := (MsgNum - 1);

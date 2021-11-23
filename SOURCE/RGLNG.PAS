@@ -6,16 +6,20 @@ Lee Woodridge
  10/02/2021 - Added "Aborted"(44) & "Saved"(45) strings to NOTE
             - Added Auto Message strings (98-104) to LNG
  10/12/2021 - Added Teleconf Normal(11),Anonymous(12),Global(13),Private(14) to MAIN
- 11/01/2021 - All string files combined into 1
+ 11/01/2021 - All string files combined into RGLNG.TXT
             - #193 unused -- replace with something NOT UNTIL I FINISH MULTINODE CHAT
             - Too many nested IF, ELSE IF statements causing internal stack overflow 
                 - temp fixed by starting over after each section but
                   should consider changing to CASE, if that'll fix it -- have to look into this
                   NO, NO STRINGS IN CASE... hmmm
  11/12/2021 - 234/235 added updateuserinfo strings
-			  236 force batch dl, 237 force batch ul
-			  179 add quote prompt
-                  
+              236 Force batch DL, 237 Force batch UL
+              179 Add quote prompt
+ 11/15/2021 - Added reading public messages list header (#238)
+ 11/18/2021 - Added: User not found string(#239)
+                     User search ask string(#240)
+					 quote header (#241)
+ --- 
 bug where if a string is empty, like:
 $TEST_STRING
 $
@@ -571,10 +575,18 @@ BEGIN
                 RgStrNum := 234
               ELSE IF (S = 'UPDATE_INFO_DONE') THEN
                 RgStrNum := 235
-			  ELSE IF (S = 'FORCE_BATCH_DL') THEN
+              ELSE IF (S = 'FORCE_BATCH_DL') THEN
                 RgStrNum := 236
-			  ELSE IF (S = 'FORCE_BATCH_UL') THEN
+              ELSE IF (S = 'FORCE_BATCH_UL') THEN
                 RgStrNum := 237
+              ELSE IF (S = 'PUBLIC_MESSAGES_HEADER') THEN
+                RgStrNum := 238
+              ELSE IF (S = 'USER_NOT_FOUND') THEN
+                RgStrNum := 239
+              ELSE IF (S = 'USER_SEARCH_ASK') THEN
+                RgStrNum := 240
+              ELSE IF (S = 'QUOTE_HEADER') THEN
+                RgStrNum := 241
               {// END OF COMB }
                 (*
               ELSE IF (S = '') THEN

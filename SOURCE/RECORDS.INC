@@ -34,48 +34,33 @@ CONST
   MaxSchemes = 255;
   MaxValKeys = 92;
   MaxConfKeys = 27;
-(*
-  User_String_Ask  = ' ';         {Ask for user string fields}
-  User_String_None = '';          {None for user string fields}
 
-  User_Date_Ask  = -2145916799;   {Ask for user date fields - 01/01/1902}
-  User_Date_None = -2146003199;   {None for user date fields - 12/31/1901}
-
-  User_Word_Ask  = 65535;         {Ask for user word fields}
-  User_Word_None = 65534;         {None for user word fields}
-
-  User_Char_Ask  = '~';           {Ask for user character fields}
-  User_Char_None = ' ';           {None for user character fields}
-
-  User_Phone_Ask  = ' ';          {Ask for user phone fields}
-  User_Phone_None = '';           {None for user phone fields}
-*)
 TYPE
-  AStr = STRING[160];
-  Str1 = STRING[1];
-  Str2 = STRING[2];
-  Str3 = STRING[3];
-  Str4 = STRING[4];
-  Str5 = STRING[5];
-  Str7 = STRING[7];
-  Str8 = STRING[8];
-  Str9 = STRING[9];
-  Str11 = STRING[11];
-  Str10 = STRING[10];
-  Str12 = STRING[12];
-  Str15 = STRING[15];
-  Str20 = STRING[20];
-  Str26 = STRING[26];
-  Str30 = STRING[30];
-  Str35 = STRING[35];
-  Str36 = STRING[36];
-  Str40 = STRING[40];
-  Str50 = STRING[50];
-  Str52 = STRING[52];
-  Str65 = STRING[65];
-  Str74 = STRING[74];
-  Str78 = STRING[78];
-  Str160 = STRING[160];
+  ASTR = STRING[160];
+  STR1 = STRING[1];
+  STR2 = STRING[2];
+  STR3 = STRING[3];
+  STR4 = STRING[4];
+  STR5 = STRING[5];
+  STR7 = STRING[7];
+  STR8 = STRING[8];
+  STR9 = STRING[9];
+  STR11 = STRING[11];
+  STR10 = STRING[10];
+  STR12 = STRING[12];
+  STR15 = STRING[15];
+  STR20 = STRING[20];
+  STR26 = STRING[26];
+  STR30 = STRING[30];
+  STR35 = STRING[35];
+  STR36 = STRING[36];
+  STR40 = STRING[40];
+  STR50 = STRING[50];
+  STR52 = STRING[52];
+  STR65 = STRING[65];
+  STR74 = STRING[74];
+  STR78 = STRING[78];
+  STR160 = STRING[160];
 
   UnixTime = LongInt; { Seconds since 01-01-70 }
 
@@ -86,16 +71,16 @@ TYPE
   ARFlagSet = SET OF ARFlagType; { Set of AR flags }
 
   ACFlagType =
-   (RLogon,                       { L - Limited to one call a day }
+   (RLogon,                       { L - Limited to one call per day }
     RChat,                        { C - No SysOp paging }
     RValidate,                    { V - Posts are unvalidated }
     RUserList,                    { U - Can't list users }
     RAMsg,                        { A - Can't leave automsg }
     RPostAn,                      { * - Can't post anonymously }
-    RPost,                        { P - Can't post }
-    REmail,                       { E - Can't send email }
-    RVoting,                      { K - Can't use voting booth }
-    RMsg,                         { M - Force email deletion }
+    RPost,                        { P - Can't post publicly }
+    REmail,                       { E - Can't send private mail }
+    RVoting,                      { K - Can't vote }
+    RMsg,                         { M - Forced email deletion }
 
     VT100,                        { Supports VT00 }
     HotKey,                       { hotkey input mode }
@@ -490,40 +475,40 @@ TYPE
     UnUsedByte2: Byte;              { / }
     
     lLowTime,                       { SysOp chat hours start time }
-    HiTime,                         { End time }
-    DLLowTime,                      { normal downloading hours begin.. }
-    DLHiTime,                       { ..and END }
-    MinBaudLowTime,                 { minimum baud calling hours begin.. }
-    MinBaudHiTime,                  { ..and END }
-    MinBaudDLLowTime,               { minimum baud downloading hours begin.. }
-    MinBaudDLHiTime,                { ..and END }
+    HiTime,                         { SysOp chat hours end time }
+    DLLowTime,                      { Download hours start time }
+    DLHiTime,                       { Download hours end time }
+    MinBaudLowTime,                 { Minimum baud caller hours start time }
+    MinBaudHiTime,                  { Minimum baud caller hours end time }
+    MinBaudDLLowTime,               { Minimum baud download hours start time }
+    MinBaudDLHiTime,                { Minimum baud download hours end time }
     NewApp,                         { send new user application to # }
-    TimeOutBell,                    { minutes before timeout beep }
-    TimeOut,                        { minutes before timeout }
-    ToSysOpDir,                     { SysOp file area }
+    TimeOutBell,                    { Minutes before timeout warning beep }
+    TimeOut,                        { Minutes before timeout logoff }
+    ToSysOpDir,                     { "To SysOp" file area }
     CreditMinute,                   { Credits per minute }
     CreditPost,                     { Credits per post }
-    CreditEmail,                    { Credits per Email sent }
-    CreditFreeTime,                 { Amount OF "Free" time given to user at logon }
-    NumUsers,                       { number OF users }
-    PasswordChange,                 { change password at least every x days }
-    RewardRatio,                    { % OF file points to reward back }
-    CreditInternetMail,             { cost for Internet mail }
-    BirthDateCheck,                 { check user's birthdate every xx logons }
+    CreditEmail,                    { Credits per e-mail }
+    CreditFreeTime,                 { Amount of "free" time given to users with no credits at logon }
+    NumUsers,                       { Number of users }
+    PasswordChange,                 { Mandatory password change every X days }
+    RewardRatio,                    { Percentage of file points to reward back }
+    CreditInternetMail,             { Credits per internet e-mail }
+    BirthDateCheck,                 { Check users birthdate every X logons }
     UnUsedInteger1,                 { / }
     UnUsedInteger2: Integer;        { / }
     
-    MaxQWKTotal,                    { max msgs in a packet, period }
-    MaxQWKBase,                     { max msgs in a area }
-    DaysOnline,                     { days online }
+    MaxQWKTotal,                    { Maximum messages in a QWK packet }
+    MaxQWKBase,                     { Maximum messages per area }
+    DaysOnline,                     { Days online }
     UnUsedWord1,                    { / }
     UnUsedWord2: Word;              { / }
     
-    MinimumBaud,                    { minimum baud rate to logon }
-    MinimumDLBaud,                  { minimum baud rate to download }
+    MinimumBaud,                    { Minimum baud rate to logon }
+    MinimumDLBaud,                  { Minimum baud rate to download }
     MaxDepositEver,                 { Maximum minutes allowed in time bank }
     MaxDepositPerDay,               { Maximum minutes allowed for daily deposit }
-    MaxWithdrawalPerDay,            { Maximum minutes allowed for daily withdrawl }
+    MaxWithdrawalPerDay,            { Maximum minutes allowed for daily withdrawal }
     CallerNum,                      { system caller number }
     RegNumber,                      { registration number }                 (** UNUSED -- DELETE? **)
     TotalCalls,                     { incase different from callernum }
@@ -533,12 +518,12 @@ TYPE
     TotalUloads,                    { total number OF uloads }
     MinResume,                      { min K to allow resume-later }
     MaxInTemp,                      { max K allowed in TEMP }
-    MinSpaceForPost,                { minimum drive space left to post }
-    MinSpaceForUpload,              { minimum drive space left to upload }
+    MinSpaceForPost,                { Minimum drive space required for posts }
+    MinSpaceForUpload,              { Minimum drive space required for uploads }
     UnUsedLongInt1,                 { / }
     UnUsedLongInt2: LongInt;        { / }
     
-    AllowAlias,                     { allow handles? }
+    AllowAlias,                     { Allow handles? }
     PhonePW,                        { phone number password in logon? }
     LocalSec,                       { use local security? }
     GlobalTrap,                     { trap everyone's activity? }
@@ -618,7 +603,7 @@ TYPE
     DLOneday,                       { Max daily downloads (#) }
     DLKOneDay: SecurityRangeType;   { Max daily downloads (kB) }
     
-    { **** FIELDS BELOW HAVE BEEN ADDED AFTER V1.25 **** }
+    { ** FIELDS BELOW HAVE BEEN ADDED AFTER V1.25 ** }
     
     NewUserQToggles:                { Toggles for new user application questions }
       ARRAY [1..30] OF Boolean;

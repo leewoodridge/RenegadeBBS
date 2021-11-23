@@ -1,9 +1,11 @@
 {$A+,B-,D+,E-,F+,I-,L+,N-,O-,R-,S+,V-}
 {
-10/21/2021 - Removed: Color change for input longer than 2
-10/31/2021 - Added: SysOp avail cmd (*T), Validation editor cmd (*S), Color scheme edit cmd (*G)
-TO DO
- - it'd be nice to find a way to turn on/off scrllck light to indicate sysop availablity
+ 10/21/2021 - Removed: Color change for input longer than 2
+ 10/31/2021 - Added commands: 
+                > Toggle SysOp Availability (*T)
+                > Validation Editor (*S) 
+                > Color Scheme Editor (*G)
+ 11/15/2021 - Direct memory addressing for *T command only works in real mode (DOS)
 }
 UNIT Menus;
 
@@ -19,24 +21,24 @@ PROCEDURE AutoExecCmd(AutoCmd: AStr);
 PROCEDURE MenuExec;
 PROCEDURE LoadMenuPW;
 PROCEDURE MainMenuHandle(VAR Cmd: AStr);
-PROCEDURE FCmd(CONST Cmd: AStr; VAR CmdToExec: Byte; VAR CmdExists,CmdNotHid: Boolean);
+PROCEDURE FCmd(CONST Cmd: AStr; VAR CmdToExec: Byte; VAR CmdExists, CmdNotHid: Boolean);
 PROCEDURE DoMenuExec(Cmd: AStr; VAR NewMenuCmd: AStr);
-PROCEDURE DoMenuCommand(VAR Done: Boolean;Cmd,MenuOption: AStr;VAR NewMenuCmd: AStr;NodeActivityDesc: AStr);
+PROCEDURE DoMenuCommand(VAR Done: Boolean; Cmd, MenuOption: AStr; VAR NewMenuCmd: AStr; NodeActivityDesc: AStr);
 
 IMPLEMENTATION
 
 USES
-  Arcview,
+  ArcView,
   Archive1,
   Archive2,
   Archive3,
-  Automsg,
+  AutoMsg,
   BBSList,
   Boot,
   Bulletin,
   CUser,
   Doors,
-  Email,
+  EMail,
   File0,
   File1,
   File2,
@@ -66,18 +68,18 @@ USES
   Script,
   Stats,
   Chat,
-  Sysop1,
-  Sysop2,
+  SysOp1,
+  SysOp2,
   SysOp2G,
-  Sysop3,
-  Sysop4,
+  SysOp3,
+  SysOp4,
   SysOp5,
-  Sysop6,
-  Sysop7,
-  Sysop8,
-  Sysop9,
-  Sysop10,
-  Sysop11,
+  SysOp6,
+  SysOp7,
+  SysOp8,
+  SysOp9,
+  SysOp10,
+  SysOp11,
   SysOp12,
   TimeBank,
   TimeFunc,
@@ -261,7 +263,7 @@ BEGIN
     Flush(TrapFile);
 
   IF (NOT (HotKey IN ThisUser.ACFlags)) OR (ForceLine IN MemMenu.MenuFlags) THEN
-    InputMain(Cmd,60,[UpperOnly,NoLineFeed])
+    InputMain(Cmd,60,[CapAll,NoLineFeed])
   ELSE
   BEGIN
 
@@ -594,6 +596,13 @@ BEGIN
   CASE Cmd[1] OF
     '^' : CASE Cmd[2] OF { Command for testing }
             '^' : BEGIN
+			{
+			filename := 'RENEGADE.ANS';
+			GetDayOfWeek(DayOfWeek);
+			 FileName[length(filename)-1] := Chr(DayOfWeek + 48);
+					print(filename);
+					pausescr(false);
+					}
                   END;
           END;
     '$' : CASE Cmd[2] OF
@@ -657,9 +666,10 @@ BEGIN
           ELSE
             NoCmd := TRUE;
           END;
-       
     '1' : CASE Cmd[2] OF
             'L' : OneLiners;
+          ELSE
+            NoCmd := TRUE;
           END;
     'A' : CASE Cmd[2] OF
             'A','C','M','T' :
@@ -724,7 +734,7 @@ BEGIN
                     CLS;
                     PrintF('LOGOFF');
                     HangUp := TRUE;
-                    HungUp := FALSE;
+                    {HungUp := FALSE;}
                   END;
             'I' : HangUp := TRUE;
             'M' : BEGIN
@@ -944,7 +954,7 @@ BEGIN
                     END;
               'C' : ChangeUser;
               'D' : BEGIN
-                      SysOpLog('* Entered Dos Emulator');
+                      SysOpLog('* Entered DOS Emulator');
                       MiniDOS;
                     END;
               'E' : BEGIN
@@ -977,11 +987,11 @@ BEGIN
                       ValidationEditor;
                     END;
               'T' : BEGIN
-                      mem[Seg0040:$0017] := mem[Seg0040:$0017] XOR 16;
+                      Mem[Seg0040:$0017] := Mem[Seg0040:$0017] XOR 16;
                       IF (SysOpAvailable) THEN
-                        SysOpLog('* Turned ON chat availablity')
+                        SysOpLog('* Enabled SysOp chat availability')
                       ELSE
-                        SysOpLog('* Turned OFF chat availablity');
+                        SysOpLog('* Disabled SysOp chat availability');
                     END;
               'U' : BEGIN
                       SysOpLog('* User Editor');
@@ -1039,23 +1049,20 @@ BEGIN
     LastCommandGood := FALSE;
   IF (NoCmd) THEN
     IF (CoSysOp) THEN
-    BEGIN
-      TempStr := 'Invalid command keys: '+Cmd[1]+Cmd[2]+' '+Cmd;
-      NL;
-      Print(TempStr);
-      SysOpLog(TempStr);
-    END;
-
+      BEGIN
+        TempStr := 'Invalid menu command keys: '+Cmd[1]+Cmd[2]+' '+Cmd;
+        NL;
+        Print(TempStr);
+        SysOpLog('^8[!] ^0'+TempStr);
+      END;
   IF ((Cmd[1] + Cmd[2]) <> 'NW') THEN
     Update_Node('',FALSE);
-
   IF (NewMenuToLoad) THEN
-  BEGIN
-    LoadMenuPW;
-    LastCommandGood := FALSE;
-    IF (NewMenuCmd = '') THEN
-      AutoExecCmd('FIRSTCMD');
-  END;
+    BEGIN
+      LoadMenuPW;
+      LastCommandGood := FALSE;
+      IF (NewMenuCmd = '') THEN
+        AutoExecCmd('FIRSTCMD');
+    END;
 END;
-
 END.

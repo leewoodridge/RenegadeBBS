@@ -496,9 +496,10 @@ VAR
   StripColors: Boolean;
 BEGIN
   NL;
-  Print('Extract message to file:');
+{ Print('Extract message to file:');
   Prt(': ');
-  InputDefault(FileName,'MSG'+IntToStr(ThisNode)+'.TXT',52,[UpperOnly,NoLineFeed],TRUE);
+  InputDefault(FileName,'MSG'+IntToStr(ThisNode)+'.TXT',52,[CapAll,NoLineFeed],TRUE); }
+  InputString('Enter full path and filename for extracted message',FileName,SizeOf(FileName)-1,[CapAll],Changed);
   IF (FileName = '') THEN
   BEGIN
     NL;
@@ -506,10 +507,10 @@ BEGIN
     Exit;
   END;
   NL;
-  IF PYNQ('Are you sure? ',0,FALSE) THEN
+  IF PYNQ('Are you sure?',0,FALSE) THEN
   BEGIN
     NL;
-    StripColors := PYNQ('Strip color codes from output? ',0,FALSE);
+    StripColors := PYNQ('Strip color codes from output?',0,FALSE);
 
     Assign(ExtTxtFile,FileName);
     Append(ExtTxtFile);

@@ -81,7 +81,7 @@ VAR
     ELSE
     BEGIN
       RecNumToDelete := -1;
-      InputIntegerWOC('%LFProtocol to delete?',RecNumToDelete,[NumbersOnly],1,NumProtocols);
+      InputInteger('%LFProtocol to delete?',RecNumToDelete,[NumbersOnly],1,NumProtocols,Changed);
       IF (RecNumToDelete >= 1) AND (RecNumToDelete <= NumProtocols) THEN
       BEGIN
         Reset(ProtocolFile);
@@ -314,7 +314,7 @@ VAR
           CmdStr := '!12345678'
         ELSE
           CmdStr := '!12345678[]FJL';
-        LOneK('%LFModify menu [^1?^2=^1Help^2]: ',Cmd1,'Q?'+CmdStr+^M,TRUE,TRUE);
+        InputChar('%LFModify menu [^1?^2=^1Help^2]: ',Cmd1,'Q?'+CmdStr+^M,[CapAll]);
         CASE Cmd1 OF
           '!' : BEGIN
                   REPEAT
@@ -324,7 +324,7 @@ VAR
                     Print('^03. Is resume protocol: ^1'+ShowYesNo(ProtIsResume IN PRFlags));
                     Print('^04. Is bidirectional  : ^1'+ShowYesNo(ProtBiDirectional IN PRFlags));
                     Print('^05. For reliable only : ^1'+ShowYesNo(ProtReliable IN PRFlags));
-                    LOneK('%LFNew protocol type? [^11^2-^15^2,^1<CR>^2=^1Quit^2]: ',Cmd1,^M'12345',TRUE,TRUE);
+                    InputChar('%LFNew protocol type? [^11^2-^15^2,^1<CR>^2=^1Quit^2]: ',Cmd1,^M'12345',[CapAll]);
                     IF (Cmd1 IN ['1'..'5']) THEN
                       ToggleXBFlags(Cmd1,PRFlags,Changed);
                   UNTIL (Cmd1 = ^M) OR (HangUp);
@@ -334,7 +334,7 @@ VAR
                   REPEAT
                     Ok := TRUE;
                     TempProtocol1.Ckeys := CKeys;
-                    InputWN1('%LFNew command keys: ',CKeys,(SizeOf(Ckeys) - 1),[InterActiveEdit],Changed);
+                    InputString('%LFNew command keys: ',CKeys,(SizeOf(Ckeys) - 1),[InterActiveEdit],Changed);
                     CheckProtocol(Protocol,1,1,Ok);
                     IF (NOT Ok) THEN
                       Ckeys := TempProtocol1.Ckeys;
@@ -342,19 +342,19 @@ VAR
                   REPEAT
                     Ok := TRUE;
                     TempProtocol1.Description := Description;
-                    InputWNWC('%LFNew description: ',Description,(SizeOf(Description) - 1),Changed);
+                    InputString('%LFNew description: ',Description,(SizeOf(Description) - 1),[InteractiveEdit],Changed);
                     CheckProtocol(Protocol,2,2,Ok);
                     IF (NOT Ok) THEN
                       Description := TempProtocol1.Description;
                   UNTIL (Ok) OR (HangUp);
                 END;
-          '2' : InputWN1('%LFNew ACS: ',ACS,(SizeOf(ACS) - 1),[InterActiveEdit],Changed);
+          '2' : InputString('%LFNew ACS: ',ACS,(SizeOf(ACS) - 1),[InterActiveEdit],Changed);
           '3' : IF (CmdOk(Protocol)) AND (ProtIsBatch IN PRFlags) THEN
                 BEGIN
                   Print('%LFIf you specify a Temporary Log file, you must also');
                   Print('specify the "File Name" position, "Status" position and');
                   Print('the corresponding Batch <D>L Codes.');
-                  InputWN1('%LFNew temporary log: ',TempLog,(SizeOf(TempLog) - 1),[InterActiveEdit],Changed);
+                  InputString('%LFNew temporary log: ',TempLog,(SizeOf(TempLog) - 1),[InterActiveEdit],Changed);
                   IF (Protocol.TempLog = '') THEN
                   BEGIN
                     Protocol.TempLogPF := 0;
@@ -365,7 +365,8 @@ VAR
                     REPEAT
                       Ok := TRUE;
                       TempProtocol1.TempLogPF := TempLogPF;
-                      InputByteWC('%LFNew file name log position',TempLogPF,[DisplayValue,NumbersOnly],0,127,Changed);
+                      InputByte('%LFNew file name log position',TempLogPF,[InteractiveEdit{,DisplayValue},
+                      NumbersOnly],0,127,Changed);
                       CheckProtocol(Protocol,3,3,Ok);
                       IF (NOT Ok) THEN
                         TempLogPF := TempProtocol1.TempLogPF;
@@ -373,7 +374,8 @@ VAR
                     REPEAT
                       Ok := TRUE;
                       TempProtocol1.TempLogPS := TempLogPS;
-                      InputByteWC('%LFNew status log position',TempLogPS,[DisplayValue,NumbersOnly],0,127,Changed);
+                      InputByte('%LFNew status log position',TempLogPS,[InteractiveEdit{,DisplayValue},
+                      NumbersOnly],0,127,Changed);
                       CheckProtocol(Protocol,4,4,Ok);
                       IF (NOT Ok) THEN
                         TempLogPS := TempProtocol1.TempLogPS;
@@ -382,8 +384,8 @@ VAR
                 END;
           '4' : IF (CmdOk(Protocol)) AND (ProtIsBatch IN PRFlags) THEN
                 BEGIN
-                  LOneK('%LFFile transfer type? [^1U^2=^1Upload^2,^1D^2=^1Download^2,^1<CR>^2=^1Quit^2]: ',
-                        Cmd1,^M'UD',TRUE,TRUE);
+                  InputChar('%LFFile transfer type? [^1U^2=^1Upload^2,^1D^2=^1Download^2,^1<CR>^2=^1Quit^2]: ',
+                        Cmd1,^M'UD',[CapAll]);
                   CASE Cmd1 OF
                     'U' : BEGIN
                             Print('%LF^8The permanent batch upload log is not utilized by Renegade!^0');
@@ -392,7 +394,7 @@ VAR
                     'D' : BEGIN
                             Print('%LFIf you specify a permanent batch download log, you must also');
                             Print('specify a temporary log.');
-                            InputWN1('%LFNew permanent download log: ',DLoadLog,(SizeOf(DloadLog) - 1),
+                            InputString('%LFNew permanent download log: ',DLoadLog,(SizeOf(DloadLog) - 1),
                                      [InterActiveEdit],Changed);
                           END;
                   END;
@@ -400,12 +402,12 @@ VAR
                 END;
           '5' : BEGIN
                   TempStr := #0;
-                  LOneK('%LFFile transfer type? [^1U^2=^1Upload^2,^1D^2=^1Download^2,^1<CR>^2=^1Quit^2]: ',
-                        Cmd1,^M'UD',TRUE,TRUE);
+                  InputChar('%LFFile transfer type? [^1U^2=^1Upload^2,^1D^2=^1Download^2,^1<CR>^2=^1Quit^2]: ',
+                        Cmd1,^M'UD',[CapAll]);
                   IF (Cmd1 <> ^M) THEN
                   BEGIN
-                    LOneK('%LFFile transfer method? [^1E^2=^1External^2,^1I^2=^1Internal^2,^1O^2=^1Off^2,^1<CR>^2=^1Quit^2]: ',
-                          Cmd2,^M'EIO',TRUE,TRUE);
+                    InputChar('%LFFile transfer method? [^1E^2=^1External^2,^1I^2=^1Internal^2,^1O^2=^1Off^2,'+
+                              '^1<CR>^2=^1Quit^2]: ',Cmd2,^M'EIO',[CapAll]);
                     CASE Cmd2 OF
                       'E' : CASE Cmd1 OF
                               'U' : BEGIN
@@ -415,7 +417,7 @@ VAR
                                         Print('%LFIf you specify an external single upload protocol, you must also');
                                         Print('specify single upload <U>L codes.');
                                       END;
-                                      InputWN1('%LF^0New external upload protocol:%LF^2: ',TempStr,(SizeOf(DlCmd) - 1),
+                                      InputString('%LF^0New external upload protocol:%LF^2: ',TempStr,(SizeOf(DlCmd) - 1),
                                                [InterActiveEdit],Changed);
                                     END;
                               'D' : BEGIN
@@ -432,7 +434,7 @@ VAR
                                           Print('%LFIf you specify an external single download protocol, you must also');
                                           Print('specify single download <D>L codes.');
                                         END;
-                                      InputWN1('%LF^0New external download protocol:%LF^2: ',TempStr,(SizeOf(DlCmd) - 1),
+                                      InputString('%LF^0New external download protocol:%LF^2: ',TempStr,(SizeOf(DlCmd) - 1),
                                                [InterActiveEdit],Changed);
                                       IF (TempStr = '') THEN
                                       BEGIN
@@ -444,7 +446,7 @@ VAR
                                         REPEAT
                                           Ok := TRUE;
                                           TempProtocol1.DLFList := DLFList;
-                                          InputWN1('%LFNew batch file list: ',DLFList,(SizeOf(DLFList) - 1),
+                                          InputString('%LFNew batch file list: ',DLFList,(SizeOf(DLFList) - 1),
                                                    [InterActiveEdit],Changed);
                                           CheckProtocol(Protocol,9,9,Ok);
                                           IF (NOT Ok) THEN
@@ -453,8 +455,8 @@ VAR
                                         REPEAT
                                           Ok := TRUE;
                                           TempProtocol1.MaxChrs := MaxChrs;
-                                          InputByteWC('%LFNew max DOS characters in commandline',MaxChrs,
-                                                      [DisplayValue,NumbersOnly],0,127,Changed);
+                                          InputByte('%LFNew max DOS characters in commandline',MaxChrs,
+                                                      [InteractiveEdit{,DisplayValue},NumbersOnly],0,127,Changed);
                                           CheckProtocol(Protocol,10,10,Ok);
                                           IF (NOT Ok) THEN
                                             MaxChrs := TempProtocol1.MaxChrs;
@@ -470,8 +472,8 @@ VAR
                               LCmds(40,3,'EDIT','');
                               LCmds(40,3,'NEXT','');
                               LCmds(40,3,'QUIT','');
-                              LOneK('%LFNew internal protocol? [^1A^2,^1B^2,^1E^2,^1N^2,^1Q^2,^1<CR>^2=^1Quit^2]: ',
-                                    Cmd2,^M'ABENQ',TRUE,TRUE);
+                              InputChar('%LFNew internal protocol? [^1A^2,^1B^2,^1E^2,^1N^2,^1Q^2,^1<CR>^2=^1Quit^2]: ',
+                                    Cmd2,^M'ABENQ',[CapAll]);
                               IF (Cmd2 <> ^M) THEN
                                 CASE Cmd2 OF
                                   'A' : TempStr := 'ASCII';
@@ -519,8 +521,8 @@ VAR
                   ToggleXBFlags('6',PRFlags,Changed);
           '7' : IF (CmdOk(Protocol)) THEN
                 BEGIN
-                  LOneK('%LFFile transfer type? [^1U^2=^1Upload^2,^1D^2=^1Download^2,^1<CR>^2=^1Quit^2]: ',
-                        Cmd1,'UD'^M,TRUE,TRUE);
+                  InputChar('%LFFile transfer type? [^1U^2=^1Upload^2,^1D^2=^1Download^2,^1<CR>^2=^1Quit^2]: ',
+                        Cmd1,'UD'^M,[CapAll]);
                   CASE Cmd1 OF
                     'U' : BEGIN
                             IF (ProtIsBatch IN PRFlags) THEN
@@ -532,21 +534,22 @@ VAR
                             BEGIN
                               Print('%LF^1New upload codes:^0');
                               FOR Counter := 1 TO 6 DO
-                                InputWN1('%LFCode #'+IntToStr(Counter)+': ',ULCode[Counter],
+                                InputString('%LFCode #'+IntToStr(Counter)+': ',ULCode[Counter],
                                          (SizeOf(ULCode[Counter]) - 1),[InterActiveEdit],Changed);
                             END;
                           END;
                     'D' : BEGIN
                             Print('%LF^1New download codes:^0');
                             FOR Counter := 1 TO 6 DO
-                              InputWN1('%LFCode #'+IntToStr(Counter)+': ',DLCode[Counter],
+                              InputString('%LFCode #'+IntToStr(Counter)+': ',DLCode[Counter],
                                        (SizeOf(DlCode[Counter]) - 1),[InterActiveEdit],Changed);
                           END;
                   END;
                   Cmd1 := #0;
                 END;
           '8' : IF (CmdOk(Protocol)) THEN
-                  InputWN1('%LFNew environment setup commandline:%LF: ',EnvCmd,(SizeOf(EnvCmd) - 1),[InterActiveEdit],Changed);
+                  InputString('%LFNew environment setup commandline:%LF: ',EnvCmd,(SizeOf(EnvCmd) - 1),
+                              [InterActiveEdit],Changed);
           '[' : IF (RecNumToEdit > 1) THEN
                   Dec(RecNumToEdit)
                 ELSE
@@ -569,7 +572,7 @@ VAR
                   Cmd1 := #0;
                 END;
           'J' : BEGIN
-                  InputIntegerWOC('%LFJump to entry?',RecNumToEdit,[NumbersOnly],1,NumProtocols);
+                  InputInteger('%LFJump to entry?',RecNumToEdit,[NumbersOnly],1,NumProtocols,Changed);
                   IF (RecNumToEdit < 1) OR (RecNumToEdit > NumProtocols) THEN
                     Cmd1 := #0;
                 END;
@@ -609,7 +612,7 @@ VAR
     ELSE
     BEGIN
       RecNumToInsertBefore := -1;
-      InputIntegerWOC('%LFProtocol to insert before?',RecNumToInsertBefore,[NumbersOnly],1,(NumProtocols + 1));
+      InputInteger('%LFProtocol to insert before?',RecNumToInsertBefore,[NumbersOnly],1,(NumProtocols + 1),Changed);
       IF (RecNumToInsertBefore >= 1) AND (RecNumToInsertBefore <= (NumProtocols + 1)) THEN
       BEGIN
         Reset(ProtocolFile);
@@ -666,7 +669,7 @@ VAR
     ELSE
     BEGIN
       RecNumToEdit := -1;
-      InputIntegerWOC('%LFProtocol to modify?',RecNumToEdit,[NumbersOnly],1,NumProtocols);
+      InputInteger('%LFProtocol to modify?',RecNumToEdit,[NumbersOnly],1,NumProtocols,Changed);
       IF (RecNumToEdit >= 1) AND (RecNumToEdit <= NumProtocols) THEN
       BEGIN
         SaveRecNumToEdit := -1;
@@ -719,12 +722,12 @@ VAR
     ELSE
     BEGIN
       RecNumToPosition := -1;
-      InputIntegerWOC('%LFPosition which protocol?',RecNumToPosition,[NumbersOnly],1,NumProtocols);
+      InputInteger('%LFPosition which protocol?',RecNumToPosition,[NumbersOnly],1,NumProtocols,Changed);
       IF (RecNumToPosition >= 1) AND (RecNumToPosition <= NumProtocols) THEN
       BEGIN
         RecNumToPositionBefore := -1;
         Print('%LFAccording to the current numbering system.');
-        InputIntegerWOC('%LFPosition before which protocol?',RecNumToPositionBefore,[NumbersOnly],1,(NumProtocols + 1));
+        InputInteger('%LFPosition before which protocol?',RecNumToPositionBefore,[NumbersOnly],1,(NumProtocols + 1),Changed);
         IF (RecNumToPositionBefore >= 1) AND (RecNumToPositionBefore <= (NumProtocols + 1)) AND
            (RecNumToPositionBefore <> RecNumToPosition) AND (RecNumToPositionBefore <> (RecNumToPosition + 1)) THEN
         BEGIN
@@ -801,7 +804,7 @@ BEGIN
   REPEAT
     IF (Cmd <> '?') THEN
       ListProtocols(RecNumToList);
-    LOneK('%LFProtocol editor [^1?^2=^1Help^2]: ',Cmd,'QDIMP?'^M,TRUE,TRUE);
+    InputChar('%LFProtocol editor [^1?^2=^1Help^2]: ',Cmd,'QDIMP?'^M,[CapAll]);
     CASE Cmd OF
       ^M  : IF (RecNumToList < 1) OR (RecNumToList > NumProtocols) THEN
               RecNumToList := 1;

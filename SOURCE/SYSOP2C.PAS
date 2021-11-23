@@ -55,8 +55,8 @@ BEGIN
         PrintACR(PadLeftStr('^0(^1Z^0) Last On Add      : ^1'+LastOnDatACS,39));
         MCIAllowed := TRUE;
         NL;
-        LOneK('ACS Configuration [^1A^2-^1P^2,^1R^2-^1Z^2,(^1Q^2)uit]: ',Cmd,
-              'QABCDEFGHIJKLMNOPRSTUVWXYZ'{^M},TRUE,TRUE);
+        InputChar('ACS Configuration [^1A^2-^1P^2,^1R^2-^1Z^2,(^1Q^2)uit]: ',Cmd,
+              'QABCDEFGHIJKLMNOPRSTUVWXYZ'{^M},[CapAll]);
         IF (Cmd IN ['A'..'P','R'..'Z']) THEN
           BEGIN
             CASE Cmd OF
@@ -86,7 +86,7 @@ BEGIN
               'Y' : TempACS := SPW;
               'Z' : TempACS := LastOnDatACS;
             END;
-            InputWN1('%LFNew ACS: ',TempACS,(SizeOf(ACString)-1),[InterActiveEdit],Changed);
+            InputString('%LFNew ACS: ',TempACS,(SizeOf(ACString)-1),[InterActiveEdit],Changed);
             CASE Cmd OF
               'A' : SOp := TempACS;
               'B' : CSOp := TempACS;

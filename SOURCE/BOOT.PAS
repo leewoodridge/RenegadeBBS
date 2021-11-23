@@ -353,9 +353,10 @@ BEGIN { INITP1 }
   Close(SysOpLogFile);
 
   Assign(SysOpLogFile1,General.LogsPath+'SLOGXXXX.LOG');
+  
   SL1('');
+  SL1('^0Renegade '+General.Version+' Node ^1'+IntToStr(ThisNode)+'^0 Loaded On ^1'+Dat+'^0');
   SL1('');
-  SL1('^0Renegade '+General.Version+' Node ^1'+IntToStr(ThisNode)+'^0 loaded on ^1'+Dat+'^0');
 
   Assign(UserFile,General.DataPath+'USERS.DAT');
 

@@ -1,4 +1,4 @@
-
+{$A+,B-,D+,E-,F+,I-,L+,N-,O+,R-,S+,V-}
 {     (                                         }
 {    )\ )                           (           }
 {   (()/(  (         (  (  (     )  )\ )  (     }
@@ -85,8 +85,8 @@ BEGIN
       END;
     {MCIAllowed := TRUE;}
     NL;
-    LOneK('^2New User Question Toggles [^1A^2-^1P^2,^1R^2-^1U^2,^10^2-^11^2,(^1Q^2)uit]: ',Cmd,
-          'QABCDEFGHIJKLMNOPRSTUVWXYZ01*',TRUE,TRUE);
+    InputChar('^2New User Question Toggles [^1A^2-^1P^2,^1R^2-^1U^2,^10^2-^11^2,(^1Q^2)uit]: ',Cmd,
+          'QABCDEFGHIJKLMNOPRSTUVWXYZ01*',[CapAll]);
     WITH General DO
       CASE Cmd OF
         '*' : BEGIN { Reset Everything }
@@ -157,8 +157,7 @@ BEGIN
         'Z' : NewUserQToggles[26] := NOT NewUserQToggles[26];
         '1' : BEGIN
                 NL;
-                Prompt('^2New user message '#196#196' (^1E^2)nable, (^1D^2)isable, or <^1CR^2>Abort: ');
-                LOneK('',Cmd,^M'ED',TRUE,TRUE);
+                InputChar('^2New user message '#196#196' (^1E^2)nable, (^1D^2)isable, or <^1CR^2>Abort: ',Cmd,^M'ED',[CapAll]);
                 IF (Cmd IN ['E','D']) THEN
                 BEGIN
                 { LEEW: add mandatory or optional question}
@@ -166,8 +165,8 @@ BEGIN
                     'E' : BEGIN
                             NL;
                             {new user application letter -- mandatory or optional?}
-                            InputIntegerWOC('^2New user message goes to which user number?',TempInt,[NumbersOnly],1,
-                                            (MaxUsers - 1));
+                            InputInteger('^2New user message goes to which user number?',TempInt,[NumbersOnly],1,
+                                            (MaxUsers - 1),Changed);
                             {&&^^LeeW: Wording--use finduser??}
                             {NewAppMsgMandatory := YNQ('Should the new user letter be mandatory?',TRUE);}
                           END;

@@ -140,7 +140,7 @@ BEGIN
   IF (ThisUser.TimeBankAdd <> 0) THEN
     Print('^1Deposited today  : ^1'+FormattedTime(ThisUser.TimeBankAdd * 60));
 
-  InputLongIntWOC('%LFDeposit how many minutes',Deposit,[DisplayValue,NumbersOnly],0,32767);
+  InputLongInt('%LF^2Deposit how many minutes',Deposit,[{DisplayValue,}NumbersOnly],0,32767,Changed);
 
   IF (Deposit > 0) THEN
   BEGIN
@@ -188,7 +188,7 @@ BEGIN
   IF (ThisUser.TimeBankWith > 0) THEN
     Print('^1Withdrawn today   : ^1'+FormattedTime(ThisUser.TimeBankWith * 60));
 
-  InputLongIntWOC('%LFWithdraw how many minutes',WithDrawal,[DisplayValue,NumbersOnly],0,32767);
+  InputLongInt('%LF^2Withdraw how many minutes',WithDrawal,[{DisplayValue,}NumbersOnly],0,32767,Changed);
   IF (Withdrawal > 0) THEN
   BEGIN
     NL;

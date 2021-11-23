@@ -107,8 +107,7 @@ FUNCTION GetNewAddr(DisplayStr: AStr; MaxLen: Byte; VAR Zone,Net,Node,Point: Wor
 BEGIN
   GetNewAddr := FALSE;
   Prt(DisplayStr);
-  MPL(MaxLen);
-  InputMain(DisplayStr,MaxLen,[UpperOnly]);
+  InputMain(DisplayStr,MaxLen,[CapAll]);
   IF (DisplayStr = '') OR (Pos('/',DisplayStr) = 0) THEN
     Exit;
   IF (Pos(':',DisplayStr) > 0) THEN
@@ -376,18 +375,19 @@ VAR
   LABEL
     Return;
   VAR
-    Buf: ARRAY [0..511] OF Char;    { These four variables all occupy   }
-    CTL: CTLBlk ABSOLUTE Buf;           { the same memory location.  Total  }
-    INode: INodeBlk ABSOLUTE Buf;       { of 512 bytes.                                         }
-    LNode: LNodeBlk ABSOLUTE Buf;       { --------------------------------- }
-    NodeCTL: CTLBlk;                                    { Store the CTL block seperately        }
-    ALine: STRING[160];                         { Address from NDX FILE                         }
+    Buf: ARRAY [0..511] OF Char;  { These four variables }
+    CTL: CTLBlk ABSOLUTE Buf;     { all occupy the same  }
+    INode: INodeBlk ABSOLUTE Buf; { memory location      }
+    LNode: LNodeBlk ABSOLUTE Buf; { Total of 512 bytes   }
+    {/}
+    NodeCTL: CTLBlk;              { Store the CTL block seperately }
+    ALine: STRING[160];           { Address from NDX FILE }
     J,
     K,
-    L,Count: Integer;                                   { Temp integers                                         }
-    TP: Word;                                       { Pointer to location IN BUF                }
-    Rec,                                    { A temp RECORD IN the FILE                 }
-    FRec: LongInt;                                  { The RECORD when found OR NOT          }
+    L,Count: Integer; { Temp integers }
+    TP: Word; { Pointer to location IN BUF }
+    Rec, { A temp RECORD IN the FILE }
+    FRec: LongInt; { The RECORD when found OR NOT }
   BEGIN
     FRec := -1;
     Get7Node(F1,0,Buf);
@@ -467,9 +467,10 @@ BEGIN
       Fee := 0;
       Exit;
     END;
-    Print('Enter name of intended receiver.');
+  { Print('Enter name of intended receiver.');
     Prt(':');
-    InputDefault(SysOpName,SysOpName,36,[CapWords],TRUE);
+    InputDefault(SysOpName,SysOpName,36,[CapWords],TRUE); }
+    InputString('Enter name of intended receiver ',SysOpName,36,[InteractiveEdit,CapWords],Changed);
     IF (SysOpName = '') THEN
       Exit;
     IF (Pos('@',SysOpName) > 0) THEN
@@ -519,9 +520,10 @@ BEGIN
   SysOpName := '';
   Fee := 0;
   REPEAT
-    Print('Enter a name, a Fidonet address, or an Internet address.');
+  { Print('Enter a name, a Fidonet address, or an Internet address.');
     Prt(':');
-    InputDefault(s,s,36,[],TRUE);
+    InputDefault(s,s,36,[],TRUE); } {LeeW: Changed--checkthis}
+    InputString('Enter a name, a FidoNet address, or an Internet address',s,36,[InteractiveEdit],Changed); {CapWords???}
     IF (s = '') THEN
       Break;
     IF (Pos('/',s) > 0) THEN
@@ -595,10 +597,11 @@ BEGIN
   UNTIL (SysOpName <> '') OR (HangUp);
   IF (NOT Internet) AND (Pos('/',s) = 0) AND (s <> '') THEN
   BEGIN
-    NL;
+  { NL;
     Print('Enter name of intended receiver.');
     Prt(':');
-    InputDefault(SysOpName,SysOpName,36,[CapWords],FALSE);
+    InputDefault(SysOpName,SysOpName,36,[CapWords],FALSE); }
+    InputString('Enter name of intended receiver ',SysOpName,36,[InteractiveEdit,CapWords],Changed);
     IF (SysOpName = '') THEN
       Exit;
   END;
@@ -620,7 +623,7 @@ BEGIN
         NL
       END;
       Prt('Flag to change: ');
-      LOneK('',Cmd,'QPCAIKHRLU?'^M,TRUE,TRUE);
+      InputChar('',Cmd,'QPCAIKHRLU?'^M,[CapAll]);
       IF (Cmd IN ['?']) THEN
         NL;
       WITH MsgHeader DO

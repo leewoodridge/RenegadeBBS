@@ -2,6 +2,8 @@
 {
 Added: Disabled forgotpw question for CoSysOp+
 Added: Won't prompt for SysOpPW if blank
+        phonepw if blank or toggle disabled
+        bdaycheck if = -1869054590 or toggle disabled
 }
 UNIT Logon;
 
@@ -36,7 +38,7 @@ VAR
 
 FUNCTION Hex(i: LongInt; j: Byte): STRING;
 CONST
-  hc : ARRAY [0..15] OF Char = '0123456789ABCDEF';
+  HC : ARRAY [0..15] OF Char = '0123456789ABCDEF';
 VAR
   One,
   Two,
@@ -47,25 +49,25 @@ BEGIN
   Two := (i AND $0000FF00) SHR 8;
   Three := (i AND $00FF0000) SHR 16;
   Four := (i AND $FF000000) SHR 24;
-  Hex[0] := chr(j);          { Length of STRING = 4 or 8}
+  Hex[0] := chr(j); { Length of string = 4 or 8}
   IF (j = 4) THEN
-  BEGIN
-    Hex[1] := hc[Two SHR 4];
-    Hex[2] := hc[Two AND $F];
-    Hex[3] := hc[One SHR 4];
-    Hex[4] := hc[One AND $F];
-  END
+    BEGIN
+      Hex[1] := HC[Two SHR 4];
+      Hex[2] := HC[Two AND $F];
+      Hex[3] := HC[One SHR 4];
+      Hex[4] := HC[One AND $F];
+    END
   ELSE
-  BEGIN
-    Hex[8] := hc[One AND $F];
-    Hex[7] := hc[One SHR 4];
-    Hex[6] := hc[Two AND $F];
-    Hex[5] := hc[Two SHR 4];
-    Hex[4] := hc[Three AND $F];
-    Hex[3] := hc[Three SHR 4];
-    Hex[2] := hc[Four AND $F];
-    Hex[1] := hc[Four SHR 4];
-  END;
+    BEGIN
+      Hex[8] := HC[One AND $F];
+      Hex[7] := HC[One SHR 4];
+      Hex[6] := HC[Two AND $F];
+      Hex[5] := HC[Two SHR 4];
+      Hex[4] := HC[Three AND $F];
+      Hex[3] := HC[Three SHR 4];
+      Hex[2] := HC[Four AND $F];
+      Hex[1] := HC[Four SHR 4];
+    END;
 END;
 
 PROCEDURE IEMSI;
@@ -92,10 +94,10 @@ VAR
     IF (Buffer[NextItemPointer] = '{') THEN
       Inc(NextItemPointer);
     WHILE (NextItemPointer < 2048) AND (Buffer[NextItemPointer] <> #0) AND (Buffer [NextItemPointer] <> '}') DO
-    BEGIN
-      S := S + Buffer[NextItemPointer];
-      Inc(NextItemPointer);
-    END;
+      BEGIN
+        S := S + Buffer[NextItemPointer];
+        Inc(NextItemPointer);
+      END;
     IF (Buffer[NextItemPointer] = '}') THEN
       Inc(NextItemPointer);
     NextItem := S;
@@ -122,131 +124,125 @@ BEGIN
   REPEAT
     HangUp := NOT Com_Carrier;
     IF (ABS(T1 - Timer) > 2) THEN
-    BEGIN
-      T1 := Timer;
-      Inc(Tries);
-      IF (Tries >= 2) THEN
-        Done := TRUE
-      ELSE
       BEGIN
-        Com_Flush_Recv;
-        SerialOut(Emsi_Irq);
+        T1 := Timer;
+        Inc(Tries);
+        IF (Tries >= 2) THEN
+          Done := TRUE
+        ELSE
+          BEGIN
+            Com_Flush_Recv;
+            SerialOut(Emsi_Irq);
+          END;
       END;
-    END;
     IF (ABS(T2 - Timer) >= 8) THEN
       Done := TRUE;
     C := Cinkey;
     IF (C > #0) THEN
-    BEGIN
-      IF (Length(S) >= 160) THEN
-        Delete(S, 1, 120);
-      S := S + C;
-      IF (Pos('**EMSI_ICI', S) > 0) THEN
       BEGIN
-        Delete(S,1,Pos('EMSI_ICI',S) - 1);
-        Move(S[1],Buffer[1],Length(S));
-        Buffptr := Length(S);
-        T1 := Timer;
-        REPEAT
-          C := Cinkey;
-          IF NOT (C IN [#0, #13]) THEN
+        IF (Length(S) >= 160) THEN
+          Delete(S, 1, 120);
+        S := S + C;
+        IF (Pos('**EMSI_ICI', S) > 0) THEN
           BEGIN
-            Inc(Buffptr);
-            Buffer[Buffptr] := C;
-          END;
-        UNTIL (HangUp) OR (ABS(Timer - T1) > 4) OR (C = ^M) OR (Buffptr = 2048);
-        S [0] := #8;
-        Move(Buffer[Buffptr - 7],S[1],8);
-        Dec(Buffptr,8);
-        IF (S = Hex(UpdateCRC32($Ffffffff,Buffer[1],Buffptr),8)) THEN
-        BEGIN
-          LoadURec(User,1);
-          Isi := '{Renegade,'+General.Version+'}{'+General.BBSName+'}{'+User.CityState+
-                 '}{'+General.SysOpName+'}{'+Hex(GetPackDateTime,8)+
-                 '}{Live free or die!}{}{Everything!}';
-          Isi := 'EMSI_ISI'+ Hex(Length(Isi),4) + Isi;
-          Isi := Isi + Hex(UpdateCRC32($Ffffffff,Isi[1],Length(Isi)),8);
-          Isi := '**' + Isi + ^M;
-          Com_Flush_Recv;
-          SerialOut(Isi);
-          Tries := 0;
-          T1 := Timer;
-          S := '';
-          REPEAT
-            IF (ABS(Timer - T1) >= 3) THEN
-            BEGIN
-              T1 := Timer;
-              Inc(Tries);
-              Com_Flush_Recv;
-              SerialOut(Isi);
-            END;
-            C := Cinkey;
-            IF (C > #0) THEN
-            BEGIN
-              IF (Length(S) >= 160) THEN
-                Delete(S,1,120);
-              S := S + C;
-              IF (Pos('**EMSI_ACK', S) > 0) THEN
+            Delete(S,1,Pos('EMSI_ICI',S) - 1);
+            Move(S[1],Buffer[1],Length(S));
+            BuffPtr := Length(S);
+            T1 := Timer;
+            REPEAT
+              C := CInKey;
+              IF NOT (C IN [#0, #13]) THEN
+                BEGIN
+                  Inc(BuffPtr);
+                  Buffer[BuffPtr] := C;
+                END;
+            UNTIL (HangUp) OR (ABS(Timer - T1) > 4) OR (C = ^M) OR (BuffPtr = 2048);
+            S [0] := #8;
+            Move(Buffer[BuffPtr - 7],S[1],8);
+            Dec(BuffPtr,8);
+            IF (S = Hex(UpdateCRC32($Ffffffff,Buffer[1],BuffPtr),8)) THEN
               BEGIN
-                Com_Flush_Recv;
-                Com_Purge_Send;
-                Done := TRUE;
-                Success := TRUE;
-              END
-              ELSE IF (Pos('**EMSI_NAKEEC3',S) > 0) THEN
-              BEGIN
+                LoadURec(User,1);
+                Isi := '{Renegade,'+General.Version+'}{'+General.BBSName+'}{'+User.CityState+
+                       '}{'+General.SysOpName+'}{'+Hex(GetPackDateTime,8)+
+                       '}{Live free or die!}{}{Everything!}';
+                Isi := 'EMSI_ISI'+ Hex(Length(Isi),4) + Isi;
+                Isi := Isi + Hex(UpdateCRC32($Ffffffff,Isi[1],Length(Isi)),8);
+                Isi := '**' + Isi + ^M;
                 Com_Flush_Recv;
                 SerialOut(Isi);
-                Inc(Tries);
+                Tries := 0;
+                T1 := Timer;
+                S := '';
+                REPEAT
+                  IF (ABS(Timer - T1) >= 3) THEN
+                    BEGIN
+                      T1 := Timer;
+                      Inc(Tries);
+                      Com_Flush_Recv;
+                      SerialOut(Isi);
+                    END;
+                  C := Cinkey;
+                  IF (C > #0) THEN
+                    BEGIN
+                      IF (Length(S) >= 160) THEN
+                        Delete(S,1,120);
+                      S := S + C;
+                      IF (Pos('**EMSI_ACK', S) > 0) THEN
+                        BEGIN
+                          Com_Flush_Recv;
+                          Com_Purge_Send;
+                          Done := TRUE;
+                          Success := TRUE;
+                        END
+                      ELSE IF (Pos('**EMSI_NAKEEC3',S) > 0) THEN
+                        BEGIN
+                          Com_Flush_Recv;
+                          SerialOut(Isi);
+                          Inc(Tries);
+                        END;
+                    END;
+                UNTIL (Tries >= 3) OR (Done);
+              END
+            ELSE
+              BEGIN
+                SerialOut('**EMSI_NAKEEC3');
+                T1 := Timer;
               END;
-            END;
-          UNTIL (Tries >= 3) OR (Done);
-        END
-        ELSE
-        BEGIN
-          SerialOut('**EMSI_NAKEEC3');
-          T1 := Timer;
-        END;
+          END;
       END;
-    END;
   UNTIL (Done) OR (HangUp);
   IF (Success) THEN
-  BEGIN
-    (* Should this be print ???
-    WriteLn('success.');
-    *)
-    Writeln(lRGLngStr(132,TRUE));
-    SL1('IEMSI negotiation Suceeded.');
-  END
+    BEGIN
+      Writeln(lRGLngStr(132,TRUE)); {"Success"} (* Should this be print ??? *)
+      SL1('IEMSI negotiation Suceeded.');
+    END
   ELSE
-  BEGIN
-    (* Should this be print ???
-    WriteLn('failure.');
-    *)
-    WriteLn(lRGLngStr(133,TRUE));
-    SL1('IEMSI negotiation failed.');
-  END;
+    BEGIN
+      WriteLn(lRGLngStr(133,TRUE)); {"Failure"} (* Should this be print ??? *)
+      SL1('IEMSI negotiation failed.');
+    END;
   NextItemPointer := 1;
   WITH IEMSIRec DO
-  BEGIN
-    UserName := NextItem;
-    Handle := NextItem;
-    CityState := NextItem;
-    Ph := NextItem;
-    S := NextItem;
-    Pw := AllCaps(NextItem);
-    I := StrToInt('$'+NextItem);
-    IF (I > 0) THEN
-      Bdate := Pd2Date(I);
-  END;
-    Com_Flush_Recv;
+    BEGIN
+      UserName := NextItem;
+      Handle := NextItem;
+      CityState := NextItem;
+      Ph := NextItem;
+      S := NextItem;
+      Pw := AllCaps(NextItem);
+      I := StrToInt('$'+NextItem);
+      IF (I > 0) THEN
+        BDate := Pd2Date(I);
+    END;
+  Com_Flush_Recv;
 END;
 
-PROCEDURE Check_Ansi;
+PROCEDURE Check_ANSI;
 VAR
   L: LongInt;
   C: Char;
-  Ox,x,y: Byte;
+  Ox,X,Y: Byte;
   S: AStr;
 
   PROCEDURE ANSIResponse(VAR x,y: Byte);
@@ -258,49 +254,46 @@ VAR
     C := #0;
     Xs := '';
     Ys := '';
-    x := 0;
-    y := 0;
+    X := 0;
+    Y := 0;
     WHILE (L > Timer) AND (C <> ^[) AND (NOT HangUp) DO
       IF (NOT Empty) THEN
-        C := Com_Recv;        { must be low level to avoid ansi-eater }
+        C := Com_Recv; { must be low level to avoid ansi-eater }
       IF (C = ^[) THEN
-      BEGIN
-        L := (Timer + 1);
-        WHILE (L > Timer) AND (C <> ';') AND (NOT HangUp) DO
-          IF (NOT Empty) THEN
-          BEGIN
-            C := Com_Recv;
-            IF (C IN ['0'..'9']) AND (Length(Ys) < 4) THEN
-              Ys := Ys + C;
-          END;
-        L := (Timer + 1);
-        WHILE (L > Timer) AND (C <> 'R') AND (NOT HangUp) DO
-          IF (NOT Empty) THEN
-          BEGIN
-            C := Com_Recv;
-            IF (C IN ['0'..'9']) AND (Length(Xs) < 4) THEN
-              Xs := Xs + C;
-          END;
-        x := StrToInt(Xs);
-        y := StrToInt(Ys);
-      END;
+        BEGIN
+          L := (Timer + 1);
+          WHILE (L > Timer) AND (C <> ';') AND (NOT HangUp) DO
+            IF (NOT Empty) THEN
+              BEGIN
+                C := Com_Recv;
+                IF (C IN ['0'..'9']) AND (Length(Ys) < 4) THEN
+                  Ys := Ys + C;
+              END;
+          L := (Timer + 1);
+          WHILE (L > Timer) AND (C <> 'R') AND (NOT HangUp) DO
+            IF (NOT Empty) THEN
+              BEGIN
+                C := Com_Recv;
+                IF (C IN ['0'..'9']) AND (Length(Xs) < 4) THEN
+                  Xs := Xs + C;
+              END;
+          X := StrToInt(Xs);
+          Y := StrToInt(Ys);
+        END;
   END;
 
 BEGIN
   TextAttr := 10;
-  (* Should this be Prompt ???
-  Write('Attempting to detect emulation ... ');
-  *)
-  Write(lRGLngStr(134,TRUE));
+  Write(lRGLngStr(134,TRUE)); {"Attempting to detect emulation ..."} (* Should this be Prompt ??? *)
   Exclude(ThisUser.ACFlags,Avatar);
   Exclude(ThisUser.ACFlags,Ansi);
   Exclude(ThisUser.ACFlags,Vt100);
   Exclude(ThisUser.SFlags,Rip);
   IF (ComPortSpeed = 0) THEN
-  BEGIN
-    Include(ThisUser.ACFlags,Ansi);
-    Exit;
-  END;
+    BEGIN
+      Include(ThisUser.ACFlags,Ansi);
+      Exit;
+    END;
   Com_Flush_Recv;
   SerialOut(^M^M^['[!'#8#8#8);
   L := (Timer + 2);
@@ -309,56 +302,55 @@ BEGIN
   WHILE (L > Timer) AND (C <> 'R') AND (NOT HangUp) DO IF (NOT Empty) THEN
     C := Com_Recv;
   IF (C = 'R') THEN
-  BEGIN
-    L := (Ticks + 3);
-    WHILE (NOT Empty) AND (Ticks < L) DO;
-      C := Com_Recv;
-    IF (C = 'I') THEN
     BEGIN
       L := (Ticks + 3);
       WHILE (NOT Empty) AND (Ticks < L) DO;
-      C := Com_Recv;
-      IF (C = 'P') THEN
-      BEGIN
-        Include(ThisUser.SFlags,Rip);
-        S := lRGLngStr(135,TRUE); {'RIP'}
-      END;
+        C := Com_Recv;
+      IF (C = 'I') THEN
+        BEGIN
+          L := (Ticks + 3);
+          WHILE (NOT Empty) AND (Ticks < L) DO;
+            C := Com_Recv;
+          IF (C = 'P') THEN
+            BEGIN
+              Include(ThisUser.SFlags,Rip);
+              S := lRGLngStr(135,TRUE); {'RIP'}
+            END;
+        END;
+      Com_Flush_Recv;
     END;
-    Com_Flush_Recv;
-  END;
   SerialOut(^M^M^['[6n'#8#8#8#8);
   ANSIResponse(x,y);
   IF (x + y > 0) THEN
-  BEGIN
-    Include(ThisUser.ACFlags,Ansi);
-  ANSIDetected := TRUE;
-    IF (S <> '') THEN
-      S := S + lRGLngStr(136,TRUE) {'/Ansi'}
-    ELSE
-      S := lRGLngStr(137,TRUE); {'Ansi'}
-    SerialOut(^V^F);
-    SerialOut(^['[6n'#8#8);
-    Ox := x;
-    ANSIResponse(x,y);
-    IF (x = Ox + 1) THEN
     BEGIN
-      Include(ThisUser.ACFlags,Avatar);
+      Include(ThisUser.ACFlags,Ansi);
+      ANSIDetected := TRUE;
       IF (S <> '') THEN
-        S := S + lRGLngStr(138,TRUE)  {'/Avatar'}
+        S := S + lRGLngStr(136,TRUE) {'/Ansi'}
       ELSE
-        S := lRGLngStr(139,TRUE); {'Avatar'}
-    END
-    ELSE
-      SerialOut(#8#8);
-  END;
+        S := lRGLngStr(137,TRUE); {'Ansi'}
+      SerialOut(^V^F);
+      SerialOut(^['[6n'#8#8);
+      Ox := x;
+      ANSIResponse(x,y);
+      IF (x = Ox + 1) THEN
+        BEGIN
+          Include(ThisUser.ACFlags,Avatar);
+          IF (S <> '') THEN
+            S := S + lRGLngStr(138,TRUE)  {'/Avatar'}
+          ELSE
+            S := lRGLngStr(139,TRUE); {'Avatar'}
+        END
+      ELSE
+        SerialOut(#8#8);
+    END;
   IF (S <> '') THEN
-    Print('|10'+S+lRGLngStr(140,TRUE)) {' detected.'}
+    Print('^9'+S+lRGLngStr(140,TRUE)) {' detected.'}
   ELSE
-  BEGIN
-    TextAttr := 7;
-    { Should this be Print ??? }
-    WriteLn;
-  END;
+    BEGIN
+      TextAttr := 7;
+      WriteLn; { Should this be Print ??? }
+    END;
 END;
 
 PROCEDURE GetPWS(VAR Ok: Boolean; VAR Tries: Integer);  (* Tries should be Byte *)
@@ -366,10 +358,10 @@ VAR
   MHeader: MHeaderRec;
   S: AStr;
   PhonePW: STR4;
-  Birthday: Str10;
+  Birthday: STR10;
   UserPW,
-  SysOpPW: Str20;
-  ForgotPW: Str40;
+  SysOpPW: STR20;
+  ForgotPW: STR40;
 BEGIN
   Ok := TRUE;
   IF (NOT (FastLogon AND (NOT General.LocalSec))) THEN
@@ -377,18 +369,18 @@ BEGIN
       IF (IEMSIRec.Pw = '') THEN
         BEGIN
           lRGLngStr(183,FALSE); {"Password:"}
-          InputMain(UserPW,SizeOf(UserPW)-1,[IsPassword]); {GetPassword(UserPw,20);}
+          InputMain(UserPW,SizeOf(UserPW)-1,[NoInputField,IsPassword]); {GetPassword(UserPw,20);}
         END
       ELSE
         BEGIN
           UserPW := IEMSIRec.Pw;
           IEMSIRec.Pw := '';
         END;
-      IF (General.Phonepw) THEN
+      IF (General.PhonePW) AND (ThisUser.Ph <> '') AND (General.NewUserQToggles[7] = TRUE) THEN
         IF (IEMSIRec.Ph = '') THEN
           BEGIN
             lRGLngStr(184,FALSE); {"(xxx)xxx-"}
-            InputMain(PhonePW,SizeOf(PhonePW)-1,[IsPassword]); {GetPassword(PhonePW,4);}
+            InputMain(PhonePW,SizeOf(PhonePW)-1,[NoInputField,IsPassword]); {GetPassword(PhonePW,4);}
           END
         ELSE
           BEGIN
@@ -398,16 +390,17 @@ BEGIN
         ELSE
           PhonePW := Copy(ThisUser.Ph,Length(ThisUser.Ph) - 3,4);
     END;
-  IF (NOT (FastLogon AND (NOT General.LocalSec))) AND ((ThisUser.Pw <> Crc32(UserPW)) OR
+  IF (NOT (FastLogon AND (NOT General.LocalSec))) AND ((ThisUser.PW <> CRC32(UserPW)) OR
      (Copy(ThisUser.Ph,Length(ThisUser.Ph) - 3,4) <> PhonePW)) THEN
     BEGIN
       Ok := FALSE;
       lRGLngStr(119,FALSE); (*Prompt(FString.ILogon);*)
       IF (NOT HangUp) AND (UserNum <> 0) THEN
         BEGIN
-          S := '* Illegal logon attempt! Tried: '+Caps(ThisUser.Name)+' #'+IntToStr(UserNum)+' PW='+UserPw;
-          IF (General.Phonepw) THEN
-            S := S + ', PH#='+PhonePW;
+          S := '^8[*] ^0Invalid Logon! -- USER: ^1'+AllCaps(ThisUser.Name)+'^0 (#'+IntToStr(UserNum)+') PW: ^1'+
+               AllCaps(UserPW)+'^0';
+          IF (General.PhonePW) THEN
+            S := S + ' PH#: ^1'+PhonePW+'^0';
           SendShortMessage(1,S);
           SL1(S);
         END;
@@ -423,8 +416,7 @@ BEGIN
           ELSE
             BEGIN
               lRGLngStr(186,FALSE); { Forgot Password Question Prompt }
-              MPL(40);
-              InputMain(ForgotPW,SizeOf(ForgotPW)-1,[UpperOnly]);
+              InputMain(ForgotPW,SizeOf(ForgotPW)-1,[CapAll]);
               IF (ForgotPW <> ThisUser.ForgotPWAnswer) THEN
                 BEGIN
                   S := '* Invalid forgot password response: '+ForgotPW;
@@ -476,7 +468,7 @@ BEGIN
       SysOpLog(ThisUser.Name+': Attempt to access system when locked out^8 <--');
       HangUp := TRUE;
     END;
-  IF (UserNum > 0) AND (Onnode(UserNum) > 0) AND NOT (Cosysop) THEN
+  IF (UserNum > 0) AND (Onnode(UserNum) > 0) AND NOT (CoSysOp) THEN
     BEGIN
       PrintF('MULTILOG');
       IF (NoFile) THEN
@@ -484,7 +476,8 @@ BEGIN
       HangUp := TRUE;
     END;
   IF (NOT FastLogon) AND (Ok) AND (NOT HangUp) AND (General.Birthdatecheck > 0) AND
-     (ThisUser.LoggedOn MOD General.Birthdatecheck = 0) THEN
+     (ThisUser.LoggedOn MOD General.Birthdatecheck = 0) AND (ThisUser.Birthdate <> -1869054590) AND 
+     (General.NewUserQToggles[08] = TRUE) THEN
     BEGIN
       lRGLngStr(187,FALSE); (*Prt('Please verify your date of birth (mm/dd/yyyy): ');*)
       Inputformatted('',Birthday,'##/##/####',FALSE);
@@ -511,52 +504,96 @@ VAR
   Ok: Boolean;
 BEGIN
   IF (IEMSIRec.UserName <> '') THEN
-  BEGIN
-    I := SearchUser(IEMSIRec.UserName,TRUE);
-    IF (I = 0) AND (IEMSIRec.Handle <> '') THEN
-      I := SearchUser(IEMSIRec.Handle,TRUE);
-    IF (I > 0) THEN
     BEGIN
-      Zz := UserNum;
-      UserNum := 0;
-      OldUser := ThisUser;
-      LoadURec(ThisUser,I);
-      UserNum := Zz;
-      GetPWS(Ok,Zz);
-      GotName := Ok;
-      IF (NOT GotName) THEN
-      BEGIN
-        ThisUser := OldUser;
-        Update_Screen;
-      END
+      I := SearchUser(IEMSIRec.UserName,TRUE);
+      IF (I = 0) AND (IEMSIRec.Handle <> '') THEN
+        I := SearchUser(IEMSIRec.Handle,TRUE);
+      IF (I > 0) THEN
+        BEGIN
+          Zz := UserNum;
+          UserNum := 0;
+          OldUser := ThisUser;
+          LoadURec(ThisUser,I);
+          UserNum := Zz;
+          GetPWS(Ok,Zz);
+          GotName := Ok;
+          IF (NOT GotName) THEN
+            BEGIN
+              ThisUser := OldUser;
+              Update_Screen;
+            END
+          ELSE
+            BEGIN
+              UserNum := I;
+              IF (PD2Date(ThisUser.LastOn) <> DateStr) THEN
+                WITH ThisUser DO
+                  BEGIN
+                    OnToday := 0;
+                    TLToday := General.TimeAllow[SL];
+                    TimeBankAdd := 0;
+                    DLToday := 0;
+                    DLKToday := 0;
+                    TimeBankWith := 0;
+                  END;
+              UserOn := TRUE;
+              Update_Screen;
+              SysOpLog('Logged in IEMSI as '+Caps(ThisUser.Name));
+            END;
+        END
       ELSE
-      BEGIN
-        UserNum := I;
-        IF (Pd2Date(ThisUser.LastOn) <> DateStr) THEN
-          WITH ThisUser DO
-          BEGIN
-            OnToday := 0;
-            TLToday := General.TimeAllow[SL];
-            TimeBankAdd := 0;
-            DLToday := 0;
-            DLKToday := 0;
-            TimeBankWith := 0;
-          END;
-        UserOn := TRUE;
-        Update_Screen;
-        SysOpLog('Logged in IEMSI as '+Caps(ThisUser.Name));
-      END;
-    END
-    ELSE
-      (*
-      Print(FString.NameNotFound);
-      *)
-      lRGLngStr(118,FALSE);
+        lRGLngStr(118,FALSE); (*Print(FString.NameNotFound);*)
+    END;
+END;
 
+PROCEDURE FindUser(VAR UserNum: Integer);
+VAR
+  User: UserRecordType;
+  TempUserName: Str36;
+  TempUserNum: Integer;
+BEGIN
+  UserNum := 0;
+  TempUserName := '';
+  InputMain(TempUserName,SizeOf(TempUserName)-1,[NoInputField,CapAll]);
+  IF (TempUserName = 'NEW') THEN
+  BEGIN
+    UserNum := -1;
+    Exit;
+  END;
+  IF (TempUserName = '?') THEN
+    Exit;
+  WHILE (Pos('  ',TempUserName) <> 0) DO
+    Delete(TempUserName,Pos('  ',TempUserName),1);
+  WHILE (TempUserName[1] = ' ') AND (Length(TempUserName) > 0) DO
+    Delete(TempUserName,1,1);
+  IF (TempUserName = '') OR (HangUp) THEN
+    Exit;
+  UserNum := StrToInt(TempUserName);
+  IF (UserNum <> 0) THEN
+  BEGIN
+    IF (UserNum < 0) OR (UserNum > (MaxUsers - 1)) THEN
+      UserNum := 0
+    ELSE
+    BEGIN
+      LoadURec(User,UserNum);
+      IF (Deleted IN User.SFlags) THEN
+        UserNum := 0;
+    END;
+  END
+  ELSE IF (TempUserName <> '') THEN
+  BEGIN
+    TempUserNum := SearchUser(TempUserName,TRUE);
+    IF (TempUserNum <> 0) THEN
+    BEGIN
+      LoadURec(User,TempUserNum);
+      IF (NOT (Deleted IN User.SFlags)) THEN
+        UserNum := TempUserNum
+      ELSE
+        UserNum := 0;
+    END;
   END;
 END;
 
-PROCEDURE Doshuttle;
+PROCEDURE DoShuttle;
 VAR
   Cmd,NewMenuCmd: AStr;
   SaveMenu,
@@ -589,114 +626,102 @@ BEGIN
         IF (MemCmd^[CmdToExec].Cmdkeys <> 'OP') AND (MemCmd^[CmdToExec].Cmdkeys <> 'O2') AND
            (MemCmd^[CmdToExec].Cmdkeys[1] <> 'H') AND (MemCmd^[CmdToExec].Cmdkeys[1] <> '-') AND
            (NOT GotName) THEN
-        BEGIN
-          (*
-          Prompt(FString.Shuttleprompt);
-          *)
-          lRGLngStr(189,FALSE);
-          FindUser(UserNum);
-          IF (UserNum >= 1) THEN
           BEGIN
-            I := UserNum;
-            UserNum := 0;
-            OldUser := ThisUser;
-            LoadURec(ThisUser,I);
-            UserNum := I;
-            GetPWS(Ok,Tries);
-            GotName := Ok;
-            IF (NOT GotName) THEN
-            BEGIN
-              ThisUser := OldUser;
-              Update_Screen;
-            END
+            lRGLngStr(189,FALSE); (*Prompt(FString.Shuttleprompt);*)
+            FindUser(UserNum);
+            IF (UserNum >= 1) THEN
+              BEGIN
+                I := UserNum;
+                UserNum := 0;
+                OldUser := ThisUser;
+                LoadURec(ThisUser,I);
+                UserNum := I;
+                GetPWS(Ok,Tries);
+                GotName := Ok;
+                IF (NOT GotName) THEN
+                  BEGIN
+                    ThisUser := OldUser;
+                    Update_Screen;
+                  END
+                ELSE
+                  BEGIN
+                    IF (PD2Date(ThisUser.LastOn) <> DateStr) THEN
+                      WITH ThisUser DO
+                        BEGIN
+                          OnToday := 0;
+                          TLToday := General.TimeAllow[SL];
+                          TimeBankAdd := 0;
+                          DLToday := 0;
+                          DLKToday := 0;
+                          TimeBankWith := 0;
+                        END;
+                    UserOn := TRUE;
+                    Update_Screen;
+                    SysOpLog('Logged on to Shuttle Menu as '+Caps(ThisUser.Name));
+                    DoMenuCommand(Done,
+                                  MemCmd^[CmdToExec].Cmdkeys,
+                                  MemCmd^[CmdToExec].Options,
+                                  NewMenuCmd,
+                                  MemCmd^[CmdToExec].NodeActivityDesc);
+                  END;
+              END
             ELSE
-            BEGIN
-              IF (Pd2Date(ThisUser.LastOn) <> DateStr) THEN
-                WITH ThisUser DO
-                BEGIN
-                  OnToday := 0;
-                  TLToday := General.TimeAllow[SL];
-                  TimeBankAdd := 0;
-                  DLToday := 0;
-                  DLKToday := 0;
-                  TimeBankWith := 0;
-                END;
-              UserOn := TRUE;
-              Update_Screen;
-              SysOpLog('Logged on to Shuttle Menu as '+Caps(ThisUser.Name));
-              DoMenuCommand(Done,
-                            MemCmd^[CmdToExec].Cmdkeys,
-                            MemCmd^[CmdToExec].Options,
-                            NewMenuCmd,
-                            MemCmd^[CmdToExec].NodeActivityDesc);
-            END;
+              BEGIN
+                lRGLngStr(119,FALSE); (*Print(FString.ILogon);*)
+                Inc(Tries);
+              END;
           END
-          ELSE
-          BEGIN
-            (*
-            Print(FString.ILogon);
-            *)
-            lRGLngStr(119,FALSE);
-            Inc(Tries);
-          END;
-      END
-      ELSE
-        DoMenuCommand(Done,
-                      MemCmd^[CmdToExec].Cmdkeys,
-                      MemCmd^[CmdToExec].Options,
-                      NewMenuCmd,
-                      MemCmd^[CmdToExec].NodeActivityDesc);
+        ELSE
+          DoMenuCommand(Done,
+                        MemCmd^[CmdToExec].Cmdkeys,
+                        MemCmd^[CmdToExec].Options,
+                        NewMenuCmd,
+                        MemCmd^[CmdToExec].NodeActivityDesc);
     UNTIL (CmdToExec = 0) OR (Done);
     CASE TSHuttleLogon OF
       1 : BEGIN
-
             Reset(ValidationFile);
             RecNum1 := -1;
             RecNum := 1;
             WHILE (RecNum <= NumValKeys) AND (RecNum1 = -1) DO
-            BEGIN
-              Seek(ValidationFile,(RecNum - 1));
-              Read(ValidationFile,Validation);
-              IF (Validation.Key = '!') THEN
-                RecNum1 := RecNum;
-              Inc(RecNum);
-            END;
+              BEGIN
+                Seek(ValidationFile,(RecNum - 1));
+                Read(ValidationFile,Validation);
+                IF (Validation.Key = '!') THEN
+                  RecNum1 := RecNum;
+                Inc(RecNum);
+              END;
             Close(ValidationFile);
-
             IF (RecNum1 <> -1) AND (ThisUser.SL > Validation.NewSL) THEN
               Loggedon := TRUE
             ELSE
-            BEGIN
-              PrintF('NOSHUTT');
-              IF (NoFile) THEN
-                (*
-                Print('You have not been validated yet.');
-                *)
-                lRGLngStr(141,FALSE);
-              SL1('* Illegal Shuttle Logon attempt');
-              Inc(Tries);
-            END;
-
+              BEGIN
+                PrintF('NOSHUTT');
+                IF (NoFile) THEN
+                  lRGLngStr(141,FALSE); (*Print('You have not been validated yet.');*)
+                SL1('* Illegal Shuttle Logon attempt');
+                Inc(Tries);
+              END;
           END;
       2 : BEGIN
-            IF (NOT General.ClosedSystem) AND PYNQ(lRGLngStr(182,TRUE){FString.LogonAsNew},0,FALSE) THEN
-            BEGIN
-              NewUserInit;
-              NewUser;
-              IF (UserNum > 0) AND (NOT HangUp) THEN
+            IF (NOT General.ClosedSystem) AND PYNQ(lRGLngStr(182,TRUE),0,FALSE) THEN {"Logon as new?"}
               BEGIN
-                GotName := TRUE;
-                UserOn := TRUE;
-                DailyMaint;
+                NewUserInit;
+                NewUser;
+                IF (UserNum > 0) AND (NOT HangUp) THEN
+                  BEGIN
+                    GotName := TRUE;
+                    UserOn := TRUE;
+                    DailyMaint;
+                  END;
+                CurMenu := General.ShuttleLogonMenu;
+                LoadMenu;
               END;
-              CurMenu := General.ShuttleLogonMenu;
-              LoadMenu;
-            END;
           END;
     END;
     IF (Tries >= General.MaxLogonTries) THEN
       HangUp := TRUE;
-  UNTIL (Loggedon) OR (HangUp);
+  UNTIL (LoggedOn) OR (HangUp);
   CurMenu := SaveMenu;
   NewMenuToLoad := TRUE;
 END;
@@ -741,24 +766,24 @@ BEGIN
   ChopTime := 0;
   CreditTime := 0;
 
-  SL1('');
+  {SL1('');}
 
-  S := '^1Logon node '+IntToStr(ThisNode)+'^1 ['+Dat+']^2 (';
+  S := ' ^9* ^1Logon node '+IntToStr(ThisNode)+' ['+Dat+'] (';
   IF (ComPortSpeed > 0) THEN
-  BEGIN
-    S := S + IntToStr(ActualSpeed)+' baud';
-    IF (Reliable) THEN
-      S := S + '/Reliable)'
-    ELSE
-      S := S + ')';
-    IF (CallerIDNumber > '') THEN
     BEGIN
-      IF (NOT Telnet) THEN
-        S := S + ' Number: '+CallerIDNumber
+      S := S + IntToStr(ActualSpeed)+' baud';
+      IF (Reliable) THEN
+        S := S + '/Reliable)'
       ELSE
-        S := S + ' IP Number: '+CallerIDNumber;
-    END;
-  END
+        S := S + ')';
+      IF (CallerIDNumber <> '') THEN {LeeW: Fixed?}
+        BEGIN
+          IF (NOT Telnet) THEN
+            S := S + ' PH#: '+CallerIDNumber
+          ELSE
+            S := S + ' IP#: '+CallerIDNumber;
+        END;
+    END
   ELSE
     S := S + 'Keyboard)';
   SL1(S);
@@ -838,7 +863,7 @@ BEGIN
   IEMSI;
   GotName := FALSE;
   IF ((General.ShuttleLog) AND (NOT FastLogon) AND (NOT HangUp)) THEN
-    Doshuttle;
+    DoShuttle;
   Setc(7);
   CLS;
   Print(Centre(VerLine(1)));
@@ -1085,7 +1110,7 @@ BEGIN
         lRGLngStr(128,FALSE);
         IF PYNQ(lRGLngStr(188,TRUE){'Withdraw from Time Bank? '},0,TRUE) THEN
         BEGIN
-          InputIntegerWOC('Withdraw how many minutes',Lng,[NumbersOnly],1,32767);
+          InputInteger('Withdraw how many minutes',Lng,[NumbersOnly],1,32767,Changed);
           BEGIN
             IF (Lng > ThisUser.TimeBank) THEN
               Lng := ThisUser.TimeBank;

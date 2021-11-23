@@ -170,7 +170,7 @@ BEGIN
                 {
                 %LFMessage area list? [^1?^2=^1Help^2,^1Q^2=^1Quit^2]: @
                 }
-                LOneK(LRGLngStr(69,TRUE),Cmd,'Q?[]',TRUE,TRUE);
+                InputChar(LRGLngStr(69,TRUE),Cmd,'Q?[]',[CapAll]);
                 TempPause := FALSE;
                 IF (Cmd <> 'Q') THEN
                 BEGIN

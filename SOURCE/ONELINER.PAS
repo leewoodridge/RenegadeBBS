@@ -130,8 +130,7 @@ VAR
     WHILE (NOT Abort) AND (NOT Hangup) DO
       BEGIN
         lRGLngStr(105,FALSE); {"Enter your OneLiner"}
-        MPL(55);
-        InputMain(OneLinerList.OneLiner,(SizeOf(OneLinerList.OneLiner) - 1),[InterActiveEdit,ColorsAllowed]);
+        InputMain(OneLinerList.OneLiner,(SizeOf(OneLinerList.OneLiner) - 1),[InterActiveEdit,NoInputField]);
         Abort := (OneLinerList.OneLiner = '');
         IF (Abort) THEN
           EXIT
@@ -152,9 +151,9 @@ BEGIN
           PrintF('ONELH');
           IF (NoFile) THEN
             BEGIN
-              lRGLngStr(108,FALSE);
+              lRGLngStr(108,FALSE); {"OneLiners"}
               WHILE WhereX < ThisUser.LineLen DO
-                Prt(lRGLngStr(11,TRUE));
+                Prt(lRGLngStr(11,TRUE)); {"-"}
             END;
           Print(' ^4'+OneLinerList.OneLiner);
           PrintF('ONELT');
@@ -179,7 +178,7 @@ BEGIN
               Write(OneLinerListFile,OneLinerList);
               Close(OneLinerListFile);
               LastError := IOResult;
-              SysOpLog('Added OneLiner "'+OneLinerList.OneLiner+'"');
+              SysOpLog('Wrote OneLiner "'+OneLinerList.OneLiner+'"');
             END;
         END;
     END;
@@ -207,9 +206,11 @@ BEGIN
   IF (NoFile) THEN
     BEGIN
       lRGLngStr(108,FALSE);
+      UserColor(5);
       WHILE WhereX < ThisUser.LineLen DO
-        Prt(lRGLngStr(11,TRUE));
+        Prt(lRGLngStr(11,TRUE)); {"-"}
       NL;
+      UserColor(0);
     END;
   IF (FileSize(OneLinerListFile)=0) THEN
     BEGIN
@@ -237,12 +238,14 @@ BEGIN
     PrintF('ONELT');
   IF (NoFile) THEN
     BEGIN
+      UserColor(5);
       WHILE WhereX < ThisUser.LineLen DO
-        Prt(lRGLngStr(11,TRUE));
-        NL;
+        Prompt(lRGLngStr(11,TRUE)); {"-"}
+      NL;
+      UserColor(0);
     END;
   AllowContinue := FALSE;
-  SysOpLog('Viewed OneLiners');
+  SysOpLog('Read OneLiners');
 END;
 
 FUNCTION OneLiner_Random: STRING;

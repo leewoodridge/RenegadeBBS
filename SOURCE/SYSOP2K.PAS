@@ -97,7 +97,7 @@ VAR
     ELSE
     BEGIN
       RecNumToDelete := 0;
-      InputByteWOC('%LFArchive to delete?',RecNumToDelete,[NumbersOnly],1,NumArcs);
+      InputByte('%LFArchive to delete?',RecNumToDelete,[NumbersOnly],1,NumArcs,Changed);
       IF (RecNumToDelete >= 1) AND (RecNumToDelete <= NumArcs) THEN
       BEGIN
         TempArchive1 := General.FileArcInfo[RecNumToDelete];
@@ -161,7 +161,7 @@ VAR
           CmdStr := '12345678'
         ELSE
           CmdStr := '12345678[]FJL';
-        LOneK('%LFModify menu [^1?^2=^1Help^2]: ',Cmd1,'Q?'+CmdStr+^M,TRUE,TRUE);
+        InputChar('%LFModify menu [^1?^2=^1Help^2]: ',Cmd1,'Q?'+CmdStr+^M,[CapAll]);
         CASE Cmd1 OF
           '1' : BEGIN
                   Active := NOT Active;
@@ -170,19 +170,19 @@ VAR
           '2' : REPEAT
                   TempArchive1.Ext := Ext;
                   Ok := TRUE;
-                  InputWN1('%LFNew extension: ',Ext,(SizeOf(Ext) - 1),[InterActiveEdit,UpperOnly],Changed1);
+                  InputString('%LFNew extension: ',Ext,(SizeOf(Ext) - 1),[InterActiveEdit,CapAll],Changed1);
                   CheckArchive(Archive,1,1,Ok);
                   IF (NOT Ok) THEN
                     Ext := TempArchive1.Ext;
                 UNTIL (Ok) OR (HangUp);
-          '3' : InputWN1('%LFNew interior list method: ',ListLine,(SizeOf(ListLine) - 1),[InterActiveEdit],Changed1);
-          '4' : InputWN1('%LFNew compression command line: ',ArcLine,(SizeOf(ArcLine) - 1),[InterActiveEdit],Changed1);
-          '5' : InputWN1('%LFNew decompression command line: ',UnArcLine,(SizeOf(UnArcLine) - 1),
+          '3' : InputString('%LFNew interior list method: ',ListLine,(SizeOf(ListLine) - 1),[InterActiveEdit],Changed1);
+          '4' : InputString('%LFNew compression command line: ',ArcLine,(SizeOf(ArcLine) - 1),[InterActiveEdit],Changed1);
+          '5' : InputString('%LFNew decompression command line: ',UnArcLine,(SizeOf(UnArcLine) - 1),
                          [InterActiveEdit],Changed1);
-          '6' : InputWN1('%LFNew file testing command line: ',TestLine,(SizeOf(TestLine) - 1),
+          '6' : InputString('%LFNew file testing command line: ',TestLine,(SizeOf(TestLine) - 1),
                          [InterActiveEdit],Changed1);
-          '7' : InputWN1('%LFNew add comment command line: ',CmtLine,(SizeOf(CmtLine) - 1),[InterActiveEdit],Changed1);
-          '8' : InputIntegerWC('%LFNew errorlevel for success',SuccLevel,[DisplayValue,NumbersOnly],-1,255,Changed1);
+          '7' : InputString('%LFNew add comment command line: ',CmtLine,(SizeOf(CmtLine) - 1),[InterActiveEdit],Changed1);
+          '8' : InputInteger('%LFNew errorlevel for success',SuccLevel,[InteractiveEdit,NumbersOnly],-1,255,Changed1);
           '[' : IF (RecNumToEdit > 1) THEN
                   Dec(RecNumToEdit)
                 ELSE
@@ -205,7 +205,7 @@ VAR
                   Cmd1 := #0;
                 END;
           'J' : BEGIN
-                  InputByteWOC('%LFJump to entry?',RecNumToEdit,[NumbersOnly],1,NumArcs);
+                  InputByte('%LFJump to entry?',RecNumToEdit,[NumbersOnly],1,NumArcs,Changed);
                   IF (RecNumToEdit < 1) OR (RecNumToEdit > NumArcs) THEN
                     Cmd1 := #0;
                 END;
@@ -244,7 +244,7 @@ VAR
     ELSE
     BEGIN
       RecNumToInsertBefore := 0;
-      InputByteWOC('%LFArchive to insert before?',RecNumToInsertBefore,[NumbersOnly],1,(NumArcs + 1));
+      InputByte('%LFArchive to insert before?',RecNumToInsertBefore,[NumbersOnly],1,(NumArcs + 1),Changed);
       IF (RecNumToInsertBefore >= 1) AND (RecNumToInsertBefore <= (NumArcs + 1)) THEN
       BEGIN
         InitArchiveVars(TempArchive1);
@@ -288,7 +288,7 @@ VAR
     ELSE
     BEGIN
       RecNumToEdit := 0;
-      InputByteWOC('%LFArchive to modify?',RecNumToEdit,[NumbersOnly],1,NumArcs);
+      InputByte('%LFArchive to modify?',RecNumToEdit,[NumbersOnly],1,NumArcs,Changed);
       IF (RecNumToEdit >= 1) AND (RecNumToEdit <= NumArcs) THEN
       BEGIN
         SaveRecNumToEdit := 0;
@@ -333,7 +333,7 @@ BEGIN
       NL;
       DisplayCmt;
     END;
-    LOneK('%LFArchive editor [^1?^2=^1Help^2]: ',Cmd,'QDIM123?'^M,TRUE,TRUE);
+    InputChar('%LFArchive editor [^1?^2=^1Help^2]: ',Cmd,'QDIM123?'^M,[CapAll]);
     CASE Cmd OF
       'D' : DeleteArchive(TempArchive,RecNumToList);
       'I' : InsertArchive(TempArchive,Cmd,RecNumToList);
@@ -341,7 +341,8 @@ BEGIN
       '1'..'3' :
             BEGIN
               Changed := FALSE;
-              InputWNWC('%LFNew comment file #'+IntToStr(Ord(Cmd) - 48)+': ',General.FileArcComment[Ord(Cmd) - 48],40,Changed);
+              InputString('%LFNew comment file #'+IntToStr(Ord(Cmd) - 48)+': ',General.FileArcComment[Ord(Cmd) - 48],
+              40,[InteractiveEdit],Changed);
               IF (Changed) THEN
                 SysOpLog('* Modified comment: ^1'+IntToStr(Ord(Cmd) - 48)+'.');
             END;

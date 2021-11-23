@@ -86,93 +86,78 @@ BEGIN
         '1' : BEGIN
                 NL;
                 PRT(Question+' ');
-                MPL(SizeOf(BBSList.BBSName) - 1);
-                InputMain(BBSList.BBSName,(SizeOf(BBSList.BBSName) - 1),[InterActiveEdit,ColorsAllowed]);
+                InputMain(BBSList.BBSName,(SizeOf(BBSList.BBSName) - 1),[InterActiveEdit]);
                 Abort := (BBSList.BBSName = '');
               END;
         '2' : BEGIN
                 PRT(Question+' ');
-                MPL(SizeOf(BBSList.SysOpName) - 1);
-                InputMain(BBSList.SysOpName,(SizeOf(BBSList.SysOpName) - 1),[ColorsAllowed,InterActiveEdit]);
+                InputMain(BBSList.SysOpName,(SizeOf(BBSList.SysOpName) - 1),[InterActiveEdit]);
                 Abort := (BBSList.SysOpName = '');
               END;
         '3' : BEGIN
                 PrintACR(Question);
-                MPL(SizeOf(BBSList.TelnetUrl) - 1);
-                InputMain(BBSList.TelnetUrl,(SizeOf(BBSList.TelnetUrl) - 1),[ColorsAllowed,InterActiveEdit]);
+                InputMain(BBSList.TelnetUrl,(SizeOf(BBSList.TelnetUrl) - 1),[InterActiveEdit]);
                 Abort := (BBSList.TelnetUrl = '');
               END;
         '4' : BEGIN
                 PrintACR(Question);
-                MPL(SizeOf(BBSList.WebSiteUrl) - 1);
-                InputMain(BBSList.WebSiteUrl,(SizeOf(BBSList.WebSiteUrl) - 1),[ColorsAllowed,InterActiveEdit]);
+                InputMain(BBSList.WebSiteUrl,(SizeOf(BBSList.WebSiteUrl) - 1),[InterActiveEdit]);
                 Abort := (BBSList.WebSiteUrl = '');
               END;
         '5' : BEGIN
                 PRT(Question+' ');
-                MPL(SizeOf(BBSList.PhoneNumber) - 1);
-                InputMain(BBSList.PhoneNumber,(SizeOf(BBSList.PhoneNumber) - 1),[ColorsAllowed,InterActiveEdit]);
+                InputMain(BBSList.PhoneNumber,(SizeOf(BBSList.PhoneNumber) - 1),[InterActiveEdit]);
                 Abort := (BBSList.PhoneNumber = '');
               END;
         '6' : BEGIN
                 PRT(Question+' ');
-                MPL(SizeOf(BBSList.Software) - 1);
-                InputMain(BBSList.Software,(SizeOf(BBSList.Software) - 1),[ColorsAllowed,InterActiveEdit,UpperOnly]);
+                InputMain(BBSList.Software,(SizeOf(BBSList.Software) - 1),[InterActiveEdit,CapAll]);
                 Abort := (BBSList.Software = '');
               END;
         '7' : BEGIN
                 PRT(Question+' ');
-                MPL(SizeOf(BBSList.Speed) - 1);
-                InputMain(BBSList.Speed,(SizeOf(BBSList.Speed) - 1),[ColorsAllowed,InterActiveEdit]);
+                InputMain(BBSList.Speed,(SizeOf(BBSList.Speed) - 1),[InterActiveEdit]);
                 Abort := (BBSList.Speed = '');
               END;
         '8' : BEGIN
                 Print(Question);
-                MPL(SizeOf(BBSList.Description) - 1);
-                InputMain(BBSList.Description,(SizeOf(BBSList.Description) - 1),[ColorsAllowed,InterActiveEdit]);
+                InputMain(BBSList.Description,(SizeOf(BBSList.Description) - 1),[InterActiveEdit]);
                 Abort := (BBSList.Description = '');
               END;
         '9' : BEGIN
                 IF (Question <> 'þ') THEN
                   Print(Question);
-                MPL(SizeOf(BBSList.Description2) - 1);
-                InputMain(BBSList.Description2,(SizeOf(BBSList.Description2) - 1),[ColorsAllowed,InterActiveEdit]);
+                InputMain(BBSList.Description2,(SizeOf(BBSList.Description2) - 1),[InterActiveEdit]);
                 Abort := (BBSList.Description2 = '');
               END;
         'A' : BEGIN
                 Print(Question);
-                MPL(SizeOf(BBSList.xA) - 1);
-                InputMain(BBSList.xA,(SizeOf(BBSList.xA) - 1),[ColorsAllowed,InterActiveEdit]);
+                InputMain(BBSList.xA,(SizeOf(BBSList.xA) - 1),[InterActiveEdit]);
                 Abort := (BBSList.xA = '');
               END;
         'B' : BEGIN
                 Print(Question);
-                MPL(SizeOf(BBSList.xB) - 1);
-                InputMain(BBSList.xB,(SizeOf(BBSList.xB) - 1),[ColorsAllowed,InterActiveEdit]);
+                InputMain(BBSList.xB,(SizeOf(BBSList.xB) - 1),[InterActiveEdit]);
                 Abort := (BBSList.xB = '');
               END;
         'C' : BEGIN
                 Print(Question);
-                MPL(SizeOf(BBSList.xC) - 1);
-                InputMain(BBSList.xC,(SizeOf(BBSList.xC) - 1),[ColorsAllowed,InterActiveEdit]);
+                InputMain(BBSList.xC,(SizeOf(BBSList.xC) - 1),[InterActiveEdit]);
                 Abort := (BBSList.xC = '');
               END;
         'D' : BEGIN
                 Print(Question);
-                MPL(SizeOf(BBSList.xD) - 1);
-                InputMain(BBSList.xD,(SizeOf(BBSList.xD) - 1),[ColorsAllowed,InterActiveEdit]);
+                InputMain(BBSList.xD,(SizeOf(BBSList.xD) - 1),[InterActiveEdit]);
                 Abort := (BBSList.xD = '');
               END;
         'E' : BEGIN
                 Print(Question);
-                MPL(SizeOf(BBSList.xE) - 1);
-                InputMain(BBSList.xE,(SizeOf(BBSList.xE) - 1),[ColorsAllowed,InterActiveEdit]);
+                InputMain(BBSList.xE,(SizeOf(BBSList.xE) - 1),[InterActiveEdit]);
                 Abort := (BBSList.xE = '');
               END;
         'F' : BEGIN
                 Print(Question);
-                MPL(SizeOf(BBSList.xF) - 1);
-                InputMain(BBSList.xF,(SizeOf(BBSList.xF) - 1),[ColorsAllowed,InterActiveEdit]);
+                InputMain(BBSList.xF,(SizeOf(BBSList.xF) - 1),[InterActiveEdit]);
                 Abort := (BBSList.xF = '');
               END;
       END;

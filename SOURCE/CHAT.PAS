@@ -70,7 +70,6 @@ BEGIN
       lRGLngStr(37,FALSE); { FString.ChatReason; }
     Chatted := FALSE;
     Prt(': ');
-    MPL(60);
     InputMain(Reason,SizeOf(Reason)-1,[]);
     IF (Reason <> '') THEN
     BEGIN

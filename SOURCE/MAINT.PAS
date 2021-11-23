@@ -1,7 +1,8 @@
 {$A+,B-,D+,E-,F+,I-,L+,N-,O+,R-,S+,V-}
 {
-added a bunch of hangup checks, in an attempt to remove artifacts printed after
+added a bunch of hangup checks, in an attempt to remove artifacts printed after hangup
 indented everything
+11/20/2021 moved findonlyonce from bulletin NESTED in logonmain since only place that calls it
 }
 UNIT Maint;
 
@@ -19,7 +20,8 @@ USES
   Bulletin,
   Common,
   CUser,
-  Email,
+  DOS, {DT for findonlyonce}
+  EMail,
   Events,
   File6,
   File12,
@@ -40,6 +42,21 @@ VAR
   Counter1: Integer;
   RecNum: LongInt;
   BSince: Boolean;
+  
+  FUNCTION FindOnlyOnce: Boolean;
+  VAR
+ {DirInfo: SearchRec;}
+  DT: DateTime;
+  BEGIN
+    FindOnlyOnce := FALSE;
+    FindFirst(General.MiscPath+'ONLYONCE.*',AnyFile - Directory - VolumeID- DOS.Hidden,DirInfo);
+    IF (DosError = 0) THEN
+      BEGIN
+        UnPackTime(DirInfo.Time,DT);
+        IF (DateToPack(DT) > ThisUser.LastOn) THEN
+          FindOnlyOnce := TRUE;
+      END;
+  END;
 
   PROCEDURE UpdateUserInformation;
   VAR
@@ -150,39 +167,39 @@ VAR
 
   BEGIN
     IF (ExtEventTime <> 0) THEN
-    BEGIN
-      LNG := ExtEventTime;
-      IF (LNG < (NSL DIV 60)) THEN
       BEGIN
-        ChopTime := (NSL - (LNG * 60)) + 120;
-        OnlineTime;
-        Exit;
+        LNG := ExtEventTime;
+        IF (LNG < (NSL DIV 60)) THEN
+          BEGIN
+            ChopTime := (NSL - (LNG * 60)) + 120;
+            OnlineTime;
+            Exit;
+          END;
       END;
-    END;
 
     LNG := 1;
     LNG2 := (NSL DIV 60);
     IF (LNG2 > 180) THEN
       LNG2 := 180;
     WHILE (LNG <= LNG2) DO
-    BEGIN
-      LNG3 := (LNG * 60);
-      EventNum := CheckEvents(LNG3);
-      IF (EventNum <> 0) THEN
       BEGIN
-        ChopTime := (NSL - (LNG * 60)) + 60;
-        OnlineTime;
-        Exit;
+        LNG3 := (LNG * 60);
+        EventNum := CheckEvents(LNG3);
+        IF (EventNum <> 0) THEN
+          BEGIN
+            ChopTime := (NSL - (LNG * 60)) + 60;
+            OnlineTime;
+            Exit;
+          END;
+        Inc(LNG,2);
       END;
-      Inc(LNG,2);
-    END;
   END;
 
 BEGIN
   IF (General.MultiNode) THEN
     BEGIN
       LoadNode(ThisNode);
-      IF AACS(General.Invisible) AND PYNQ(lRGLngStr(45,TRUE){FString.AskInvisibleLoginStr},0,FALSE) THEN
+      IF AACS(General.Invisible) AND PYNQ(lRGLngStr(45,TRUE),0,FALSE) THEN {"Invisible logon?"}
         BEGIN
           IsInvisible := TRUE;
           Include(NodeR.Status,NInvisible);
@@ -281,10 +298,43 @@ BEGIN
       Close(SysOpLogFile1);
     END;
 
-  TempStr := '^1'+IntToStr(General.CallerNum)+'^2 -- ^1'+Caps(ThisUser.Name)+'^2 -- ^1'+'Today '+IntToStr(ThisUser.OnToday);
-  IF (Trapping) THEN
-    TempStr := TempStr + '^1*';
+  TempStr := '^0Call # ^1'+IntToStr(General.CallerNum)+'^5 | ^0User: ^1'+Caps(ThisUser.Name)+'^5 | '+
+             '^0User Call # ^1'+IntToStr(ThisUser.OnToday); {add last call?}
   SL1(TempStr);
+  
+    BEGIN { LOGGING INFO }
+      { SYSOP }
+      IF (SLogSeparate IN ThisUser.SFlags) THEN
+        TempStr := 'SLOG'+IntToStr(UserNum)+'.LOG'
+      ELSE
+        TempStr := 'Normal';
+      TempStr1 := '^0SLOG: ^1'+TempStr+'^5 | ';
+      {ACTIVITY}
+      TempStr := 'None';
+      IF (General.globaltrap) THEN
+        TempStr := 'Global';
+      IF (TrapActivity IN ThisUser.SFlags) THEN
+        TempStr := 'ACTV.LOG';
+      IF (TrapSeparate IN ThisUser.SFlags) THEN
+        TempStr := 'ACTV'+IntToStr(UserNum)+'.LOG';
+      TempStr1 := TempStr1+'^0ACTV: ^1'+TempStr+'^5 | ';
+      {CHAT}
+      TempStr := 'None';
+      IF (General.autochatopen) THEN
+        TempStr := 'Global';
+      IF (ChatAuto IN ThisUser.SFlags) THEN
+        TempStr := 'CHAT.LOG';
+      IF (ChatSeparate IN ThisUser.SFlags) THEN
+        TempStr := 'CHAT'+IntToStr(UserNum)+'.LOG';
+      TempStr1 := TempStr1+'^0CHAT: ^1'+TempStr;
+      
+      SL1('^0Logging '+#196#196+' '+TempStr1);
+      
+    END;
+ 
+  {TempStr := '';
+  TempStr1 := '';}
+ 
   SaveGeneral(FALSE);
   LastError := IOResult;
 
@@ -451,7 +501,7 @@ BEGIN
 
     IF (NumBatchDLFiles > 0) AND (General.ForceBatchDL) AND (NOT HangUp) THEN
       REPEAT
-        LOneK(lRGLngStr(236,TRUE),Cmd,'DRC',TRUE,TRUE); { Force batch DL prompt }
+        InputChar(lRGLngStr(236,TRUE),Cmd,'DRC',[CapAll]); { Force batch DL prompt }
         CASE Cmd OF
           'D' : BatchDownload;
           'R' : RemoveBatchDLFiles;
@@ -461,7 +511,7 @@ BEGIN
 
     IF (NumBatchULFiles > 0) AND (General.ForceBatchUL) AND (NOT HangUp) THEN
       REPEAT
-        LOneK(lRGLngStr(237,TRUE),Cmd,'URC',TRUE,TRUE); { Force batch UL prompt }
+        InputChar(lRGLngStr(237,TRUE),Cmd,'URC',[CapAll]); { Force batch UL prompt }
         CASE Cmd OF
           'U' : BatchUpload(FALSE,0);
           'R' : RemoveBatchULFiles;
@@ -589,12 +639,22 @@ BEGIN
     IF (HangUp) THEN
       SL1('^8[DISCONNECTED]^0');
 }
-      SL1('^2Read: ^1'+IntToStr(PublicReadThisCall)+'^2 / Time on: ^1'+IntToStr(TotTimeOn));
+      {SL1('^2Read: ^1'+IntToStr(PublicReadThisCall)+'^2 / Time on: ^1'+IntToStr(TotTimeOn));}
+      
+      SL1('^0Time: ^1'+IntToStr(TotTimeOn)+
+          '^5 | ^0Posted: ^1'+IntToStr(PublicPostsToday)+'^5 | ^0Read: ^1'+IntToStr(PublicReadThisCall)+
+          '^5 | ^0DL: ^1'+IntToStr(DownloadsToday)+' ^0(^1'+IntToStr(DownloadKBytesToday)+'^0 kB)'+
+          '^5 | ^0UL: ^1'+IntToStr(UploadsToday)+' ^0(^1'+IntToStr(UploadKBytesToday)+'^0 kB)');
+          { Stats for this call }
+      
     END;
     
   LastError := IOResult;
 
-  SL1('^1Logoff node '+IntToStr(ThisNode)+' ^1'+'['+Dat+']');
+  {SL1('^1Logoff node '+IntToStr(ThisNode)+' ^1'+'['+Dat+']');}
+  SL1(' ^8* ^1Logoff node '+IntToStr(ThisNode)+' '+'['+Dat+']');
+  
+  SL1('^0-'); { Separator }
 
   Assign(HistoryFile,General.DataPath+'HISTORY.DAT');
   Reset(HistoryFile);
@@ -757,9 +817,9 @@ BEGIN
 
       (* Test code only *)
       IF (NOT InWFCMenu) THEN
-        SysOpLog('Daily maintenance ran from Caller Logon.')
+        SysOpLog('Daily maintenance ran during caller logon')
       ELSE
-        SysOpLog('Daily maintenance ran from Waiting For Caller.');
+        SysOpLog('Daily maintenance ran while waiting for caller');
       (* End test code *)
 
       IF (NOT InWFCMenu) THEN
@@ -830,18 +890,21 @@ BEGIN
                 Assign(F,General.LogsPath+'SYSOP'+IntToStr(Counter)+'.LOG');
                 Rename(F,General.LogsPath+'SYSOP'+IntToStr(Counter + 1)+'.LOG');
               END;
-
+              
           SL1('');
-          SL1('Total mins active..: '+IntToStr(History.Active));
-          SL1('Percent of activity: '+SQOutSp(CTP(History.Active,1440))+' ('+IntToStr(History.Callers)+' calls)');
-          SL1('New users..........: '+IntToStr(History.NewUsers));
-          SL1('Public posts.......: '+IntToStr(History.Posts));
-          SL1('Private mail sent..: '+IntToStr(History.Email));
-          SL1('FeedBack sent......: '+IntToStr(History.FeedBack));
-          SL1('Critical errors....: '+IntToStr(History.Errors));
-          SL1('Downloads today....: '+IntToStr(History.Downloads)+'-'+ConvertKB(History.DK,FALSE));
-          SL1('Uploads today......: '+IntToStr(History.Uploads)+'-'+ConvertKB(History.UK,FALSE));
-
+          SL1('^5ÄÄ ^4END OF DAY STATS ^5ÄÄ'); {LeeW: Added}
+          SL1('');
+          SL1('^0Callers         : ^1'+IntToStr(History.Callers));
+          SL1('^0New Users       : ^1'+IntToStr(History.NewUsers));
+          SL1('^0Activity        : ^1'+IntToStr(History.Active)+'^0 Minutes (^1'+SQOutSp(CTP(History.Active,1440))+'%^0)');
+          SL1('^0Public Posts    : ^1'+IntToStr(History.Posts));
+          SL1('^0Private Mail    : ^1'+IntToStr(History.EMail));
+          SL1('^0Feedback        : ^1'+IntToStr(History.FeedBack));
+          SL1('^0Downloads       : ^1'+IntToStr(History.Downloads)+'^0 / ^1'+ConvertKB(History.DK,FALSE));
+          SL1('^0Uploads         : ^1'+IntToStr(History.Uploads)+'^0 / ^1'+ConvertKB(History.UK,FALSE));
+          SL1('^0Critical Errors : ^1'+IntToStr(History.Errors));
+          SL1('');
+          
           FillChar(History,SizeOf(History),0);
           History.Date := Date2PD(DateStr);
 
@@ -873,9 +936,9 @@ BEGIN
           ReWrite(SysOpLogFile);
           Close(SysOpLogFile);
 
-		  SL1('');
+          SL1('');
           SL1({^M^J+}Centre('-- Renegade SysOp Log for '+DateStr+' --'){+^M^J});
-		  SL1('');
+          SL1('');
 
           IF (General.MultiNode) THEN
             Assign(SysOpLogFile,TempDir+'TEMPLOG.'+IntToStr(ThisNode))

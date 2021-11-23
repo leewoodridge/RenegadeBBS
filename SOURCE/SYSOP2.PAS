@@ -46,6 +46,8 @@ USES
     NL;
   END;
   
+  (*' < PG 1/2 > '*)
+  
   PROCEDURE HL;
   BEGIN
     Prompt('^5');
@@ -90,7 +92,7 @@ BEGIN
         PrintACR(PadLeftStr('^0(^17^0) Max download kbytes per day',39)+
                  PadLeftStr('^0(^18^0) Update System Averages',39));
         NL;
-        LOneK('^2Configuration Menu [^1A^2-^1N^2,^11^2-^18^2,(^1Q^2)uit]: ',Cmd,'QABCDEFGHIJKLMN12345678'{^M},TRUE,TRUE);
+        InputChar('^2Configuration Menu [^1A^2-^1N^2,^11^2-^18^2,(^1Q^2)uit]: ',Cmd,'QABCDEFGHIJKLMN12345678'{^M},[CapAll]);
         CASE Cmd OF
           'A' : MainBBSConfiguration;
           'B' : ModemConfiguration;

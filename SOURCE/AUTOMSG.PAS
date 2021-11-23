@@ -56,12 +56,14 @@ BEGIN
       ReadLn(AutoMsgFile,TempStr);
       PrintF('AUTOH');
       IF (NoFile) THEN
-        BEGIN
-          lRGLngStr(104,FALSE);
-          WHILE (WhereX < ThisUser.LineLen) AND (NOT HangUp) DO
-            Prt(lRGLngStr(11,TRUE));
-          NL;
-        END;
+		BEGIN
+		  lRGLngStr(104,FALSE); { Auto-Message header }
+		  UserColor(5);
+		  WHILE WhereX < ThisUser.LineLen DO
+			Prompt(lRGLngStr(11,TRUE)); {"-"}
+		  NL;
+		  UserColor(0);
+		END;
       REPEAT
         ReadLn(AutoMsgFile,TempStr);
         PrintACR('^1'+TempStr);
@@ -76,12 +78,15 @@ BEGIN
       Print(TempStr); {" ─ Posted by [USERNAME] on [DATE]"}
       PrintF('AUTOT');
       IF (NoFile) THEN
-        BEGIN
-          WHILE (WhereX < ThisUser.LineLen) AND (NOT HangUp) DO
-            Prt(lRGLngStr(11,TRUE));
-          NL;
-        END;
+		BEGIN
+		  UserColor(5);
+		  WHILE WhereX < ThisUser.LineLen DO
+			Prompt(lRGLngStr(11,TRUE)); {"-"}
+		  NL;
+		  UserColor(0);
+		END;
     END;
+  SysOpLog('Read Auto-Message');
   PauseScr(FALSE);
   LastError := IOResult;
 END;
@@ -125,6 +130,7 @@ BEGIN
             Kill(General.MiscPath+'AUTO'+IntToStr(ThisNode)+'.TMP');
           END;
     END;
+  SysOpLog('Wrote Auto-Message');
 END;
 
 PROCEDURE ReplyAutoMsg;
@@ -147,7 +153,7 @@ BEGIN
       IF (TempStr[1] IN ['!','@']) THEN
         BEGIN
           LastAuthor := SearchUser(Copy(TempStr,2,Length(TempStr)),CoSysOp);
-          IF (NOT AACS(General.AnonPrivRead)) THEN
+          IF (NOT AACS(General.AnonPubRead)) THEN {LeeW: This was anonprivread}
             LastAuthor := 0;
         END
       ELSE
@@ -159,6 +165,7 @@ BEGIN
           InResponseTo := 'Your auto-message';
           MHeader.Status := [];
           AutoReply(MHeader);
+          SysOpLog('Replied To Auto-Message'); {LeeW: Can we check to be sure they didn't abort?}
         END;
     END;
 END;

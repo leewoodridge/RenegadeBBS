@@ -243,13 +243,11 @@ BEGIN
   BEGIN
     NL;
     Prt('Choice '+IntToStr(ChoiceNum)+': ');
-    MPL(65);
-    InputMain(Topic.Answers[ChoiceNum].Answer1,SizeOf(Topic.Answers[ChoiceNum].Answer1) - 1,[ColorsAllowed]);
+    InputMain(Topic.Answers[ChoiceNum].Answer1,SizeOf(Topic.Answers[ChoiceNum].Answer1) - 1,[NoInputField]);
     IF (Topic.Answers[ChoiceNum].Answer1 <> '') THEN
     BEGIN
       Prt(PadLeftStr('',7+Length(IntToStr(ChoiceNum)))+': ');
-      MPL(65);
-      InputMain(Topic.Answers[ChoiceNum].Answer2,SizeOf(Topic.Answers[ChoiceNum].Answer2) - 1,[ColorsAllowed]);
+      InputMain(Topic.Answers[ChoiceNum].Answer2,SizeOf(Topic.Answers[ChoiceNum].Answer2) - 1,[NoInputField]);
       NL;
       IF (NOT PYNQ('Add this choice? ',0,FALSE)) THEN
       BEGIN
@@ -418,11 +416,9 @@ BEGIN
     Exit;
   END;
   NL;
-  Print('Track voting for which user (1-'+IntToStr(MaxUsers - 1)+')?');
+  Print('Track voting for which user?');
   NL;
-  Print('Enter User Number, Name, or Partial Search String.');
-  Prt(': ');
-  lFindUserWS(Unum);
+  lFindUserWS(UNum);
   IF (Unum < 1) THEN
     PauseScr(FALSE)
   ELSE
@@ -476,13 +472,11 @@ BEGIN
   Print('^9Press [Enter] on a blank line to leave blank or abort.');
   NL;
   Prt('Topic: ');
-  MPL(SizeOf(Topic.Question1) - 1);
-  InputMain(Topic.Question1,SizeOf(Topic.Question1) - 1,[ColorsAllowed]);
+  InputMain(Topic.Question1,SizeOf(Topic.Question1) - 1,[NoInputField]);
   IF (Topic.Question1 <> '') THEN
   BEGIN
     Prt(PadLeftStr('',5)+': ');
-    MPL(SizeOf(Topic.Question2) - 1);
-    InputMain(Topic.Question2,SizeOf(Topic.Question2) - 1,[ColorsAllowed]);
+    InputMain(Topic.Question2,SizeOf(Topic.Question2) - 1,[NoInputField]);
     NL;
     IF PYNQ('Are you sure? ',0,FALSE) THEN
     BEGIN
@@ -506,16 +500,14 @@ BEGIN
       BEGIN
         Inc(ChoiceNum);
         Prt('Choice '+PadRightInt(ChoiceNum,2)+': ');
-        MPL(SizeOf(Topic.Answers[ChoiceNum].Answer1) - 1);
-        InputMain(Topic.Answers[ChoiceNum].Answer1,SizeOf(Topic.Answers[ChoiceNum].Answer1) - 1,[ColorsAllowed]);
+        InputMain(Topic.Answers[ChoiceNum].Answer1,SizeOf(Topic.Answers[ChoiceNum].Answer1) - 1,[NoInputField]);
         IF (Topic.Answers[ChoiceNum].Answer1 = '') THEN
           Abort := TRUE
         ELSE
         BEGIN
           Inc(Topic.ChoiceNumber);
           Prt(PadLeftStr('',9)+': ');
-          MPL(SizeOf(Topic.Answers[ChoiceNum].Answer2) - 1);
-          InputMain(Topic.Answers[ChoiceNum].Answer2,SizeOf(Topic.Answers[ChoiceNum].Answer2) - 1,[ColorsAllowed]);
+          InputMain(Topic.Answers[ChoiceNum].Answer2,SizeOf(Topic.Answers[ChoiceNum].Answer2) - 1,[NoInputField]);
           Topic.Answers[ChoiceNum].NumVotedAnswer := 0;
         END;
       END;

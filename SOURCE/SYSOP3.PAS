@@ -460,7 +460,7 @@ VAR
     REPEAT
       NL;
       Prt('Change [^1?^2=^1Help^2]: ');
-      LOneK('',Cmd1,'Q0123456789AGPKNCLTU?'^M,TRUE,TRUE);
+      InputChar('',Cmd1,'Q0123456789AGPKNCLTU?'^M,[CapAll]);
       NL;
       CASE Cmd1 OF
         '0'..'9' :
@@ -489,31 +489,33 @@ VAR
         '0' : BEGIN
                 Print('General text ["'+F_GenText+'"]');
                 Prt(': ');
-                MPL(40);
-                InputMain(TempStr1,40,[UpperOnly]);
+                InputMain(TempStr1,40,[CapAll]);
                 IF (TempStr1 <> '') THEN
                   F_GenText := TempStr1;
               END;
         '1' : BEGIN
                 Print('Search ACS ["'+F_ACS+'"]');
                 Prt(': ');
-                MPL(20);
                 InputMain(TempStr1,20,[]);
                 IF (TempStr1 <> '') THEN
                   F_ACS := TempStr1;
               END;
         '2' : BEGIN
-                InputByteWOC('Lower limit',F_SL1,[DisplayValue,NumbersOnly],0,255);
-                InputByteWOC('%LFUpper limit',F_SL2,[DisplayValue,NumbersOnly],(0 + F_SL1),255);
+                InputByte('Lower limit',F_SL1,[InteractiveEdit{,DisplayValue},
+                NumbersOnly],0,255,Changed);
+                InputByte('%LFUpper limit',F_SL2,[InteractiveEdit{,DisplayValue},
+                NumbersOnly],(0 + F_SL1),255,Changed);
               END;
         '3' : BEGIN
-                InputByteWOC('Lower limit',F_DSL1,[DisplayValue,NumbersOnly],0,255);
-                InputByteWOC('%LFUpper limit',F_DSL2,[DisplayValue,NumbersOnly],(0 + F_DSL1),255);
+                InputByte('Lower limit',F_DSL1,[InteractiveEdit{,DisplayValue},
+                NumbersOnly],0,255,Changed);
+                InputByte('%LFUpper limit',F_DSL2,[InteractiveEdit{,DisplayValue},
+                NumbersOnly],(0 + F_DSL1),255,Changed);
               END;
         '4' : BEGIN
                 REPEAT
                   Prt('Toggle which AR flag? ('+DisplayArFlags(F_AR,'5','4')+'^2) [^1?^2=^1Help^2,^1<CR>^2=^1Quit^2]: ');
-                  LOneK('',Cmd1,^M'ABCDEFGHIJKLMNOPQRSTUVWXYZ?',TRUE,TRUE);
+                  InputChar('',Cmd1,^M'ABCDEFGHIJKLMNOPQRSTUVWXYZ?',[CapAll]);
                   IF (Cmd1 = '?') THEN
                     PrintF('ARFLAGS')
                   ELSE IF (Cmd1 <> ^M) THEN
@@ -524,7 +526,7 @@ VAR
         '5' : BEGIN
                 REPEAT
                   Prt('Toggle which AC flag? ['+DisplayACFlags(F_AC,'5','4')+'] [?]Help: ');
-                  LOneK('',Cmd1,^M'LCVUA*PEKM1234?',TRUE,TRUE);
+                  InputChar('',Cmd1,^M'LCVUA*PEKM1234?',[CapAll]);
                   IF (Cmd1 = '?') THEN
                     PrintF('ACFLAGS')
                   ELSE IF (Cmd1 <> ^M) THEN
@@ -537,7 +539,7 @@ VAR
                   Print('^2Current flags: ^1'+Find_FS);
                   NL;
                   Prt('Toggle which status flag? (^1?^2=^1Help^2): ');
-                  LOneK('',Cmd1,'QACDLST? '^M,TRUE,TRUE);
+                  InputChar('',Cmd1,'QACDLST? '^M,[CapAll]);
                   CASE Cmd1 OF
                     'A' : FSF := FS_Alert;
                     'C' : FSF := FS_ChatBuffer;
@@ -562,51 +564,57 @@ VAR
               END;
         '7' : BEGIN
                 Prt('Starting date: ');
-                MPL(10);
                 InputFormatted('',TempStr1,'##/##/####',TRUE);
                 F_LastOn1 := Date2PD(TempStr1);
                 NL;
                 Prt('Ending date: ');
-                MPL(10);
                 InputFormatted('',TempStr1,'##/##/####',TRUE);
                 F_LastOn2 := Date2PD(TempStr1);
               END;
         '8' : BEGIN
                 Prt('Starting date: ');
-                MPL(10);
                 InputFormatted('',TempStr1,'##/##/####',TRUE);
                 F_FirstOn1 := Date2PD(TempStr1);
                 NL;
                 Prt('Ending date: ');
-                MPL(10);
                 InputFormatted('',TempStr1,'##/##/####',TRUE);
                 F_FirstOn2 := Date2PD(TempStr1);
               END;
         '9' : BEGIN
-                InputLongIntWOC('%LFLower limit',F_NumCalls1,[DisplayValue,NumbersOnly],0,2147483647);
-                InputLongIntWOC('%LFUpper limit',F_NumCalls2,[DisplayValue,NumbersOnly],(0 + F_NumCalls1),2147483647);
+                InputLongInt('%LFLower limit',F_NumCalls1,[InteractiveEdit{,DisplayValue},
+                NumbersOnly],0,2147483647,Changed);
+                InputLongInt('%LFUpper limit',F_NumCalls2,[InteractiveEdit{,DisplayValue},
+                NumbersOnly],(0 + F_NumCalls1),2147483647,Changed);
               END;
         'A' : BEGIN
-                InputByteWOC('Lower limit',F_Age1,[DisplayValue,NumbersOnly],0,255);
-                InputByteWOC('%LFUpper limit',F_Age2,[displayValue,NumbersOnly],(0 + F_Age1),255);
+                InputByte('Lower limit',F_Age1,[InteractiveEdit{,DisplayValue},
+                NumbersOnly],0,255,Changed);
+                InputByte('%LFUpper limit',F_Age2,[InteractiveEdit{,DisplayValue},
+                NumbersOnly],(0 + F_Age1),255,Changed);
               END;
         'G' : BEGIN
                 Prt('Gender ['+F_Gender+']: ');
-                LOneK('',Cmd1,^M'MF',TRUE,TRUE);
+                InputChar('',Cmd1,^M'MF',[CapAll]);
                 IF (Cmd1 IN ['F','M']) THEN
                   F_Gender := Cmd1;
               END;
         'P' : BEGIN
-                InputLongIntWOC('%LFLower limit',F_PostRatio1,[DisplayValue,NumbersOnly],0,2147483647);
-                InputLongIntWOC('%LFUpper limit',F_PostRatio2,[DisplayValue,NumbersOnly],(0 + F_PostRatio1),2147483647);
+                InputLongInt('%LFLower limit',F_PostRatio1,[InteractiveEdit{,DisplayValue},
+                NumbersOnly],0,2147483647,Changed);
+                InputLongInt('%LFUpper limit',F_PostRatio2,[InteractiveEdit{,DisplayValue},
+                NumbersOnly],(0 + F_PostRatio1),2147483647,Changed);
               END;
         'K' : BEGIN
-                InputLongIntWOC('%LFLower limit',F_DLKRatio1,[DisplayValue,NumbersOnly],0,2147483647);
-                InputLongIntWOC('%LFUpper limit',F_DLKRatio2,[DisplayValue,NumbersOnly],(0 + F_DLKRatio1),2147483647);
+                InputLongInt('%LFLower limit',F_DLKRatio1,[InteractiveEdit{,DisplayValue},
+                NumbersOnly],0,2147483647,Changed);
+                InputLongInt('%LFUpper limit',F_DLKRatio2,[InteractiveEdit{,DisplayValue},
+                NumbersOnly],(0 + F_DLKRatio1),2147483647,Changed);
               END;
         'N' : BEGIN
-                InputLongIntWOC('%LFLower limit',F_DLRatio1,[DisplayValue,NumbersOnly],0,2147483647);
-                InputLongIntWOC('%LFUpper limit',F_DLRatio2,[DisplayValue,NumbersOnly],(0 + F_DLRatio1),2147483647);
+                InputLongInt('%LFLower limit',F_DLRatio1,[InteractiveEdit{,DisplayValue},
+                NumbersOnly],0,2147483647,Changed);
+                InputLongInt('%LFUpper limit',F_DLRatio2,[InteractiveEdit{,DisplayValue},
+                NumbersOnly],(0 + F_DLRatio1),2147483647,Changed);
               END;
         'C' : IF PYNQ('Are you sure? ',0,FALSE) THEN
                 Clear_F;
@@ -614,7 +622,7 @@ VAR
               DisplaySearchOptions;
         'T' : BEGIN
                 Prt('Which (0-9,A,G,P,K,N)? [Q]=Quit]: ');
-                LOneK('',Cmd1,'Q0123456789AGPKN'^M,TRUE,TRUE);
+                InputChar('',Cmd1,'Q0123456789AGPKN'^M,[CapAll]);
                 NL;
                 CASE Cmd1 OF
                   '0'..'9' :
@@ -742,7 +750,7 @@ VAR
                 Print('^06. Time Bank      : ^1'+IntToStr(TimeBank));
                 NL;
                 Prt('Select: (1-6) [M]ail [F]ile [P]ref [S]ubs: ');
-                LOneK('',Cmd1,^M'123456MFPS',TRUE,TRUE);
+                InputChar('',Cmd1,^M'123456MFPS',[CapAll]);
               END;
           2 : BEGIN
                 Print('^1Mail records:^0');
@@ -753,7 +761,7 @@ VAR
                 Print('^04. Mail Waiting: ^1'+IntToStr(Waiting));
                 NL;
                 Prt('Select: (1-4) [C]all [F]ile [P]ref [S]ubs: ');
-                LOneK('',Cmd1,^M'1234CFPS',TRUE,TRUE);
+                InputChar('',Cmd1,^M'1234CFPS',[CapAll]);
               END;
           3 : BEGIN
                 Print('^1File records:^0');
@@ -767,7 +775,7 @@ VAR
                 Print('^07. File Points: ^1'+FormatNumBer(FilePoints));
                 NL;
                 Prt('Select: (1-7) [C]all [M]ail [P]ref [S]ubs: ');
-                LOneK('',Cmd1,^M'1234567CMPS',TRUE,TRUE);
+                InputChar('',Cmd1,^M'1234567CMPS',[CapAll]);
               END;
           4 : BEGIN
                 Print('^1Preference records:^0');
@@ -779,7 +787,7 @@ VAR
                 Print('^05. Editor   : ^1'+AOnOff((FSEditor IN SFlags),'F/S','Reg'));
                 NL;
                 Prt('Select (1-5) [C]all [M]ail [F]ile [S]ubs: ');
-                LOneK('',Cmd1,^M'12345CMFS',TRUE,TRUE);
+                InputChar('',Cmd1,^M'12345CMFS',[CapAll]);
               END;
           5 : BEGIN
                 Print('^1Subscription records:^0');
@@ -790,7 +798,7 @@ VAR
                 Print('^0   Expire to: ^1'+AOnOff(ExpireTo = ' ','None',ExpireTo));
                 NL;
                 Prt('Select: (1-3) [C]all [M]ail [P]ref [F]ile: ');
-                LOneK('',Cmd1,^M'123CMPF',TRUE,TRUE);
+                InputChar('',Cmd1,^M'123CMPF',[CapAll]);
               END;
         END;
         CASE Cmd1 OF
@@ -807,7 +815,7 @@ VAR
                     IF (on <> 5) OR NOT (StrToInt(Cmd1) IN [3..4]) THEN
                     BEGIN
                       Prt('New value: ');
-                      InputMain(TempStr,10,[UpperOnly]);
+                      InputMain(TempStr,10,[CapAll]);
                       TempL1 := StrToInt(TempStr);
                     END
                     ELSE
@@ -821,7 +829,6 @@ VAR
                             BEGIN
                               NL;
                               Prt('New expiration date: ');
-                              MPL(10);
                               InputFormatted('',TempStr,'##/##/####',TRUE);
                               IF (TempStr <> '') THEN
                                 TempL1 := Date2PD(TempStr)
@@ -832,8 +839,7 @@ VAR
                                 IF (Cmd1 IN ValKeys) THEN
                                     OneKCmds := OneKCmds + Cmd1;
                               NL;
-                              Prt('Level to expire to (!-~) [Space=No Change]: ');
-                              OneK1(Cmd1,^M' '+OneKCmds,TRUE,TRUE);
+                              InputChar('Level to expire to (!-~) [Space=No Change]: ',Cmd1,^M' '+OneKCmds,[]);
                               TempStr := Cmd1;
                               IF (TempL1 = 0) OR (TempStr = ' ') THEN
                               BEGIN
@@ -913,7 +919,7 @@ BEGIN
     END;
     NL;
     Prt('User editor [^1?^2=^1Help^2]: ');
-    LOneK('',Cmd,'Q?[]=${}*ABCDEFGHIJKLMNOPRSTUVWXYZ12345-+_;:\/^'^M,TRUE,TRUE);
+    InputChar('',Cmd,'Q?[]=${}*ABCDEFGHIJKLMNOPRSTUVWXYZ12345-+_;:\/^'^M,[CapAll]);
     IF (Cmd IN ['A','F','L'..'O','S'..'X','Z','/','{','}','-',';','^','?','<','\','=','_']) THEN
       NL;
     CASE Cmd OF
@@ -955,8 +961,6 @@ BEGIN
                 '{' : Search(-1);
                 '}' : Search(1);
                 'U' : BEGIN
-                        Print('Enter User Name, #, or partial search string.');
-                        Prt(': ');
                         lFindUserWS(UNum1);
                         IF (UNum1 > 0) THEN
                         BEGIN
@@ -987,15 +991,14 @@ BEGIN
                       END;
                 '_' : BEGIN
                         Prt('Print questionairre file: ');
-                        MPL(8);
-                        InputMain(TempStr,8,[UpperOnly]);
+                        InputMain(TempStr,8,[CapAll]);
                         NL;
                         ReadAsw(UNum,General.MiscPath+TempStr);
                         PauseScr(FALSE);
                       END;
                 ';' : BEGIN
                         Prt('(L)ong or (S)hort list mode: ');
-                        LOneK('',Cmd,'QSL '^M,TRUE,TRUE);
+                        InputChar('',Cmd,'QSL '^M,[CapAll]);
                         CASE Cmd OF
                           'S' : UserInfoTyp := 2;
                           'L' : UserInfoTyp := 1;
@@ -1031,7 +1034,7 @@ BEGIN
                   '$' : BEGIN
                           REPEAT
                             NL;
-                            LOneK('^2Clear Fields [^1A^2-^1M^2,(^1?^2)Help,(^1Q^2)uit]: ',Cmd,'Q?ABCDEFGHIJKL',TRUE,TRUE);
+                            InputChar('^2Clear Fields [^1A^2-^1M^2,(^1?^2)Help,(^1Q^2)uit]: ',Cmd,'Q?ABCDEFGHIJKL',[CapAll]);
                             CASE Cmd OF
                               'A': User.RealName := '';
                             { ' ': User.Country := ''; }
@@ -1070,8 +1073,7 @@ BEGIN
                           BEGIN
                             Print('Enter new name.');
                             Prt(': ');
-                            MPL((SizeOf(ThisUser.Name) - 1));
-                            InputMain(TempStr,(SizeOf(ThisUser.Name) - 1),[UpperOnly]);
+                            InputMain(TempStr,(SizeOf(ThisUser.Name) - 1),[CapAll]);
                             UNum1 := SearchUser(TempStr,TRUE);
                             IF ((UNum1 = 0) OR (UNum1 = UNum)) AND (TempStr <> '') THEN
                             BEGIN
@@ -1098,7 +1100,7 @@ BEGIN
                   'C' : CStuff(4,3,User); { Address }
                   'D' : CStuff(5,3,User); { City, State }
                   'E' : CStuff(6,3,User); { Zip code }
-                  'F' : InputWN1('^0New SysOp note:%LF^2: ',User.Note,(SizeOf(User.Note) - 1),[ColorsAllowed],Next);
+                  'F' : InputString('^0New SysOp note:%LF^2: ',User.Note,(SizeOf(User.Note) - 1),[NoInputField],Next);
                   'G' : CStuff(10,3,User); { SysOp defined question 1 }
                   'H' : CStuff(11,3,User); { SysOp defined question 2 }
                   'I' : CStuff(12,3,User); { SysOp defined question 3 }
@@ -1123,7 +1125,7 @@ BEGIN
                                                          '^1Normal'));
                             NL;
                             Prt('Select (1-4): ');
-                            LOneK('',Cmd,^M'1234',TRUE,TRUE);
+                            InputChar('',Cmd,^M'1234',[CapAll]);
                             IF (Cmd <> ^M) THEN
                               NL;
                             CASE Cmd OF
@@ -1176,7 +1178,7 @@ BEGIN
                   'K' : CStuff(26,3,User); { QWK }
                   'L' : BEGIN
                           TempB := User.SL;
-                          InputByteWOC('Enter new SL',TempB,[NumbersOnly],0,255);
+                          InputByte('Enter new SL',TempB,[NumbersOnly],0,255,Changed);
                           IF (TempB >= 0) AND (TempB <= 255) THEN
                           BEGIN
                             Ok := TRUE;
@@ -1204,7 +1206,7 @@ BEGIN
                         END;
                   'M' : BEGIN
                           TempB := User.DSL;
-                          InputByteWOC('Enter new DSL',TempB,[NumbersOnly],0,255);
+                          InputByte('Enter new DSL',TempB,[NumbersOnly],0,255,Changed);
                           IF (TempB >= 0) AND (TempB <= 255) THEN
                           BEGIN
                             Ok := TRUE;
@@ -1232,7 +1234,7 @@ BEGIN
                           REPEAT
                             Prt('Toggle which AR flag? ('+DisplayARFlags(User.ARFlags,'5','4')+'^2)'+
                                 ' [^1*^2=^1All^2,^1?^2=^1Help^2,^1<CR>^2=^1Quit^2]: ');
-                            LOneK('',Cmd,^M'ABCDEFGHIJKLMNOPQRSTUVWXYZ*?',TRUE,TRUE);
+                            InputChar('',Cmd,^M'ABCDEFGHIJKLMNOPQRSTUVWXYZ*?',[CapAll]);
                             IF (Cmd = '?') THEN
                               PrintF('ARFLAGS')
                             ELSE IF (Cmd <> ^M) THEN
@@ -1258,7 +1260,7 @@ BEGIN
                           REPEAT
                             Prt('Toggle which AC flag? ('+DisplayACFlags(User.ACFlags,'5','4')+'^2)'+
                                 ' [^1?^2=^1Help^2,^1<CR>^2=^1Quit^2]: ');
-                            LOneK('',Cmd,^M'LCVUA*PEKM1234?',TRUE,TRUE);
+                            InputChar('',Cmd,^M'LCVUA*PEKM1234?',[CapAll]);
                             IF (Cmd = '?') THEN
                               PrintF('ACFLAGS')
                             ELSE
@@ -1282,7 +1284,6 @@ BEGIN
                   'T' : BEGIN
                           Print('New last on date (MM/DD/YYYY).');
                           Prt(': ');
-                          MPL(10);
                           InputFormatted('',TempStr,'##/##/####',TRUE);
                           IF (TempStr <> '') THEN
                             User.LastOn := Date2PD(TempStr);
@@ -1300,8 +1301,7 @@ BEGIN
                             Print('be displayed before user is terminated.');
                             NL;
                             Prt('Enter lockout filename: ');
-                            MPL(8);
-                            InputMain(TempStr,8,[UpperOnly]);
+                            InputMain(TempStr,8,[CapAll]);
                             IF (TempStr = '') THEN
                               Exclude(User.SFlags,LockedOut)
                             ELSE
@@ -1321,16 +1321,14 @@ BEGIN
                   'W' : BEGIN { LeeW: Why not using CStuff? Check for others too }
                           Print('Enter new password.');
                           Prt(': ');
-                          MPL(20);
-                          InputMain(TempStr,20,[UpperOnly]);
+                          InputMain(TempStr,20,[CapAll]);
                           IF (TempStr <> '') THEN
                             User.PW := CRC32(TempStr);
                         END;
                   'X' : BEGIN
                           Print('Enter new caller ID string.');
                           Prt(': ');
-                          MPL((SizeOf(User.CallerID) - 1));
-                          InputMain(TempStr,(SizeOf(User.CallerID) - 1),[UpperOnly]);
+                          InputMain(TempStr,(SizeOf(User.CallerID) - 1),[CapAll]);
                           IF (TempStr <> '') THEN
                             User.CallerID := TempStr;
                         END;
@@ -1342,8 +1340,7 @@ BEGIN
                           NL;
                           Print('Enter new forgot password answer.');
                           Prt(': ');
-                          MPL((SizeOf(User.ForgotPWAnswer) - 1));
-                          InputMain(TempStr,(SizeOf(User.ForgotPWAnswer) - 1),[UpperOnly]);
+                          InputMain(TempStr,(SizeOf(User.ForgotPWAnswer) - 1),[CapAll]);
                           IF (TempStr <> '') THEN
                             User.ForgotPWAnswer := TempStr;
                         END;

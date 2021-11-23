@@ -139,10 +139,12 @@ BEGIN
     NewCompTables;
 
   NL;
-  Print('^1Forward message to which user (1-'+(IntToStr(MaxUsers - 1))+')?^0');
+  Print('Forward message to which user?');
   NL;
+  {
   Print('Enter User Number, Name, or Partial Search String.');
   Prt(': ');
+  }
   lFindUserWS(UNum);
   IF (UNum < 1) THEN
     PauseScr(FALSE)
@@ -165,8 +167,8 @@ BEGIN
       ForwardOk := FALSE;
     END
     ELSE IF ((NOT AACS1(User,UNum,General.CSOP)) AND (User.Waiting >= General.MaxWaiting)) OR
-			((AACS1(User,UNum,General.CSOP)) AND (User.Waiting >= General.CSMaxWaiting))
-			AND (NOT CoSysOp) THEN { LeeW: Added CoSysOp max waiting check }
+            ((AACS1(User,UNum,General.CSOP)) AND (User.Waiting >= General.CSMaxWaiting))
+            AND (NOT CoSysOp) THEN { LeeW: Added CoSysOp max waiting check }
     BEGIN
       NL;
       Print('^8The mailbox for this user is full!^0');

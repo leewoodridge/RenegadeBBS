@@ -2,7 +2,7 @@
 
 { System Configuration - System Flagged Functions }
 
-(*  1.  Add checking for deleted users or forwarded mail to option 1 *)
+(*  1.  Add checking for deleted users or forwarded mail to new user letter config *)
 
 UNIT SysOp2E;
 
@@ -13,8 +13,9 @@ PROCEDURE SystemFlaggedFunctions;
 IMPLEMENTATION
 
 USES
-  Crt,
-  Common;
+  CRT,
+  Common,
+  SysOp2; {ConfigHeader}
 
 PROCEDURE SystemFlaggedFunctions;
 VAR
@@ -26,42 +27,41 @@ VAR
 BEGIN
   REPEAT
     WITH General DO
-    BEGIN
-      Abort := FALSE;
-      Next := FALSE;
-      Print('%CL^1System Flagged Functions:');
-      NL;
-      PrintACR('^0A. Handles allowed on system: ^1'+ShowOnOff(AllowAlias)+
-             '^0  B. Phone number in logon     : ^1'+ShowOnOff(PhonePW));
-      PrintACR('^0C. Local security protection: ^1'+ShowOnOff(LocalSec)+
-             '^0  D. Use EMS for overlay file  : ^1'+ShowOnOff(UseEMS));
-      PrintACR('^0E. Global activity trapping : ^1'+ShowOnOff(GlobalTrap)+
-             '^0  F. Auto chat buffer open     : ^1'+ShowOnOff(AutoChatOpen));
-      PrintACR('^0G. AutoMessage in logon     : ^1'+ShowOnOff(AutoMInLogon)+
-             '^0  H. Bulletins in logon        : ^1'+ShowOnOff(BullInLogon));
-      PrintACR('^0I. User info in logon       : ^1'+ShowOnOff(YourInfoInLogon)+
-             '^0  J. Strip color off SysOp Log : ^1'+ShowOnOff(StripCLog));
-      PrintACR('^0K. Offhook in local logon   : ^1'+ShowOnOff(OffHookLocalLogon)+
-             '^0  L. Trap Teleconferencing     : ^1'+ShowOnOff(TrapTeleConf));
-      PrintACR('^0M. Compress file/msg numbers: ^1'+ShowOnOff(CompressBases)+
-             ' ^0 N. Use BIOS for video output : ^1'+ShowOnOff(UseBIOS));
-      PrintACR('^0O. Use IEMSI handshakes     : ^1'+ShowOnOff(UseIEMSI)+
-             '^0  P. Refuse new users          : ^1'+ShowOnOff(ClosedSystem));
-      PrintACR('^0R. Swap shell function      : ^1'+ShowOnOff(SwapShell)+
-             '^0  S. Use shuttle logon         : ^1'+ShowOnOff(ShuttleLog));
-      PrintACR('^0T. Chat call paging         : ^1'+ShowOnOff(ChatCall)+
-             '^0  U. Time limits are per call  : ^1'+ShowOnOff(PerCall));
-      PrintACR('^0V. SysOp Password checking  : ^1'+ShowOnOff(SysOpPWord)+
-             '^0  W. Random quote in logon     : ^1'+ShowOnOff(LogonQuote));
-      PrintACR('^0X. User add quote in logon  : ^1'+ShowOnOff(UserAddQuote)+
-             '^0  Y. Use message area lightbar : ^1'+ShowOnOff(UseMsgAreaLightBar));
-      PrintACR('^0Z. Use file area lightbar   : ^1'+ShowOnOff(UseFileAreaLightBar));
-      PrintACR('');
-      PrintACR('^01. New user message sent to : ^1'+AOnOff((NewApp = -1),'Off',PadLeftInt(NewApp,5)));
-      PrintACR('^02. Mins before TimeOut bell : ^1'+AOnOff((TimeOutBell = -1),'Off',PadLeftInt(TimeOutBell,3)));
-      PrintACR('^03. Mins before TimeOut      : ^1'+AOnOff((TimeOut = -1),'Off',PadLeftInt(TimeOut,3)));
-      Prt('%LFEnter selection [^1A^2-^1P^2,^1R^2-^1Z^2,^11^2-^13^2,^1Q^2=^1Quit^2]: ');
-      LOneK('',Cmd,'QABCDEFGHIJKLMNOPRSTUVWXYZ123'^M,TRUE,TRUE);
+      BEGIN
+		Abort := FALSE;
+		Next := FALSE;
+		ConfigHeader('System Toggles');
+		PrintACR(PadLeftStr('^0(^1A^0) Handles allowed on system : ^1'+ShowOnOff(AllowAlias),39)+
+				 PadLeftStr('^0(^1B^0) Phone number in logon     : ^1'+ShowOnOff(PhonePW),39));
+		PrintACR(PadLeftStr('^0(^1C^0) Local security protection : ^1'+ShowOnOff(LocalSec),39)+
+				 PadLeftStr('^0(^1D^0) Use EMS for overlay file  : ^1'+ShowOnOff(UseEMS),39));
+		PrintACR(PadLeftStr('^0(^1E^0) Global activity trapping  : ^1'+ShowOnOff(GlobalTrap),39)+
+				 PadLeftStr('^0(^1F^0) Auto chat buffer open     : ^1'+ShowOnOff(AutoChatOpen),39));
+		PrintACR(PadLeftStr('^0(^1G^0) AutoMessage in logon      : ^1'+ShowOnOff(AutoMInLogon),39)+
+				 PadLeftStr('^0(^1H^0) Bulletins in logon        : ^1'+ShowOnOff(BullInLogon),39));
+		PrintACR(PadLeftStr('^0(^1I^0) User info in logon        : ^1'+ShowOnOff(YourInfoInLogon),39)+
+				 PadLeftStr('^0(^1J^0) Strip color off SysOp Log : ^1'+ShowOnOff(StripCLog),39));
+		PrintACR(PadLeftStr('^0(^1K^0) Offhook in local logon    : ^1'+ShowOnOff(OffHookLocalLogon),39)+
+				 PadLeftStr('^0(^1L^0) Trap Teleconferencing     : ^1'+ShowOnOff(TrapTeleConf),39));
+		PrintACR(PadLeftStr('^0(^1M^0) Compress file/msg numbers : ^1'+ShowOnOff(CompressBases),39)+
+				 PadLeftStr('^0(^1N^0) Use BIOS for video output : ^1'+ShowOnOff(UseBIOS),39));
+		PrintACR(PadLeftStr('^0(^1O^0) Use IEMSI handshakes      : ^1'+ShowOnOff(UseIEMSI),39)+
+				 PadLeftStr('^0(^1P^0) Refuse new users          : ^1'+ShowOnOff(ClosedSystem),39));
+		PrintACR(PadLeftStr('^0(^1R^0) Swap shell function       : ^1'+ShowOnOff(SwapShell),39)+
+				 PadLeftStr('^0(^1S^0) Use shuttle logon         : ^1'+ShowOnOff(ShuttleLog),39));
+		PrintACR(PadLeftStr('^0(^1T^0) Chat call paging          : ^1'+ShowOnOff(ChatCall),39)+
+				 PadLeftStr('^0(^1U^0) Time limits are per call  : ^1'+ShowOnOff(PerCall),39));
+		PrintACR(PadLeftStr('^0(^1V^0) SysOp Password checking   : ^1'+ShowOnOff(SysOpPWord),39)+
+				 PadLeftStr('^0(^1W^0) Random quote in logon     : ^1'+ShowOnOff(LogonQuote),39));
+		PrintACR(PadLeftStr('^0(^1X^0) User add quote in logon   : ^1'+ShowOnOff(UserAddQuote),39)+
+				 PadLeftStr('^0(^1Y^0) Use message area lightbar : ^1'+ShowOnOff(UseMsgAreaLightBar),39));
+		PrintACR(PadLeftStr('^0(^1Z^0) Use file area lightbar    : ^1'+ShowOnOff(UseFileAreaLightBar),39));
+
+		PrintACR('^02. Mins before TimeOut bell : ^1'+AOnOff((TimeOutBell = -1),'Off',PadLeftInt(TimeOutBell,3)));
+		PrintACR('^03. Mins before TimeOut      : ^1'+AOnOff((TimeOut = -1),'Off',PadLeftInt(TimeOut,3)));
+		NL;
+		InputChar('Enter selection [^1A^2-^1P^2,^1R^2-^1Z^2,^11^2-^13^2,^1Q^2=^1Quit^2]: ',Cmd,
+                  'QABCDEFGHIJKLMNOPRSTUVWXYZ123'^M,[CapAll]);
       CASE Cmd OF
         'A' : AllowAlias := NOT AllowAlias;
         'B' : BEGIN
@@ -110,20 +110,14 @@ BEGIN
         'X' : UserAddQuote := NOT UserAddQuote;
         'Y' : UseMsgAreaLightBar := NOT UseMsgAreaLightBar;
         'Z' : UseFileAreaLightBar := NOT UseFileAreaLightBar;
-        '1'..'3' :
+        '2'..'3' :
               BEGIN
-                Prt('%LFSelect option [^1E^2=^1Enable^2,^1D^2=^1Disable^2,^1<CR>^2=^1Quit^2]: ');
-                LOneK('',Cmd1,^M'ED',TRUE,TRUE);
+                InputChar('%LFSelect option [^1E^2=^1Enable^2,^1D^2=^1Disable^2,^1<CR>^2=^1Quit^2]: ',Cmd1,^M'ED',[CapAll]);
                 IF (Cmd1 IN ['E','D']) THEN
                 BEGIN
                   CASE Cmd1 OF
                     'E' : BEGIN
                             CASE Cmd OF
-                              '1' : BEGIN
-                                      LowNum := 1;
-                                      HiNum := (MaxUsers - 1);
-                                      TempInt := NewApp;
-                                    END;
                               '2' : BEGIN
                                       LowNum := 1;
                                       HiNum := 20;
@@ -135,12 +129,11 @@ BEGIN
                                       TempInt := TimeOut;
                                     END;
                             END;
-                            InputIntegerWOC('%LFEnter value for this function',TempInt,[NumbersOnly],LowNum,HiNum);
+                            InputInteger('%LFEnter value for this function',TempInt,[NumbersOnly],LowNum,HiNum,Changed);
                           END;
                     'D' : TempInt := -1;
                   END;
                   CASE Cmd OF
-                    '1' : NewApp := TempInt;
                     '2' : TimeOutBell := TempInt;
                     '3' : TimeOut := TempInt;
                   END;

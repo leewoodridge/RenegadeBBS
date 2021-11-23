@@ -1,5 +1,8 @@
 {$A+,B-,D+,E-,F+,I-,L+,N-,O+,R-,S+,V-}
-
+{
+added 2nd line of question to list, **will mess up page list length** FIX!
+list aesthetics
+}
 UNIT SysOp10;
 
 INTERFACE
@@ -10,7 +13,8 @@ IMPLEMENTATION
 
 USES
   Common,
-  MiscUser;
+  MiscUser,
+  SysOp2; {ConfigHeader,HR}
 
 PROCEDURE VotingEditor;
 VAR
@@ -27,22 +31,22 @@ VAR
     LoadURec(User,UserNum);
     FillChar(Topic,SizeOf(Topic),0);
     WITH Topic DO
-    BEGIN
-      Question1 := '<< New Voting Topic >>';
-      Question2 := '';
-      ACS := 'VV';
-      ChoiceNumber := 0;
-      NumVotedQuestion := 0;
-      CreatedBy := Caps(User.Name);
-      AddAnswersACS := General.AddChoice;
-      FOR Counter := 1 TO MaxChoices DO
-        WITH Answers[Counter] DO
-        BEGIN
-          Answer1 := '<< New Topic Choice >>';
-          Answer2 := '';
-          NumVotedAnswer := 0;
-        END;
-    END;
+      BEGIN
+		Question1 := '<< New Voting Topic >>';
+		Question2 := '';
+		ACS := 'VV';
+		ChoiceNumber := 0;
+		NumVotedQuestion := 0;
+		CreatedBy := Caps(User.Name);
+		AddAnswersACS := General.AddChoice;
+		FOR Counter := 1 TO MaxChoices DO
+          WITH Answers[Counter] DO
+			BEGIN
+			  Answer1 := '<< New Topic Choice >>';
+			  Answer2 := '';
+			  NumVotedAnswer := 0;
+			END;
+      END;
   END;
 
   PROCEDURE DeleteChoice(VAR Topic: VotingRecordType; RecNumToDelete: Byte; VAR Changed: Boolean);
@@ -57,7 +61,7 @@ VAR
     ELSE
     BEGIN
       RecNum := 0;
-      InputByteWOC('%LFDelete which choice',RecNum,[Numbersonly],1,Topic.ChoiceNumber);
+      InputByte('%LFDelete which choice',RecNum,[Numbersonly],1,Topic.ChoiceNumber,Changed);
       IF (RecNum >= 1) AND (RecNum <= Topic.ChoiceNumber) THEN
       BEGIN
         Dec(Topic.ChoiceNumber);
@@ -95,11 +99,11 @@ VAR
       Messages(5,MaxChoices,'topic choices')
     ELSE IF PYNQ('%LFAdd topic choice #'+IntToStr(Topic.ChoiceNumber + 1)+'? ',0,FALSE) THEN
     BEGIN
-      InputWNWC('%LFChoice: ',Topic.Answers[Topic.ChoiceNumber + 1].Answer1,65,Changed);
+      InputString('%LFChoice: ',Topic.Answers[Topic.ChoiceNumber + 1].Answer1,65,[InteractiveEdit],Changed);
       IF (Topic.Answers[Topic.ChoiceNumber + 1].Answer1 <> '') THEN
       BEGIN
         Topic.Answers[Topic.ChoiceNumber + 1].NumVotedAnswer := 0;
-        InputWNWC(PadLeftStr('',6)+': ',Topic.Answers[Topic.ChoiceNumber + 1].Answer2,65,Changed);
+        InputString(PadLeftStr('',6)+': ',Topic.Answers[Topic.ChoiceNumber + 1].Answer2,65,[InteractiveEdit],Changed);
         Inc(Topic.ChoiceNumber);
       END;
       Changed := TRUE;
@@ -131,7 +135,7 @@ VAR
     ELSE
     BEGIN
       RecNum := 0;
-      InputByteWOC('%LFModify which choice',RecNum,[Numbersonly],1,Topic.ChoiceNumber);
+      InputByte('%LFModify which choice',RecNum,[Numbersonly],1,Topic.ChoiceNumber,Changed);
       IF (RecNum >= 1) AND (RecNum <= Topic.ChoiceNumber) THEN
       BEGIN
         REPEAT
@@ -146,24 +150,24 @@ VAR
               PrintACR('^0         : ^1'+Topic.Answers[RecNum].Answer2);
             PrintACR('^02. Voters: ^1'+IntToStr(Topic.Answers[RecNum].NumVotedAnswer));
           END;
-          LOneK('%LFModify menu [^1?^2=^1Help^2]: ',Cmd1,'Q12[]FJL?'^M,TRUE,TRUE);
+          InputChar('%LFModify menu [^1?^2=^1Help^2]: ',Cmd1,'Q12[]FJL?'^M,[CapAll]);
           CASE Cmd1 OF
             '1' : BEGIN
                     REPEAT
                       TempTopic1.Answers[RecNum].Answer1 := Topic.Answers[RecNum].Answer1;
                       Ok := TRUE;
-                      InputWNWC('%LFNew choice: ',Topic.Answers[RecNum].Answer1,
-                                (SizeOf(Topic.Answers[RecNum].Answer1) - 1),Changed);
+                      InputString('%LFNew choice: ',Topic.Answers[RecNum].Answer1,
+                                (SizeOf(Topic.Answers[RecNum].Answer1) - 1),[InteractiveEdit],Changed);
                       CheckChoice(Topic,RecNum,1,1,Ok);
                       IF (NOT Ok) THEN
                         Topic.Answers[RecNum].Answer1 := TempTopic1.Answers[RecNum].Answer1;
                     UNTIL (Ok) OR (HangUp);
                     IF (Topic.Answers[RecNum].Answer1 <> '') THEN
-                      InputWNWC(PadLeftStr('',10)+': ',Topic.Answers[Recnum].Answer2,
-                                (SizeOf(Topic.Answers[RecNum].Answer2) - 1),Changed);
+                      InputString(PadLeftStr('',10)+': ',Topic.Answers[Recnum].Answer2,
+                                (SizeOf(Topic.Answers[RecNum].Answer2) - 1),[InteractiveEdit],Changed);
                   END;
-            '2' : InputIntegerWC('%LFNew number of voters',Topic.Answers[RecNum].NumVotedAnswer,[DisplayValue,NumbersOnly],0,
-                                 (MaxUsers - 1),Changed);
+            '2' : InputInteger('%LFNew number of voters',Topic.Answers[RecNum].NumVotedAnswer,
+							   [InteractiveEdit,NumbersOnly],0,(MaxUsers - 1),Changed);
             '[' : IF (RecNum > 1) THEN
                     Dec(RecNum)
                   ELSE
@@ -186,7 +190,7 @@ VAR
                     Cmd1 := #0;
                   END;
             'J' : BEGIN
-                    InputByteWOC('%LFJump to entry',RecNum,[Numbersonly],1,Topic.ChoiceNumber);
+                    InputByte('%LFJump to entry',RecNum,[Numbersonly],1,Topic.ChoiceNumber,Changed);
                     IF (RecNum < 1) OR (RecNum > Topic.ChoiceNumber) THEN
                       Cmd1 := #0;
                   END;
@@ -218,24 +222,24 @@ VAR
       RecNumToList1 := 1;
     Abort := FALSE;
     Next := FALSE;
-    CLS;
-    PrintACR('^1##^2:^1Answer^2:^1Choice');
-    PrintACR('^2==:======:=====================================================================');
+    ConfigHeader('Voting Topic Choice Editor');
+    PrintACR('^5<^4##^5> <^4Votes^5> <^4Choice^5>');
+    HL;
     NumDone := 0;
     WHILE (NumDone < (PageLength - 5)/2) AND (RecNumToList1 >= 1) AND (RecNumToList1 <= Topic.ChoiceNumber)
           AND (NOT Abort) AND (NOT HangUp) DO
     BEGIN
-      PrintACR('^1'+PadRightInt(RecNumToList1,2)+
-               ' ^1'+PadRightInt(Topic.Answers[RecNumToList1].NumVotedAnswer,6)+
-               ' ^1'+Topic.Answers[RecNumToList1].Answer1);
-	  PrintACR(PadLeftStr(PadLeftStr('',10)+Topic.Answers[RecNumToList1].Answer2,79));
-			   
+      PrintACR(' ^1'+PadLeftInt(RecNumToList1,4)+
+               ' ^1'+PadLeftInt(Topic.Answers[RecNumToList1].NumVotedAnswer,7)+
+               ' ^1'+PadLeftStr(Topic.Answers[RecNumToList1].Answer1,60));
+      PrintACR(PadLeftStr('^1',14)+PadLeftStr(Topic.Answers[RecNumToList1].Answer2,60));
+               
       WKey;
       Inc(RecNumToList1);
       Inc(NumDone);
     END;
     IF (Topic.ChoiceNumber = 0) THEN
-      Print('*** No voting choices defined ***');
+      Messages(4,0,'voting choices'); {Print('*** No voting choices defined ***');}
   END;
 
   PROCEDURE ChoiceEditor(TempTopic1: VotingRecordType; VAR Topic: VotingRecordType; Cmd1: Char;
@@ -250,7 +254,7 @@ VAR
     REPEAT
       IF (Cmd1 <> '?') THEN
         ListChoices(Topic,RecNumToList1);
-      LOneK('%LFTopic choice editor [^1?^2=^1Help^2]: ',Cmd1,'QDIM?'^M,TRUE,TRUE);
+      InputChar('%LFTopic choice editor [^1?^2=^1Help^2]: ',Cmd1,'QDIM?'^M,[CapAll]);
       CASE Cmd1 OF
         ^M  : IF (RecNumToList1 < 1) OR (RecNumToList1 > Topic.ChoiceNumber) THEN
                 RecNumToList1 := 1;
@@ -280,7 +284,7 @@ VAR
     ELSE
     BEGIN
       RecNumToDelete := 0;
-      InputByteWOC('%LFVoting topic to delete',RecNumToDelete,[NumbersOnly],1,NumVotes);
+      InputByte('%LFVoting topic to delete',RecNumToDelete,[NumbersOnly],1,NumVotes,Changed);
       IF (RecNumToDelete >= 1) AND (RecNumToDelete <= NumVotes) THEN
       BEGIN
         Reset(VotingFile);
@@ -365,44 +369,44 @@ VAR
         BEGIN
           Abort := FALSE;
           Next := FALSE;
-          CLS;
+          {CLS;}
           IF (Editing) THEN
-            PrintACR('^1Editing voting topic #'+IntToStr(RecNumToEdit)+' of '+IntToStr(NumVotes))
+		    ConfigHeader('^1Editing Voting Topic #'+IntToStr(RecNumToEdit)+' Of '+IntToStr(NumVotes))
+            
           ELSE
-            PrintACR('^1Inserting voting topic #'+IntToStr(RecNumToEdit)+' of '+IntToStr(NumVotes + 1));
-          NL;
-          PrintACR('^01. Topic        : ^1'+Question1);
+            ConfigHeader('^1Inserting Voting Topic #'+IntToStr(RecNumToEdit)+' Of '+IntToStr(NumVotes + 1));
+          {NL;}
+          PrintACR('^0(^11^0) Topic       : ^1'+Question1);
           IF (Question2 <> '') THEN
             PrintACR('^0'+PadLeftStr('',16)+': ^1'+Question2);
-          PrintACR('^02. Creator      : ^1'+CreatedBy);
-          PrintACR('^03. ACS to vote  : ^1'+AOnOff(ACS = '','*None*',ACS));
-          PrintACR('^04. ACS to add   : ^1'+AOnOff(AddAnswersACS = '','*None*',AddAnswersACS));
-          PrintACR('^05. Total votes  : ^1'+IntToStr(NumVotedQuestion));
-          Print('%LF^0[Choices on this topic: ^1'+IntToStr(ChoiceNumber)+'^0]');
+          PrintACR('^0(^12^0) Author      : ^1'+CreatedBy);
+          PrintACR('^0(^13^0) ACS To Vote : ^1'+AOnOff(ACS = '','*None*',ACS));
+          PrintACR('^0(^14^0) ACS To Add  : ^1'+AOnOff(AddAnswersACS = '','*None*',AddAnswersACS));
+          PrintACR('^0(^15^0) Total Votes : ^1'+IntToStr(NumVotedQuestion));
+		  NL;
+          PrintACR('^0 - This topic has ^1'+IntToStr(ChoiceNumber)+'^0 '+Plural('choice',ChoiceNumber));
         END;
         IF (NOT Editing) THEN
           CmdStr := '12345C'
         ELSE
           CmdStr := '12345C[]FJL';
-        LOneK('%LFModify menu [^1C^2=^1Choice Editor^2,^1?^2=^1Help^2]: ',Cmd1,'Q?'+CmdStr+^M,TRUE,TRUE);
+        InputChar('%LFModify menu [^1C^2=^1Choice Editor^2,^1?^2=^1Help^2]: ',Cmd1,'Q?'+CmdStr+^M,[CapAll]);
         CASE Cmd1 OF
           '1' : BEGIN
                   REPEAT
                     TempTopic1.Question1 := Question1;
                     Ok := TRUE;
-                    InputWNWC('%LFNew topic: ',Question1,(SizeOf(Question1) - 1),Changed);
+                    InputString('%LFNew topic: ',Question1,(SizeOf(Question1) - 1),[InteractiveEdit],Changed);
                     CheckTopic(Topic,1,1,Ok);
                     IF (NOT Ok) THEN
                       Question1 := TempTopic1.Question1;
                   UNTIL (Ok) OR (HangUp);
                   IF (Question1 <> '') THEN
-                    InputWNWC(PadLeftStr('',9)+': ',Question2,(SizeOf(Question2) - 1),Changed);
+                    InputString(PadLeftStr('',9)+': ',Question2,(SizeOf(Question2) - 1),[InteractiveEdit],Changed);
                 END;
           '2' : BEGIN
-                  Print('%LF^1New creator of this topic (1-'+IntToStr(MaxUsers - 1)+')?^0');
-                  Print('%LFEnter User Number, Name, or Partial Search String.');
-                  Prt(': ');
-                  lFindUserWS(Unum);
+                  Print('%LFWho is the new author of this voting topic?');
+                  lFindUserWS(UNum);
                   IF (Unum < 1) THEN
                     PauseScr(FALSE)
                   ELSE
@@ -416,12 +420,13 @@ VAR
                       END;
                   END;
                 END;
-          '3' : InputWN1('%LFNew voting ACS: ',ACS,(SizeOf(ACS) - 1),[InterActiveEdit],Changed);
+          '3' : InputString('%LFNew voting ACS: ',ACS,(SizeOf(ACS) - 1),[InterActiveEdit],Changed);
           '4' : IF PYNQ('%LFAllow other users to add choices? ',0,FALSE) THEN
                   AddAnswersACS := ACS
                 ELSE
                   AddAnswersACS := General.AddChoice;
-          '5' : InputIntegerWOC('%LFNew number of voters',NumVotedQuestion,[DisplayValue,NumbersOnly],0,(MaxUsers - 1));
+          '5' : InputInteger('%LFNew number of voters',NumVotedQuestion,
+          [InteractiveEdit{,DisplayValue},NumbersOnly],0,(MaxUsers - 1),Changed);
           'C' : ChoiceEditor(TempTopic1,Topic,Cmd1,RecNumToEdit,Changed);
           '[' : IF (RecNumToEdit > 1) THEN
                   Dec(RecNumToEdit)
@@ -445,7 +450,7 @@ VAR
                   Cmd1 := #0;
                 END;
           'J' : BEGIN
-                  InputByteWOC('%LFJump to entry',RecNumToEdit,[NumbersOnly],1,NumVotes);
+                  InputByte('%LFJump to entry',RecNumToEdit,[NumbersOnly],1,NumVotes,Changed);
                   IF (RecNumToEdit < 1) OR (RecNumToEdit > NumVotes) THEN
                     Cmd1 := #0;
                 END;
@@ -525,7 +530,7 @@ VAR
     ELSE
     BEGIN
       RecNumToEdit := 0;
-      InputByteWOC('%LFModify which topic',RecNumToEdit,[NumbersOnly],1,NumVotes);
+      InputByte('%LFModify which topic',RecNumToEdit,[NumbersOnly],1,NumVotes,Changed);
       IF (RecNumToEdit >= 1) AND (RecNumToEdit <= NumVotes) THEN
       BEGIN
         SaveRecNumToEdit := 0;
@@ -578,7 +583,7 @@ VAR
     ELSE
     BEGIN
       RecNumToReset := 0;
-      InputByteWOC('%LFReset which topic',RecNumToReset,[NumbersOnly],1,NumVotes);
+      InputByte('%LFReset which topic',RecNumToReset,[NumbersOnly],1,NumVotes,Changed);
       IF (RecNumToReset >= 1) AND (RecNumToReset <= NumVotes) THEN
       BEGIN
         Reset(VotingFile);
@@ -685,9 +690,9 @@ VAR
       RecNumToList1 := 1;
     Abort := FALSE;
     Next := FALSE;
-    CLS;
-    PrintACR('^1##^2:^1Votes^2:^1Topic');
-    PrintACR('^2==:=====:======================================================================');
+    ConfigHeader('Voting Topic Editor');
+    PrintACR('^5<^4##^5> <^4Votes^5> <^4Topic^5>');
+    HL;
     Reset(VotingFile);
     NumDone := 0;
     WHILE (NumDone < (PageLength - 5)) AND (RecNumToList1 >= 1) AND (RecNumToList1 <= NumVotes)
@@ -696,9 +701,13 @@ VAR
       Seek(VotingFile,(RecNumToList1 - 1));
       Read(VotingFile,Topic);
       WITH Topic DO
-        PrintACR('^1'+PadRightInt(RecNumToList1,2)+
-                 '^1'+PadRightInt(NumVotedQuestion,6)+
-                 '^1 '+Question1);
+	    BEGIN
+          PrintACR('^1 '+PadLeftInt(RecNumToList1,4)+
+				   '^1 '+PadLeftInt(NumVotedQuestion,7)+
+                   '^1 '+PadLeftStr(Question1,60));
+		  IF (Question2 <> '') THEN
+            PrintACR('^0'+PadLeftStr('^1',14)+PadLeftStr(Question2,60));
+		END;	 
       WKey;
       Inc(RecNumToList1);
       Inc(NumDone);
@@ -706,7 +715,7 @@ VAR
     Close(VotingFile);
     LastError := IOResult;
     IF (NumVotes = 0) THEN
-      Print('*** No voting topics defined ***');
+	  Messages(4,0,'voting topics'); {Print('*** No voting topics defined ***');}
   END;
 
 BEGIN
@@ -717,7 +726,7 @@ BEGIN
   REPEAT
     IF (Cmd <> '?') THEN
       ListTopics(RecNumToList);
-    LOneK('%LFVoting topic editor [^1?^2=^1Help^2]: ',Cmd,'QDIMRS?'^M,TRUE,TRUE);
+    InputChar('%LFVoting topic editor [^1?^2=^1Help^2]: ',Cmd,'QDIMRS?'^M,[CapAll]);
     CASE Cmd OF
       ^M  : IF (RecNumToList < 1) OR (RecNumToList > NumVotes) THEN
               RecNumToList := 1;
@@ -727,11 +736,12 @@ BEGIN
       'R' : ResetTopic(RecNumToList);
       'S' : RecalculateTopics;
       '?' : BEGIN
-              Print('%LF^0<^1CR^0>Next screen or redisplay current screen');
-              Print('^0(^1?^0)Help/First voting topic');
-              LCmds(20,3,'Delete voting topic','Insert voting topic');
-              LCmds(20,3,'Modify voting topic','Quit');
-              LCmds(20,3,'Reset voting topic','SRecalculate voting topics');
+			  NL;
+              Print('^0<^1CR^0>Next Page/Refresh');
+              Print('^0(^1?^0)Help/First Voting Topic');
+              LCmds(20,1,'Delete Voting Topic','Insert Voting Topic');
+              LCmds(20,1,'Modify Voting Topic','Quit');
+              LCmds(20,1,'Reset Voting Topic','SRecalculate Voting Topics');
             END;
     END;
     IF (Cmd <> ^M) THEN

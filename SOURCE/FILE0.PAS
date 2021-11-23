@@ -411,16 +411,15 @@ END;
 
 PROCEDURE GetFileName(VAR FileName: Str12);
 BEGIN
-  MPL(12);
   InputMain(FileName,12,[NoLineFeed,CapAll]);
   IF (FileName <> '') THEN
     NL
   ELSE
-  BEGIN
-    MPL(12);
-    FileName := '*.*';
-    Print(FileName);
-  END;
+    BEGIN
+      MPL(12);
+      FileName := '*.*';
+      Print(FileName);
+    END;
   FileName := Align(FileName);
 END;
 
@@ -572,24 +571,24 @@ BEGIN
   Counter := 9;
   WHILE (Counter > 0) AND NOT (Cmd IN [#13,#27]) AND (NOT HangUp) DO
     BEGIN
-	  IF (NOT Empty) THEN
-		Cmd := Char(InKey);
+      IF (NOT Empty) THEN
+        Cmd := Char(InKey);
       IF (Timer <> SaveTimer) THEN
-		BEGIN
-		  Dec(Counter);
-		  Prompt(^H+IntToStr(Counter));
-		  SaveTimer := Timer;
-		END
+        BEGIN
+          Dec(Counter);
+          Prompt(^H+IntToStr(Counter));
+          SaveTimer := Timer;
+        END
       ELSE
-		ASM
+        ASM
           Int 28h
-		END;
-	END;
+        END;
+    END;
   IF (Cmd <> #27) THEN
-	BEGIN
+    BEGIN
       HangUp := TRUE;
       OutCom := FALSE;
-	END;
+    END;
   UserColor(0);
 END;
 END.

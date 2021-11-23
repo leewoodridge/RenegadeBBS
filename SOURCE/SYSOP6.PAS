@@ -1,5 +1,7 @@
 {$A+,B-,D+,E-,F+,I-,L+,N-,O+,R-,S+,V-}
-
+{
+change info showed in list... no warn, maybe 
+}
 UNIT SysOp6;
 
 INTERFACE
@@ -10,6 +12,7 @@ IMPLEMENTATION
 
 USES
   Common,
+  SysOp2, {ConfigHeader}
   TimeFunc;
 
 PROCEDURE EventEditor;
@@ -142,7 +145,7 @@ VAR
     ELSE
     BEGIN
       RecNumToDelete := -1;
-      InputIntegerWOC('%LFEvent to delete?',RecNumToDelete,[NumbersOnly],1,NumEvents);
+      InputInteger('%LFEvent to delete?',RecNumToDelete,[NumbersOnly],1,NumEvents,Changed);
       IF (RecNumToDelete >= 1) AND (RecNumToDelete <= NumEvents) THEN
       BEGIN
         Reset(EventFile);
@@ -185,15 +188,12 @@ VAR
       END;
   END;
 
-
-
   PROCEDURE EditEvent(TempEvent1: EventRecordType; VAR Event: EventRecordType; VAR Cmd1: Char;
                       VAR RecNumToEdit: Integer; VAR Changed: Boolean; Editing: Boolean);
   CONST
-    BaudRates: ARRAY [1..20] OF LongInt = (300,600,1200,2400,4800,7200,9600,
-                                          12000,14400,16800,19200,21600,24000,
-                                          26400,28800,31200,33600,38400,57600,
-                                          115200);
+    BaudRates: ARRAY [1..20] OF LongInt = (300,   600,  1200,  2400,  4800,  7200,  9600, 12000,
+                                         14400, 16800, 19200, 21600, 24000, 26400, 28800, 31200,
+                                         33600, 38400, 57600, 115200);
   VAR
     OneKCmds,
     TempStr: AStr;
@@ -202,135 +202,130 @@ VAR
     WITH Event DO
       REPEAT
         IF (Cmd1 <> '?') THEN
-        BEGIN
-          Abort := FALSE;
-          Next := FALSE;
-          CLS;
-          IF (Editing) THEN
-            PrintACR('^1Editing event #'+IntToStr(RecNumToEdit)+' of '+IntToStr(NumEvents))
-          ELSE
-            PrintACR('^1Inserting event #'+IntToStr(RecNumToEdit)+' of '+IntToStr(NumEvents + 1));
-          NL;
-          PrintACR('^0A. Event type            : ^1'+AOnOff(EventIsExternal IN EFlags,'External','Internal'));
-          PrintACR('^0B. Description           : ^1'+EventDescription);
-          PrintACR('^0C. Active                : ^1'+AOnOff(EventIsActive IN EFlags,'Active','Inactive'));
-          IF (EventIsExternal IN EFlags) THEN
           BEGIN
-            PrintACR('^0D. Execution hard/soft   : ^1'+AOnOff(EventIsSoft IN EFlags,'Soft','Hard'));
-            TempStr := '^0E. Event type            : ^1';
-            IF (EventIsErrorLevel IN EFlags) THEN
-              TempStr := TempStr + 'Error level = '+IntToStr(EventErrorLevel)
-            ELSE IF (EventIsShell IN EFlags) THEN
-              TempStr := TempStr + 'Shell file = "'+EventShellPath+'"'
-            ELSE IF (EventIsSortFiles IN EFlags) THEN
-              TempStr := TempStr + 'Sort Files'
-            ELSE IF (EventIsPackMsgAreas IN EFlags) THEN
-              TempStr := TempStr + 'Pack Message Areas'
-            ELSE IF (EventIsFilesBBS IN EFlags) THEN
-              TempStr := TempStr + 'Check Files.BBS';
-            PrintACR(TempStr);
-            PrintACR('^0G. Scheduled day(s)      : ^1'+AOnOff(EventIsMonthly IN EFlags,
-                                                   'Monthly ^0-^1 Day ^0=^1 '+IntToStr(EventDayOfMonth),
-                                                   'Weekly ^0-^1 Days ^0=^1 '+DaysEventActive(EventDays,'5','1')));
-            PrintACR('^0H. Start time            : ^1'+ShowTime(EventStartTime));
-            PrintACR('^0I. Phone status          : ^1'+AOnOff(EventIsOffHook IN EFlags,
-                                                   'Off-hook ('+IntToStr(EventPreTime)+' minutes before the Event)',
+            Abort := FALSE;
+            Next := FALSE;
+            IF (Editing) THEN
+              ConfigHeader('Editing Event #'+IntToStr(RecNumToEdit)+' Of '+IntToStr(NumEvents))
+            ELSE
+              ConfigHeader('Inserting Event #'+IntToStr(RecNumToEdit)+' Of '+IntToStr(NumEvents + 1));
+            PrintACR('^0(^1A^0) Event Type            : ^1'+AOnOff(EventIsExternal IN EFlags,'External','Internal'));
+            PrintACR('^0(^1B^0) Description           : ^1'+EventDescription);
+            PrintACR('^0(^1C^0) Active                : ^1'+AOnOff(EventIsActive IN EFlags,'Active','Inactive'));
+            IF (EventIsExternal IN EFlags) THEN
+              BEGIN
+                PrintACR('^0(^1D^0) Execution Type        : ^1'+AOnOff(EventIsSoft IN EFlags,'Soft','Hard'));
+                TempStr := '^0(^1E^0) Event Type            : ^1';
+                IF (EventIsErrorLevel IN EFlags) THEN
+                  TempStr := TempStr + 'Error Level = '+IntToStr(EventErrorLevel)
+                ELSE IF (EventIsShell IN EFlags) THEN
+                  TempStr := TempStr + 'Shell File = "'+EventShellPath+'"'
+                ELSE IF (EventIsSortFiles IN EFlags) THEN
+                  TempStr := TempStr + 'Sort Files'
+                ELSE IF (EventIsPackMsgAreas IN EFlags) THEN
+                  TempStr := TempStr + 'Pack Message Areas'
+                ELSE IF (EventIsFilesBBS IN EFlags) THEN
+                  TempStr := TempStr + 'Check FILES.BBS';
+                PrintACR(TempStr);
+                PrintACR('^0(^1G^0) Scheduled Day(s)      : ^1'+AOnOff(EventIsMonthly IN EFlags,
+                                                   'Monthly: ^0-^1 Day ^0=^1 '+IntToStr(EventDayOfMonth),
+                                                   'Weekly: ^0-^1 Days ^0=^1 '+DaysEventActive(EventDays,'5','1')));
+                PrintACR('^0(^1H^0) Start Time            : ^1'+ShowTime(EventStartTime));
+                PrintACR('^0(^1I^0) Phone Status          : ^1'+AOnOff(EventIsOffHook IN EFlags,
+                                                   'Off-hook ('+IntToStr(EventPreTime)+' minutes before the event)',
                                                    'Remain on-hook'));
-            PrintACR('^0K. Executed today        : ^1'+ShowYesNo(PD2Date(EventLastDate) = DateStr)+' '
+                PrintACR('^0(^1K^0) Executed Today?       : ^1'+ShowYesNo(PD2Date(EventLastDate) = DateStr)+' '
                                                    +AOnOff(EventIsActive IN EFlags,
                                                    '(Next scheduled date: '+PD2Date(EventLastDate)+')',
-                                                   '(Not scheduled for execution)'));
-          END
-          ELSE
-          BEGIN
-            PrintACR('^0D. Scheduled day(s)      : ^1'+AOnOff(EventIsMonthly IN EFlags,
-                                                   'Monthly ^0-^1 Day ^0=^1 '+IntToStr(EventDayOfMonth),
-                                                   'Weekly ^0-^1 Days ^0=^1 '+DaysEventActive(EventDays,'5','1')));
-            PrintACR('^0E. Time active           : ^1'+ShowTime(EventStartTime)+' to '+
+                                                   '(Not scheduled)'));
+              END
+            ELSE
+              BEGIN { Internal event }
+                PrintACR('^0(^1D^0) Scheduled Day(s)      : '+AOnOff(EventIsMonthly IN EFlags,
+                                                   'Monthly: ^1 '+IntToStr(EventDayOfMonth),
+                                                   'Weekly: ^1'+DaysEventActive(EventDays,'5','1')));
+                PrintACR('^0(^1E^0) Time Active           : ^1'+ShowTime(EventStartTime)+' to '+
                                                    ShowTime(EventFinishTime));
-            PrintACR('^0G. Permission/restriction: ^1'+AOnOff(EventIsPermission IN EFlags,
+                PrintACR('^0(^1G^0) Permission/Restriction: ^1'+AOnOff(EventIsPermission IN EFlags,
                                                    'Permission','Restriction'));
-            PrintACR('^0H. Event type            : ^1'+AOnOff(EventIsChat IN EFlags,'Chat','Logon'));
-            PrintACR('^0I. Affected message      : "^1'+eventqualmsg+'^0"');
-            PrintACR('^0K. Unaffected message    : "^1'+eventnotqualmsg+'^0"');
+                PrintACR('^0(^1H^0) Event Type            : ^1'+AOnOff(EventIsChat IN EFlags,'Chat','Logon'));
+                PrintACR('^0(^1I^0) Affected Message      : "^1'+eventqualmsg+'^0"');
+                PrintACR('^0(^1K^0) Unaffected Message    : "^1'+eventnotqualmsg+'^0"');
+              END;
+            PrintACR('^0(^1M^0) Run If Missed?        : ^1'+ShowYesNo(EventIsMissed IN EFlags));
+            PrintACR('^0(^1N^0) Node Number           : ^1'+IntToStr(EventNode));
+            IF (NOT (EventIsExternal IN EFlags)) THEN
+              BEGIN
+                NL;
+                PrintACR('       ^2<<<^1 Qualifiers ^2>>>');
+                NL;
+                PrintACR('^0(^11^0) Baud rate range  : ^1'+AOnOff(BaudIsActive IN EFlags,
+                                                                  IntToStr(LoBaud)+' to '+IntToStr(HiBaud),
+                                                                  '<<Inactive>>'));
+                PrintACR('^0(^12^0) ACS              : ^1'+AOnOff(ACSIsActive IN EFlags,EventACS,'<<Inactive>>'));
+                IF (EventIsPermission IN EFlags) THEN
+                  PrintACR('^0(^13^0) Maximum time     : ^1'+AOnOff(TimeIsActive IN EFlags,
+                                                IntToStr(MaxTimeAllowed),'<<Inactive>>'));
+                IF (EventIsPermission IN EFlags) THEN
+                  BEGIN
+                    PrintACR('^0(^14^0) Set AR flag      : ^1'+AOnOff(SetArIsActive IN EFlags,
+                                                SetArFlag,'<<Inactive>>'));
+                    PrintACR('^0(^15^0) Clear AR flag    : ^1'+AOnOff(ClearArIsActive IN EFlags,
+                                                ClearArFlag,'<<Inactive>>'));
+                  END;
+                PrintACR('^0(^16^0) UL/DL ratio check: ^1'+AOnOff(InRatioIsActive IN EFlags,
+                                              'Active','<<Inactive>>'));
+              END;
           END;
-          PrintACR('^0M. Run if missed         : ^1'+ShowYesNo(EventIsMissed IN EFlags));
-          PrintACR('^0N. Node number           : ^1'+IntToStr(EventNode));
-          IF (NOT (EventIsExternal IN EFlags)) THEN
-          BEGIN
-            NL;
-            PrintACR('       ^2<<<^1 Qualifiers ^2>>>');
-            NL;
-            PrintACR('^01. Baud rate range  : ^1'+AOnOff(BaudIsActive IN EFlags,
-                                              IntToStr(LoBaud)+' to '+IntToStr(HiBaud),
-                                              '<<Inactive>>'));
-            PrintACR('^02. ACS              : ^1'+AOnOff(ACSIsActive IN EFlags,EventACS,'<<Inactive>>'));
-            IF (EventIsPermission IN EFlags) THEN
-              PrintACR('^03. Maximum time     : ^1'+AOnOff(TimeIsActive IN EFlags,
-                                                IntToStr(MaxTimeAllowed),
-                                                '<<Inactive>>'));
-            IF (EventIsPermission IN EFlags) THEN
-            BEGIN
-              PrintACR('^04. Set AR flag      : ^1'+AOnOff(SetArIsActive IN EFlags,
-                                                SetArFlag,
-                                                '<<Inactive>>'));
-              PrintACR('^05. Clear AR flag    : ^1'+AOnOff(ClearArIsActive IN EFlags,
-                                                ClearArFlag,
-                                                '<<Inactive>>'));
-            END;
-            PrintACR('^06. UL/DL ratio check: ^1'+AOnOff(InRatioIsActive IN EFlags,
-                                              'Active',
-                                              '<<Inactive>>'));
-          END;
-        END;
         IF (EventIsExternal IN EFlags) THEN
           OneKCmds := ''
         ELSE
-        BEGIN
-          IF (EventIsPermission IN EFlags) THEN
-            OneKCmds := '123456'
-          ELSE
-            OneKCmds := '126';
-        END;
-        LOneK('%LFModify '+AOnOff(EventIsExternal IN EFlags,'external','internal')+' event [^1?^2=^1Help^2]: ',
-              Cmd1,'QABCDEGHIKMN'+OneKCmds+'[]FJL?'^M,TRUE,TRUE);
+          BEGIN
+            IF (EventIsPermission IN EFlags) THEN
+              OneKCmds := '123456'
+            ELSE
+              OneKCmds := '126';
+          END;
+        NL;
+        InputChar('^2Modify '+AOnOff(EventIsExternal IN EFlags,'External','Internal')+' Event [(^1?^2)Help,(^1Q^2)uit]: ',
+              Cmd1,'QABCDEGHIKMN'+OneKCmds+'[]FJL?'^M,[CapAll]);
         CASE Cmd1 OF
           'A' : ToggleEFlagS('A',EFlags,Changed);  { External/Internal }
-          'B' : InputWN1('%LFNew description: ',EventDescription,30,[InterActiveEdit],Changed);
+          'B' : InputString('%LFNew description: ',EventDescription,30,[InterActiveEdit],Changed);
           'C' : ToggleEFlags('B',EFlags,Changed);  { Active/InActive }
           'D' : IF (EventIsExternal IN EFlags) THEN
                   ToggleEFlags('K',EFlags,Changed) { Soft/Hard }
-                ELSE                               { Dialy/Monthly }
-                BEGIN
-                  LOneK('%LFSchedule? [^1D^2=^1Daily^2,^1M^2=^1Monthly^2,^1<CR>^2=^1Quit^2]: ',Cmd1,^M'DM',TRUE,TRUE);
-                  CASE Cmd1 OF
-                    'D' : BEGIN
-                            IF (EventIsMonthly IN EFlags) THEN
-                            BEGIN
-                              Exclude(EFlags,EventIsMonthly);
-                              EventDayOfMonth := 0;
-                              Changed := TRUE;
-                            END;
-                            REPEAT
-                              Print('%LF^1Active Days: ^1'+DaysEventActive(EventDays,'5','4')+'^0');
-                              NL;
-                              LCmds(11,3,'1Sunday','');
-                              LCmds(11,3,'2Monday','');
-                              LCmds(11,3,'3Tuesday','');
-                              LCmds(11,3,'4Wednesday','');
-                              LCmds(11,3,'5Thursday','');
-                              LCmds(11,3,'6Friday','');
-                              LCmds(11,3,'7Saturday','');
-                              LOneK('%LFToggle which day? [^11^2-^17^2,^1<CR>^2=^1Quit^2]: ',Cmd1,^M'1234567',TRUE,TRUE);
-                              IF (Cmd1 <> ^M) THEN
-                              BEGIN
-                                IF ((StrToInt(Cmd1) - 1) IN EventDays) THEN
-                                  Exclude(EventDays,(StrToInt(Cmd1) - 1))
-                                ELSE
-                                  Include(EventDays,(StrToInt(Cmd1) - 1));
-                                Changed := TRUE;
-                              END;
-                            UNTIL (Cmd1 = ^M) OR (HangUp);
+                ELSE                               { Daily/Monthly }
+                  BEGIN
+                    InputChar('%LFSchedule? [^1D^2=^1Daily^2,^1M^2=^1Monthly^2,^1<CR>^2=^1Quit^2]: ',Cmd1,^M'DM',[CapAll]);
+                    CASE Cmd1 OF
+                      'D' : BEGIN
+                              IF (EventIsMonthly IN EFlags) THEN
+                                BEGIN
+                                  Exclude(EFlags,EventIsMonthly);
+                                  EventDayOfMonth := 0;
+                                  Changed := TRUE;
+                                END;
+                              REPEAT
+                                Print('%LF^1Active Days: ^1'+DaysEventActive(EventDays,'5','4')+'^0');
+                                NL;
+                                LCmds(11,1,'1 Sunday','');
+                                LCmds(11,1,'2 Monday','');
+                                LCmds(11,1,'3 Tuesday','');
+                                LCmds(11,1,'4 Wednesday','');
+                                LCmds(11,1,'5 Thursday','');
+                                LCmds(11,1,'6 Friday','');
+                                LCmds(11,1,'7 Saturday','');
+                                InputChar('%LFToggle which day? [^11^2-^17^2,^1<CR>^2=^1Quit^2]: ',Cmd1,^M'1234567',[CapAll]);
+                                IF (Cmd1 <> ^M) THEN
+                                  BEGIN
+                                    IF ((StrToInt(Cmd1) - 1) IN EventDays) THEN
+                                      Exclude(EventDays,(StrToInt(Cmd1) - 1))
+                                    ELSE
+                                      Include(EventDays,(StrToInt(Cmd1) - 1));
+                                    Changed := TRUE;
+                                  END;
+                              UNTIL (Cmd1 = ^M) OR (HangUp);
                             Cmd1 := #0;
                           END;
                     'M' : BEGIN
@@ -340,7 +335,7 @@ VAR
                               EventDays := [];
                               Changed := TRUE;
                             END;
-                            InputByteWC('%LFDay of the month',EventDayOfMonth,[],1,31,Changed);
+                            InputByte('%LFDay of the month',EventDayOfMonth,[],1,31,Changed);
                           END;
                   END;
                   Cmd1 := #0;
@@ -354,7 +349,7 @@ VAR
                   LCmds(18,3,'3Sort Files','');
                   LCmds(18,3,'4Pack Message Areas','');
                   LCmds(18,3,'5Files.BBS','');
-                  LOneK('%LFWhich external event? [^11^2-^15^2,^1<CR>^2=^1Quit^2]: ',Cmd1,^M'12345',TRUE,TRUE);
+                  InputChar('%LFWhich external event? [^11^2-^15^2,^1<CR>^2=^1Quit^2]: ',Cmd1,^M'12345',[CapAll]);
                   IF (Cmd1 <> ^M) THEN
                   BEGIN
                     CASE Cmd1 OF
@@ -371,7 +366,7 @@ VAR
                               IF (EventIsFilesBBS IN EFlags) THEN
                                 Exclude(EFlags,EventIsFilesBBS);
                               Include(EFlags,EventIsErrorLevel);
-                              InputByteWC('%LFError Level',EventErrorLevel,[],0,255,Changed);
+                              InputByte('%LFError Level',EventErrorLevel,[],0,255,Changed);
                             END;
                       '2' : BEGIN
                               IF (EventIsErrorLevel IN EFlags) THEN
@@ -386,7 +381,7 @@ VAR
                               IF (EventIsFilesBBS IN EFlags) THEN
                                 Exclude(EFlags,EventIsFilesBBS);
                               Include(EFlags,EventIsShell);
-                              InputWN1('%LFShell file: ',EventShellPath,8,[UpperOnly],Changed);
+                              InputString('%LFShell file: ',EventShellPath,8,[CapAll],Changed);
                             END;
                       '3' : BEGIN
                               IF (EventIsShell IN EFlags) THEN
@@ -479,7 +474,7 @@ VAR
                 END;
           'G' : IF (EventIsExternal IN EFlags) THEN
                 BEGIN
-                  LOneK('%LFSchedule? [^1D^2=^1Daily^2,^1M^2=^1Monthly^2,^1<CR>^2=^1Quit^2]: ',Cmd1,^M'DM',TRUE,TRUE);
+                  InputChar('%LFSchedule? [^1D^2=^1Daily^2,^1M^2=^1Monthly^2,^1<CR>^2=^1Quit^2]: ',Cmd1,^M'DM',[CapAll]);
                   CASE Cmd1 OF
                     'D' : BEGIN
                             IF (EventIsMonthly IN EFlags) THEN
@@ -498,7 +493,7 @@ VAR
                               LCmds(11,3,'5Thursday','');
                               LCmds(11,3,'6Friday','');
                               LCmds(11,3,'7Saturday','');
-                              LOneK('%LFToggle which day? [^11^2-^17^2,^1<CR>^2=^1Quit^2]: ',Cmd1,^M'1234567',TRUE,TRUE);
+                              InputChar('%LFToggle which day? [^11^2-^17^2,^1<CR>^2=^1Quit^2]: ',Cmd1,^M'1234567',[CapAll]);
                               IF (Cmd1 <> ^M) THEN
                               BEGIN
                                 IF (StrToInt(Cmd1) - 1 IN EventDays) THEN
@@ -517,7 +512,7 @@ VAR
                               EventDays := [];
                               Changed := TRUE;
                             END;
-                            InputByteWC('%LFDay of the month',EventDayOfMonth,[],1,31,Changed);
+                            InputByte('%LFDay of the month',EventDayOfMonth,[],1,31,Changed);
                           END;
                   END;
                   Cmd1 := #0;
@@ -551,7 +546,7 @@ VAR
                   NL;
                   LCmds(7,3,'1Logon','');
                   LCmds(7,3,'2Chat','');
-                  LOneK('%LFWhich internal event? [^11^2-^12^2,^1<CR>^2=^1Quit^2]: ',Cmd1,^M'12',TRUE,TRUE);
+                  InputChar('%LFWhich internal event? [^11^2-^12^2,^1<CR>^2=^1Quit^2]: ',Cmd1,^M'12',[CapAll]);
                   IF (Cmd1 <> ^M) THEN
                   BEGIN
                     CASE Cmd1 OF
@@ -581,11 +576,11 @@ VAR
                   ELSE
                   BEGIN
                     Include(EFlags,EventIsOffHook);
-                    InputByteWC('%LFMinutes before event to take phone offhook',EventPreTime,[],0,255,Changed);
+                    InputByte('%LFMinutes before event to take phone offhook',EventPreTime,[],0,255,Changed);
                   END;
                 END
                 ELSE
-                  InputWN1('%LF^0Message/@File if the user is effected by the event:%LF^2: ',EventQualMsg,64,[],Changed);
+                  InputString('%LF^0Message/@File if the user is effected by the event:%LF^2: ',EventQualMsg,64,[],Changed);
           'K' : IF (EventIsExternal IN EFlags) THEN
                 BEGIN
                   IF (PD2Date(EventLastDate) = DateStr) THEN
@@ -595,7 +590,7 @@ VAR
                   Changed := TRUE;
                 END
                 ELSE
-                  InputWN1('%LF^0Message/@File if the user IS NOT effected by the event:%LF^2: ',
+                  InputString('%LF^0Message/@File if the user IS NOT effected by the event:%LF^2: ',
                            EventNotQualMsg,64,[],Changed);
           'M' : BEGIN
                   IF PYNQ('%LFRun this event later if the event time is missed? ',0,FALSE) THEN
@@ -604,8 +599,8 @@ VAR
                     Exclude(EFlags,EventIsMissed);
                   Changed := TRUE;
                 END;
-          'N' : InputByteWC('%LFNode number to execute event from (0=All)',EventNode,
-                            [DisplayValue,NumbersOnly],0,MaxNodes,Changed);
+          'N' : InputByte('%LFNode number to execute event from (0=All)',EventNode,
+                            [InteractiveEdit{,DisplayValue},NumbersOnly],0,MaxNodes,Changed);
           '1' : IF (NOT (EventIsExternal IN EFlags)) THEN
                   IF (BaudIsActive IN EFlags) THEN
                   BEGIN
@@ -624,7 +619,7 @@ VAR
                       PrintACR(Char(Counter + 64)+'. '+IntToStr(BaudRates[Counter]));
                       Inc(Counter);
                     END;
-                    LOneK('%LFWhich? (^1A^2-^1T^2): ',Cmd1,'ABCDEFGHIJKLMNOPQRST',TRUE,TRUE);
+                    InputChar('%LFWhich? (^1A^2-^1T^2): ',Cmd1,'ABCDEFGHIJKLMNOPQRST',[CapAll]);
                     LoBaud := BaudRates[Ord(Cmd1) - 64];
                     Print('%LF^1Baud upper limit:^0%LF');
                     Counter := 1;
@@ -633,7 +628,7 @@ VAR
                       PrintACR(Char(Counter + 64)+'. '+IntToStr(BaudRates[Counter]));
                       Inc(Counter);
                     END;
-                    LOneK('%LFWhich? (^1A^2-^1T^2): ',Cmd1,'ABCDEFGHIJKLMNOPQRST',TRUE,TRUE);
+                    InputChar('%LFWhich? (^1A^2-^1T^2): ',Cmd1,'ABCDEFGHIJKLMNOPQRST',[CapAll]);
                     HiBaud := BaudRates[Ord(Cmd1) - 64];
                     Changed := TRUE;
                     Cmd1 := #0;
@@ -648,7 +643,7 @@ VAR
                   ELSE
                   BEGIN
                     Include(EFlags,ACSIsActive);
-                    InputWN1('%LFSL ACS: ',EventACS,(SizeOf(EventACS) - 1),[InterActiveEdit],Changed);
+                    InputString('%LFSL ACS: ',EventACS,(SizeOf(EventACS) - 1),[InterActiveEdit],Changed);
                   END;
           '3' : IF (NOT (EventIsExternal IN EFlags)) THEN
                   IF (EventIsPermission IN EFlags) THEN
@@ -662,8 +657,8 @@ VAR
                     ELSE
                     BEGIN
                       Include(EFlags,TimeIsActive);
-                      InputWordWoc('%LFMaximum time allowed on-line (minutes)',MaxTimeAllowed,
-                                   [DisplayValue,NumbersOnly],0,65535);
+                      InputWord('%LFMaximum time allowed on-line (minutes)',MaxTimeAllowed,
+                                   [InteractiveEdit{,DisplayValue},NumbersOnly],0,65535,Changed);
                     END;
                   END;
           '4' : IF NOT (EventIsExternal IN EFlags) THEN
@@ -672,14 +667,14 @@ VAR
                     IF (SetArIsActive IN EFlags) THEN
                     BEGIN
                       Exclude(EFlags,SetArIsActive);
-                      SetArFlag := '@';
+                      SetARFlag := '@';
                       Changed := TRUE;
                     END
                     ELSE
                     BEGIN
                       Include(EFlags,SetArIsActive);
-                      LOneK('%LFAR flag to set (^1A^2-^1Z^2): ',Cmd1,'ABCDEFGHIJKLMNOPQRSTUVWXYZ',TRUE,TRUE);
-                      SetArFlag := Cmd1;
+                      InputChar('%LFAR flag to set (^1A^2-^1Z^2): ',Cmd1,'ABCDEFGHIJKLMNOPQRSTUVWXYZ',[CapAll]);
+                      SetARFlag := Cmd1;
                       Cmd1 := #0;
                     END;
                   END;
@@ -695,7 +690,7 @@ VAR
                     ELSE
                     BEGIN
                       Include(EFlags,ClearArIsActive);
-                      LOneK('%LFAR flag to clear (^1A^2-^1Z^2): ',Cmd1,'ABCDEFGHIJKLMNOPQRSTUVWXYZ',TRUE,TRUE);
+                      InputChar('%LFAR flag to clear (^1A^2-^1Z^2): ',Cmd1,'ABCDEFGHIJKLMNOPQRSTUVWXYZ',[CapAll]);
                       ClearArFlag := Cmd1;
                       Cmd1 := #0;
                     END;
@@ -724,7 +719,7 @@ VAR
                   Cmd1 := #0;
                 END;
           'J' : BEGIN
-                  InputIntegerWOC('%LFJump to entry?',RecNumToEdit,[NumbersOnly],1,NumEvents);
+                  InputInteger('%LFJump to entry?',RecNumToEdit,[NumbersOnly],1,NumEvents,Changed);
                   IF (RecNumToEdit < 1) OR (RecNumToEdit > NumEvents) THEN
                     Cmd1 := #0;
                 END;
@@ -736,11 +731,10 @@ VAR
                   Cmd1 := #0;
                 END;
           '?' : BEGIN
-                  Print('%LF^0<^1CR^0>Redisplay screen');
-                  Print('^1<Fill Me in:Modify item');
-                  LCmds(20,3,'[Back entry',']Forward entry');
-                  LCmds(20,3,'First entry in list','Jump to entry');
-                  LCmds(20,3,'Last entry in list','Quit and save');
+                  NL;
+                  LCmds(20,1,'[ Previous Entry','] Next Entry');
+                  LCmds(20,1,'First Entry','Last Entry');
+                  LCmds(20,1,'Jump To Entry','');
                 END;
         END;
       UNTIL (Pos(Cmd1,'Q[]FJL') <> 0) OR (HangUp);
@@ -758,7 +752,7 @@ VAR
     ELSE
     BEGIN
       RecNumToInsertBefore := -1;
-      InputIntegerWOC('%LFEvent to insert before?',RecNumToInsertBefore,[NumbersOnly],1,(NumEvents + 1));
+      InputInteger('%LFEvent to insert before?',RecNumToInsertBefore,[NumbersOnly],1,(NumEvents + 1),Changed);
       IF (RecNumToInsertBefore >= 1) AND (RecNumToInsertBefore <= (NumEvents + 1)) THEN
       BEGIN
         Reset(EventFile);
@@ -815,7 +809,7 @@ VAR
     ELSE
     BEGIN
       RecNumToEdit := -1;
-      InputIntegerWOC('%LFModify which event?',RecNumToEdit,[NumbersOnly],1,NumEvents);
+      InputInteger('%LF^2Modify which event?',RecNumToEdit,[NumbersOnly],1,NumEvents,Changed);
       IF (RecNumToEdit >= 1) AND (RecNumToEdit <= NumEvents) THEN
       BEGIN
         SaveRecNumToEdit := -1;
@@ -867,11 +861,11 @@ VAR
       Messages(6,0,'events')
     ELSE
     BEGIN
-      InputIntegerWOC('%LFPosition which event?',RecNumToPosition,[NumbersOnly],1,NumEvents);
+      InputInteger('%LFPosition which event?',RecNumToPosition,[NumbersOnly],1,NumEvents,Changed);
       IF (RecNumToPosition >= 1) AND (RecNumToPosition <= NumEvents) THEN
       BEGIN
         Print('%LFAccording to the current numbering system.');
-        InputIntegerWOC('%LFPosition before which event?',RecNumToPositionBefore,[Numbersonly],1,(NumEvents + 1));
+        InputInteger('%LFPosition before which event?',RecNumToPositionBefore,[Numbersonly],1,(NumEvents + 1),Changed);
         IF (RecNumToPositionBefore >= 1) AND (RecNumToPositionBefore <= (NumEvents + 1)) AND
            (RecNumToPositionBefore <> RecNumToPosition) AND (RecNumToPositionBefore <> (RecNumToPosition + 1)) THEN
         BEGIN
@@ -911,38 +905,33 @@ VAR
   PROCEDURE ListEvents(VAR RecNumToList1: Integer);
   VAR
     NumDone: Integer;
+    Sched: STRING[25];
   BEGIN
     IF (RecNumToList1 < 1) OR (RecNumToList1 > NumFileAreas) THEN
       RecNumToList1 := 1;
     Abort := FALSE;
     Next := FALSE;
-    CLS;
-    PrintACR('^1 ##^2:^1Description                   ^2:^1Typ^2:^1Bsy^2:^1Time ^2:^1Len^2:^1Days   ^2:^1Execinfo');
-    PrintACR('^2 ==:==============================:===:===:=====:===:=======:============');
+    ConfigHeader('Event Editor');
+    PrintACR('^5<^4A^5> <^4##^5> <^4Description^5>                  <^4Schedule^5> <^4Time^5>');
+    HL;
     Reset(EventFile);
     NumDone := 0;
-    WHILE (NumDone < (PageLength - 5)) AND (RecNumToList1 >= 1) AND (RecNumToList1 <= NumEvents)
-          AND (NOT Abort) AND (NOT HangUp) DO
-    BEGIN
-      Seek(EventFile,(RecNumToList1 - 1));
-      Read(EventFile,Event);
-      WITH Event DO
-        PrintACR(AOnOff(EventIsActive IN EFlags,'^1+','^0-')+
-                 '^1'+PadRightInt(RecNumToList1,2)+
-                 ' ^1'+PadLeftStr(EventDescription,30)+
-                 (*
-                 ' '+SchedT(FALSE,EType)+
-                 *)
-                 ' ^1'+PadLeftInt(EventPreTime,3)+
-                 ' '+Copy(CTim(EventStartTime),4,5));
-                 (*
-                 ' '+PadLeftInt(DurationOrLastDay,3)+
-                 ' '+DActiv(FALSE,ExecDays,Monthly)+
-                 ' ^1'+PadLeftStr(lExecData,9));
-                 *)
-      Inc(RecNumToList1);
-      Inc(NumDone);
-    END;
+    WHILE (NumDone < (PageLength - 5)) AND (RecNumToList1 >= 1) AND (RecNumToList1 <= NumEvents) AND 
+          (NOT Abort) AND (NOT HangUp) DO
+      BEGIN
+        Seek(EventFile,(RecNumToList1 - 1));
+        Read(EventFile,Event);
+        WITH Event DO
+          PrintACR(' ^0'+PadLeftStr(AOnOff(EventIsActive IN EFlags,'^9'+#251,'^0-'),2)+' '+
+                   ' ^0'+PadLeftInt(RecNumToList1,3)+' '+
+                   ' ^1'+PadLeftStr(EventDescription,30)+               
+                   ' ^0'+PadLeftStr(AOnOff(EventDayOfMonth <> 0,
+                                    IntToStr(EventDayOfMonth)+DateSuffix(EventDayOfMonth),
+                                    DaysEventActive(EventDays,'4','0')),7)+'   '+ {Days}
+                   ' ^0'+PadLeftStr(Copy(CTim(EventStartTime),4,5),6)); {Time}
+        Inc(RecNumToList1);
+        Inc(NumDone);
+      END;
     Close(EventFile);
     LastError := IOResult;
     IF (NumEvents = 0) THEN
@@ -962,7 +951,8 @@ BEGIN
   REPEAT
     IF (Cmd <> '?') THEN
       ListEvents(RecNumToList);
-    LOneK('%LFEvent editor [^1?^2=^1Help^2]: ',Cmd,'QDIMP?'^M,TRUE,TRUE);
+    NL;
+    InputChar('^2Event Editor [^1DIMP^2,(^1?^2)Help,(^1Q^2)uit]: ',Cmd,'QDIMP?'^M,[CapAll]);
     CASE Cmd OF
       ^M  : IF (RecNumToList < 1) OR (RecNumToList > NumEvents) THEN
               RecNumToList := 1;
@@ -971,11 +961,12 @@ BEGIN
       'M' : ModifyEvent(TempEvent,Cmd,RecNumToList);
       'P' : PositionEvent(TempEvent,RecNumToList);
       '?' : BEGIN
-              Print('%LF^0<^1CR^0>Next screen or redisplay current screen');
-              Print('^0(^1?^0)Help/First event');
-              LCmds(13,3,'Delete event','Insert event');
-              LCmds(13,3,'Modify event','Position event');
-              LCmds(13,3,'Quit','');
+              NL;
+              Print('^0<^1CR^0> Next Page / Refresh');
+              {Print('^0(^1?^0)Help/First event');}
+              LCmds(13,1,'Delete Event','Insert Event');
+              LCmds(13,1,'Modify Event','Position Event');
+              {LCmds(13,3,'Quit','');}
             END;
     END;
     IF (Cmd <> ^M) THEN
@@ -993,5 +984,4 @@ BEGIN
   Close(EventFile);
   LastError := IOResult;
 END;
-
 END.

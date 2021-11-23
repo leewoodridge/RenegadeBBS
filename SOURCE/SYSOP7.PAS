@@ -6,11 +6,7 @@ INTERFACE
 USES
  Common;
 
-PROCEDURE FindMenu(DisplayStr: AStr;
-                   VAR MenuNum: Byte;
-                   LowMenuNum,
-                   HighMenuNum: Byte;
-                   VAR Changed: Boolean);
+PROCEDURE FindMenu(DisplayStr: AStr; VAR MenuNum: Byte; LowMenuNum,HighMenuNum: Byte; VAR Changed: Boolean);
 PROCEDURE MenuEditor;
 
 IMPLEMENTATION
@@ -65,15 +61,13 @@ BEGIN
   AllowContinue := FALSE;
   IF (NumMenus = 0) THEN
      Print('*** No menus defined ***');
+     {
   IF (DisplayListNum) THEN
     PrintACR('%LF^0[Users start at menu number: ^1'+IntToStr(General.AllStartMenu)+'^0]');
+    }
 END;
 
-PROCEDURE FindMenu(DisplayStr: AStr;
-                   VAR MenuNum: Byte;
-                   LowMenuNum,
-                   HighMenuNum: Byte;
-                   VAR Changed: Boolean);
+PROCEDURE FindMenu(DisplayStr: AStr; VAR MenuNum: Byte; LowMenuNum,HighMenuNum: Byte; VAR Changed: Boolean);
 VAR
   TempMenuR: MenuRec;
   InputStr: AStr;
@@ -235,7 +229,7 @@ VAR
     ELSE
     BEGIN
       RecNumToDelete := -1;
-      InputIntegerWOC('%LFMenu number to delete?',RecNumToDelete,[NumbersOnly],1,NumMenus);
+      InputInteger('%LFMenu number to delete?',RecNumToDelete,[NumbersOnly],1,NumMenus,Changed);
       IF (RecNumToDelete >= 1) AND (RecNumToDelete <= NumMenus) THEN
       BEGIN
         Reset(MenuFile);
@@ -310,7 +304,7 @@ VAR
     ELSE
     BEGIN
       RecNumToInsertBefore := -1;
-      InputIntegerWOC('%LFMenu number to insert before?',RecNumToInsertBefore,[NumbersOnly],1,(NumMenus + 1));
+      InputInteger('%LFMenu number to insert before?',RecNumToInsertBefore,[NumbersOnly],1,(NumMenus + 1),Changed);
       IF (RecNumToInsertBefore >= 1) AND (RecNumToInsertBefore <= (NumMenus + 1)) THEN
       BEGIN
         Print('%LF[> Inserting menu record ...');
@@ -371,7 +365,7 @@ VAR
     ELSE
     BEGIN
       RecNumToModify := -1;
-      InputIntegerWOC('%LFMenu number to modify?',RecNumToModify,[NumbersOnly],1,NumMenus);
+      InputInteger('%LFMenu number to modify?',RecNumToModify,[NumbersOnly],1,NumMenus,Changed);
       IF (RecNumToModify >= 1) AND (RecNumToModify <= NumMenus) THEN
       BEGIN
         SaveRecNumToModify := -1;
@@ -420,15 +414,16 @@ VAR
                   Print('*** No menus defined ***');
               END;
               IF (General.MultiNode) THEN
-                LOneK('%LFModify menu [^1C^2=^1Command Editor^2,^1?^2=^1Help^2]: ',Cmd1,'Q123456789CNT[]FJL?'^M,TRUE,TRUE)
+                InputChar('%LFModify menu [^1C^2=^1Command Editor^2,^1?^2=^1Help^2]: ',Cmd1,'Q123456789CNT[]FJL?'^M,[CapAll])
               ELSE
-                LOneK('%LFModify menu [^1C^2=^1Command Editor^2,^1?^2=^1Help^2]: ',Cmd1,'Q123456789CT[]FJL?'^M,TRUE,TRUE);
+                InputChar('%LFModify menu [^1C^2=^1Command Editor^2,^1?^2=^1Help^2]: ',Cmd1,'Q123456789CT[]FJL?'^M,[CapAll]);
               CASE Cmd1 OF
                 '1' : BEGIN
                         REPEAT
                           SaveMenuNum := MenuNum;
                           RecNum1 := -1;
-                          InputByteWC('%LFNew menu number',MenuNum,[DisplayValue,NumbersOnly],1,(NumMenus + 1),Changed);
+                          InputByte('%LFNew menu number',MenuNum,[InteractiveEdit{,DisplayValue},
+                          NumbersOnly],1,(NumMenus + 1),Changed);
                           IF (MenuNum <> SaveMenuNum) AND (MenuNum >= 1) AND (MenuNum <= (NumMenus + 1)) THEN
                           BEGIN
                             RecNum := 1;
@@ -451,24 +446,24 @@ VAR
                         Changed := TRUE;
                       END;
                 '2' : BEGIN
-                        InputWNWC('%LFNew menu title #1: ',LDesc[1],
-                                  (SizeOf(LDesc[1]) - 1),Changed);
+                        InputString('%LFNew menu title #1: ',LDesc[1],
+                                  (SizeOf(LDesc[1]) - 1),[InteractiveEdit],Changed);
                         IF (LDesc[1] <> '') THEN
-                          InputWNWC('New menu title #2: ',LDesc[2],
-                                    (SizeOf(LDesc[2]) - 1),Changed);
+                          InputString('New menu title #2: ',LDesc[2],
+                                    (SizeOf(LDesc[2]) - 1),[InteractiveEdit],Changed);
                         IF (LDesc[2] <> '') THEN
-                          InputWNWC('New menu title #3: ',LDesc[3],
-                                    (SizeOf(LDesc[3]) - 1),Changed);
+                          InputString('New menu title #3: ',LDesc[3],
+                                    (SizeOf(LDesc[3]) - 1),[InteractiveEdit],Changed);
                       END;
                 '3' : BEGIN
-                        InputWN1('%LFNew file displayed for help: ',Directive,(SizeOf(Directive) - 1),
-                                 [InterActiveEdit,UpperOnly],Changed);
-                        InputWN1('%LFNew file displayed for extended help: ',LongMenu,(SizeOf(LongMenu) - 1),
-                                 [InterActiveEdit,UpperOnly],Changed);
+                        InputString('%LFNew file displayed for help: ',Directive,(SizeOf(Directive) - 1),
+                                 [InterActiveEdit,CapAll],Changed);
+                        InputString('%LFNew file displayed for extended help: ',LongMenu,(SizeOf(LongMenu) - 1),
+                                 [InterActiveEdit,CapAll],Changed);
                       END;
-                '4' : InputWNWC('%LFNew menu prompt: ',MenuPrompt,(SizeOf(MenuPrompt) - 1),Changed);
-                '5' : InputWN1('%LFNew menu ACS: ',ACS,(SizeOf(ACS) - 1),[InterActiveEdit],Changed);
-                '6' : InputWN1('%LFNew password: ',Password,(SizeOf(Password) - 1),[InterActiveEdit,UpperOnly],Changed);
+                '4' : InputString('%LFNew menu prompt: ',MenuPrompt,(SizeOf(MenuPrompt) - 1),[InteractiveEdit],Changed);
+                '5' : InputString('%LFNew menu ACS: ',ACS,(SizeOf(ACS) - 1),[InterActiveEdit],Changed);
+                '6' : InputString('%LFNew password: ',Password,(SizeOf(Password) - 1),[InterActiveEdit,CapAll],Changed);
                 '7' : BEGIN
                         SaveMenuNum := FallBack;
                         IF (Changed) THEN
@@ -485,8 +480,8 @@ VAR
                         IF (Changed) THEN
                           FallBack := SaveMenuNum;
                       END;
-                '8' : InputByteWC('%LFNew forced menu help-level (0=None)',ForceHelpLevel,
-                                   [DisplayValue,NumbersOnly],0,3,Changed);
+                '8' : InputByte('%LFNew forced menu help-level (0=None)',ForceHelpLevel,
+                                   [InteractiveEdit{,DisplayValue},NumbersOnly],0,3,Changed);
                 '9' : BEGIN
                         REPEAT
                           NL;
@@ -495,7 +490,7 @@ VAR
                           PrintACR('^02. Command color    : ^1'+IntToStr(GCol[2]));
                           PrintACR('^03. Description color: ^1'+IntToStr(GCol[3]));
                           PrintACR('^0S. Show menu');
-                          LOneK('%LFSelect (CS,1-3,Q=Quit): ',Cmd1,'QCS123'^M,TRUE,TRUE);
+                          InputChar('%LFSelect (CS,1-3,Q=Quit): ',Cmd1,'QCS123'^M,[CapAll]);
                           CASE Cmd1 OF
                             'S' : BEGIN
                                     IF (Changed) THEN
@@ -515,11 +510,14 @@ VAR
                                     Seek(MenuFile,MenuRecNumArray[SaveRecNumToModify]);
                                     Read(MenuFile,MenuR);
                                   END;
-                            'C' : InputByteWC('%LFNew number of generic columns',GenCols,
-                                              [DisplayValue,NumbersOnly],0,7,Changed);
-                            '1' : InputByteWC('%LFNew bracket color',GCol[1],[DisplayValue,NumbersOnly],0,9,Changed);
-                            '2' : InputByteWC('%LFNew command color',GCol[2],[DisplayValue,NumbersOnly],0,9,Changed);
-                            '3' : InputByteWC('%LFNew description color',GCol[3],[DisplayValue,NumbersOnly],0,9,Changed);
+                            'C' : InputByte('%LFNew number of generic columns',GenCols,
+                                              [InteractiveEdit{,DisplayValue},NumbersOnly],0,7,Changed);
+                            '1' : InputByte('%LFNew bracket color',GCol[1],[InteractiveEdit{,DisplayValue}
+                            ,NumbersOnly],0,9,Changed);
+                            '2' : InputByte('%LFNew command color',GCol[2],[InteractiveEdit{,DisplayValue}
+                            ,NumbersOnly],0,9,Changed);
+                            '3' : InputByte('%LFNew description color',GCol[3],[InteractiveEdit{,DisplayValue}
+                            ,NumbersOnly],0,9,Changed);
                           END;
                         UNTIL (Cmd1 IN ['Q',^M]) OR (HangUp);
                         Cmd1 := #0;
@@ -535,12 +533,12 @@ VAR
                         SaveRecNumToModify := -1;
                       END;
                 'N' : IF (General.MultiNode) THEN
-                        InputWNWC('%LF^0New node activity description:%LF^2: ',NodeActivityDesc,
-                                  (SizeOf(NodeActivityDesc) - 1),Changed);
+                        InputString('%LF^0New node activity description:%LF^2: ',NodeActivityDesc,
+                                  (SizeOf(NodeActivityDesc) - 1),[InteractiveEdit],Changed);
                 'T' : BEGIN
                         REPEAT
-                          LOneK('%LFToggle which flag? ('+DisplayMenuFlags(MenuFlags,'5','4')+'^2)'+
-                                ' [^1?^2=^1Help^2,^1<CR>^2=^1Quit^2]: ',Cmd1,^M'CDTNPAF12345?',TRUE,TRUE);
+                          InputChar('%LFToggle which flag? ('+DisplayMenuFlags(MenuFlags,'5','4')+'^2)'+
+                                ' [^1?^2=^1Help^2,^1<CR>^2=^1Quit^2]: ',Cmd1,^M'CDTNPAF12345?',[CapAll]);
                           CASE Cmd1 OF
                             'C','D','T','N','P','A','F','1'..'5' :
                                     ToggleMenuFlags(Cmd1,MenuFlags,Changed);
@@ -579,7 +577,7 @@ VAR
                         Cmd1 := #0;
                       END;
                 'J' : BEGIN
-                        InputIntegerWOC('%LFJump to entry?',RecNumToModify,[NumbersOnly],1,NumMenus);
+                        InputInteger('%LFJump to entry?',RecNumToModify,[NumbersOnly],1,NumMenus,Changed);
                         IF (RecNumToModify < 1) AND (RecNumToModify > NumMenus) THEN
                           Cmd1 := #0;
                       END;
@@ -623,7 +621,7 @@ BEGIN
   REPEAT
     IF (Cmd <> '?') THEN
       DisplayMenus(RecNumToList,TRUE);
-    LOneK('%LFMenu editor [^1?^2=^1Help^2]: ',Cmd,'QDIM?'^M,TRUE,TRUE);
+    InputChar('%LFMenu editor [^1?^2=^1Help^2]: ',Cmd,'QDIM?'^M,[CapAll]);
     CASE Cmd OF
       ^M  : IF (RecNumToList < 1) OR (RecNumToList > NumMenus) THEN
               RecNumToList := 1;

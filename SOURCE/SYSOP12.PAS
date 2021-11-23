@@ -154,7 +154,7 @@ BEGIN
         OneKCmds := OneKCmds + Cmd;
     Print('%LF^2Current conference: ^1%CT - %CN');
     REPEAT
-      LOneK('%LFJoin which conference? (^1?^2=^1List^2,<^1CR^2>=^1Quit^2): ',Cmd,^M'?'+OneKCmds,TRUE,TRUE);
+      InputChar('%LFJoin which conference? (^1?^2=^1List^2,<^1CR^2>=^1Quit^2): ',Cmd,^M'?'+OneKCmds,[CapAll]);
       IF (Cmd = '?') THEN
       BEGIN
         PrintF('CONFLIST');
@@ -205,7 +205,7 @@ VAR
     ELSE
     BEGIN
       RecNumToDelete := -1;
-      InputIntegerWOC('%LFConference record to delete?',RecNumToDelete,[NumbersOnly],1,NumConfKeys);
+      InputInteger('%LFConference record to delete?',RecNumToDelete,[NumbersOnly],1,NumConfKeys,Changed);
       IF (RecNumToDelete >= 1) AND (RecNumToDelete <= NumConfKeys) THEN
       BEGIN
         Reset(ConferenceFile);
@@ -294,7 +294,7 @@ VAR
           CmdStr := 'ABC'
         ELSE
           CmdStr := 'ABC[]FJL';
-        LOneK('%LFModify menu [^1?^2=^1Help^2]: ',Cmd1,'Q?'+CmdStr+^M,TRUE,TRUE);
+        InputChar('%LFModify menu [^1?^2=^1Help^2]: ',Cmd1,'Q?'+CmdStr+^M,[CapAll]);
         CASE Cmd1 OF
           'A' : BEGIN
                   Print('%LF^8You can not modify the conference key.');
@@ -303,12 +303,12 @@ VAR
           'B' : REPEAT
                   TempConference1.Name := Conference.Name;
                   OK := TRUE;
-                  InputWNWC('%LFNew description: ',Name,(SizeOf(Name) - 1),Changed);
+                  InputString('%LFNew description: ',Name,(SizeOf(Name) - 1),[InteractiveEdit],Changed);
                   CheckConference(Conference,1,1,Ok);
                   IF (NOT Ok) THEN
                     Conference.Name := TempConference1.Name;
                 UNTIL (OK) OR (HangUp);
-          'C' : InputWN1('%LFNew ACS: ',ACS,(SizeOf(ACS) - 1),[InterActiveEdit],Changed);
+          'C' : InputString('%LFNew ACS: ',ACS,(SizeOf(ACS) - 1),[InterActiveEdit],Changed);
           '[' : IF (RecNumToEdit > 1) THEN
                   Dec(RecNumToEdit)
                 ELSE
@@ -331,7 +331,7 @@ VAR
                   Cmd1 := #0;
                 END;
           'J' : BEGIN
-                  InputIntegerWOC('%LFJump to entry',RecNumToEdit,[NumbersOnly],1,NumConfKeys);
+                  InputInteger('%LFJump to entry',RecNumToEdit,[NumbersOnly],1,NumConfKeys,Changed);
                   IF (RecNumToEdit < 1) OR (RecNumToEdit > NumConfKeys) THEN
                     Cmd1 := #0;
                 END;
@@ -371,14 +371,14 @@ VAR
     ELSE
     BEGIN
       RecNumToInsertBefore := -1;
-      InputIntegerWOC('%LFConference record to insert before?',RecNumToInsertBefore,[NumbersOnly],1,(NumConfKeys + 1));
+      InputInteger('%LFConference record to insert before?',RecNumToInsertBefore,[NumbersOnly],1,(NumConfKeys + 1),Changed);
       IF (RecNumToInsertBefore >= 1) AND (RecNumToInsertBefore <= (NumConfKeys + 1)) THEN
       BEGIN
         OneKCmds := '';
         FOR Cmd1 := '@' TO 'Z' DO
           IF (NOT (Cmd1 IN ConfKeys)) THEN
             OneKCmds := OneKCmds + Cmd1;
-        LOneK('%LFChoose conference key [^1@^2-^1Z^2,^1<CR>^2=^1Quit^2]: ',Cmd1,^M+OneKCmds,TRUE,TRUE);
+        InputChar('%LFChoose conference key [^1@^2-^1Z^2,^1<CR>^2=^1Quit^2]: ',Cmd1,^M+OneKCmds,[CapAll]);
         IF (Cmd1 <> ^M) THEN
         BEGIN
           Reset(ConferenceFile);
@@ -438,7 +438,7 @@ VAR
     ELSE
     BEGIN
       RecNumToEdit := -1;
-      InputIntegerWOC('%LFConference record to modify?',RecNumToEdit,[NumbersOnly],1,NumConfKeys);
+      InputInteger('%LFConference record to modify?',RecNumToEdit,[NumbersOnly],1,NumConfKeys,Changed);
       IF (RecNumToEdit >= 1) AND (RecNumToEdit <= NumConfKeys) THEN
       BEGIN
         SaveRecNumToEdit := -1;
@@ -491,13 +491,13 @@ VAR
     ELSE
     BEGIN
       RecNumToPosition := -1;
-      InputIntegerWOC('%LFPosition which conference record?',RecNumToPosition,[NumbersOnly],1,NumConfKeys);
+      InputInteger('%LFPosition which conference record?',RecNumToPosition,[NumbersOnly],1,NumConfKeys,Changed);
       IF (RecNumToPosition >= 1) AND (RecNumToPosition <= NumConfKeys) THEN
       BEGIN
         RecNumToPositionBefore := -1;
         Print('%LFAccording to the current numbering system.');
-        InputIntegerWOC('%LFPosition before which conference record?',RecNumToPositionBefore,
-                        [NumbersOnly],1,(NumConfKeys + 1));
+        InputInteger('%LFPosition before which conference record?',RecNumToPositionBefore,
+                        [NumbersOnly],1,(NumConfKeys + 1),Changed);
         IF (RecNumToPositionBefore >= 1) AND (RecNumToPositionBefore <= (NumConfKeys + 1)) AND
            (RecNumToPositionBefore <> RecNumToPosition) AND (RecNumToPositionBefore <> (RecNumToPosition + 1)) THEN
         BEGIN
@@ -539,7 +539,7 @@ BEGIN
   REPEAT
     IF (Cmd <> '?') THEN
       DisplayConferenceRecords(RecNumToList,TRUE);
-    LOneK('%LFConference editor [^1?^2=^1Help^2]: ',Cmd,'QDIMP?'^M,TRUE,TRUE);
+    InputChar('%LFConference editor [^1?^2=^1Help^2]: ',Cmd,'QDIMP?'^M,[CapAll]);
     CASE Cmd OF
       'D' : DeleteConference(TempConference,RecNumToList);
       'I' : InsertConference(TempConference,Cmd,RecNumToList);

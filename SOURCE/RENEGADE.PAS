@@ -308,7 +308,7 @@ BEGIN
             END
           ELSE
             BEGIN { Failed to load overlays to EMS }
-			  WriteLn;
+              WriteLn;
               CASE OvrResult OF
               { OvrError       : WriteLn('Overlay manager error');
                 OvrNotFound    : WriteLn('Overlay file not found'); }
@@ -471,7 +471,8 @@ BEGIN
   UNTIL (DoneDay);
   
   SL1('');
-  SL1('^0Renegade '+General.Version+' Node ^1'+IntToStr(ThisNode)+'^0 shut down on ^1'+Dat+'^0'); {LeeW: Added}
+  SL1('^0Renegade '+General.Version+' Node ^1'+IntToStr(ThisNode)+'^0 Shut Down On ^1'+Dat+'^0'); {LeeW: Added}
+  SL1('');
   
   Window(1,1,MaxDisplayCols,MaxDisplayRows);
   TextBackGround(0);
@@ -482,12 +483,12 @@ BEGIN
 
   IF (NeedToHangUp) THEN
     BEGIN
-	  Write(' - Disconnecting ... ');
+      Write(' - Disconnecting ... ');
       IF (HangUpTelnet) THEN
         DoTelnetHangUp(TRUE);
       IF (NOT HangUpTelnet) THEN
         DoPhoneHangUp(FALSE);
-	  WriteLn('Done!');
+      WriteLn('Done!');
     END;
   
   Write(' - Releasing memory ... ');
@@ -499,11 +500,11 @@ BEGIN
       IF (MemEventArray[Counter1] <> NIL) THEN
         Dispose(MemEventArray[Counter1]);
   WriteLn('Done!');
-		
+        
   
   IF (General.Multinode) THEN
     BEGIN
-	  Write(' - Merging log files ... ');
+      Write(' - Merging log files ... ');
       Assign(TextFile,General.LogsPath+'SYSOP.LOG');
       IF Exist(General.LogsPath+'SYSOP.LOG') THEN
         Append(TextFile)
@@ -520,14 +521,14 @@ BEGIN
       ReWrite(SysOpLogFile);
       Close(SysOpLogFile);
       LastError := IOResult;
-	  {/}
-	  Kill(TempDir+'TEMPLOG.'+IntToStr(ThisNode));
-	  WriteLn('Done!');
+      {/}
+      Kill(TempDir+'TEMPLOG.'+IntToStr(ThisNode));
+      WriteLn('Done!');
     END;
-	 
+     
   IF (NewEchoMail) AND (ExitErrorLevel = 0) THEN
     ExitErrorLevel := 2;
-	
+    
   Write(' - Resetting node status ... ');
   LoadNode(ThisNode);
   Noder.Status := [];
@@ -539,7 +540,7 @@ BEGIN
   IF (LastError = 0) THEN
     WriteLn('Done!')
   ELSE
-	WriteLn('Failure!'); { LeeW: Give more info }
+    WriteLn('Failure!'); { LeeW: Give more info }
   
   Write(' - Unloading communications driver ... ');
   Com_DeInstall;

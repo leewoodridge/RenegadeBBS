@@ -83,7 +83,6 @@ BEGIN
     DLArray[Counter] := -1;
   Prt('Enter file number or range (##,##-##): ');
   s := '';
-  MPL(20);
   InputMain(s,20,[NoLineFeed]);
   IF (SqOutSp(S) = '') THEN
     OK := FALSE
@@ -858,7 +857,6 @@ BEGIN
   { Print(FString.FindLine2); }
   lRGLngStr(22,FALSE);
   Prt(': ');
-  MPL(20);
   InputMain(SearchString,SizeOf(SearchString)-1,[CapAll]);
   IF (SearchString = '') THEN
   BEGIN
@@ -1068,10 +1066,7 @@ BEGIN
                 SaveFArea := FArea;
                 IF (Cmd = '?') THEN
                   LFileAreaList(FArea,NumFAreas,5,FALSE);
-                {
-                %LFFile area list? [^1#^2,^1?^2=^1Help^2,^1Q^2=^1Quit^2]: @
-                }
-                LOneK(LRGLngStr(70,TRUE),Cmd,'Q[]?',TRUE,TRUE);
+                InputChar(LRGLngStr(70,TRUE),Cmd,'Q[]?',[CapAll]); { File area list prompt }
                 TempPause := FALSE;
                 IF (Cmd <> 'Q') THEN
                 BEGIN

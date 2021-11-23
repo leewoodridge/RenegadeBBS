@@ -185,7 +185,7 @@ VAR
           CmdStr := 'ABCDEGHIKMNOPRS'
         ELSE
           CmdStr := 'ABCDEGHIKMNOPRS[]FJL';
-        LOneK('%LFModify menu [^1?^2=^1Help^2]: ',Cmd1,'Q?'+CmdStr+^M,TRUE,TRUE);
+        InputChar('%LFModify menu [^1?^2=^1Help^2]: ',Cmd1,'Q?'+CmdStr+^M,[CapAll]);
         CASE Cmd1 OF
           'A' : IF (PD2Date(Date) = DateStr) THEN
                 BEGIN
@@ -217,36 +217,36 @@ VAR
                     END;
                   UNTIL (Ok) OR (HangUp);
                 END;
-          'B' : InputLongIntWC('%LFNew minutes active for this date',Active,
-                               [DisplayValue,NumbersOnly],0,2147483647,Changed);
-          'C' : InputLongIntWC('%LFNew number of system callers for this date',Callers,
-                               [DisplayValue,NumbersOnly],0,2147483647,Changed);
+          'B' : InputLongInt('%LFNew minutes active for this date',Active,
+                               [InteractiveEdit{,DisplayValue},NumbersOnly],0,2147483647,Changed);
+          'C' : InputLongInt('%LFNew number of system callers for this date',Callers,
+                               [InteractiveEdit{,DisplayValue},NumbersOnly],0,2147483647,Changed);
           'D' : BEGIN
                   Print('%LF^8This is for internal use only.');
                   PauseScr(FALSE);
                 END;
-          'E' : InputLongIntWC('%LFNew new user''s for this date',NewUsers,
-                               [DisplayValue,NumbersOnly],0,2147483647,Changed);
+          'E' : InputLongInt('%LFNew new user''s for this date',NewUsers,
+                               [InteractiveEdit{,DisplayValue},NumbersOnly],0,2147483647,Changed);
           'G' : BEGIN
                   Print('%LF^8This is for internal use only.');
                   PauseScr(FALSE);
                 END;
-          'H' : InputLongIntWC('%LFNew public message post''s this date',Posts,
-                               [DisplayValue,NumbersOnly],0,2147483647,Changed);
-          'I' : InputLongIntWC('%LFNew private message post''s this date',Email,
-                               [DisplayValue,NumbersOnly],0,2147483647,Changed);
-          'K' : InputLongIntWC('%LFNew sysop feedback sent this date',FeedBack,
-                               [DisplayValue,NumbersOnly],0,2147483647,Changed);
-          'M' : InputLongIntWC('%LFNew system error''s this date',Errors,
-                               [DisplayValue,NumbersOnly],0,2147483647,Changed);
-          'N' : InputLongIntWC('%LFNew user upload''s for this date',Uploads,
-                               [DisplayValue,NumbersOnly],0,2147483647,Changed);
-          'O' : InputLongIntWC('%LFNew user kbytes uploaded this date',UK,
-                               [DisplayValue,NumbersOnly],0,2147483647,Changed);
-          'P' : InputLongIntWC('%LFNew user download''s this date',Downloads,
-                               [DisplayValue,NumbersOnly],0,2147483647,Changed);
-          'R' : InputLongIntWC('%LFNew user kbytes downloaded this date',DK,
-                               [DisplayValue,NumbersOnly],0,2147483647,Changed);
+          'H' : InputLongInt('%LFNew public message post''s this date',Posts,
+                               [InteractiveEdit{,DisplayValue},NumbersOnly],0,2147483647,Changed);
+          'I' : InputLongInt('%LFNew private message post''s this date',Email,
+                               [InteractiveEdit{,DisplayValue},NumbersOnly],0,2147483647,Changed);
+          'K' : InputLongInt('%LFNew sysop feedback sent this date',FeedBack,
+                               [InteractiveEdit{,DisplayValue},NumbersOnly],0,2147483647,Changed);
+          'M' : InputLongInt('%LFNew system error''s this date',Errors,
+                               [InteractiveEdit{,DisplayValue},NumbersOnly],0,2147483647,Changed);
+          'N' : InputLongInt('%LFNew user upload''s for this date',Uploads,
+                               [InteractiveEdit{,DisplayValue},NumbersOnly],0,2147483647,Changed);
+          'O' : InputLongInt('%LFNew user kbytes uploaded this date',UK,
+                               [InteractiveEdit{,DisplayValue},NumbersOnly],0,2147483647,Changed);
+          'P' : InputLongInt('%LFNew user download''s this date',Downloads,
+                               [InteractiveEdit{,DisplayValue},NumbersOnly],0,2147483647,Changed);
+          'R' : InputLongInt('%LFNew user kbytes downloaded this date',DK,
+                               [InteractiveEdit{,DisplayValue},NumbersOnly],0,2147483647,Changed);
           'S' : BEGIN
                   REPEAT
                     Print('%CL^1User Baud Rates');
@@ -271,10 +271,10 @@ VAR
                     Print(PadLeftStr('^0S. 38400 Baud  : ^1'+FormatNumber(UserBaud[18]),32)+
                           '^0T. 57600 Baud  : ^1'+FormatNumber(UserBaud[19]));
                     Print(PadLeftStr('^0U. 115200 Baud : ^1'+FormatNumber(UserBaud[20]),32));
-                    LOneK('%LFModify menu [^1A^2-^1U^2,^1<CR>^2=^1Quit^2]: ',Cmd1,^M'ABCDEFGHIJKLMNOPQRSTU',TRUE,TRUE);
+                    InputChar('%LFModify menu [^1A^2-^1U^2,^1<CR>^2=^1Quit^2]: ',Cmd1,^M'ABCDEFGHIJKLMNOPQRSTU',[CapAll]);
                     IF (Cmd1 <> ^M) THEN
-                      InputLongIntWC('%LFNew value',UserBaud[Ord(Cmd1) - 65],
-                                     [DisplayValue,NumbersOnly],0,2147483647,Changed);
+                      InputLongInt('%LFNew value',UserBaud[Ord(Cmd1) - 65],
+                                     [InteractiveEdit{,DisplayValue},NumbersOnly],0,2147483647,Changed);
                   UNTIL (Cmd1 = ^M) OR (HangUp);
                   Cmd1 := #0;
                 END;
@@ -301,7 +301,7 @@ VAR
                 END;
           'J' : BEGIN
                   RecNumToEdit := -1;
-                  InputIntegerWOC('%LFJump to entry?',RecNumToEdit,[NumbersOnly],1,NumHistoryDates);
+                  InputInteger('%LFJump to entry?',RecNumToEdit,[NumbersOnly],1,NumHistoryDates,Changed);
                   IF (RecNumToEdit < 1) OR (RecNumToEdit > NumHistoryDates) THEN
                   BEGIN
                     RecNumToEdit := SaveRecNumToEdit;
@@ -525,7 +525,7 @@ BEGIN
   REPEAT
     IF (Cmd <> '?') THEN
       ListHistoryDates(RecNumToList);
-    LOneK('%LFHistory editor [^1?^2=^1Help^2]: ',Cmd,'QDIM?'^M,TRUE,TRUE);
+    InputChar('%LFHistory editor [^1?^2=^1Help^2]: ',Cmd,'QDIM?'^M,[CapAll]);
     CASE Cmd OF
       ^M  : IF (RecNumToList < 1) OR (RecNumToList > NumHistoryDates) THEN
               RecNumToList := NumHistoryDates;

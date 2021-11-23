@@ -2,14 +2,17 @@
 UNIT Bulletin;
 {
 Lee Woodridge
- 09/28/2021 Fixed lastcaller ~TO MCI. Now displays "-" if user hasn't logged off yet
+ 09/28/2021 - Fixed last caller ~TO MCI. Now displays "-" if user hasn't logged off yet
+ 11/18/2021 - Fixed bug where rgquote wasn't displaying fallback text if artfile existed but no ansi
+            - Header and footer for quote now use standardized format, like automsg and oneliners
+ 11/20/2021 - moved findonlyonce to maint, nested in logonmaint
 }
 INTERFACE
 
 USES
   Common;
 
-FUNCTION FindOnlyOnce: Boolean;
+{FUNCTION FindOnlyOnce: Boolean;}
 FUNCTION NewBulletins: Boolean;
 PROCEDURE Bulletins(MenuOption: Str50);
 PROCEDURE UList(MenuOption: Str50);
@@ -19,7 +22,8 @@ PROCEDURE RGQuote(MenuOption: Str50);
 IMPLEMENTATION
 
 USES
-  Dos,
+  CRT, {WhereX}
+  DOS,
   Common5,
   Mail1,
   ShortMsg,
@@ -66,21 +70,6 @@ BEGIN
           PrintF(Subs+InputStr);
       END;
     UNTIL (InputStr = 'Q') OR (HangUp);
-END;
-
-FUNCTION FindOnlyOnce: Boolean;
-VAR
- {DirInfo: SearchRec;}
-  DT: DateTime;
-BEGIN
-  FindOnlyOnce := FALSE;
-  FindFirst(General.MiscPath+'ONLYONCE.*',AnyFile - Directory - VolumeID- DOS.Hidden,DirInfo);
-  IF (DosError = 0) THEN
-  BEGIN
-    UnPackTime(DirInfo.Time,DT);
-    IF (DateToPack(DT) > ThisUser.LastOn) THEN
-      FindOnlyOnce := TRUE;
-  END;
 END;
 
 FUNCTION NewBulletins: Boolean;
@@ -270,8 +259,8 @@ BEGIN
     Option('S','tate match string           ',State);
     Option('U','ser name match string       ',UName);
     NL;
-    Prompt('^2Enter choice (^1A^2,^1C^2,^1D^2,^1G^2,^1R^2,^1S^2,^1U^2) [^1L^2]ist [^1Q^2]uit: ');
-    LOneK('',Cmd,'QACDGLRSU'^M,TRUE,TRUE);
+    InputChar('^2Enter choice (^1A^2,^1C^2,^1D^2,^1G^2,^1R^2,^1S^2,^1U^2) [^1L^2]ist [^1Q^2]uit: ',
+              Cmd,'QACDGLRSU'^M,[CapAll]);
     NL;
     IF (Cmd IN ['A','C','D','G','R','S','U']) THEN
     BEGIN
@@ -291,15 +280,12 @@ BEGIN
     END;
     CASE Cmd OF
       'A' : BEGIN
-              Mpl(3);
               InputMain(Age,SizeOf(Age)-1,[CapAll]);
             END;
       'C' : BEGIN
-              Mpl(30);
               InputMain(City,SizeOf(City)-1,[CapAll]);
             END;
       'D' : BEGIN
-              Mpl(8);
               InputFormatted('',DateLastOn,'##/##/##',TRUE);
               IF (DayNum(DateLastOn) <> 0) AND (DayNum(DateLastOn) <= DayNum(DateStr)) THEN
               BEGIN
@@ -310,19 +296,15 @@ BEGIN
               END;
             END;
       'G' : BEGIN
-              Mpl(1);
               InputMain(Gender,SizeOf(Gender)-1,[CapAll]);
             END;
       'R' : BEGIN
-              Mpl(36);
               InputMain(RName,SizeOf(RName)-1,[CapAll]);
             END;
       'S' : BEGIN
-              Mpl(2);
               InputMain(State,SizeOf(State)-1,[CapAll]);
             END;
       'U' : BEGIN
-              Mpl(36);
               InputMain(UName,SizeOf(UName)-1,[CapAll]);
             END;
     END;
@@ -514,13 +496,17 @@ BEGIN
   Read(StrPointerFile,StrPointer);
   Close(StrPointerFile);
   LastError := IOResult;
-  IF (Exist(General.MiscPath+'QUOTEH.*')) THEN
-    PrintF('QUOTEH')
-  ELSE
-	BEGIN
+  {IF (Exist(General.MiscPath+'QUOTEH.*')) THEN}
+    PrintF('QUOTEH');
+  {ELSE}
+  IF (NoFile) THEN
+    BEGIN
+      lRGLngStr(241,FALSE); {"And now... A quote for you!"}
+      UserColor(5);
+      WHILE WhereX < ThisUser.LineLen DO
+        Prompt(lRGLngStr(11,TRUE)); {"-"}
       NL;
-      Print('|03[컴컴컴컴컴컴컴컴컴컴컴? |11And Now |03... |11A Quote For You! |03]컴컴컴컴컴컴컴컴컴컴컴]');
-      NL;
+      UserColor(0);
     END;
   TotLoad := 0;
   Assign(RGStrFile,General.TextPath+MenuOption+'.DAT');
@@ -540,54 +526,61 @@ BEGIN
   UNTIL (TotLoad >= StrPointer.TextSize) OR EOF(RGStrFile) OR (HangUp);
   Close(RGStrFile);
   LastError := IOResult;
-  IF (Exist(General.MiscPath+'QUOTET.*')) THEN
-    PrintF('QUOTET')
-  ELSE
-	BEGIN
+  {IF (Exist(General.MiscPath+'QUOTET.*')) THEN}
+    PrintF('QUOTET');
+  {ELSE}
+  IF (NoFile) THEN
+    BEGIN
+      UserColor(5);
+      WHILE WhereX < ThisUser.LineLen DO
+        Prompt(lRGLngStr(11,TRUE)); {"-"}
       NL;
-      Print('|03[컴컴컴컴컴컴컴컴컴컴컴컴컴컴컴컴컴컴컴컴컴컴컴컴컴컴컴컴컴컴컴컴컴컴컴컴컴컴?');
-      NL;
-	END;
+      UserColor(0);
+    END;
+  SysOpLog('Read Quote ('+AllCaps(MenuOption)+')');
   IF (NOT General.UserAddQuote) THEN
     PauseScr(FALSE)
   ELSE IF (PYNQ(lRGLngStr(179,TRUE),0,FALSE)) AND (NOT HangUp) THEN {"Would you like to add a quote?"}
-	BEGIN
+    BEGIN
       PrintF('QUOTEADD');
       InResponseTo := '';
       MHeader.Status := [];
       IF (InputMessage(TRUE,FALSE,'New Quote',MHeader,General.TextPath+MenuOption+'.TMP',78,500)) then
-		IF Exist(General.TextPath+MenuOption+'.TMP') THEN
-		  BEGIN
-			Assign(F,General.TextPath+MenuOption+'.NEW');
-			Reset(F);
-			IF (IOResult <> 0) THEN
-			  ReWrite(F)
-			ELSE
-			  Append(F);
-			Assign(F1,General.TextPath+MenuOption+'.TMP');
-			Reset(F1);
-			IF (IOResult <> 0) THEN
-			  Exit;
-			WriteLn(F,'New quote from: '+Caps(ThisUser.Name)+' #'+IntToStr(UserNum)+'.');
-			WriteLn(F,'');
-			WriteLn(F,'$');
-			WHILE (NOT EOF(F1)) DO
-			  BEGIN
-				ReadLn(F1,S);
-				WriteLn(F,S);
-			  END;
-			WriteLn(F,'$');
-			WriteLn(F,'');
-			WriteLn(F);
-			Close(F);
-			Close(F1);
-			Kill(General.TextPath+MenuOption+'.TMP');
-			NL;
-			lRGLngStr(155,FALSE); {"Saved!"} {Print('^9Your quote has been saved!');}
-			PauseScr(FALSE);
-			SendShortMessage(1,Caps(ThisUser.Name)+' added a new quote to "'+MenuOption+'.NEW".');
-		  END;
-	END;
+        IF Exist(General.TextPath+MenuOption+'.TMP') THEN
+          BEGIN
+            Assign(F,General.TextPath+MenuOption+'.NEW');
+            Reset(F);
+            IF (IOResult <> 0) THEN
+              ReWrite(F)
+            ELSE
+              Append(F);
+            Assign(F1,General.TextPath+MenuOption+'.TMP');
+            Reset(F1);
+            IF (IOResult <> 0) THEN
+              Exit;
+            WriteLn(F,'New quote from: '+Caps(ThisUser.Name)+' #'+IntToStr(UserNum)+'.');
+            WriteLn(F,'');
+            WriteLn(F,'$');
+            WHILE (NOT EOF(F1)) DO
+              BEGIN
+                ReadLn(F1,S);
+                WriteLn(F,S);
+              END;
+            WriteLn(F,'$');
+            WriteLn(F,'');
+            WriteLn(F);
+            Close(F);
+            Close(F1);
+            Kill(General.TextPath+MenuOption+'.TMP');
+            (*
+            NL;
+            lRGLngStr(155,FALSE); {"Saved!"}
+            PauseScr(FALSE);
+            *)
+            SendShortMessage(1,Caps(ThisUser.Name)+' added a new quote to '+AllCaps(MenuOption)+'.NEW');
+            SysOpLog('Added Quote ('+AllCaps(MenuOption)+'.NEW)');
+          END;
+    END;
 END;
 
 END.

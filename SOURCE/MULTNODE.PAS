@@ -28,7 +28,7 @@ USES
 PROCEDURE pick_node(VAR NodeNum: Byte; IsChat: BOOLEAN);
 BEGIN
   ListNodes;
-  InputByteWOC('Which node',NodeNum,[NumbersOnly],1,MaxNodes);
+  InputByte('Which node',NodeNum,[NumbersOnly],1,MaxNodes,Changed);
   IF (NodeNum >= 1) AND (NodeNum <= MaxNodes) AND (NodeNum <> ThisNode) THEN
   BEGIN
     LoadNode(NodeNum);
@@ -1243,7 +1243,7 @@ BEGIN
   ELSE
   BEGIN
     Prt('Message: ');
-    InputMain(s,(SizeOf(s) - 1),[ColorsAllowed]);
+    InputMain(s,(SizeOf(s) - 1),[NoInputField]);
   END;
   IF (Forced OR AACS(General.TeleConfMCI)) THEN
     s := MCI(s);

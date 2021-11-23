@@ -178,18 +178,18 @@ VAR
     ELSE
     BEGIN
       FirstRecNum := -1;
-      InputIntegerWOC('%LFMessage area to start at?',FirstRecNum,[NumbersOnly],1,NumMsgAreas);
+      InputInteger('%LFMessage area to start at?',FirstRecNum,[NumbersOnly],1,NumMsgAreas,Changed);
       IF (FirstRecNum >= 1) AND (FirstRecNum <= NumMsgAreas) THEN
       BEGIN
         LastRecNum := -1;
-        InputIntegerWOC('%LFMessage area to end at?',LastRecNum,[NumbersOnly],1,NumMsgAreas);
+        InputInteger('%LFMessage area to end at?',LastRecNum,[NumbersOnly],1,NumMsgAreas,Changed);
         IF (LastRecNum >= 1) AND (LastRecNum <= NumMsgAreas) THEN
         BEGIN
           IF (FirstRecNum > LastRecNum) OR (LastRecNum < FirstRecNum) THEN
             Messages(8,0,'')
           ELSE
           BEGIN
-            LOneK('%LFChange to which drive? (^1A^2-^1Z^2): ',Drive,'ABCDEFGHIJKLMNOPQRSTUVWXYZ'^M,TRUE,TRUE);
+            InputChar('%LFChange to which drive? (^1A^2-^1Z^2): ',Drive,'ABCDEFGHIJKLMNOPQRSTUVWXYZ'^M,[CapAll]);
             ChDir(Drive+':');
             IF (IOResult <> 0) THEN
               Messages(7,0,'')
@@ -229,7 +229,7 @@ VAR
     ELSE
     BEGIN
       RecNumToDelete := -1;
-      InputIntegerWOC('%LFMessage area to delete?',RecNumToDelete,[NumbersOnly],1,NumMsgAreas);
+      InputInteger('%LFMessage area to delete?',RecNumToDelete,[NumbersOnly],1,NumMsgAreas,Changed);
       IF (RecNumToDelete >= 1) AND (RecNumToDelete <= NumMsgAreas) THEN
       BEGIN
         Reset(MsgAreaFile);
@@ -394,12 +394,12 @@ VAR
           IF (MAType IN [1..3]) THEN
             CmdStr := CmdStr + 'R';
         END;
-        LOneK('%LFModify menu [^1?^2=^1Help^2]: ',Cmd1,'Q?'+CmdStr+^M,TRUE,TRUE);
+        InputChar('%LFModify menu [^1?^2=^1Help^2]: ',Cmd1,'Q?'+CmdStr+^M,[CapAll]);
         CASE Cmd1 OF
           'A' : REPEAT
                   TempMemMsgArea1.Name := MemMsgArea.Name;
                   Ok := TRUE;
-                  InputWNWC('%LFNew area name: ',Name,(SizeOF(Name) - 1),Changed);
+                  InputString('%LFNew area name: ',Name,(SizeOF(Name) - 1),[InteractiveEdit],Changed);
                   CheckMessageArea(MemMsgArea,1,1,Ok);
                   IF (NOT Ok) THEN
                     MemMsgArea.Name := TempMemMsgArea1.Name;
@@ -407,8 +407,8 @@ VAR
           'B' : REPEAT
                   Ok := TRUE;
                   TempFileName := FileName;
-                  InputWN1('%LFNew file name (^1Do not enter ^2"^1.EXT^2"): ',TempFileName,(SizeOf(FileName) - 1),
-                           [UpperOnly,InterActiveEdit],Changed);
+                  InputString('%LFNew file name (^1Do not enter ^2"^1.EXT^2"): ',TempFileName,(SizeOf(FileName) - 1),
+                           [CapAll,InterActiveEdit],Changed);
                   TempFileName := SQOutSp(TempFileName);
                   IF (Pos('.',TempFileName) > 0) THEN
                     FileName := Copy(TempFileName,1,(Pos('.',TempFileName) - 1));
@@ -465,7 +465,7 @@ VAR
                   LCmds(10,3,'Echomail','');
                   LCmds(10,3,'Groupmail','');
                   LCmds(10,3,'QWKmail','');
-                  LOneK('%LFNew message area type [^1L^2,^1E^2,^1G^2,^1Q^2,^1<CR>^2=^1Quit^2]: ',Cmd1,'LEGQ'^M,TRUE,TRUE);
+                  InputChar('%LFNew message area type [^1L^2,^1E^2,^1G^2,^1Q^2,^1<CR>^2=^1Quit^2]: ',Cmd1,'LEGQ'^M,[CapAll]);
                   CASE Cmd1 OF
                     'L' : MAType := 0;
                     'E' : MAType := 1;
@@ -516,13 +516,13 @@ VAR
                   END;
                   Cmd1 := #0;
                 END;
-          'D' : InputWN1('%LFNew ACS: ',ACS,(SizeOf(ACS) - 1),[InterActiveEdit],Changed);
+          'D' : InputString('%LFNew ACS: ',ACS,(SizeOf(ACS) - 1),[InterActiveEdit],Changed);
           'E' : BEGIN
-                  InputWN1('%LFNew Post ACS: ',PostACS,(SizeOf(PostACS) - 1),[InterActiveEdit],Changed);
-                  InputWN1('%LFNew MCI ACS: ',MCIACS,(SizeOf(MCIACS) - 1),[InterActiveEdit],Changed);
+                  InputString('%LFNew Post ACS: ',PostACS,(SizeOf(PostACS) - 1),[InterActiveEdit],Changed);
+                  InputString('%LFNew MCI ACS: ',MCIACS,(SizeOf(MCIACS) - 1),[InterActiveEdit],Changed);
                 END;
-          'G' : InputWN1('%LFNew SysOp ACS: ',SysOpACS,(SizeOf(SysOpACS) - 1),[InterActiveEdit],Changed);
-          'H' : InputWordWC('%LFMax messages',MaxMsgs,[DisplayValue,NumbersOnly],1,65535,Changed);
+          'G' : InputString('%LFNew SysOp ACS: ',SysOpACS,(SizeOf(SysOpACS) - 1),[InterActiveEdit],Changed);
+          'H' : InputWord('%LFMax messages',MaxMsgs,[InteractiveEdit{DisplayValue},NumbersOnly],1,65535,Changed);
           'I' : BEGIN
                   TempMemMsgArea1.Anonymous := Anonymous;
                   Print('%LF^1Anonymous types:^0');
@@ -532,7 +532,8 @@ VAR
                   LCmds(40,3,'Forced Anonymous','');
                   LCmds(40,3,'Dear Abby','');
                   LCmds(40,3,'Any Name','');
-                  LOneK('%LFNew anonymous type [^1Y^2,^1N^2,^1F^2,^1D^2,^1A^2,^1<CR>^2=^1Quit^2]: ',Cmd1,'YNFDA'^M,TRUE,TRUE);
+                  InputChar('%LFNew anonymous type [^1Y^2,^1N^2,^1F^2,^1D^2,^1A^2,^1<CR>^2=^1Quit^2]: ',
+                            Cmd1,'YNFDA'^M,[CapAll]);
                   CASE Cmd1 OF
                     'Y' : Anonymous := ATYes;
                     'N' : Anonymous := ATNo;
@@ -544,7 +545,7 @@ VAR
                     Changed := TRUE;
                   Cmd1 := #0;
                 END;
-          'K' : InputWN1('%LFNew password: ',Password,(SizeOf(Password) - 1),[InterActiveEdit,UpperOnly],Changed);
+          'K' : InputString('%LFNew password: ',Password,(SizeOf(Password) - 1),[InterActiveEdit,CapAll],Changed);
           'M' : IF (MAType IN [1,2]) THEN
                 BEGIN
                   TempMemMsgArea1.AKA := AKA;
@@ -558,7 +559,7 @@ VAR
                       IF (Odd(RecNum)) THEN
                         NL;
                     END;
-                    InputByteWOC('%LFNew AKA address',AKA,[DisplayValue,NumbersOnly],0,19);
+                    InputByte('%LFNew AKA address',AKA,[InteractiveEdit{DisplayValue},NumbersOnly],0,19,Changed);
                     CheckMessageArea(MemMsgArea,4,4,Ok);
                     IF (NOT Ok) THEN
                       AKA := TempMemMsgArea1.AKA;
@@ -574,7 +575,7 @@ VAR
                     PrintACR('^0(^13^0) Tear   : |'+ZeroPad(IntToStr(Tear_Color))+'Tear');
                     PrintACR('^0(^14^0) Origin : |'+ZeroPad(IntToStr(Origin_Color))+'Origin');
                     NL;
-                    LOneK('^2Message Colors [^11^2-^14^2,<^1CR^2>Quit]: ',Cmd1,^M'1234',TRUE,TRUE);
+                    InputChar('^2Message Colors [^11^2-^14^2,<^1CR^2>Quit]: ',Cmd1,^M'1234',[CapAll]);
                     CASE Cmd1 OF
                       '1' : GetPipeColor(Text_Color,'standard text');
                       '2' : GetPipeColor(Quote_Color,'quoted text');
@@ -589,8 +590,8 @@ VAR
           'P' : IF (MAType IN [1,2]) THEN
                 BEGIN
                   REPEAT
-                    LOneK('%LFToggle which network flag ('+DisplayNetFlags(MAFlags,'5','4')+
-                        '^2) [^1?^2=^1Help^2,^1<CR>^2=^1Quit^2]: ',Cmd1,^M'IKSOCBMT?',TRUE,TRUE);
+                    InputChar('%LFToggle which network flag ('+DisplayNetFlags(MAFlags,'5','4')+
+                        '^2) [^1?^2=^1Help^2,^1<CR>^2=^1Quit^2]: ',Cmd1,^M'IKSOCBMT?',[CapAll]);
                     CASE Cmd1 OF
                       'K','S','O','T','I' :
                             ToggleMAFlags(Cmd1,MAFlags,Changed);
@@ -607,15 +608,16 @@ VAR
           'R' : IF (MAType IN [1..3]) THEN
                 REPEAT
                   OK := TRUE;
-                  InputWN1('%LF^2New origin line:%LF: ',Origin,(SizeOf(Origin) - 1),[InterActiveEdit],Changed);
+                  InputString('%LF^2New origin line:%LF: ',Origin,(SizeOf(Origin) - 1),[InterActiveEdit],Changed);
                   CheckMessageArea(MemMsgArea,5,5,Ok);
                 UNTIL (Ok) OR (HangUp);
-          'S' : InputWNWC('%LF^0New starting quote:%LF^2: ',QuoteStart,(SizeOf(QuoteStart) - 1),Changed);
-          'T' : InputWNWC('%LF^0New ending quote:%LF^2: ',QuoteEnd,(SizeOf(QuoteEnd) - 1),Changed);
-          'U' : InputWN1('%LFNew pre-post filename: ',PrePostFile,(SizeOf(PrePostFile) - 1),[],Changed);
+          'S' : InputString('%LF^0New starting quote:%LF^2: ',QuoteStart,(SizeOf(QuoteStart) - 1),[InteractiveEdit],Changed);
+          'T' : InputString('%LF^0New ending quote:%LF^2: ',QuoteEnd,(SizeOf(QuoteEnd) - 1),[InteractiveEdit],Changed);
+          'U' : InputString('%LFNew pre-post filename: ',PrePostFile,(SizeOf(PrePostFile) - 1),[InteractiveEdit],Changed);
           'V' : BEGIN
                   SaveQWKIndex := QWKIndex;
-                  InputWordWOC('%LFNew permanent QWK Index',QWKIndex,[DisplayValue,NumbersOnly],1,(NumMsgAreas + 1));
+                  InputWord('%LFNew permanent QWK Index',QWKIndex,[InteractiveEdit{DisplayValue}
+                  ,NumbersOnly],1,(NumMsgAreas + 1),Changed);
                   IF (SaveQWKIndex <> QWKIndex) AND (QWKIndex >= 1) AND (QWKIndex <= (NumMsgAreas + 1)) THEN
                   BEGIN
                     RecNum1 := -1;
@@ -639,8 +641,8 @@ VAR
                 END;
           'W' : BEGIN
                   REPEAT
-                    LOneK('%LFToggle which flag ('+DisplayMAFlags(MAFlags,'5','4')+
-                        '^2) [^1?^2=^1Help^2,^1<CR>^2=^1Quit^2]: ',Cmd1,^M'RUAPFQ?',TRUE,TRUE);
+                    InputChar('%LFToggle which flag ('+DisplayMAFlags(MAFlags,'5','4')+
+                        '^2) [^1?^2=^1Help^2,^1<CR>^2=^1Quit^2]: ',Cmd1,^M'RUAPFQ?',[CapAll]);
                     CASE Cmd1 OF
                       'R','U','A','P','F','Q' :
                             ToggleMAFlags(Cmd1,MAFlags,Changed);
@@ -676,7 +678,7 @@ VAR
                   Cmd1 := #0;
                 END;
           'J' : BEGIN
-                  InputIntegerWOC('%LFJump to entry?',RecNumToEdit,[NumbersOnly],1,NumMsgAreas);
+                  InputInteger('%LFJump to entry?',RecNumToEdit,[NumbersOnly],1,NumMsgAreas,Changed);
                   IF (RecNumToEdit < 1) OR (RecNumToEdit > NumMsgAreas) THEN
                     Cmd1 := #0;
                 END;
@@ -720,7 +722,7 @@ VAR
     ELSE
     BEGIN
       RecNumToInsertBefore := -1;
-      InputIntegerWOC('%LFMessage area to insert before?',RecNumToInsertBefore,[NumbersOnly],1,(NumMsgAreas + 1));
+      InputInteger('%LFMessage area to insert before?',RecNumToInsertBefore,[NumbersOnly],1,(NumMsgAreas + 1),Changed);
       IF (RecNumToInsertBefore >= 1) AND (RecNumToInsertBefore <= (NumMsgAreas + 1)) THEN
       BEGIN
         Reset(MsgAreaFile);
@@ -821,7 +823,7 @@ VAR
     Changed: Boolean;
   BEGIN
     RecNumToEdit := -1;
-    InputIntegerWOC('%LFModify which message area?',RecNumToEdit,[NumbersOnly],0,NumMsgAreas);
+    InputInteger('%LFModify which message area?',RecNumToEdit,[NumbersOnly],0,NumMsgAreas,Changed);
     IF ((RecNumToEdit >= 0) AND (RecNumToEdit <= NumMsgAreas)) THEN
     BEGIN
       SaveRecNumToEdit := -1;
@@ -948,12 +950,13 @@ VAR
     ELSE
     BEGIN
       RecNumToPosition := -1;
-      InputIntegerWOC('%LFPosition which message area?',RecNumToPosition,[NumbersOnly],1,NumMsgAreas);
+      InputInteger('%LFPosition which message area?',RecNumToPosition,[NumbersOnly],1,NumMsgAreas,Changed);
       IF (RecNumToPosition >= 1) AND (RecNumToPosition <= NumMsgAreas) THEN
       BEGIN
         RecNumToPositionBefore := -1;
         Print('%LFAccording to the current numbering system.');
-        InputIntegerWOC('%LFPosition before which message area?',RecNumToPositionBefore,[NumbersOnly],1,(NumMsgAreas + 1));
+        InputInteger('%LFPosition before which message area?',RecNumToPositionBefore,[NumbersOnly],
+                       1,(NumMsgAreas + 1),Changed);
         IF (RecNumToPositionBefore >= 1) AND (RecNumToPositionBefore <= (NumMsgAreas + 1)) AND
            (RecNumToPositionBefore <> RecNumToPosition) AND (RecNumToPositionBefore <> (RecNumToPosition + 1)) THEN
         BEGIN
@@ -1097,7 +1100,7 @@ BEGIN
   REPEAT
     IF (Cmd <> '?') THEN
       ListMsgAreas(RecNumToList);
-    LOneK('%LFMessage area editor [^1?^2=^1Help^2]: ',Cmd,'QCDIMPRTX?'^M,TRUE,TRUE);
+    InputChar('%LFMessage area editor [^1?^2=^1Help^2]: ',Cmd,'QCDIMPRTX?'^M,[CapAll]);
     CASE Cmd OF
       ^M  : IF (RecNumToList < 0) OR (RecNumToList > NumMsgAreas) THEN
               RecNumToList := 0;

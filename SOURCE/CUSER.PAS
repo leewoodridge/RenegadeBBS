@@ -3,6 +3,8 @@
 Added: Won't ask for forgot pw answer if question is blank
 Added: Almost all strings are in lang except for a few i'm still working on
 All CStuff calls in other units have been updated, might need to change how in some of them, maint will be =1 for mandatory
+
+colorscheme and screen have changed var now
 --
 TODO:
 Update lightbarproc when datafile changes are made
@@ -59,7 +61,6 @@ VAR
       lRGLngStr(195,FALSE) {"Enter handle"}
     ELSE
       lRGLngStr(196,FALSE); {"Enter real name"}
-    MPL((SizeOf(User.Name)-1));
     InputMain(TmpName,(SizeOf(User.Name)-1),[CapAll]);
     WHILE (TmpName[1] IN [' ','0'..'9']) AND (Length(TmpName) > 0) DO
       Delete(TmpName,1,1);
@@ -135,7 +136,6 @@ VAR
           IEMSIRec.UserName := '';
         END;
     lRGLngStr(197,FALSE); {"Enter real name"}
-    MPL((SizeOf(User.RealName)-1));
     InputMain(TmpRealName,(SizeOf(User.RealName)-1),[CapWords]);
     WHILE (TmpRealName[1] IN [' ','0'..'9']) AND (Length(TmpRealName) > 0) DO
       Delete(TmpRealName,1,1);
@@ -175,9 +175,9 @@ VAR
   BEGIN
     lRGLngStr(198,FALSE); {"Select country"}
     IF (How=1) THEN
-      LOneK('',TmpCountry,'123',TRUE,TRUE)
+      InputChar('',TmpCountry,'123',[CapAll])
     ELSE
-      LOneK('',TmpCountry,^M'123',TRUE,TRUE);
+      InputChar('',TmpCountry,^M'123',[CapAll]);
     IF TmpCountry <> ^M THEN
       BEGIN
         TmpCountryCode := (Ord(TmpCountry) - 48);
@@ -191,7 +191,6 @@ VAR
   BEGIN
     TmpAddress := User.Street;
     lRGLngStr(199,FALSE); {"Enter your address"}
-    MPL((SizeOf(User.Street)-1));
     InputMain(TmpAddress,(SizeOf(User.Street)-1),[CapWords]);
     IF (TmpAddress <> '') THEN { LeeW: Add check for 1 letter, 1 number, 1 space }
       BEGIN
@@ -215,7 +214,6 @@ VAR
                 IF (How = 3) THEN { User editor }
                   BEGIN
                     Prt('Enter new city & state abbreviation: ');
-                    MPL((SizeOf(User.CityState) - 1));
                     InputMain(TmpCityState,(SizeOf(User.CityState) - 1),[{CapWords}]);
                     IF (TmpCityState <> '') THEN
                       User.CityState := TmpCityState;
@@ -225,7 +223,6 @@ VAR
                 ELSE
                   BEGIN
                     lRGLngStr(200,FALSE); {"Enter city name"}
-                    MPL(((SizeOf(User.CityState) - 1) - 4));
                     InputMain(TmpCityState,((SizeOf(User.CityState) - 1) - 4),[CapWords]);
                     IF (Pos(',',TmpCityState) <> 0) THEN
                       BEGIN
@@ -236,7 +233,6 @@ VAR
                       Exit;
                     LangStringArray[0] := AOnOff((TmpCountryCode = 1),'state','province');
                     lRGLngStr(201,FALSE); {"Enter state/province abbreviation"}
-                    MPL(2);
                     InputMain(TmpCityState1,2,[CapAll]);
                     IF (Length(TmpCityState1) < 2) THEN
                       Exit;
@@ -245,7 +241,6 @@ VAR
               END;
       3     : BEGIN
                 lRGLngStr(200,FALSE); {"Enter city name"}
-                MPL(SizeOf(User.CityState)-1);
                 InputMain(TmpCityState1,SizeOf(User.CityState)-1,[CapWords]);
                 IF (Length(TmpCityState1) < 2) THEN
                   Exit;
@@ -271,7 +266,6 @@ VAR
       2 : InputFormatted(lRGLngStr(203,TRUE),TmpZipCode,'@#@#@#',(How <> 1)); {"Enter postal code"}
       3 : BEGIN
             lRGLngStr(204,FALSE); {"Enter postal code"}
-            MPL((SizeOf(User.ZipCode) - 1));
             InputMain(TmpZipCode,(SizeOf(User.ZipCode) - 1),[CapAll]);
           END;
     END;
@@ -306,7 +300,6 @@ VAR
                 TmpPhone := Copy(TmpPhone,2,Length(TmpPhone));
               END;
       3    :  BEGIN
-                MPL(SizeOf(User.Ph)-1);
                 InputMain(TmpPhone,SizeOf(User.Ph)-1,[NumbersOnly]);
               END;
     END;
@@ -381,10 +374,10 @@ VAR
     IF (How = 1) THEN
       BEGIN
         User.Sex := #0;
-        LOneK(lRGLngStr(207,TRUE),TmpGender,'MF',TRUE,TRUE); {"Are you (M)ale or (F)emale?"}
+        InputChar(lRGLngStr(207,TRUE),TmpGender,'MF',[CapAll]); {"Are you (M)ale or (F)emale?"}
       END
     ELSE
-      LOneK(lRGLngStr(207,TRUE),TmpGender,^M'MF',TRUE,TRUE); { Abortable }
+      InputChar(lRGLngStr(207,TRUE),TmpGender,^M'MF',[CapAll]); { Abortable }
     IF TmpGender IN ['M','F'] THEN
       BEGIN
         IF (How = 2) THEN
@@ -416,7 +409,6 @@ VAR
     {/}
     NL;
     Prt('^2'+TmpQuestion{+' '});
-    MPL((SizeOf(User.UsrDefStr[QuestionNum])-1));
     InputMain(TmpAnswer,(SizeOf(User.UsrDefStr[QuestionNum])-1),[InterActiveEdit,CapWords]);
     IF (TmpAnswer <> '') THEN
       BEGIN
@@ -442,7 +434,6 @@ VAR
     IF (How = 2) THEN
       BEGIN
         lRGLngStr(208,FALSE); {""}
-        MPL(20);
         InputMain(TmpPW,SizeOf(TmpPW)-1,[IsPassword]); {GetPassword(TmpPW,20);}
         IF (CRC32(TmpPW) <> User.PW) THEN
           BEGIN
@@ -451,7 +442,6 @@ VAR
           END;
       END;
     lRGLngStr(209,FALSE); {""}
-    MPL(20);
     InputMain(TmpPW,SizeOf(TmpPW)-1,[IsPassword]); {GetPassword(TmpPW,20);}
     IF (Length(TmpPW) < 4) THEN
       BEGIN
@@ -472,7 +462,6 @@ VAR
     ELSE
       BEGIN
         lRGLngStr(210,FALSE); {"Enter password again for verification"}
-        MPL(20);
         InputMain(TmpPW2,SizeOf(TmpPW2)-1,[IsPassword]); {GetPassword(TmpPW2,20);}
         IF (TmpPW2 <> TmpPW) AND NOT (HangUp) THEN
           lRGLngStr(167,FALSE) {"Passwords don't match!"}
@@ -501,7 +490,6 @@ VAR
         NL;
         Print(General.ForgotPWQuestion);
         lRGLngStr(212,FALSE); {"Your answer"}
-        MPL((SizeOf(User.ForgotPWAnswer)-1));
         InputMain(TmpForgotPWAnswer,(SizeOf(User.ForgotPWAnswer)-1),[InterActiveEdit,CapWords]);
         IF (TmpForgotPWAnswer <> '') THEN
           BEGIN
@@ -606,7 +594,7 @@ VAR
         Inc(TmpSchemeNum);
       END;
     TmpSchemeNum := ThisUser.ColorScheme;
-    InputIntegerWOC(lRGLngStr(216,TRUE),TmpSchemeNum,[NumbersOnly],1,FileSize(SchemeFile));
+    InputInteger(lRGLngStr(216,TRUE),TmpSchemeNum,[NumbersOnly],1,FileSize(SchemeFile),Changed);
     IF (TmpSchemeNum >= 1) AND (TmpSchemeNum <= FileSize(SchemeFile)) THEN
       BEGIN
         IF (How = 2) AND (TmpSchemeNum <> ThisUser.ColorScheme) THEN
@@ -626,7 +614,7 @@ VAR
   BEGIN
     TmpColumns := User.LineLen;
     TmpRows := User.PageLen;
-    InputByteWOC(lRGLngStr(217,TRUE),TmpColumns,[InterActiveEdit,NumbersOnly],32,132); {"Screen columns?"}
+    InputByte(lRGLngStr(217,TRUE),TmpColumns,[InterActiveEdit,NumbersOnly],32,132,Changed); {"Screen columns?"}
     IF (TmpColumns >= 32) AND (TmpColumns <= 132) THEN
       BEGIN
         IF (How = 2) AND (TmpColumns <> ThisUser.LineLen) THEN
@@ -634,7 +622,7 @@ VAR
         User.LineLen := TmpColumns;
         Done1 := TRUE;
       END;
-    InputByteWOC(lRGLngStr(218,TRUE),TmpRows,[InterActiveEdit,NumbersOnly],4,50); {"Screen rows?"}
+    InputByte(lRGLngStr(218,TRUE),TmpRows,[InterActiveEdit,NumbersOnly],4,50,Changed); {"Screen rows?"}
     IF (TmpRows >= 4) AND (TmpRows <= 50) THEN
       BEGIN
         IF (How = 2) AND (TmpRows <> ThisUser.PageLen) THEN
@@ -832,7 +820,7 @@ VAR
       TmpUser: UserRecordType; { The user we're forwarding to }
       TmpUNum: Integer; { Search result user number }
     BEGIN
-      lRGLngStr(229,FALSE); { Search for user prompt }
+      (*lRGLngStr(229,FALSE); { Search for user prompt }*)
       lFindUserWS(TmpUNum);
       IF (TmpUNum < 1) OR (TmpUNum > (MaxUsers - 1)) THEN
         User.ForUsr := 0
@@ -909,7 +897,7 @@ VAR
         END;
     IF (How <> 1) THEN
       ValidKeys := ValidKeys+^M; { Allow abort }
-    LOneK(lRGLngStr(230,TRUE),TmpDefArcType,ValidKeys,TRUE,TRUE); {"Select archive format"}
+    InputChar(lRGLngStr(230,TRUE),TmpDefArcType,ValidKeys,[CapAll]); {"Select archive format"}
     IF (StrToInt(TmpDefArcType) <> User.DefArcType) AND (TmpDefArcType <> ^M) THEN
       BEGIN
         User.DefArcType := StrToInt(TmpDefArcType);

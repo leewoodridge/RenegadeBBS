@@ -30,27 +30,27 @@ USES
     NL;
     FOR Counter := 0 TO 7 DO
       BEGIN
-		SetC(7);
-		Prompt('('+IntToStr(Counter)+') ');
-		SetC(Counter);
-		Prompt(PadLeftStr(ColorName[Counter],12));
-		SetC(7);
-		Prompt(PadLeftStr('('+IntToStr(Counter+8)+') ',5));
-		SetC(Counter+8);
-		Print(PadLeftStr(ColorName[Counter]+'!',9));
+        SetC(7);
+        Prompt('('+IntToStr(Counter)+') ');
+        SetC(Counter);
+        Prompt(PadLeftStr(ColorName[Counter],12));
+        SetC(7);
+        Prompt(PadLeftStr('('+IntToStr(Counter+8)+') ',5));
+        SetC(Counter+8);
+        Print(PadLeftStr(ColorName[Counter]+'!',9));
       END;
-	NL;
-    InputByteWOC('New '+s+' color',TempColor,[NumbersOnly],0,15); (* Suppress Error *)
+    NL;
+    InputByte('New '+s+' color',TempColor,[NumbersOnly],0,15,Changed); (* Suppress Error *)
     IF (TempColor IN [0..15]) THEN
-	  BEGIN
-		ColorVar := TempColor;
-		lRGLngStr(155,FALSE); {"Saved!"}
-	  END(*
-	ELSE
-	  BEGIN
-		lRGLngStr(154,FALSE); {"Aborted!"}
-	  END*);
-	SetC(7);
+      BEGIN
+        ColorVar := TempColor;
+        lRGLngStr(155,FALSE); {"Saved!"}
+      END(*
+    ELSE
+      BEGIN
+        lRGLngStr(154,FALSE); {"Aborted!"}
+      END*);
+    SetC(7);
   END;
 
 PROCEDURE NetworkConfiguration;
@@ -83,7 +83,7 @@ BEGIN
       PrintACR('^0I. Netmail attributes      : ^1'+NetMail_Attr(NetAttribute));
       PrintACR('^0J. UUCP gate address       : ^1'+PadLeftStr('^1'+IntToStr(AKA[20].Zone)+':'+IntToStr(AKA[20].Net)+
                                                        '/'+IntToStr(AKA[20].Node)+'.'+IntToStr(AKA[20].Point),20));
-      LOneK('%LFEnter selection [^1A^2-^1J^2,^11^2-^14^2,^1Q^2=^1Quit^2]: ',Cmd,'QABCDEFGHIJ1234'{^M},TRUE,TRUE);
+      InputChar('%LFEnter selection [^1A^2-^1J^2,^11^2-^14^2,^1Q^2=^1Quit^2]: ',Cmd,'QABCDEFGHIJ1234'{^M},[CapAll]);
       CASE Cmd OF
         'A' : BEGIN
                 REPEAT
@@ -101,7 +101,7 @@ BEGIN
                     IF (Odd(Counter)) THEN
                       NL;
                   END;
-                  LOneK('%LFEnter selection [^1A^2-^1T^2,^1<CR>^2=^1Quit^2]: ',Cmd,^M'ABCDEFGHIJKLMNOPQRST',TRUE,TRUE);
+                  InputChar('%LFEnter selection [^1A^2-^1T^2,^1<CR>^2=^1Quit^2]: ',Cmd,^M'ABCDEFGHIJKLMNOPQRST',[CapAll]);
                   IF (Cmd IN ['A'..'T']) THEN
                     GetNewAddr('%LFEnter new network address (^1Z^2:^1N^2/^1N^2.^1P^2 format): ',30,
                                 AKA[(Ord(Cmd) - 65)].Zone,
@@ -111,7 +111,7 @@ BEGIN
                 UNTIL (Cmd = ^M) OR (HangUp);
                 Cmd := #0;
               END;
-        'B' : InputWN1('%LF^0Enter new origin line:%LF^2: ',Origin,50,[],Changed);
+        'B' : InputString('%LF^0Enter new origin line:%LF^2: ',Origin,50,[],Changed);
         'C' : SKludge := NOT SKludge;
         'D' : SSeenBy := NOT SSeenBy;
         'E' : SOrigin := NOT SOrigin;
@@ -121,7 +121,7 @@ BEGIN
         'I' : BEGIN
                 REPEAT
                   Print('%LF^0Netmail attributes: ^1'+NetMail_Attr(NetAttribute)+'^0');
-                  LOneK('%LFToggle attributes (CHIKLP) [?]Help [Q]uit: ',Cmd,'QPCKHIL?',TRUE,TRUE);
+                  InputChar('%LFToggle attributes (CHIKLP) [?]Help [Q]uit: ',Cmd,'QPCKHIL?',[CapAll]);
                   CASE Cmd OF
                     'C','H','I','K','L','P' :
                            ToggleNetAttrS(Cmd,NetAttribute);
@@ -141,36 +141,16 @@ BEGIN
                          AKA[20].Node,
                          AKA[20].Point);
         '1' : BEGIN
-                {
-				Prompt('%LF^1Colors: ');
-                ShowColors;
-				}
-				GetPipeColor(Text_Color,'standard text');
-                {InputByteWC('%LFNew standard text color',Text_Color,[DisplayValue,NumbersOnly],0,9,Changed);}
+                GetPipeColor(Text_Color,'standard text');
               END;
         '2' : BEGIN
-				{
-                Prompt('%LF^1Colors: ');
-                ShowColors;
-				}
-				GetPipeColor(Quote_Color,'quoted text');
-                {InputByteWC('%LFNew quoted text color',Quote_Color,[DisplayValue,NumbersOnly],0,9,Changed);}
+                GetPipeColor(Quote_Color,'quoted text');
               END;
         '3' : BEGIN
-                {
-				Prompt('%LF^1Colors: ');
-                ShowColors;
-				}
-				GetPipeColor(Tear_Color,'tear line');
-                {InputByteWC('%LFNew tear line color',Tear_Color,[DisplayValue,NumbersOnly],0,9,Changed);}
+                GetPipeColor(Tear_Color,'tear line');
               END;
         '4' : BEGIN
-				{
-                Prompt('%LF^1Colors: ');
-                ShowColors;
-				}
-				GetPipeColor(Origin_Color,'origin line');
-                {InputByteWC('%LFNew origin line color',Origin_Color,[DisplayValue,NumbersOnly],0,9,Changed);}
+                GetPipeColor(Origin_Color,'origin line');
               END;
       END;
     END;

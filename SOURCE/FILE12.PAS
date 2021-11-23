@@ -64,8 +64,7 @@ BEGIN
   END;
   REPEAT
     NL;
-    Prt('Batch upoad queue [^1C^2]lear, [^1L^2]ist batch, [^1R^2]emove a file, [^1Q^2]uit: ');
-    LOneK('',Cmd,'QCLR',TRUE,TRUE);
+    InputChar('Batch upoad queue [^1C^2]lear, [^1L^2]ist batch, [^1R^2]emove a file, [^1Q^2]uit: ',Cmd,'QCLR',[CapAll]);
     CASE Cmd OF
       'C' : ClearBatchULQueue;
       'L' : ListBatchULFiles;
@@ -929,12 +928,11 @@ BEGIN
   Close(BatchULFile);
 
   IF (AHangUp) THEN
-  BEGIN
-    lStatus_Screen(100,'Hanging up phone again...',FALSE,InputStr);
-    DoPhoneHangUp(FALSE);
-    HangUp := TRUE;
-  END;
-
+    BEGIN
+      lStatus_Screen(100,'Hanging up phone again...',FALSE,InputStr);
+      DoPhoneHangUp(FALSE); {LeeW: What about telnet?}
+      HangUp := TRUE;
+    END;
   FileArea := SaveFileArea;
   InitFileArea(FileArea);
 END;

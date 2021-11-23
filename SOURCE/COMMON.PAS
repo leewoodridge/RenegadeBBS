@@ -7,7 +7,7 @@ Lee Woodridge
  10/06/2021 - Fixed: %DE bug
  10/07/2021 - Indentation...
             - Added: ACS 'Q' check for menu #
-            - Removed: Redundant $V- above lcmds3
+            - Removed: Redundant $V- above LCmds3
             - Added: Toggle proc instead of writing "x := not x" everywhere
             - Added: Linefeed to MPL if input field extends past users LineLen
  ...        - Added: MCIPos/MCIPosArray to pull location data from ANSIs
@@ -26,6 +26,12 @@ Lee Woodridge
  11/05/2021 - Removed ReDisplay from inputflags, unused, seems useless
               Added IsPassword inputflag, masks input, replaces getpassword proc
  11/11/2021 - removed hungup, was nonfunctional, 
+ 11/16/2021 - Cleaned up printf proc, fixed bug where wasnt reporting nofile correctly
+            - Cleaned up printfile, removed non-ansi files, as we're removing
+ 11/18/2021 - Removed YN proc, now just PYNQ -- MAXLEN PARAM CAN BE REMOVED, LOTS OF FILES TO EDIT IT OUT OF
+            - removed all instances of [displayvalue] from input cmds, and replaced with interactiveedit
+               if interactiveedit is used and user no support ansi then it will show current value at end of prompt "...[123]"
+ 11/23/2021 - increased number parameter of plural from byte to integer
 *)
 UNIT Common;
 
@@ -177,14 +183,25 @@ TYPE
     CapAll,          { Forces capitalization of entire string }
     CapWords,        { Forces capitalization of first character of words }
     { Interface }
-    DisplayValue,    { Displays current value at end of input prompt }
     InteractiveEdit, { Interactive editing }
-	NoInputField,    { No MPL() }
+    NoBlankPrompt,   { WILL NOT Enter on a blank string will save as blank (string), or -1(integer) ??? - LeeW: Added }
+    NoInputField,    { No MPL(#) - LeeW: Added }
+    NoInputRange,    { Don't display valid input range after prompt (numeric input only) - LeeW: Added }
     NoLineFeed,      { No linefeed after <CR> pressed }
+    (*
+    AllowAbort       { Enter on a blank string will abort, leaving unchanged }
+    
+    *)
     { Input type }
     NumbersOnly,     { Numeric values only } {IsNumberOnly}
-    NegativeAllowed, { Negative numbers allowed }
+    AllowNegative,   { Negative numbers allowed }
     IsPassword       { Masks input with echo char - LeeW: Added }
+    (*
+    IsFileName       { Valid filename characters only }
+    IsFullPath       { Valid path characters only }
+    IsPath           { Valid full path characters only }
+    ???
+    *)
     ); 
 
   InputFlagSet = SET OF InputFlagType; {  }
@@ -325,8 +342,8 @@ VAR
   LastError: Integer;                  { Results from last IOResult, when needed }
   General: GeneralRecordType;          { configuration information }
   DirInfo: SearchRec;                  {  }
-  Buf: STRING[255];        			   { macro buffer }
-  MLC: STRING[255];         		   { multiline FOR chat }
+  Buf: STRING[255];                    { macro buffer }
+  MLC: STRING[255];                    { multiline FOR chat }
   ChatReason,               { last chat reason }
   LastLineStr,              { "last-line" STRING FOR Word-wrapping }
   StartDir: AStr;           { Directory BBS was executed from }
@@ -496,18 +513,18 @@ PROCEDURE NewCompTables;
 FUNCTION NSL: LongInt;
 FUNCTION AgeUser(CONST BirthDate: LongInt): Word;
 PROCEDURE Update_Screen;
-FUNCTION PageLength: Word;
+FUNCTION PageLength: Word; { Users PageLen if InCom, else Hi(WindMax) }
 PROCEDURE lStatus_Screen(WhichScreen: Byte; Message: AStr; OneKey: Boolean; VAR Answer: AStr);
 PROCEDURE SaveGeneral(X: Boolean);
-PROCEDURE SKey1(VAR c: Char);
+PROCEDURE SKey1(VAR c: Char); { SysOp control keys }
 FUNCTION VerLine(B: Byte): STRING;
 PROCEDURE Toggle(VAR TheVar: Boolean); { Toggles a boolean } { LeeW: Added }
 FUNCTION PHours(CONST DisplayStr: AStr; LoTime,HiTime: Integer): AStr; {**move to timefunc}
 PROCEDURE DisplayBuffer(MCIFunction: MCIFunctionType; Data1, Data2:Pointer);
 FUNCTION ReadBuffer(FileName: AStr): Boolean;
 PROCEDURE WriteWFC(c: Char);
-FUNCTION AccountBalance: LongInt;
-PROCEDURE AdjustBalance(Adjustment: LongInt);
+FUNCTION AccountBalance: LongInt; { Users credits minus debits }
+PROCEDURE AdjustBalance(Adjustment: LongInt); { Add or subtract from users credits/debits }
 PROCEDURE BackErase(Len: Byte);
 FUNCTION UpdateCRC32(CRC: LongInt; VAR Buffer; Len: Word): LongInt;
 FUNCTION CRC32(s: AStr): LongInt;
@@ -606,31 +623,23 @@ PROCEDURE SetC(C: Byte);
 PROCEDURE UserColor(Color: Byte);
 FUNCTION StripColor(CONST InString: STRING): STRING;
 { Input }
-{in common3}
-PROCEDURE InputLongIntWC(S: AStr; VAR L: LongInt; InputFlags: InputFlagSet; LowNum,HighNum: LongInt; VAR Changed: Boolean);
-PROCEDURE InputLongIntWOC(S: AStr; VAR L: LongInt; InputFlags: InputFlagSet; LowNum,HighNum: LongInt);
-PROCEDURE InputWordWC(S: AStr; VAR W: Word; InputFlags: InputFlagSet; LowNum,HighNum: Word; VAR Changed: Boolean);
-PROCEDURE InputWordWOC(S: AStr; VAR W: Word; InputFlags: InputFlagSet; LowNum,HighNum: Word);
-PROCEDURE InputIntegerWC(S: AStr; VAR I: Integer; InputFlags: InputFlagSet; LowNum,HighNum: Integer; VAR Changed: Boolean);
-PROCEDURE InputIntegerWOC(S: AStr; VAR I: Integer; InputFlags: InputFlagSet; LowNum,HighNum: Integer);
-PROCEDURE InputByteWC(S: AStr; VAR B: Byte; InputFlags: InputFlagSet; LowNum,HighNum: Byte; VAR Changed: Boolean);
-PROCEDURE InputByteWOC(S: AStr; VAR B: Byte; InputFlags: InputFlagSet; LowNum,HighNum: Byte);
-PROCEDURE InputDefault(VAR S: STRING; v: STRING; MaxLen: Byte; InputFlags: InputFlagSet; LineFeed: Boolean);
-PROCEDURE InputFormatted(DisplayStr: AStr; VAR InputStr: STRING; v: STRING; Abortable: Boolean);
-PROCEDURE InputWN1(DisplayStr: AStr; VAR InputStr: AStr; MaxLen: Byte; InputFlags: InputFlagSet; VAR Changed: Boolean);
-PROCEDURE InputWNWC(DisplayStr: AStr; VAR InputStr: AStr; MaxLen: Byte; VAR Changed: Boolean);
+    { IN COMMON3 }
+PROCEDURE InputLongInt(S: AStr; VAR L: LongInt; InputFlags: InputFlagSet; LowNum,HighNum: LongInt; VAR Changed: Boolean);
+PROCEDURE InputWord(S: AStr; VAR W: Word; InputFlags: InputFlagSet; LowNum,HighNum: Word; VAR Changed: Boolean);
+PROCEDURE InputInteger(S: AStr; VAR I: Integer; InputFlags: InputFlagSet; LowNum,HighNum: Integer; VAR Changed: Boolean);
+PROCEDURE InputByte(S: AStr; VAR B: Byte; InputFlags: InputFlagSet; LowNum,HighNum: Byte; VAR Changed: Boolean);
+PROCEDURE InputFormatted(S: AStr; VAR InputStr: STRING; v: STRING; Abortable: Boolean);
+PROCEDURE InputString(DisplayStr: AStr; VAR InputStr: AStr; MaxLen: Byte; InputFlags: InputFlagSet; VAR Changed: Boolean);
 PROCEDURE InputMain(VAR s: STRING; MaxLen: Byte; InputFlags: InputFlagSet);
-PROCEDURE OneK1(VAR C: Char; ValidKeys: AStr; DisplayKey,LineFeed: Boolean); { allows lowercase input, used for val editor }
-PROCEDURE LOneK(DisplayStr: AStr; VAR C: Char; ValidKeys: AStr; DisplayKey,LineFeed: Boolean); { single key input prompt }
+PROCEDURE InputChar(S: Astr; VAR C: Char; ValidKeys: AStr; InputFlags: InputFlagSet); { single key input prompt }
 PROCEDURE MPL(MaxLen: Byte); { Print input field }
-PROCEDURE InputPath(CONST DisplayStr: AStr; VAR DirPath: Str40; CreateDir,AllowExit: Boolean; VAR Changed: Boolean);
-{ END OF COMMON3 }
+PROCEDURE InputPath(S: AStr; VAR DirPath: Str40; CreateDir,AllowExit: Boolean; VAR Changed: Boolean);
+    { END OF COMMON3 }
 FUNCTION GetKey: Word;
 PROCEDURE ScanInput(VAR s: AStr; CONST Allowed: AStr);
 FUNCTION CInKey: Char;
 FUNCTION CheckPW: Boolean; { Prompt for SysOp password }
-FUNCTION YN(Len: Byte; DYNY: Boolean): Boolean; {**LeeW: Nest this in PYNQ once figure out SCRIPT}
-FUNCTION PYNQ(CONST InString: AStr; MaxLen: Byte; DYNY: Boolean): Boolean; { Yes/No question prompt }
+FUNCTION PYNQ(CONST InString: AStr; MaxLen: Byte; YN: Boolean): Boolean; { Yes/No question prompt }
 FUNCTION InKey: Word;
 PROCEDURE WKey;
 { string stuff}
@@ -653,7 +662,7 @@ FUNCTION StripLeadSpace(S: STRING): STRING;
 FUNCTION StripTrailSpace(S: STRING): STRING;
 FUNCTION SemiCmd(S: AStr; B: Byte): STRING;
 FUNCTION MCI(CONST s: STRING): STRING;
-FUNCTION Plural(InString: STRING; Number: Byte): STRING; { Passes string, or string + s if byte value > 1 }
+FUNCTION Plural(InString: STRING; Number: Integer): STRING; { Passes string, or string + s if number value <> 1 }
 FUNCTION FormattedTime(TimeUsed: LongInt): STRING;
 FUNCTION FormatNumber(L: LongInt): STRING;
 FUNCTION ToLower(S: STRING): STRING; { Convert string to lowercase } { LeeW: Moved from OneLiner }
@@ -664,7 +673,7 @@ FUNCTION AllCaps(InString: STRING): STRING; { Returns string in all uppercase }
 FUNCTION Caps(InString: STRING): STRING; { Returns string with first letters of words capitalized }
 PROCEDURE Star(InString: AStr); { Display string with * indent }
 PROCEDURE Prompt(CONST InString: STRING);
-FUNCTION SQOutSp(InString: STRING): STRING;
+FUNCTION SQOutSp(InString: STRING): STRING; { Removes all spaces in a string }
 FUNCTION Centre(InString: AStr): STRING; { Pads string to be centered on screen }
 PROCEDURE Print(CONST InString: STRING);
 PROCEDURE NL; { Carriage return }
@@ -675,9 +684,9 @@ FUNCTION ShowYesNo(b: Boolean): STRING; { "Yes" or "No" depending on boolean sta
 PROCEDURE PrintMain(CONST ss: STRING);
 PROCEDURE PrintACR(InString: STRING);
 { Art files }
-PROCEDURE PrintF(FileName: AStr); {>}
-PROCEDURE PrintFile(FileName: AStr); {>}
-PROCEDURE pfl(FN: AStr);
+PROCEDURE PrintF(FileName: PathStr); { Checks path formatting, and for ANSI if avail, else ASCII } {>}
+PROCEDURE PrintFile(FileName: PathStr); { Checks if random and daily art files exist } {>}
+PROCEDURE PFL(FN: PathStr); { The actual file printing procedure }
 
 IMPLEMENTATION
 
@@ -695,9 +704,9 @@ USES
   SysOp12,
   Vote;
 
-PROCEDURE InputPath(CONST DisplayStr: AStr; VAR DirPath: Str40; CreateDir,AllowExit: Boolean; VAR Changed: Boolean);
+PROCEDURE InputPath(S: AStr; VAR DirPath: Str40; CreateDir,AllowExit: Boolean; VAR Changed: Boolean);
 BEGIN
-  Common3.InputPath(DisplayStr,DirPath,CreateDir,AllowExit,Changed);
+  Common3.InputPath(S,DirPath,CreateDir,AllowExit,Changed);
 END;
 
 PROCEDURE Clear_EOL;
@@ -741,19 +750,15 @@ END;
 FUNCTION UpdateCRC32(CRC: LongInt; VAR Buffer; Len: Word): LongInt; EXTERNAL;
 {$L CRC32.OBJ }
 
-{FUNCTION CheckPW: Boolean;
-BEGIN
-  CheckPW := Common3.CheckPW;
-END;}
 FUNCTION CheckPW: Boolean;
 VAR
   Password: STRING[20];
 BEGIN
   IF (NOT General.SysOpPWord) OR (InWFCMenu) OR (General.SysOpPW = '') THEN
-	BEGIN
+    BEGIN
       CheckPW := TRUE;
       Exit;
-	END;
+    END;
   CheckPW := FALSE;
   lRGLngStr(33,FALSE); {"SysOp Password:"}
   InputMain(Password,SizeOf(Password)-1,[IsPassword]); {GetPassword(Password,20);}
@@ -813,74 +818,39 @@ BEGIN
   Common2.TLeft;
 END;
 
-PROCEDURE OneK1(VAR C: Char; ValidKeys: AStr; DisplayKey,LineFeed: Boolean);
+PROCEDURE InputChar(S: AStr; VAR C: Char; ValidKeys: AStr; InputFlags: InputFlagSet);
 BEGIN
-  Common3.OneK1(C,ValidKeys,DisplayKey,LineFeed);
+  Common3.InputChar(S,C,ValidKeys,InputFlags);
 END;
 
-PROCEDURE LOneK(DisplayStr: AStr; VAR C: Char; ValidKeys: AStr; DisplayKey,LineFeed: Boolean);
+PROCEDURE InputLongInt(S: AStr; VAR L: LongInt; InputFlags: InputFlagSet; LowNum,HighNum: LongInt; VAR Changed: Boolean);
 BEGIN
-  Common3.LOneK(DisplayStr,C,ValidKeys,DisplayKey,LineFeed);
+  Common3.InputLongInt(S,L,InputFlags,LowNum,HighNum,Changed);
 END;
 
-PROCEDURE InputLongIntWC(S: AStr; VAR L: LongInt; InputFlags: InputFlagSet; LowNum,HighNum: LongInt; VAR Changed: Boolean);
+PROCEDURE InputWord(S: AStr; VAR W: Word; InputFlags: InputFlagSet; LowNum,HighNum: Word; VAR Changed: Boolean);
 BEGIN
-  Common3.InputLongIntWC(S,L,InputFlags,LowNum,HighNum,Changed);
+  Common3.InputWord(S,W,InputFlags,LowNum,HighNum,Changed);
 END;
 
-PROCEDURE InputLongIntWOC(S: AStr; VAR L: LongInt; InputFlags: InputFlagSet; LowNum,HighNum: LongInt);
+PROCEDURE InputInteger(S: AStr; VAR I: Integer; InputFlags: InputFlagSet; LowNum,HighNum: Integer; VAR Changed: Boolean);
 BEGIN
-  Common3.InputLongIntWOC(S,L,InputFlags,LowNum,HighNum);
+  Common3.InputInteger(S,I,InputFlags,LowNum,HighNum,Changed);
 END;
 
-PROCEDURE InputWordWC(S: AStr; VAR W: Word; InputFlags: InputFlagSet; LowNum,HighNum: Word; VAR Changed: Boolean);
+PROCEDURE InputByte(S: AStr; VAR B: Byte; InputFlags: InputFlagSet; LowNum,HighNum: Byte; VAR Changed: Boolean);
 BEGIN
-  Common3.InputWordWC(S,W,InputFlags,LowNum,HighNum,Changed);
+  Common3.InputByte(S,B,InputFlags,LowNum,HighNum,Changed);
 END;
 
-PROCEDURE InputWordWOC(S: AStr; VAR W: Word; InputFlags: InputFlagSet; LowNum,HighNum: Word);
+PROCEDURE InputFormatted(S: AStr; VAR InputStr: STRING; v: STRING; Abortable: Boolean);
 BEGIN
-  Common3.InputWordWOC(S,W,InputFlags,LowNum,HighNum);
+  Common3.InputFormatted(S,InputStr,v,Abortable);
 END;
 
-PROCEDURE InputIntegerWC(S: AStr; VAR I: Integer; InputFlags: InputFlagSet; LowNum,HighNum: Integer; VAR Changed: Boolean);
+PROCEDURE InputString(DisplayStr: AStr; VAR InputStr: AStr; MaxLen: Byte; InputFlags: InputFlagSet; VAR Changed: Boolean);
 BEGIN
-  Common3.InputIntegerWC(S,I,InputFlags,LowNum,HighNum,Changed);
-END;
-
-PROCEDURE InputIntegerWOC(S: AStr; VAR I: Integer; InputFlags: InputFlagSet; LowNum,HighNum: Integer);
-BEGIN
-  Common3.InputIntegerWOC(S,I,Inputflags,LowNum,HighNum);
-END;
-
-PROCEDURE InputByteWC(S: AStr; VAR B: Byte; InputFlags: InputFlagSet; LowNum,HighNum: Byte; VAR Changed: Boolean);
-BEGIN
-  Common3.InputByteWC(S,B,InputFlags,LowNum,HighNum,Changed);
-END;
-
-PROCEDURE InputByteWOC(S: AStr; VAR B: Byte; InputFlags: InputFlagSet; LowNum,HighNum: Byte);
-BEGIN
-  Common3.InputByteWOC(S,B,InputFlags,LowNum,HighNum)
-END;
-
-PROCEDURE InputDefault(VAR S: STRING; v: STRING; MaxLen: Byte; InputFlags: InputFlagSet; LineFeed: Boolean);
-BEGIN
-  Common3.InputDefault(S,v,MaxLen,InputFlags,LineFeed);
-END;
-
-PROCEDURE InputFormatted(DisplayStr: AStr; VAR InputStr: STRING; v: STRING; Abortable: Boolean);
-BEGIN
-  Common3.InputFormatted(DisplayStr,InputStr,v,Abortable);
-END;
-
-PROCEDURE InputWN1(DisplayStr: AStr; VAR InputStr: AStr; MaxLen: Byte; InputFlags: InputFlagSet; VAR Changed: Boolean);
-BEGIN
-  Common3.InputWN1(DisplayStr,InputStr,MaxLen,InputFlags,Changed);
-END;
-
-PROCEDURE InputWNWC(DisplayStr: AStr; VAR InputStr: AStr; MaxLen: Byte; VAR Changed: Boolean);
-BEGIN
-  Common3.InputWNWC(DisplayStr,InputStr,MaxLen,Changed);
+  Common3.InputString(DisplayStr,InputStr,MaxLen,InputFlags,Changed);
 END;
 
 PROCEDURE InputMain(VAR s: STRING; MaxLen: Byte; InputFlags: InputFlagSet);
@@ -1164,6 +1134,9 @@ BEGIN
               IF (LangStringArray[b] <> '') THEN
                 S := Substitute(S,'@'+IntToStr(b),LangStringArray[b]);
                 *)
+      240 : FOR b := 0 TO 0 DO { $USER_SEARCH_ASK }
+              IF (LangStringArray[b] <> '') THEN
+                S := Substitute(S,'@'+IntToStr(b),LangStringArray[b]);
     END;
     { -- }
     IF (PassValue) THEN
@@ -1553,9 +1526,9 @@ END;
 PROCEDURE AdjustBalance(Adjustment: LongInt);
 BEGIN
   IF (Adjustment > 0) THEN
-    Inc(ThisUser.Debit,Adjustment)   { Add TO debits }
+    Inc(ThisUser.Debit,Adjustment)   { Add to debits }
   ELSE
-    Dec(ThisUser.lCredit,Adjustment);  { Add TO credits }
+    Dec(ThisUser.lCredit,Adjustment);  { Add to credits }
 END;
 
 FUNCTION CRC32(S: AStr): LongInt;
@@ -2107,7 +2080,7 @@ BEGIN
   StripColor := TempStr;
 END;
 
-PROCEDURE sl1(s: AStr);
+PROCEDURE SL1(s: AStr);
 BEGIN
   IF (SLogging) THEN
   BEGIN
@@ -2140,7 +2113,10 @@ END;
 
 PROCEDURE SysOpLog(s:AStr);
 BEGIN
-  sl1('   '+s);
+  {IF (General.TimeStampLogs) THEN}
+    SL1('^0  '+TimeStamp+'^1 '+S)
+  {ELSE
+    SL1('^1  '+S)};
 END;
 
 FUNCTION StrToInt(S: Str11): LongInt;
@@ -2212,7 +2188,7 @@ END;
 
 FUNCTION Caps(InString: STRING): STRING;
 VAR
-  Counter: Integer;  { must be Integer }
+  Counter: Integer; { Must be Integer! }
 BEGIN
   IF (InString[1] IN ['a'..'z']) THEN
     Dec(InString[1],32);
@@ -2494,7 +2470,7 @@ BEGIN
   IF (NOT Echo) THEN
     IF (General.LocalSec) AND (c IN [#32..#255]) THEN
     BEGIN
-      s := lRGLNGStr(1,TRUE); {FString.EchoC;}
+      s := lRGLNGStr(1,TRUE); { Echo character }
       c := s[1];
     END;
   IF (c IN [#27,^V,^y]) THEN
@@ -2921,14 +2897,13 @@ BEGIN
     ShowYesNo := 'No ';
 END;
 
-FUNCTION YN(Len: Byte; DYNY: Boolean): Boolean;
+FUNCTION PYNQ(CONST InString: AStr; MaxLen: Byte; YN: Boolean): Boolean;
 VAR
   Cmd: Char;
   W: Word;
-  
   PROCEDURE PrintYesNo;
   BEGIN
-        IF (DYNY) THEN
+        IF (YN) THEN
           BEGIN
             Prt('^7'+lRGLngStr(96,TRUE)+'^0'); { Yes selected }
             Prt('^6'+lRGLngStr(97,TRUE)+'^0'); 
@@ -2939,8 +2914,10 @@ VAR
             Prt('^7'+lRGLngStr(97,TRUE)+'^0'); { No selected }
           END;
   END;
-  
 BEGIN
+  UserColor(2);
+  Prompt(InString+' ');
+  {/}
   IF (OkANSI) AND (General.UseFileAreaLightBar) THEN
     BEGIN
       IF (NOT HangUp) THEN
@@ -2948,14 +2925,14 @@ BEGIN
           REPEAT
             PrintYesNo;
             W := GetKey;
-            IF ((W = 89) OR (W = 121)) OR ((W=F_LEFT) AND (DYNY=FALSE)) THEN
-              DYNY := TRUE;
-            IF ((W = 78) OR (W = 110)) OR ((W=F_RIGHT) AND (DYNY=TRUE)) THEN
-              DYNY := FALSE;
+            IF ((W = 89) OR (W = 121)) OR ((W=F_LEFT) AND (YN=FALSE)) THEN
+              YN := TRUE;
+            IF ((W = 78) OR (W = 110)) OR ((W=F_RIGHT) AND (YN=TRUE)) THEN
+              YN := FALSE;
             DoBackspace(0,LennMCI(lRGLngStr(96,TRUE))+LennMCI(lRGLngStr(96,TRUE))-2);
           UNTIL (W=13) OR (W=89) OR (W=121) OR (W=78) OR (W=110) OR (HangUp); { Y/N/Enter }
           PrintYesNo;
-          YN := (DYNY) AND (NOT HangUp);
+          PYNQ := (YN) AND (NOT HangUp);
           NL;
         END;
     END
@@ -2964,34 +2941,25 @@ BEGIN
       IF (NOT HangUp) THEN
         BEGIN
           UserColor(0);
-          Prompt(SQOutSp(ShowYesNo(DYNY)));
+          Prompt(SQOutSp(ShowYesNo(YN)));
           REPEAT
             Cmd := UpCase(Char(GetKey));
           UNTIL (Cmd IN ['Y','N',^M]) OR (HangUp);
-          IF (DYNY) AND (Cmd <> 'N') THEN
+          IF (YN) AND (Cmd <> 'N') THEN
             Cmd := 'Y';
-          IF (DYNY) AND (Cmd = 'N') THEN
+          IF (YN) AND (Cmd = 'N') THEN
             Prompt(#8#8#8'No ')
-          ELSE IF (NOT DYNY) AND (Cmd = 'Y') THEN
+          ELSE IF (NOT YN) AND (Cmd = 'Y') THEN
             Prompt(#8#8'Yes');
         { IF (Cmd = 'N') AND (Len <> 0) THEN
             DoBackSpace(1,Len)
           ELSE }
             NL;
           UserColor(0);
-          YN := (Cmd = 'Y') AND (NOT HangUp);
+          PYNQ := (Cmd = 'Y') AND (NOT HangUp);
         END;
     END;
 END;
-
-FUNCTION PYNQ(CONST InString: AStr; MaxLen: Byte; DYNY: Boolean): Boolean;
-BEGIN
-  UserColor(2);
-  Prompt(InString);
-  PYNQ := YN(MaxLen,DYNY);
-END;
-
-
 
 FUNCTION Centre(InString: AStr): STRING;
 VAR
@@ -3146,15 +3114,16 @@ BEGIN
                   Inc(i,2);
                   PauseScr(FALSE)
                 END
-                    (* LeeW: Added ANSI read & store position MCI %00 - %09 *)
-                    ELSE IF (UpCase(s[i + 1]) IN ['0'..'9']) AND (UpCase(s[i + 2]) IN ['0'..'9']) THEN
+                    (* LeeW: Added ANSI store position MCI %00 - %09 *)
+                    ELSE IF (s[i + 1] IN ['0'..'9']) AND (s[i + 2] IN ['0'..'9']) THEN
                       BEGIN
                         MCIPosRecArray[StrToInt(s[i+1]+s[i+2])].X := WhereX;
                         MCIPosRecArray[StrToInt(s[i+1]+s[i+2])].Y := WhereY;
                         Inc(i,2);
                       END
                     (* LeeW: Added ANSI go to position MCI %XY00;00% *)
-                    ELSE IF (UpCase(s[i + 1]) = 'X') AND (UpCase(s[i + 2]) = 'Y') THEN
+                    ELSE IF (UpCase(s[i + 1]) = 'X') AND (UpCase(s[i + 2]) = 'Y') AND 
+							(s[i + 5] = ';') AND (s[i + 8] = '%') THEN
                       BEGIN
                         cs := '';
                         Inc(i, 3);
@@ -3175,7 +3144,7 @@ BEGIN
                   IF (UpCase(s[i + 2]) = 'E') THEN
                   BEGIN
                     Inc(i,2);
-                    OutKey(' '); OutKey(#8); { guard against +++ }
+                    OutKey(' '); OutKey(#8); { Guard against +++ }
                     Delay(800);
                   END
                   ELSE IF ((UpCase(s[i + 2]) = 'F') AND (NOT PrintingFile)) THEN
@@ -3267,14 +3236,14 @@ BEGIN
     InString := InString + ^M^J;
   PrintMain(InString);
   IF (Abort) THEN
-  BEGIN
-    CurrentColor := (255 - CurrentColor);
-    UserColor(0);
-  END;
+	BEGIN
+      CurrentColor := (255 - CurrentColor);
+      UserColor(0);
+	END;
   CROff := FALSE;
 END;
 
-PROCEDURE pfl(FN: AStr);
+PROCEDURE PFL(FN: PathStr);
 VAR
   fil: Text;
   ls: STRING[255];
@@ -3293,48 +3262,48 @@ BEGIN
   SaveTempPause := TempPause;
   FN := AllCaps(FN);
   IF (General.WindowOn) AND (Pos('.AN',FN) > 0) OR (Pos('.AV',FN) > 0) THEN
-  BEGIN
-    TempPause := FALSE;
-    ToggleBack := TRUE;
-    ToggleWindow(FALSE);
-    IF (OkRIP) THEN
-      SerialOut('!|*|');
-  END;
+    BEGIN
+      TempPause := FALSE;
+      ToggleBack := TRUE;
+      ToggleWindow(FALSE);
+      IF (OkRIP) THEN
+        SerialOut('!|*|');
+    END;
   IF (Pos('.RI',FN) > 0) THEN
     TempPause := FALSE;
   IF (NOT HangUp) THEN
-  BEGIN
-    Assign(fil,SQOutSp(FN));
-    Reset(fil);
-    IF (IOResult <> 0) THEN
-      NoFile := TRUE
-    ELSE
     BEGIN
-      Abort := FALSE;
-      Next := FALSE;
-      WHILE (NOT EOF(fil)) AND (NOT Abort) AND (NOT HangUp) DO
-      BEGIN
-        ps := 0;
-        REPEAT
-          Inc(ps);
-          Read(fil,ls[ps]);
-          IF EOF(fil) THEN        {check again incase avatar parameter}
-          BEGIN
-            Inc(ps);
-            Read(fil,ls[ps]);
-            IF EOF(fil) THEN
-              Dec(ps);
-          END;
-        UNTIL ((ls[ps] = ^J) AND (NextState IN [Waiting..In_Param])) OR (ps = 255) OR EOF(fil);
-        ls[0] := Chr(ps);
-        CROff := TRUE;
-        CtrlJOff := ToggleBack;
-        PrintACR(ls);
-      END;
-      Close(fil);
+      Assign(fil,SQOutSp(FN));
+      Reset(fil);
+      IF (IOResult <> 0) THEN
+        NoFile := TRUE
+      ELSE
+        BEGIN
+          Abort := FALSE;
+          Next := FALSE;
+          WHILE (NOT EOF(fil)) AND (NOT Abort) AND (NOT HangUp) DO
+            BEGIN
+              ps := 0;
+              REPEAT
+                Inc(ps);
+                Read(fil,ls[ps]);
+                IF EOF(fil) THEN {check again incase avatar parameter}
+                  BEGIN
+                    Inc(ps);
+                    Read(fil,ls[ps]);
+                    IF EOF(fil) THEN
+                      Dec(ps);
+                  END;
+              UNTIL ((ls[ps] = ^J) AND (NextState IN [Waiting..In_Param])) OR (ps = 255) OR EOF(fil);
+              ls[0] := Chr(ps);
+              CROff := TRUE;
+              CtrlJOff := ToggleBack;
+              PrintACR(ls);
+            END;
+          Close(fil);
+        END;
+      NoFile := FALSE;
     END;
-    NoFile := FALSE;
-  END;
   AllowAbort := SaveAllowAbort;
   PrintingFile := FALSE;
   CtrlJOff := FALSE;
@@ -3349,16 +3318,16 @@ END;
 FUNCTION BSlash(InString: AStr; b: Boolean): AStr;
 BEGIN
   IF (b) THEN
-  BEGIN
-    WHILE (Copy(InString,(Length(InString) - 1),2) = '\\') DO
-      InString := Copy(Instring,1,(Length(InString) - 2));
-    IF (Copy(InString,Length(InString),1) <> '\') THEN
-      InString := InString + '\';
-  END
+    BEGIN
+      WHILE (Copy(InString,(Length(InString) - 1),2) = '\\') DO
+        InString := Copy(Instring,1,(Length(InString) - 2));
+      IF (Copy(InString,Length(InString),1) <> '\') THEN
+        InString := InString + '\';
+    END
   ELSE
     WHILE (InString[Length(InString)] = '\') DO
       Dec(InString[0]);
-  BSlash := Instring;
+  BSlash := InString;
 END;
 
 FUNCTION Exist(FileName: AStr): Boolean;
@@ -3378,105 +3347,65 @@ BEGIN
   ExistDir := (DOSError = 0) AND (DirInfo1.Attr AND $10 = $10);
 END;
 
-PROCEDURE PrintFile(FileName: AStr);
+PROCEDURE PrintFile(FileName: PathStr);
 VAR
-  s: AStr;
-  dayofweek: Byte;
-  i: Integer;
+  DOWFileName: PathStr;
+  DOW,
+  b: Byte;
 BEGIN
   FileName := AllCaps(FileName);
-  s := FileName;
-  IF (Copy(FileName,Length(FileName) - 3,4) = '.ANS') THEN
-  BEGIN
-    IF (Exist(Copy(FileName,1,Length(FileName) - 4)+'.AN1')) THEN
-      REPEAT
-        i := Random(10);
-        IF (i = 0) THEN
-          FileName := Copy(FileName,1,Length(FileName) - 4)+'.ANS'
-        ELSE
-          FileName := Copy(FileName,1,Length(FileName) - 4)+'.AN'+IntToStr(i);
-      UNTIL (Exist(FileName));
-  END
-  ELSE IF (Copy(FileName,Length(FileName) - 3,4) = '.AVT') THEN
-  BEGIN
-    IF (Exist(Copy(FileName,1,Length(FileName) - 4)+'.AV1')) THEN
-      REPEAT
-        i := Random(10);
-        IF (i = 0) THEN
-          FileName := Copy(FileName,1,Length(FileName) - 4)+'.AVT'
-        ELSE
-          FileName := Copy(FileName,1,Length(FileName) - 4)+'.AV'+IntToStr(i);
-      UNTIL (Exist(FileName));
-  END
-  ELSE IF (Copy(FileName,Length(FileName) - 3,4) = '.RIP') THEN
-  BEGIN
-    IF (Exist(Copy(FileName,1,Length(FileName) - 4)+'.RI1')) THEN
-      REPEAT
-        i := Random(10);
-        IF (i = 0) THEN
-          FileName := Copy(FileName,1,Length(FileName) - 4)+'.RIP'
-        ELSE
-          FileName := Copy(FileName,1,Length(FileName) - 4)+'.RI'+IntToStr(i);
-      UNTIL (Exist(FileName));
+  IF NOT (Exist(FileName)) THEN
+    EXIT;
+  IF (Copy(FileName,Length(FileName)-3,4) = '.ANS') THEN
+    BEGIN
+      IF (Exist(Copy(FileName,1,Length(FileName)-4)+'.AN1')) THEN { RND = AN0>AN9 }
+        REPEAT
+          b := Random(10);
+          IF (b = 0) THEN
+            FileName := Copy(FileName,1,Length(FileName)-4)+'.ANS'
+          ELSE
+            FileName := Copy(FileName,1,Length(FileName)-4)+'.AN'+IntToStr(b);
+        UNTIL (Exist(FileName));
     END;
-  GetDayOfWeek(DayOfWeek);
-  s := FileName;
-  s[Length(s) - 1] := Chr(DayOfWeek + 48);
-  IF (Exist(s)) THEN
-    FileName := s;
-  pfl(FileName);
+  GetDayOfWeek(DOW);
+  DOWFileName := FileName;
+  DOWFileName[Length(DOWFileName)-1] := Chr(DOW+48); { DOW = A0S>A6S }
+  IF (Exist(DOWFileName)) THEN
+    PFL(DOWFileName)
+  ELSE
+    PFL(FileName);
 END;
 
-PROCEDURE PrintF(FileName: AStr);
-VAR
-  FFN,
-  Path: PathStr;
-  Name: NameStr;
-  Ext: ExtStr;
-
-  j: Integer;  (* doesn't seem to do anything *)
-
+PROCEDURE PrintF(FileName: PathStr);
 BEGIN
   NoFile := TRUE;
   FileName := SQOutSp(FileName);
   IF (FileName = '') THEN
-    Exit;
-
-  IF (Pos('\',FileName) <> 0) THEN    (* ??? *)
-    j := 1
+    EXIT;
+  {/}
+  IF (Pos('\',FileName) = 0) AND (Pos(':',FileName) = 0) THEN
+    FileName := General.MiscPath+FileName;
+  FileName := FExpand(FileName); { Full Path+FileName Now }
+  IF (Pos('.',FileName) <> 0) AND (Exist(FileName)) THEN
+    PrintFile(FileName)
   ELSE
-  BEGIN
-    j := 2;
-    FSplit(FExpand(FileName),Path,Name,Ext);
-    IF (NOT Exist(General.MiscPath+Name+'.*')) THEN
-      Exit;
-  END;
-
-  FFN := FileName;
-  IF ((Pos('\',FileName) = 0) AND (Pos(':',FileName) = 0)) THEN
-    FFN := General.MiscPath+FFN;
-  FFN := FExpand(FFN);
-  IF (Pos('.',FileName) <> 0) THEN
-    PrintFile(FFN)
-  ELSE
-  BEGIN
-    IF (OkRIP) AND Exist(FFN+'.RIP') THEN
-      PrintFile(FFN+'.RIP');
-    IF (NoFile) AND (OkAvatar) AND Exist(FFN+'.AVT') THEN
-      PrintFile(FFN+'.AVT');
-    IF (NoFile) AND (OkANSI) AND Exist(FFN+'.ANS') THEN
-      PrintFile(FFN+'.ANS');
-    IF (NoFile) AND (Exist(FFN+'.ASC')) THEN
-      PrintFile(FFN+'.ASC');
-  END;
+    BEGIN
+      (*
+      IF (OkRIP) AND Exist(FileName+'.RIP') THEN
+        PrintFile(FileName+'.RIP');
+      IF (NoFile) AND (OkAvatar) AND Exist(FileName+'.AVT') THEN
+        PrintFile(FileName+'.AVT');
+      *)
+      IF (NoFile) AND (OkANSI) AND Exist(FileName+'.ANS') THEN
+        PrintFile(FileName+'.ANS');
+      IF (NoFile) AND (Exist(FileName+'.ASC')) THEN
+        PrintFile(FileName+'.ASC');
+    END;
 END;
 
 FUNCTION VerLine(B: Byte): STRING;
 VAR
- Year,
- Month,
- MDay,
- WDay: Word;
+ Year, Month, MDay, WDay: Word;
 BEGIN
   GetDate(Year,Month,MDay,WDay);
   CASE B OF
@@ -3990,16 +3919,16 @@ BEGIN
   GetDir(ExtractDriveNumber(s),odir);
   ChDir(s);
   IF (IOResult <> 0) THEN
-	BEGIN
+    BEGIN
       ChDir(odir);
       Exit;
-	END;
+    END;
   FindFirst('*.*',AnyFile - Directory - VolumeID,DirInfo);  (* Directory & VolumnID added *)
   WHILE (DOSError = 0) DO
     BEGIN
-	  Kill(FExpand(DirInfo.Name));
+      Kill(FExpand(DirInfo.Name));
       FindNext(DirInfo);
-	END;
+    END;
   ChDir(odir);
   IF (SubDirs) THEN
     RmDir(s);
@@ -4084,22 +4013,22 @@ BEGIN
   IF (NOT LocalIOOnly) THEN
     BEGIN
       IF (ShowIt) AND (InWFCMenu) AND (NOT BlankMenuNow) THEN {LeeW: Added InWFCMenu}
-		BEGIN
-		  TextColor(15);
-		  TextBackGround(1);
-		  GotoXY(32,17);
-		  Prt('Hanging up node..');
-		END;
+        BEGIN
+          TextColor(15);
+          TextBackGround(1);
+          GotoXY(32,17);
+          Prt('Hanging up node..');
+        END;
       Com_Flush_Recv;
       DTR(FALSE);
-	END;
+    END;
   IF (ShowIt) AND (InWFCMenu) AND (SysOpOn) AND (NOT BlankMenuNow) THEN {LeeW: Added InWFCMenu}
-	BEGIN
+    BEGIN
       TextColor(15);
       TextBackGround(1);
       GoToXY(1,17);
       ClrEOL;
-	END;
+    END;
 END;
 
 PROCEDURE DoPhoneHangUp(ShowIt: Boolean);
@@ -4109,36 +4038,36 @@ VAR
   SaveTimer: LongInt;
 BEGIN
   IF (NOT LocalIOOnly) THEN
-	BEGIN
+    BEGIN
       IF (ShowIt) AND (InWFCMenu) AND (NOT BlankMenuNow) THEN {LeeW: Added InWFCMenu}
-		BEGIN
-		  TextColor(15);
-		  TextBackGround(1);
-		  GotoXY(32,17);
-		  Write('Hanging up phone...');
-		END;
+        BEGIN
+          TextColor(15);
+          TextBackGround(1);
+          GotoXY(32,17);
+          Write('Hanging up phone...');
+        END;
       TryNum := 0;
       WHILE (TryNum < 3) AND (NOT KeyPressed) DO
-		BEGIN
-		  Com_Flush_Recv;
-		  Com_Send_Str(Liner.HangUp);
-		  SaveTimer := Timer;
-		  WHILE (ABS(Timer - SaveTimer) <= 2) AND (Com_Carrier) DO
-			BEGIN
-			  c := CInKey;
-			  IF (c > #0) AND (InWFCMenu) THEN
-				WriteWFC(c);
-			END;
-		  Inc(TryNum);
-		END;
-	END;
+        BEGIN
+          Com_Flush_Recv;
+          Com_Send_Str(Liner.HangUp);
+          SaveTimer := Timer;
+          WHILE (ABS(Timer - SaveTimer) <= 2) AND (Com_Carrier) DO
+            BEGIN
+              c := CInKey;
+              IF (c > #0) AND (InWFCMenu) THEN
+                WriteWFC(c);
+            END;
+          Inc(TryNum);
+        END;
+    END;
   IF (ShowIt) AND (InWFCMenu) AND (SysOpOn) AND (NOT BlankMenuNow) THEN {LeeW: Added InWFCMenu}
-	BEGIN
+    BEGIN
       TextColor(15);
       TextBackGround(1);
       GotoXY(1,17);
       ClrEOL;
-	END;
+    END;
 END;
 
 PROCEDURE DoPhoneOffHook(ShowIt: Boolean);
@@ -4261,7 +4190,7 @@ BEGIN
   LastError := IOResult;
 END;
 
-FUNCTION Plural(InString: STRING; Number: Byte): STRING;
+FUNCTION Plural(InString: STRING; Number: Integer): STRING;
 BEGIN
   IF (Number <> 1) THEN
     Plural := InString + 's'
@@ -4746,5 +4675,4 @@ BEGIN
   REPEAT
   UNTIL (Ticks > CheckMS);
 END;
-
 END.

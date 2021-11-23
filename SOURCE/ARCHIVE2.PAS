@@ -348,8 +348,7 @@ BEGIN
             NL;
             Print('Archive file name: ');
             Prt(':');
-            MPL(78);
-            InputMain(FileName,78,[UpperOnly]);
+            InputMain(FileName,78,[CapAll]);
 
             IF IsUL(FileName) AND (NOT FileSysOp) THEN
               FileName := '';
@@ -385,8 +384,7 @@ BEGIN
                       NL;
                       Print('Add files to list - <CR> to end');
                       Prt(IntToStr(NumFiles + 1)+':');
-                      MPL(70);
-                      InputMain(S,70,[UpperOnly]);
+                      InputMain(S,70,[CapAll]);
                       IF (S <> '') AND (NOT IsUL(S) OR FileSysOp) THEN
                       BEGIN
                         IF (Pos('.',S) = 0) THEN
@@ -395,8 +393,7 @@ BEGIN
                       END;
                     UNTIL (S = '') OR (NumFiles >= MaxFiles) OR (HangUp);
                   NL;
-                  Prt('Add files to list [^1?^2=^1Help^2]: ');
-                  LOneK('',Cmd,'QADLR?',TRUE,TRUE);
+                  InputChar('Add files to list [^1?^2=^1Help^2]: ',Cmd,'QADLR?',[CapAll]);
                   NL;
                   CASE Cmd OF
                     '?' : BEGIN
@@ -471,8 +468,7 @@ BEGIN
                                   REPEAT
                                     NL;
                                     Prt('Enter file name: ');
-                                    MPL(12);
-                                    InputMain(S2,12,[UpperOnly]);
+                                    InputMain(S2,12,[CapAll]);
                                     IF (S2 = '') THEN
                                     BEGIN
                                       NL;
@@ -581,8 +577,7 @@ BEGIN
                           ELSE
                           BEGIN
                             Prt('Remove file name: ');
-                            MPL(12);
-                            InputMain(S,12,[UpperOnly]);
+                            InputMain(S,12,[CapAll]);
                             IF (S = '') THEN
                             BEGIN
                               NL;
@@ -619,8 +614,7 @@ BEGIN
             NL;
             Print('Filespec:');
             Prt(':');
-            MPL(78);
-            InputMain(FileName,78,[UpperOnly]);
+            InputMain(FileName,78,[CapAll]);
             IF (FileName = '') THEN
             BEGIN
               NL;
@@ -632,8 +626,7 @@ BEGIN
               NL;
               REPEAT
                 Prt('Archive type to use? (?=List): ');
-                MPL(3);
-                InputMain(S,3,[UpperOnly]);
+                InputMain(S,3,[CapAll]);
                 IF (S = '?') THEN
                 BEGIN
                   NL;
@@ -778,8 +771,7 @@ BEGIN
             NL;
             Print('Filespec:');
             Prt(':');
-            MPL(78);
-            InputMain(FileName,78,[UpperOnly]);
+            InputMain(FileName,78,[CapAll]);
             IF (FileName = '') THEN
             BEGIN
               NL;
@@ -801,8 +793,7 @@ BEGIN
                     Print('^0'+IntToStr(Counter)+'. Archive comment file: ^1'+General.FileArcComment[Counter]);
                   END;
                 NL;
-                Prt('Comment to use [0=Quit]: ');
-                LOneK('',Cmd,'0'+S,TRUE,TRUE);
+                InputChar('Comment to use [0=Quit]: ',Cmd,'0'+S,[CapAll]);
 
                 IF (Cmd IN ['1'..'3']) THEN
                 BEGIN
@@ -848,8 +839,7 @@ BEGIN
             NL;
             Print('Filespec:');
             Prt(':');
-            MPL(78);
-            InputMain(FileName,78,[UpperOnly]);
+            InputMain(FileName,78,[CapAll]);
             IF (FileName = '') THEN
             BEGIN
               NL;

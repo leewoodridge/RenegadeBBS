@@ -21,7 +21,7 @@ PROCEDURE ColorConfiguration;
 CONST
   ColorName: ARRAY[0..7] OF STRING[7] = ('Black','Blue','Green','Cyan','Red','Magenta','Yellow','White');
   ColorDesc: ARRAY[0..9] OF STRING[20] = ('Normal Text','Bright Text','Prompt','Input Field','Header Text','Header Border',
-										  'Lightbar Normal','Lightbar Selected','Warning/Error','Notification');
+                                          'Lightbar Normal','Lightbar Selected','Warning/Error','Notification');
 VAR
   TempScheme: SchemeRec;
   Cmd: Char;
@@ -60,7 +60,7 @@ VAR
       SetC(Counter + 8);
       Print(PadLeftStr(ColorName[Counter]+'!',9));
     END;
-    InputByteWOC('%LFForeground',TempColor,[Numbersonly],0,15); (* Suppress Error *)
+    InputByte('%LFForeground',TempColor,[Numbersonly],0,15,Changed); (* Suppress Error *)
     IF (TempColor IN [0..15]) THEN
       NewColor := TempColor
     ELSE
@@ -73,7 +73,7 @@ VAR
       SetC(Counter);
       Print(PadLeftStr(ColorName[Counter],12));
     END;
-    InputByteWOC('%LFBackground',TempColor,[NumbersOnly],0,7);  (* Suppress Error *)
+    InputByte('%LFBackground',TempColor,[NumbersOnly],0,7,Changed);  (* Suppress Error *)
     IF (TempColor IN [0..7]) THEN
       NewColor := NewColor OR TempColor SHL 4;
     IF PYNQ('%LFBlinking? ',0,FALSE) THEN
@@ -98,11 +98,11 @@ VAR
       BEGIN
         SetC(7);
         {Prompt(PadRightInt((Counter - 1),2)+'. System color '+PadRightInt((Counter - 1),2)+': ');}
-		Prompt('^0(^1'+IntToStr(Counter-1)+'^0) '+PadLeftStr(ColorDesc[Counter-1],18)+': ');
+        Prompt('^0(^1'+IntToStr(Counter-1)+'^0) '+PadLeftStr(ColorDesc[Counter-1],18)+': ');
         SetC(TempScheme1.Color[Counter]);
         Print(DisplayColorStr(Scheme.Color[Counter]));
       END;
-      LOneK('%LFSystem color to change [^10^2-^19^2,^1<CR>^2=^1Quit^2]: ',Cmd1,^M'0123456789',TRUE,TRUE);
+      InputChar('%LFSystem color to change [^10^2-^19^2,^1<CR>^2=^1Quit^2]: ',Cmd1,^M'0123456789',[CapAll]);
       IF (Cmd1 IN ['0'..'9']) THEN
       BEGIN
         NewColor := GetColor;
@@ -166,7 +166,7 @@ VAR
       LCmds3(20,3,'G File name','H File Points','I File size');
       LCmds3(20,3,'J File desc','K Extended','L Status flags');
       LCmds(20,3,'M Uploader','N Search Match');
-      LOneK('%LFFile color to change [^1A^2-^1N^2,^1<CR>^2=^1Quit^2]: ',Cmd1,^M'ABCDEFGHIJKLMN',TRUE,TRUE);
+      InputChar('%LFFile color to change [^1A^2-^1N^2,^1<CR>^2=^1Quit^2]: ',Cmd1,^M'ABCDEFGHIJKLMN',[CapAll]);
       IF (Cmd1 IN ['A'..'N']) THEN
       BEGIN
         NewColor := GetColor;
@@ -199,7 +199,7 @@ VAR
       NL;
       LCmds3(20,3,'G Msg Num','H Msg Sender','I Msg Receiver');
       LCmds3(20,3,'J Subject','K Msg Date','L Status flags');
-      LOneK('%LFMessage color to change [^1A^2-^1L^2,^1<CR>^2=^1Quit^2]: ',Cmd1,^M'ABCDEFGHIJKL',TRUE,TRUE);
+      InputChar('%LFMessage color to change [^1A^2-^1L^2,^1<CR>^2=^1Quit^2]: ',Cmd1,^M'ABCDEFGHIJKL',[CapAll]);
       IF (Cmd1 IN ['A'..'L']) THEN
       BEGIN
         NewColor := GetColor;
@@ -233,7 +233,7 @@ VAR
       LCmds3(20,3,'A Border','B Base Num field','C Base Name Field');
       NL;
       LCmds3(20,3,'D Scan Indicator','E Base Number','F Base Name');
-      LOneK('%LFFile area color to change [^1A^2-^1F^2,^1<CR>^2=^1Quit^2]: ',Cmd1,^M'ABCDEF',TRUE,TRUE);
+      InputChar('%LFFile area color to change [^1A^2-^1F^2,^1<CR>^2=^1Quit^2]: ',Cmd1,^M'ABCDEF',[CapAll]);
       IF (Cmd1 IN ['A'..'F']) THEN
       BEGIN
         NewColor := GetColor;
@@ -265,7 +265,7 @@ VAR
       LCmds3(20,3,'A Border','B Base Num field','C Base Name Field');
       NL;
       LCmds3(20,3,'D Scan Indicator','E Base Number','F Base Name');
-      LOneK('%LFMessage area color to change [^1A^2-^1F^2,^1<CR>^2=^1Quit^2]: ',Cmd1,^M'ABCDEF',TRUE,TRUE);
+      InputChar('%LFMessage area color to change [^1A^2-^1F^2,^1<CR>^2=^1Quit^2]: ',Cmd1,^M'ABCDEF',[CapAll]);
       IF (Cmd1 IN ['A'..'F']) THEN
       BEGIN
         NewColor := GetColor;
@@ -302,7 +302,7 @@ VAR
       LCmds3(20,3,'J Title','K Base Number','L Base name');
       LCmds3(20,3,'M Short','N Echo flag','O Total Msgs');
       LCmds3(20,3,'P New Msgs','R Your Msgs','S Msgs size');
-      LOneK('%LFQWK color to change [^1A^2-^1S^2,^1<CR>^2=^1Quit^2]: ',Cmd1,^M'ABCDEFGHIJKLMNOPRS'^M,TRUE,TRUE);
+      InputChar('%LFQWK color to change [^1A^2-^1S^2,^1<CR>^2=^1Quit^2]: ',Cmd1,^M'ABCDEFGHIJKLMNOPRS'^M,[CapAll]);
       IF (Cmd1 IN ['A'..'P','R'..'S']) THEN
       BEGIN
         NewColor := GetColor;
@@ -340,7 +340,7 @@ VAR
       NL;
       LCmds3(20,3,'F Number','G Date/Time','H Sender');
       LCmds(20,3,'I Subject','');
-      LOneK('%LFEmail color to change [^1A^2-^1I^2,^1<CR>^2=^1Quit^2]: ',Cmd1,^M'QABCDEFGHI',TRUE,TRUE);
+      InputChar('%LFEmail color to change [^1A^2-^1I^2,^1<CR>^2=^1Quit^2]: ',Cmd1,^M'QABCDEFGHI',[CapAll]);
       IF (Cmd1 IN ['A'..'I']) THEN
       BEGIN
         NewColor := GetColor;
@@ -382,7 +382,7 @@ VAR
     ELSE
     BEGIN
       RecNumToDelete := -1;
-      InputIntegerWOC('%LFColor scheme to delete',RecNumToDelete,[NumbersOnly],1,NumSchemes);
+      InputInteger('%LFColor scheme to delete',RecNumToDelete,[NumbersOnly],1,NumSchemes,Changed);
       IF (RecNumToDelete >= 1) AND (RecNumToDelete <= NumSchemes) THEN
       BEGIN
         Reset(SchemeFile);
@@ -482,12 +482,12 @@ VAR
           CmdStr := '12345678'
         ELSE
           CmdStr := '12345678[]FJL';
-        LOneK('%LFModify menu [^1?^2=^1Help^2]: ',Cmd1,'Q?'+CmdStr++^M,TRUE,TRUE);
+        InputChar('%LFModify menu [^1?^2=^1Help^2]: ',Cmd1,'Q?'+CmdStr++^M,[CapAll]);
         CASE Cmd1 OF
           '1' : REPEAT
                   TempScheme1.Description := Description;
                   Ok := TRUE;
-                  InputWN1('%LFNew description: ',Description,(SizeOf(Description) - 1),[InterActiveEdit],Changed);
+                  InputString('%LFNew description: ',Description,(SizeOf(Description) - 1),[InterActiveEdit],Changed);
                   CheckScheme(Scheme,1,1,Ok);
                   IF (NOT Ok) THEN
                     Description := TempScheme1.Description;
@@ -521,7 +521,7 @@ VAR
                   Cmd1 := #0;
                 END;
           'J' : BEGIN
-                  InputIntegerWOC('%LFJump to entry?',RecNumToEdit,[NumbersOnly],1,NumSchemes);
+                  InputInteger('%LFJump to entry?',RecNumToEdit,[NumbersOnly],1,NumSchemes,Changed);
                   IF (RecNumToEdit < 1) OR (RecNumToEdit > NumSchemes) THEN
                     Cmd1 := #0;
                 END;
@@ -561,7 +561,7 @@ VAR
     ELSE
     BEGIN
       RecNumToInsertBefore := -1;
-      InputIntegerWOC('%LFColor scheme to insert before',RecNumToInsertBefore,[NumbersOnly],1,(NumSchemes + 1));
+      InputInteger('%LFColor scheme to insert before',RecNumToInsertBefore,[NumbersOnly],1,(NumSchemes + 1),Changed);
       IF (RecNumToInsertBefore >= 1) AND (RecNumToInsertBefore <= (NumSchemes + 1)) THEN
       BEGIN
         Reset(SchemeFile);
@@ -634,7 +634,7 @@ VAR
     ELSE
     BEGIN
       RecNumToEdit := -1;
-      InputIntegerWOC('%LFColor scheme to modify',RecNumToEdit,[NumbersOnly],1,NumSchemes);
+      InputInteger('%LFColor scheme to modify',RecNumToEdit,[NumbersOnly],1,NumSchemes,Changed);
       IF (RecNumToEdit >= 1) AND (RecNumToEdit <= NumSchemes) THEN
       BEGIN
         SaveRecNumToEdit := -1;
@@ -688,12 +688,13 @@ VAR
     ELSE
     BEGIN
       RecNumToPosition := -1;
-      InputIntegerWOC('%LFPosition which color scheme',RecNumToPosition,[NumbersOnly],1,NumSchemes);
+      InputInteger('%LFPosition which color scheme',RecNumToPosition,[NumbersOnly],1,NumSchemes,Changed);
       IF (RecNumToPosition >= 1) AND (RecNumToPosition <= NumSchemes) THEN
       BEGIN
         Print('%LFAccording to the current numbering system.');
         RecNumToPositionBefore := -1;
-        InputIntegerWOC('%LFPosition before which color scheme',RecNumToPositionBefore,[NumbersOnly],1,(NumSchemes + 1));
+        InputInteger('%LFPosition before which color scheme',RecNumToPositionBefore,[NumbersOnly],
+        1,(NumSchemes + 1),Changed);
         IF (RecNumToPositionBefore >= 1) AND (RecNumToPositionBefore <= (NumSchemes + 1)) AND
            (RecNumToPositionBefore <> RecNumToPosition) AND (RecNumToPositionBefore <> (RecNumToPosition + 1)) THEN
         BEGIN
@@ -792,7 +793,7 @@ BEGIN
   REPEAT
     IF (Cmd <> '?') THEN
       ListSchemes(RecNumToList);
-    LOneK('%LFColor scheme editor [^1?^2=^1Help^2]: ',Cmd,'QDIMP?'^M,TRUE,TRUE);
+    InputChar('%LFColor scheme editor [^1?^2=^1Help^2]: ',Cmd,'QDIMP?'^M,[CapAll]);
     CASE Cmd OF
       ^M  : IF (RecNumToList < 1) OR (RecNumToList > NumSchemes) THEN
               RecNumToList := 1;

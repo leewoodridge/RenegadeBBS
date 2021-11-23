@@ -124,7 +124,7 @@ VAR
     ELSE
     BEGIN
       RecNumToDelete := -1;
-      InputIntegerWOC('%LFDelete which command?',RecNumToDelete,[NumbersOnly],1,CmdNumArray[MenuToModify]);
+      InputInteger('%LFDelete which command?',RecNumToDelete,[NumbersOnly],1,CmdNumArray[MenuToModify],Changed);
       IF (RecNumToDelete >= 1) AND (RecNumToDelete <= CmdNumArray[MenuToModify]) THEN
       BEGIN
         Seek(MenuFile,(MenuRecNumArray[MenuToModify] + RecNumToDelete));
@@ -163,12 +163,13 @@ VAR
     ELSE
     BEGIN
       RecNumToInsertBefore := -1;
-      InputIntegerWOC('%LFCommand to insert before?',RecNumToInsertBefore,[NumbersOnly],1,(CmdNumArray[MenuToModify] + 1));
+      InputInteger('%LFCommand to insert before?',RecNumToInsertBefore,[NumbersOnly],1,
+                     (CmdNumArray[MenuToModify]+1),Changed);
       IF (RecNumToInsertBefore >= 1) AND (RecNumToInsertBefore <= (CmdNumArray[MenuToModify] + 1)) THEN
       BEGIN
         InsertNum := 1;
-        InputIntegerWOC('%LFInsert how many commands?',InsertNum,
-                        [DisplayValue,NumbersOnly],1,(MaxCmds - CmdNumArray[MenuToModify]));
+        InputInteger('%LFInsert how many commands?',InsertNum,
+                        [InteractiveEdit,NumbersOnly],1,(MaxCmds - CmdNumArray[MenuToModify]),Changed);
         IF (InsertNum < 1) OR (InsertNum > (MaxCmds - CmdNumArray[MenuToModify])) THEN
           InsertNum := 1;
         Print('%LF[> Inserting '+IntToStr(InsertNum)+' commands.');
@@ -212,7 +213,7 @@ VAR
     ELSE
     BEGIN
       RecNumToModify := -1;
-      InputIntegerWOC('%LFCommand to modify?',RecNumToModify,[NumbersOnly],1,CmdNumArray[MenuToModify]);
+      InputInteger('%LFCommand to modify?',RecNumToModify,[NumbersOnly],1,CmdNumArray[MenuToModify],Changed);
       IF (RecNumToModify >= 1) AND (RecNumToModify <= CmdNumArray[MenuToModify]) THEN
       BEGIN
         SaveRecNumToModify := -1;
@@ -249,19 +250,20 @@ VAR
                 MCIAllowed := TRUE;
               END;
               IF (General.MultiNode) THEN
-                LOneK('%LFModify menu [^1?^2=^1Help^2]: ',Cmd1,'Q123456NT[]FJL?'^M,TRUE,TRUE)
+                InputChar('%LFModify menu [^1?^2=^1Help^2]: ',Cmd1,'Q123456NT[]FJL?'^M,[CapAll])
               ELSE
-                LOneK('%LFModify menu [^1?^2=^1Help^2]: ',Cmd1,'Q123456T[]FJL?'^M,TRUE,TRUE);
+                InputChar('%LFModify menu [^1?^2=^1Help^2]: ',Cmd1,'Q123456T[]FJL?'^M,[CapAll]);
               CASE Cmd1 OF
-                '1' : InputWNWC('%LF^0New long description:%LF^2: ',LDesc[1],(SizeOf(LDesc[1]) - 1),Changed);
-                '2' : InputWNWC('%LFNew short description: ',SDesc,(SizeOf(SDesc) - 1),Changed);
-                '3' : InputWN1('%LFNew menu keys: ',Ckeys,(SizeOf(CKeys) - 1),[InterActiveEdit,UpperOnly],Changed);
-                '4' : InputWN1('%LFNew ACS: ',ACS,(SizeOf(ACS) - 1),[InterActiveEdit],Changed);
+                '1' : InputString('%LF^0New long description:%LF^2: ',LDesc[1],(SizeOf(LDesc[1]) - 1),
+                [InteractiveEdit],Changed);
+                '2' : InputString('%LFNew short description: ',SDesc,(SizeOf(SDesc) - 1),
+                [InteractiveEdit],Changed);
+                '3' : InputString('%LFNew menu keys: ',Ckeys,(SizeOf(CKeys) - 1),[InterActiveEdit,CapAll],Changed);
+                '4' : InputString('%LFNew ACS: ',ACS,(SizeOf(ACS) - 1),[InterActiveEdit],Changed);
                 '5' : BEGIN
                         REPEAT
                           Prt('%LFNew command keys [^1?^2=^1List^2]: ');
-                          MPL(2);
-                          InputMain(TempS1,2,[UpperOnly]);
+                          InputMain(TempS1,2,[CapAll]);
                           IF (TempS1 = '?') THEN
                           BEGIN
                             CLS;
@@ -275,14 +277,14 @@ VAR
                           Changed := TRUE;
                         END;
                       END;
-                '6' : InputWNWC('%LFNew options: ',Options,(SizeOf(Options) - 1),Changed);
+                '6' : InputString('%LFNew options: ',Options,(SizeOf(Options) - 1),[InteractiveEdit],Changed);
                 'N' : IF (General.MultiNode) THEN
-                        InputWNWC('%LF^0New node activity description:%LF^2: ',NodeActivityDesc,
-                                  (SizeOf(NodeActivityDesc) - 1),Changed);
+                        InputString('%LF^0New node activity description:%LF^2: ',NodeActivityDesc,
+                                  (SizeOf(NodeActivityDesc) - 1),[InteractiveEdit],Changed);
                 'T' : BEGIN
                         REPEAT
-                          LOneK('%LFToggle which flag? ('+DisplayCmdFlags(CmdFlags,'5','4')+')'+
-                                ' [^1?^2=^1Help^2,^1<CR>^2=^1Quit^2]: ',Cmd1,^M'HU?',TRUE,TRUE);
+                          InputChar('%LFToggle which flag? ('+DisplayCmdFlags(CmdFlags,'5','4')+')'+
+                                ' [^1?^2=^1Help^2,^1<CR>^2=^1Quit^2]: ',Cmd1,^M'HU?',[CapAll]);
                           CASE Cmd1 OF
                             'H','U' :
                                     ToggleCmdFlags(Cmd1,CmdFlags,Changed);
@@ -316,7 +318,7 @@ VAR
                         Cmd1 := #0;
                       END;
                 'J' : BEGIN
-                        InputIntegerWOC('%LFJump to entry',RecNumToModify,[NumbersOnly],1,CmdNumArray[MenuToModify]);
+                        InputInteger('%LFJump to entry',RecNumToModify,[NumbersOnly],1,CmdNumArray[MenuToModify],Changed);
                         IF (RecNumToModify < 1) and (RecNumToModify > CmdNumArray[MenuToModify]) THEN
                           Cmd1 := #0;
                       END;
@@ -364,12 +366,12 @@ VAR
     ELSE
     BEGIN
       RecNumToPosition := -1;
-      InputIntegerWOC('%LFPosition which command',RecNumToPosition,[NumbersOnly],1,CmdNumArray[MenuToModify]);
+      InputInteger('%LFPosition which command',RecNumToPosition,[NumbersOnly],1,CmdNumArray[MenuToModify],Changed);
       IF (RecNumToPosition >= 1) AND (RecNumToPosition <= CmdNumArray[MenuToModify]) THEN
       BEGIN
         Print('%LFAccording to the current numbering system.');
-        InputIntegerWOC('%LFPosition before which command?',RecNumToPositionBefore,
-                        [NumbersOnly],1,(CmdNumArray[MenuToModify] + 1));
+        InputInteger('%LFPosition before which command?',RecNumToPositionBefore,
+                        [NumbersOnly],1,(CmdNumArray[MenuToModify] + 1),Changed);
         IF (RecNumToPositionBefore <> RecNumToPosition) AND
            (RecNumToPositionBefore <> (RecNumToPosition + 1)) THEN
         BEGIN
@@ -443,7 +445,7 @@ BEGIN
         Print('*** No commands defined ***');
       MCIAllowed := TRUE;
     END;
-    LOneK('%LFCommand editor [^1?^2=^1Help^2]: ',Cmd,'QDILMPSX?'^M,TRUE,TRUE);
+    InputChar('%LFCommand editor [^1?^2=^1Help^2]: ',Cmd,'QDILMPSX?'^M,[CapAll]);
     CASE Cmd OF
       'D' : DeleteCommand;
       'I' : InsertCommand;

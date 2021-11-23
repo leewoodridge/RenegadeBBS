@@ -1,5 +1,7 @@
 {$A+,B-,D-,E-,F+,I-,L-,N-,O+,R-,S+,V-}
-
+{
+ 11/18/2021 - Changed Y,N commands to use PYNQ
+}
 UNIT Script;
 
 INTERFACE
@@ -14,7 +16,7 @@ PROCEDURE ReadASW1(MenuOption: Str50);
 IMPLEMENTATION
 
 USES
-  Dos,
+  DOS,
   Doors,
   MiscUser,
   SysOp2G,
@@ -122,7 +124,7 @@ BEGIN
   ReWrite(OutFile1);
   SysOpLog('* Answered InfoForm "'+FileN+'"');
   Assign(OutFile,OutFileName);
-  WriteLn(OutFile1,'User: '+Caps(ThisUser.name));
+  WriteLn(OutFile1,'User: '+Caps(ThisUser.Name));
   WriteLn(OutFile1,'Date: '+Dat);
   WriteLn(OutFile1);
   NL;
@@ -133,7 +135,7 @@ BEGIN
     REPEAT
       Inc(X);
       Read(InFile,OutP[X]);
-      IF EOF(InFile) THEN                {check again incase avatar parameter}
+      IF EOF(InFile) THEN {check again incase avatar parameter}
       BEGIN
         Inc(X);
         Read(InFile,OutP[X]);
@@ -169,7 +171,7 @@ BEGIN
                 S := Copy(OutP,1,2);
                 IF (S[1] = ';') THEN
                   CASE S[2] OF
-                    'R','F','V','C','D','G','I','K','L','Q','S','T',';': I := 1; { DO nothing }
+                    'R','F','V','C','D','G','I','K','L','Q','S','T',';','Y','N' : I := 1; { Don't print string }
                   ELSE IF (Lin[1] = ';') THEN
                     Prompt(Copy(Lin,2,255))
                   ELSE
@@ -178,7 +180,7 @@ BEGIN
                 S := #1#1#1;
                 CASE OutP[2] OF
                   'A' : InputMain(S,I,[]);
-                  'B' : InputMain(S,I,[UpperOnly]);
+                  'B' : InputMain(S,I,[CapAll]);
                   'C' : BEGIN
                           Mult := '';
                           I := 1;
@@ -189,7 +191,7 @@ BEGIN
                           UNTIL (S[I] = '"') OR (I > Length(S));
                           Lin := Copy(OutP,(I + 3),(Length(S) - (I - 1)));
                           Prompt(Lin);
-                          LOneK('',C,Mult,TRUE,TRUE);
+                          InputChar('',C,Mult,[CapAll]); {LeeW: Can we combine the string in this cmd?}
                           S := C;
                         END;
                   'D' : BEGIN
@@ -256,7 +258,7 @@ BEGIN
                           S := #0#0#0;
                         END;
                   'Y' : BEGIN
-                          IF YN(0,TRUE) THEN
+                          IF PYNQ(Lin,0,TRUE) THEN
                             S := 'YES'
                           ELSE
                             S := 'NO';
@@ -264,7 +266,7 @@ BEGIN
                             OutP := #0#0#0;
                         END;
                   'N' : BEGIN
-                          IF YN(0,FALSE) THEN
+                          IF PYNQ(Lin,0,FALSE) THEN
                             S := 'YES'
                           ELSE
                             S := 'NO';
@@ -390,8 +392,7 @@ BEGIN
   IF (MenuOption = '') THEN
   BEGIN
     Prt('Enter filename: ');
-    MPL(8);
-    InputMain(MenuOption,8,[UpperOnly]);
+    InputMain(MenuOption,8,[CapAll]);
     NL;
     IF (MenuOption = '') THEN
       Exit;
@@ -408,8 +409,7 @@ BEGIN
     END;
   END;
   NL;
-  Print('Enter the name of the user to view: ');
-  Prt(':');
+  Print('Enter the name of the user to view ... ');
   LFindUserWS(UserN);
   IF (UserN <> 0) THEN
     ReadASW(UserN,MenuOption)

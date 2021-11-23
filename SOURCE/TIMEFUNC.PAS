@@ -5,7 +5,7 @@ UNIT TimeFunc;
 INTERFACE
 
 USES
-  Dos;
+  DOS;
 
 CONST
   MonthString: ARRAY [1..12] OF STRING[9] = ('January','February','March','April','May','June',
@@ -16,6 +16,7 @@ TYPE
   Str5 = STRING[5];
   Str8 = STRING[8];
   Str10 = STRING[10];
+  Str13 = STRING[13]; {LeeW:Added}
   Str160 = STRING[160];
 
 PROCEDURE ConvertAmPm(VAR Hour: Word; VAR AmPm: Str2);
@@ -38,6 +39,8 @@ FUNCTION CTim(L: LongInt): Str8;
 FUNCTION Days(VAR Month,Year: Word): Word;
 FUNCTION DayNum(DateStr: Str10): Word;
 FUNCTION Dat: Str160;
+FUNCTION DateSuffix(DateNumber: Byte): STRING; {LeeW: Added - Returns 'st','nd','rd' etc.}
+FUNCTION TimeStamp: Str13; {LeeW: Added - Returns "[00:00:00AM] "}
 
 IMPLEMENTATION
 
@@ -96,10 +99,10 @@ END;
 PROCEDURE ConvertAmPm(VAR Hour: Word; VAR AmPm: Str2);
 BEGIN
   IF (Hour < 12) THEN
-    AmPm := 'am'
+    AmPm := 'AM'
   ELSE
   BEGIN
-    AmPm := 'pm';
+    AmPm := 'PM';
     IF (Hour > 12) THEN
       Dec(Hour,12);
   END;
@@ -379,11 +382,36 @@ BEGIN
   Dat := IntToStr(DT.Hour)+
          ':'+ZeroPad(IntToStr(DT.Min))+
          ' '+AmPm+
-         '  '+Copy(DayString[DayOfWeek],1,3)+
+         ' '+Copy(DayString[DayOfWeek],1,3)+
          ' '+Copy(MonthString[DT.Month],1,3)+
          ' '+IntToStr(DT.Day)+
-         ', '+IntToStr(DT.Year);
+         ' '+IntToStr(DT.Year);
 END;
 
+FUNCTION DateSuffix(DateNumber: Byte): STRING;
+(* LeeW: Returns appropriate suffix (ie. 'st', 'nd', 'rd') for number provided *)
+BEGIN
+  CASE DateNumber OF
+    1, 21, 31 : DateSuffix := 'st';
+    2, 22 : DateSuffix := 'nd';
+    3, 23 : DateSuffix := 'rd';
+    4..20, 24..30 : DateSuffix := 'th';
+  ELSE
+    DateSuffix := '?';
+  END
+END;
+
+FUNCTION TimeStamp: Str13;
+VAR
+  AmPm: Str2;
+  Hour,
+  Minute,
+  Second,
+  Sec100: Word;
+BEGIN
+  GetTime(Hour,Minute,Second,Sec100);
+  ConvertAMPM(Hour,AMPM);
+  TimeStamp := '['+ZeroPad(IntToStr(Hour))+':'+ZeroPad(IntToStr(Minute))+':'+ZeroPad(IntToStr(Second))+' '+AMPM+']';
+END;
 
 END.

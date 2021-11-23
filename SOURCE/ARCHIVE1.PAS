@@ -244,32 +244,26 @@ BEGIN
   NL;
   Prt('File name: ');
   IF (FileSysOp) THEN
-  BEGIN
-    MPL(52);
-    InputMain(FileName,52,[UpperOnly]);
-  END
+    BEGIN
+      InputMain(FileName,52,[CapAll]);
+    END
   ELSE
-  BEGIN
-    MPL(12);
-    InputMain(FileName,12,[UpperOnly]);
-  END;
-
+    BEGIN
+      InputMain(FileName,12,[CapAll]);
+    END;
   FileName := SQOutSp(FileName);
-
   IF (FileName = '') THEN
-  BEGIN
-    NL;
-    Print('Aborted!');
-    Exit;
-  END;
-
+    BEGIN
+      NL;
+      Print('Aborted!');
+      Exit;
+    END;
   IF (IsUL(FileName)) AND (NOT FileSysOp) THEN
-  BEGIN
-    NL;
-    Print('^8Invalid file name!^0');
-    Exit;
-  END;
-
+    BEGIN
+      NL;
+      Print('^8Invalid file name!^0');
+      Exit;
+    END;
   IF (Pos('.',FileName) = 0) THEN
     FileName := FileName + '*.*';
 
@@ -346,8 +340,8 @@ BEGIN
     ELSE
       Print('but you can''t extract files from it.');
     NL;
-    Prt('Which? (^1C^2=^1Copy'+AOnOff((AType <> 0),'^2,^1E^2=^1Extract','')+'^2,^1Q^2=^1Quit^2): ');
-    LOneK('',Cmd,'QC'+AOnOff((AType <> 0),'E',''),TRUE,TRUE);
+    InputChar('Which? (^1C^2=^1Copy'+AOnOff((AType <> 0),'^2,^1E^2=^1Extract','')+'^2,^1Q^2=^1Quit^2): ',Cmd,
+          'QC'+AOnOff((AType <> 0),'E',''),[CapAll]);
     CASE Cmd OF
       'C' : BEGIN
               FSplit(ArcFileName,DS,NS,ES);
@@ -360,8 +354,7 @@ BEGIN
               DisplayFileInfo(FileInfo,TRUE);
               REPEAT
                 NL;
-                Prt('Extract files (^1E^2=^1Extract^2,^1V^2=^1View^2,^1Q^2=^1Quit^2): ');
-                LOneK('',Cmd,'QEV',TRUE,TRUE);
+                InputChar('Extract files (^1E^2=^1Extract^2,^1V^2=^1View^2,^1Q^2=^1Quit^2): ',Cmd,'QEV',[CapAll]);
                 CASE Cmd OF
                   'E' : BEGIN
                           NL;
@@ -371,8 +364,7 @@ BEGIN
                           BEGIN
                             NL;
                             Prt('File name: ');
-                            MPL(12);
-                            InputMain(FileName,12,[UpperOnly]);
+                            InputMain(FileName,12,[CapAll]);
                             FileName := SQOutSp(FileName);
                             IF (FileName = '') THEN
                             BEGIN
@@ -459,14 +451,12 @@ VAR
 BEGIN
   REPEAT
     NL;
-    Prt('Temp archive menu [^1?^2=^1Help^2]: ');
-    LOneK('',Cmd,'QADLRVT?',TRUE,TRUE);
+    InputChar('Temp archive menu [^1?^2=^1Help^2]: ',Cmd,'QADLRVT?',[CapAll]);
     CASE Cmd OF
       'A' : BEGIN
               NL;
               Prt('Archive name: ');
-              MPL(12);
-              InputMain(ArcFileName,SizeOf(ArcFileName)-1,[UpperOnly]);
+              InputMain(ArcFileName,SizeOf(ArcFileName)-1,[CapAll]);
               IF (ArcFileName = '') THEN
               BEGIN
                 NL;
@@ -487,8 +477,7 @@ BEGIN
                 BEGIN
                   NL;
                   Prt('File name: ');
-                  MPL(12);
-                  InputMain(FName,SizeOf(FName)-1,[UpperOnly]);
+                  InputMain(FName,SizeOf(FName)-1,[CapAll]);
                   IF (FName = '') THEN
                   BEGIN
                     NL;
@@ -529,8 +518,7 @@ BEGIN
       'D' : BEGIN
               NL;
               Prt('File name: ');
-              MPL(12);
-              InputMain(FName,SizeOf(FName)-1,[UpperOnly]);
+              InputMain(FName,SizeOf(FName)-1,[CapAll]);
               IF (FName = '') THEN
               BEGIN
                 NL;
@@ -600,8 +588,7 @@ BEGIN
       'R' : BEGIN
               NL;
               Prt('File mask: ');
-              MPL(12);
-              InputMain(FName,SizeOf(FName)-1,[UpperOnly]);
+              InputMain(FName,SizeOf(FName)-1,[CapAll]);
               IF (FName = '') THEN
               BEGIN
                 NL;
@@ -635,8 +622,7 @@ BEGIN
       'T' : BEGIN
               NL;
               Prt('File name: ');
-              MPL(12);
-              InputMain(FName,SizeOf(FName)-1,[UpperOnly]);
+              InputMain(FName,SizeOf(FName)-1,[CapAll]);
               IF (FName = '') THEN
               BEGIN
                 NL;
@@ -666,8 +652,7 @@ BEGIN
       'V' : BEGIN
               NL;
               Prt('File mask: ');
-              MPL(12);
-              InputMain(FName,SizeOf(FName)-1,[UpperOnly]);
+              InputMain(FName,SizeOf(FName)-1,[CapAll]);
               IF (FName = '') THEN
               BEGIN
                 NL;

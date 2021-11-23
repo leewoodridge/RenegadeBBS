@@ -37,7 +37,6 @@ BEGIN
       Print('All entries in 24 hour time.  Hour: (0-23), Minute: (0-59)');
       NL;
       Prt('Starting time: ');
-      MPL(5);
       InputFormatted('',TempStr,'##:##',TRUE);
       IF (StrToInt(Copy(TempStr,1,2)) IN [0..23]) AND (StrToInt(Copy(TempStr,4,2)) IN [0..59]) THEN
         LowTime := ((StrToInt(Copy(TempStr,1,2)) * 60) + StrToInt(Copy(TempStr,4,2)))
@@ -45,7 +44,6 @@ BEGIN
         LowTime := 0;
       NL;
       Prt('Ending time: ');
-      MPL(5);
       InputFormatted('',TempStr,'##:##',TRUE);
       IF (StrToInt(Copy(TempStr,1,2)) IN [0..23]) AND (StrToInt(Copy(TempStr,4,2)) IN [0..59]) THEN
         HighTime := ((StrToInt(Copy(TempStr,1,2)) * 60) + StrToInt(Copy(TempStr,4,2)))
@@ -108,15 +106,15 @@ BEGIN
         PrintACR('^0(^18^0) File Attachments          : ^1'+General.FileAttachPath);
         PrintACR('^0(^19^0) Text/Language Files       : ^1'+General.TextPath);
         NL;
-        LOneK('^2BBS Configuration [^1A^2-^1N^2,^10^2-^19^2,(^1Q^2)uit]: ',Cmd,'QABCDEFGHIJKLMN0123456789'^M,TRUE,TRUE);
+        InputChar('^2BBS Configuration [^1A^2-^1N^2,^10^2-^19^2,(^1Q^2)uit]: ',Cmd,'QABCDEFGHIJKLMN0123456789'^M,[CapAll]);
         CASE Cmd OF
-          'A' : InputWNWC('%LFNew BBS name: ',BBSName,(SizeOf(BBSName) - 1),Changed);
+          'A' : InputString('%LFNew BBS name: ',BBSName,(SizeOf(BBSName) - 1),[InteractiveEdit],Changed);
           'B' : BEGIN
                   InputFormatted('%LFNew BBS Phone Number: ',BBSPhone,'###-###-####',FALSE);
-                  InputWN1('%LF^0New Telnet URL:%LF^2: ',Liner.NodeTelnetURL,(SizeOf(Liner.NodeTelnetURL) - 1),
+                  InputString('%LF^0New Telnet URL:%LF^2: ',Liner.NodeTelnetURL,(SizeOf(Liner.NodeTelnetURL) - 1),
                            [InteractiveEdit],Changed);
                 END;
-          'C' : InputWN1('%LFNew SysOp name: ',SysOpName,(SizeOf(SysOpName) - 1),[InterActiveEdit],Changed);
+          'C' : InputString('%LFNew SysOp name: ',SysOpName,(SizeOf(SysOpName) - 1),[InterActiveEdit],Changed);
           'D' : lRGLngStr(110,FALSE);
           'E' : IF (InCom) THEN
                   lRGLngStr(111,FALSE)
@@ -134,19 +132,19 @@ BEGIN
                     PrintACR('^0(^1B^0) New User Password          : ^1[NOT SHOWN]');
                     PrintACR('^0(^1C^0) Min Baud Override Password : ^1[NOT SHOWN]');
                     NL;
-                    LOneK('^2System Passwords [^1A^2-^1C^2,<^1CR^2>Quit]: ',Cmd,^M'ABC',TRUE,TRUE);
+                    InputChar('^2System Passwords [^1A^2-^1C^2,<^1CR^2>Quit]: ',Cmd,^M'ABC',[CapAll]);
                     CASE Cmd OF
-                      'A' : InputWN1('%LFNew SysOp password: ',SysOpPw,(SizeOf(SysOpPW) - 1),
-                            [InterActiveEdit,UpperOnly],Changed);
-                      'B' : InputWN1('%LFNew new-user password: ',NewUserPW,(SizeOf(SysOpPW) - 1),
-                            [InterActiveEdit,UpperOnly],Changed);
-                      'C' : InputWN1('%LFNew minimum baud rate override password: ',MinBaudOverride,(SizeOf(SysOpPW) - 1),
-                            [InterActiveEdit,UpperOnly],Changed);
+                      'A' : InputString('%LFNew SysOp password: ',SysOpPw,(SizeOf(SysOpPW) - 1),
+                            [InterActiveEdit,CapAll],Changed);
+                      'B' : InputString('%LFNew new-user password: ',NewUserPW,(SizeOf(SysOpPW) - 1),
+                            [InterActiveEdit,CapAll],Changed);
+                      'C' : InputString('%LFNew minimum baud rate override password: ',MinBaudOverride,(SizeOf(SysOpPW) - 1),
+                            [InterActiveEdit,CapAll],Changed);
                     END;
                   UNTIL (Cmd = ^M) OR (HangUp);
                   Cmd := #0;
                 END;
-          'J' : InputByteWOC('%LFNew pre-event warning time',EventWarningTime,[DisplayValue,NumbersOnly],0,255);
+          'J' : InputByte('%LFNew pre-event warning time',EventWarningTime,[InteractiveEdit,NumbersOnly],0,255,Changed);
           'K' : BEGIN
                   REPEAT
                     ConfigHeader('System Menus');
@@ -157,7 +155,7 @@ BEGIN
                     PrintACR('^0(^15^0) Reading Messages     : ^1'+IntToStr(General.MessageReadMenu));
                     PrintACR('^0(^16^0) Listing Files        : ^1'+IntToStr(General.FileListingMenu));
                     NL;
-                    LOneK('^2System Menus [^11^2-^16^2,<^1CR^2>Quit]: ',Cmd,^M'123456',TRUE,TRUE);
+                    InputChar('^2System Menus [^11^2-^16^2,<^1CR^2>Quit]: ',Cmd,^M'123456',[CapAll]);
                     CASE Cmd OF
                       '1' : FindMenu('%LFMenu for global commands (^10^2=^1None^2)',GlobalMenu,0,NumMenus,Changed);
                       '2' : FindMenu('%LFMenu to start all users at',AllStartMenu,1,NumMenus,Changed);
@@ -169,8 +167,8 @@ BEGIN
                   UNTIL (Cmd = ^M) OR (HangUp);
                   Cmd := #0;
                 END;
-          'L' : InputWN1('%LFDefault bulletin prefix: ',BulletPrefix,(SizeOf(BulletPrefix) - 1),
-                [InterActiveEdit,UpperOnly],Changed);
+          'L' : InputString('%LFDefault bulletin prefix: ',BulletPrefix,(SizeOf(BulletPrefix) - 1),
+                [InterActiveEdit,CapAll],Changed);
           'M' : IF (InCom) THEN
                   lRGLngStr(111,FALSE)
                 ELSE

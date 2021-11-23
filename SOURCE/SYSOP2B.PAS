@@ -26,6 +26,7 @@
     [TODO]
      - maybe could add cmd to delete node?
      - maybe could scan files incase nodes are no linear ie. node1 exist, node2 doesn't, node3 does
+     - maybe do first, last, jumpto
 }
 UNIT SysOp2B;
 
@@ -79,7 +80,7 @@ VAR
     Print('^0    "^1~^0" for a half-second delay');
     Print('^0    "^1^^0" to toggle DTR off for 1/4 of a second');
     NL;
-    InputWN1('^2Enter new modem '+DisplayStr+' string: ',InputStr,Len,[InterActiveEdit],Changed);
+    InputString('^2Enter new modem '+DisplayStr+' string: ',InputStr,Len,[InterActiveEdit],Changed);
   END;
 
   FUNCTION WhichBaud(B: Byte): AStr;
@@ -117,42 +118,45 @@ BEGIN
   REPEAT
     WITH Liner DO
       BEGIN
-        Abort := FALSE;
-        Next := FALSE;
-        ConfigHeader('Modem / Node #'+IntToStr(NodeNum)+' Configuration');
-        PrintACR(PadLeftStr('^0(^1A^0) Com Port         : ^1'+IntToStr(ComPort),39)+
-                 PadLeftStr('^0(^1B^0) IRQ              : ^1'+IRQ,39));
-        PrintACR(PadLeftStr('^0(^1C^0) I/O Address      : ^1'+Address,39)+
-                 PadLeftStr('^0(^1D^0) Max Baud Rate    : ^1'+IntToStr(InitBaud),39));
-        PrintACR(PadLeftStr('^0(^1E^0) Com Port Locking : ^1'+ShowOnOff(LockedPort IN MFlags),39)+
-                 PadLeftStr('^0(^1F^0) CTS/RTS (HW) FC  : ^1'+ShowOnOff(CTSRTS IN MFlags),39));
-        PrintACR(PadLeftStr('^0(^1G^0) XON/XOFF (SW) FC : ^1'+ShowOnOff(XONXOFF IN MFlags),39)+
-                 PadLeftStr('^0(^1H^0) Multi-Ring Only  : ^1'+ShowOnOff(MultiRing),39));
-        PrintACR(PadLeftStr('^0(^1I^0) Answer On Ring # : ^1'+IntToStr(AnswerOnRing),39){+
-                 PadLeftStr('',39)});
-        NL;
-        PrintACR('^0(^1J^0) Modem Command Strings ...');
-        PrintACR('^0(^1K^0) Modem Result Codes ...');
-        NL;
-        PrintACR(PadLeftStr('^0(^1L^0) ACS Required     : ^1'+AOnOff(LogonACS = '','*None*',LogonACS),39));
-        NL;
-        PrintACR(PadLeftStr('^0(^1M^0) Drop File Path   : ^1'+DoorPath,79));
-        NL;
-        LOneK('^2Node Configuration [^1A^2-^1M^2,(^1?^2)Help,(^1Q^2)uit]: ',Cmd,
-              'Q[]?ABCDEFGHIJKLM',TRUE,TRUE);
+        IF (Cmd <> '?') THEN
+          BEGIN
+            Abort := FALSE;
+            Next := FALSE;
+            ConfigHeader('Modem / Node #'+IntToStr(NodeNum)+' Configuration');
+            PrintACR(PadLeftStr('^0(^1A^0) Com Port         : ^1'+IntToStr(ComPort),39)+
+                     PadLeftStr('^0(^1B^0) IRQ              : ^1'+IRQ,39));
+            PrintACR(PadLeftStr('^0(^1C^0) I/O Address      : ^1'+Address,39)+
+                     PadLeftStr('^0(^1D^0) Max Baud Rate    : ^1'+IntToStr(InitBaud),39));
+            PrintACR(PadLeftStr('^0(^1E^0) Com Port Locking : ^1'+ShowOnOff(LockedPort IN MFlags),39)+
+                     PadLeftStr('^0(^1F^0) CTS/RTS (HW) FC  : ^1'+ShowOnOff(CTSRTS IN MFlags),39));
+            PrintACR(PadLeftStr('^0(^1G^0) XON/XOFF (SW) FC : ^1'+ShowOnOff(XONXOFF IN MFlags),39)+
+                     PadLeftStr('^0(^1H^0) Multi-Ring Only  : ^1'+ShowOnOff(MultiRing),39));
+            PrintACR(PadLeftStr('^0(^1I^0) Answer On Ring # : ^1'+IntToStr(AnswerOnRing),39){+
+                     PadLeftStr('',39)});
+            NL;
+            PrintACR('^0(^1J^0) Modem Command Strings ...');
+            PrintACR('^0(^1K^0) Modem Result Codes ...');
+            NL;
+            PrintACR(PadLeftStr('^0(^1L^0) ACS Required     : ^1'+AOnOff(LogonACS = '','*None*',LogonACS),39));
+            NL;
+            PrintACR(PadLeftStr('^0(^1M^0) Drop File Path   : ^1'+DoorPath,79));
+            NL;
+          END;
+        InputChar('^2Node Configuration [^1A^2-^1M^2,(^1?^2)Help,(^1Q^2)uit]: ',Cmd,
+              'Q[]?ABCDEFGHIJKLM'^M,[CapAll]);
         CASE Cmd OF
           '?' : BEGIN
                   NL;
                   LCmds(16,1,'[ Previous Node','] Next Node');
                   NL;
-                  PauseScr(FALSE);
+                  {PauseScr(FALSE);}
                 END;
           'A' : IF (InCom) THEN
                   Messages(9,0,'') {"This can only be changed locally"}
                 ELSE
                   BEGIN
                     TempB := ComPort;
-                    InputByteWC('^2%LFCom port',TempB,[InterActiveEdit,NumbersOnly],0,64,Changed);
+                    InputByte('^2%LFCom port',TempB,[InterActiveEdit,NumbersOnly],0,64,Changed);
                     IF (Changed) THEN
                       IF PYNQ('%LFAre you sure this is what you want?',0,FALSE) THEN
                         BEGIN
@@ -163,8 +167,8 @@ BEGIN
                     IF (NOT LocalIOOnly) AND (ComPort=0) THEN
                       LocalIOOnly := TRUE;
                   END;
-          'B' : InputWN1('^2%LFIRQ for %E MCI code: ',IRQ,(SizeOf(IRQ)-1),[InterActiveEdit],Changed);
-          'C' : InputWN1('^2%LFI/O Address for %C MCI code: ',Address,(SizeOf(Address)-1),[InterActiveEdit],Changed);
+          'B' : InputString('^2%LFIRQ for %E MCI code: ',IRQ,(SizeOf(IRQ)-1),[InterActiveEdit],Changed);
+          'C' : InputString('^2%LFI/O Address for %C MCI code: ',Address,(SizeOf(Address)-1),[InterActiveEdit],Changed);
           'D' : IF (InCom) THEN
                   Messages(9,0,'') {"This can only be changed locally"}
                 ELSE
@@ -177,7 +181,7 @@ BEGIN
                     Print('^0(^15^0) 57600');
                     Print('^0(^16^0) 115200');
                     NL;
-                    LOneK('^2Maximum Baud Rate [^11^2-^16^2,<^1CR^2>Quit]: ',Cmd,^M'123456',TRUE,TRUE);
+                    InputChar('^2Maximum Baud Rate [^11^2-^16^2,<^1CR^2>Quit]: ',Cmd,^M'123456',[CapAll]);
                     CASE Cmd OF
                       '1' : InitBaud := 2400;
                       '2' : InitBaud := 9600;
@@ -197,7 +201,7 @@ BEGIN
                   MultiRing := NOT MultiRing;
                   Changed := TRUE; { LeeW: Here too }
                 END;
-          'I' : InputByteWC('^2%LFAnswer after how many rings?',AnswerOnRing,
+          'I' : InputByte('^2%LFAnswer after how many rings?',AnswerOnRing,
                             [NumbersOnly,InterActiveEdit],0,255,Changed);
           'J' : BEGIN
                   REPEAT
@@ -207,7 +211,7 @@ BEGIN
                     PrintACR('^0(^13^0) Modem Hang Up  : ^1'+HangUp);
                     PrintACR('^0(^14^0) Modem Off Hook : ^1'+OffHook);
                     NL;
-                    LOneK('^2Modem Command Strings [^11^2-^14^2,<^1CR^2>Quit]: ',Cmd,^M'1234',TRUE,TRUE);
+                    InputChar('^2Modem Command Strings [^11^2-^14^2,<^1CR^2>Quit]: ',Cmd,^M'1234',[CapAll]);
                     CASE Cmd OF
                       '1' : NewModemString('Init',Init,(SizeOf(Init)-1));
                       '2' : NewModemString('Answer',Answer,(SizeOf(Answer)-1));
@@ -234,31 +238,31 @@ BEGIN
                         Prompt(PadLeftStr(PadLeftStr('^0(^1'+Chr(TempB + 70)+'^0) '
                                +WhichBaud(TempB),18)+': ^1'+Connect[TempB],39));
                     NL;
-                    LOneK('^2Modem Result Codes [^1A^2-^1E^2,^1G^2-^1Z^2,<^1CR^2>Quit]: ',
-                          Cmd,^M'ABCDEGHIJKLMNOPQRSTUVWXYZ',TRUE,TRUE);
+                    InputChar('^2Modem Result Codes [^1A^2-^1E^2,^1G^2-^1Z^2,<^1CR^2>Quit]: ',
+                          Cmd,^M'ABCDEGHIJKLMNOPQRSTUVWXYZ',[CapAll]);
                     CASE Cmd OF
-                      'A' : InputWN1('^2%LFEnter NO CARRIER string: ',NoCarrier,(SizeOf(NoCarrier)-1),
-                                     [InterActiveEdit,UpperOnly],Changed);
-                      'B' : InputWN1('^2%LFEnter RELIABLE string: ',Reliable,(SizeOf(Reliable)-1),
-                                     [InterActiveEdit,UpperOnly],Changed);
-                      'C' : InputWN1('^2%LFEnter OK string: ',Ok,(SizeOf(Ok)-1),
-                                     [InterActiveEdit,UpperOnly],Changed);
-                      'D' : InputWN1('^2%LFEnter RING string: ',Ring,(SizeOf(Ring)-1),
-                                     [InterActiveEdit,UpperOnly],Changed);
-                      'E' : InputWN1('^2%LFEnter Caller ID string: ',CallerID,(SizeOf(CallerID)-1),
-                                     [InterActiveEdit,UpperOnly],Changed);
+                      'A' : InputString('^2%LFEnter NO CARRIER string: ',NoCarrier,(SizeOf(NoCarrier)-1),
+                                     [InterActiveEdit,CapAll],Changed);
+                      'B' : InputString('^2%LFEnter RELIABLE string: ',Reliable,(SizeOf(Reliable)-1),
+                                     [InterActiveEdit,CapAll],Changed);
+                      'C' : InputString('^2%LFEnter OK string: ',Ok,(SizeOf(Ok)-1),
+                                     [InterActiveEdit,CapAll],Changed);
+                      'D' : InputString('^2%LFEnter RING string: ',Ring,(SizeOf(Ring)-1),
+                                     [InterActiveEdit,CapAll],Changed);
+                      'E' : InputString('^2%LFEnter Caller ID string: ',CallerID,(SizeOf(CallerID)-1),
+                                     [InterActiveEdit,CapAll],Changed);
                       'G'..'Z' :
                             BEGIN
                               TempB := (Ord(Cmd) - 70);
                               IF (TempB IN [1..MaxResultCodes]) THEN
-                                InputWN1('^2%LFEnter '+WhichBaud(TempB)+' string: ',Connect[TempB],(SizeOf(Connect[1])-1),
-                                         [InterActiveEdit,UpperOnly],Changed);
+                                InputString('^2%LFEnter '+WhichBaud(TempB)+' string: ',Connect[TempB],(SizeOf(Connect[1])-1),
+                                         [InterActiveEdit,CapAll],Changed);
                             END;
                     END;
                   UNTIL (Cmd = ^M);
                   Cmd := #0;
                 END;
-          'L' : InputWN1('^2%LFEnter ACS requirements for this node: ',
+          'L' : InputString('^2%LFEnter ACS requirements for this node: ',
                          LogonACS,(SizeOf(LogonACS)-1),[InterActiveEdit],Changed);
           'M' : InputPath('^2%LFEnter path to write door interface files to:%LF',
                           DoorPath,TRUE,FALSE,Changed);

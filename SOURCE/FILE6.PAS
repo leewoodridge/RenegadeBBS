@@ -66,8 +66,8 @@ BEGIN
   END;
   REPEAT
     NL;
-    Prt('Batch download queue [^1C^2=^1Clear Batch^2,^1L^2=^1List Batch^2,^1R^2=^1Remove a file^2,^1Q^2=^1Quit^2]: ');
-    LOneK('',Cmd,'QCLR',TRUE,TRUE);
+    InputChar('Batch download queue [^1C^2=^1Clear Batch^2,^1L^2=^1List Batch^2,^1R^2=^1Remove a file^2,'+
+              '^1Q^2=^1Quit^2]: ',Cmd,'QCLR',[CapAll]);
     CASE Cmd OF
       'C' : ClearBatchDlQueue;
       'L' : ListBatchDLFiles;

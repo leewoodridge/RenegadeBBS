@@ -224,9 +224,7 @@ BEGIN
   Reset(ProtocolFile);
   REPEAT
     ShowProts(CmdStr,UL,DL,Batch,Resume);
-    { Prompt('%DFPROTLIST%^2Selection^1: ');}
-    lRGLngStr(17,FALSE);;
-    LOneK('',Cmd,CmdStr,TRUE,TRUE);
+    InputChar(lRGLngStr(17,TRUE),Cmd,CmdStr,[CapAll]);
     RecNum := FindProt(Cmd,UL,DL,Batch,Resume);
     IF (RecNum = -99) THEN
     BEGIN

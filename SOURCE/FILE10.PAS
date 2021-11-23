@@ -4,6 +4,10 @@ LeeW
  09/21/2021 - Fixed move file operation so rg no longer creates dupe description on failure
  
  inputmain for filepoints different field lengths???
+ 11/11/2021 changed max filepoint cost to 32767
+ 
+ 
+ ln341 finish nicely
 }
 UNIT File10;
 
@@ -151,8 +155,7 @@ BEGIN
     DisplayFileInfo(FileInfo,TRUE);
     NL;
     Prt('File points for file (^10^2-^1999^2,^1<CR>^2=^1Skip^2,^1Q^2=^1Quit^2): ');
-    MPL(3);
-    InputMain(InputStr,3,[UpperOnly]);
+    InputMain(InputStr,3,[CapAll]);
     IF (InputStr <> '') THEN
     BEGIN
       IF (InputStr = 'Q') THEN
@@ -175,8 +178,7 @@ BEGIN
 
         NL;
         Prt('File points for user (^1-'+IntToStr(User.FilePoints)+'^2 to ^1999^2): ');
-        MPL(4);
-        InputMain(InputStr,4,[UpperOnly]);
+        InputMain(InputStr,4,[CapAll]);
         IF (InputStr <> '') AND (StrToInt(InputStr) >= -User.FilePoints) AND (StrToInt(InputStr) <= 999) THEN
         BEGIN
 
@@ -217,15 +219,13 @@ BEGIN
       Cmd := 'N'
     ELSE
     BEGIN
-      Prt('Edit files (^1?^2=^1Help^2): ');
-      LOneK('',Cmd,'Q1234567DEGHIMNPRTUVW?'^M,TRUE,TRUE);
+      InputChar('Edit files (^1?^2=^1Help^2): ',Cmd,'Q1234567DEGHIMNPRTUVW?'^M,[CapAll]);
     END;
     CASE Cmd OF
       '1' : BEGIN
               NL;
               Prt('New file name: ');
-              MPL((SizeOf(FileInfo.FileName) - 1));
-              InputMain(InputStr,(SizeOf(FileInfo.FileName) - 1),[UpperOnly]);
+              InputMain(InputStr,(SizeOf(FileInfo.FileName) - 1),[CapAll]);
               IF (InputStr = '') THEN
               BEGIN
                 NL;
@@ -312,7 +312,7 @@ BEGIN
                 ELSE
                 BEGIN
                   FSize := FileInfo.FileSize;
-                  InputLongIntWOC('%LFNew file size in bytes',FSize,[DisplayValue,NumbersOnly],0,2147483647);
+                  InputLongInt('%LF^2New file size in bytes',FSize,[InteractiveEdit,NumbersOnly],0,2147483647,Changed);
                 END;
               END;
               IF (FSize >= 0) AND (FSize <= 2147483647) THEN
@@ -322,7 +322,6 @@ BEGIN
               NL;
               Print('New description: ');
               Prt(': ');
-              MPL((SizeOf(FileInfo.Description) - 1));
               InputMain(FileInfo.Description,(SizeOf(FileInfo.Description) - 1),[InteractiveEdit]);
             END;
       '4' : BEGIN
@@ -338,9 +337,11 @@ BEGIN
               END;
               NL;
               Print('New owner user number or name ('+Caps(FileInfo.OwnerName)+' #'+IntToStr(FileInfo.OwnerNum)+'): ');
+              {
               Prt(': ');
               MPL((SizeOf(FileInfo.OwnerName) - 1));
-              FindUser(UNum);
+              FindUser(UNum);}
+              lFindUserWS(UNum); {leew: changed}
               IF (UNum <= 0) THEN
               BEGIN
                 NL;
@@ -373,8 +374,10 @@ BEGIN
                   FileInfo.FileDate := Date2PD(InputStr);
               END;
             END;
-      '6' : InputLongIntWOC('%LFNew number of downloads',FileInfo.DownLoaded,[DisplayValue,NumbersOnly],0,2147483647);
-      '7' : InputIntegerWOC('%LFNew amount of file points',FileInfo.FilePoints,[NumbersOnly],0,999);
+      '6' : InputLongInt('%LF^2New number of downloads',FileInfo.DownLoaded,[InteractiveEdit,NumbersOnly],
+                           0,2147483647,Changed);
+      '7' : InputInteger('%LF^2New amount of file points',FileInfo.FilePoints,[InteractiveEdit,NumbersOnly],
+                           0,32767,Changed); { LeeW: Changed - was max 999 ? }
       'D' : IF PYNQ('%LFAre you sure? ',0,FALSE) THEN
             BEGIN
               Deleteff(FileInfo,DirFileRecNum);
@@ -871,8 +874,7 @@ BEGIN
   NL;
   Print('^2[^1M^2]anual, [^1A^2]utomatic, [^1P^2]oint entry, [^1Q^2]uit');
   NL;
-  Prt('File validation: ');
-  LOneK('',Cmd,'QMAP',TRUE,TRUE);
+  InputChar('File validation: ',Cmd,'QMAP',[CapAll]);
   IF (Cmd <> 'Q') THEN
   BEGIN
     SaveFileArea := FileArea;

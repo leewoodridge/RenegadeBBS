@@ -18,28 +18,27 @@ PROCEDURE ChangeUser;
 VAR
   UNum: Integer;
 BEGIN
-  Prt('Change to which User (1-'+IntToStr(MaxUsers - 1)+'): ');
-  FindUser(UNum);
+  lFindUserWS(UNum); {LeeW: Changed -- was FindUser(UNum);}
   IF (UNum >= 1) THEN
-  BEGIN
-    SaveURec(ThisUser,UserNum);
-    LoadURec(ThisUser,UNum);
-    UserNum := UNum;
-    ChopTime := 0;
-    ExtraTime := 0;
-    FreeTime := 0;
-    IF (ComPortSpeed > 0) THEN
-      SysOpLog('---> ^8Switched accounts to: ^1'+Caps(ThisUser.Name));
-    Update_Screen;
-    NewCompTables;
-    LoadNode(ThisNode);
-    WITH NodeR DO
     BEGIN
-      User := UserNum;
-      UserName := ThisUser.Name;
+      SaveURec(ThisUser,UserNum);
+      LoadURec(ThisUser,UNum);
+      UserNum := UNum;
+      ChopTime := 0;
+      ExtraTime := 0;
+      FreeTime := 0;
+      IF (ComPortSpeed > 0) THEN
+        SysOpLog('^8[*] ^0Switched User Account To: ^1'+AllCaps(ThisUser.Name));
+      Update_Screen;
+      NewCompTables;
+      LoadNode(ThisNode);
+      WITH NodeR DO
+        BEGIN
+          User := UserNum;
+          UserName := ThisUser.Name;
+        END;
+      SaveNode(ThisNode);
     END;
-    SaveNode(ThisNode);
-  END;
 END;
 
 PROCEDURE ShowLogs;
@@ -48,9 +47,9 @@ VAR
   Day: Word;
 BEGIN
   NL;
-  Print('SysOp Logs available for up to '+IntToStr(General.BackSysOpLogs)+' days ago.');
-  Prt('Date (MM/DD/YYYY) or # days ago (0-'+IntToStr(General.BackSysOpLogs)+') [0]: ');
-  InputMain(TempStr,SizeOf(TempStr)-1,[UpperOnly]);
+  TempStr := '0';
+  Prt('^0Enter date (^1MM/DD/YYYY^0 format), or # of days ago (^10^0-^1'+IntToStr(General.BackSysOpLogs)+'^0): ');
+  InputMain(TempStr,SizeOf(TempStr)-1,[InteractiveEdit,CapAll]);
   IF (Length(TempStr) = 10) AND (DayNum(TempStr) > 0) THEN
     Day := (DayNum(DateStr) - DayNum(TempStr))
   ELSE
@@ -62,12 +61,13 @@ BEGIN
     PrintF(General.LogsPath+'SYSOP'+IntToStr(Day)+'.LOG');
   AllowContinue := FALSE;
   IF (NoFile) THEN
-  BEGIN
-    NL;
-    Print('SysOp log not found.');
-  END;
+    BEGIN
+      NL;
+      Print('SysOp log file not found');
+    END;
   IF (UserOn) THEN
-    SysOpLog('Viewed SysOp Log - '+AOnOff(Day = 0,'Today''s',IntToStr(Day)+' days ago'));
+    SysOpLog('Read SysOp Log ('+AOnOff(Day = 0,'Today''s',IntToStr(Day)+' Days Ago')+')');
+  PauseScr(FALSE);
 END;
 
 END.

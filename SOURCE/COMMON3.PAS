@@ -1,52 +1,51 @@
 {$A+,B-,D+,E-,F+,I-,L+,N-,O+,R-,S-,V-,X-}
 {
-10/21/2021 updating color codes
-11/4/2021
-
-remove redundant procs
-    - Removed InputWC, now using printmain with [ColorAllowed] param
-    - Removed InputCaps
-    - Removed InputL, now using printmain with no param
-    11/5/2021
-    - Removed Input, now using printmain with [UpperOnly] param
-    - Removed Local_OneK -- was unused
-    - Moved Local_Input1 to COMMON2 (nested in lStatus_screen)
-- converted all OneK to LoneK, same proc except prompt string
-- converted all getpassword calls to inputmain with [IsPassword] param
-
+ 10/21/2021 - updating color codes
+ 11/04/2021 - remove redundant procs ...
+            - Removed InputWC, now using inputmain with [ColorAllowed] param
+            - Removed InputCaps
+            - Removed InputL, now using inputmain with no param
+ 11/05/2021 - Removed Input, now using inputmain with [CapAll] param
+            - Removed Local_OneK -- was unused
+            - Moved Local_Input1 to COMMON2 (nested in lStatus_screen)
+            - converted all OneK to LoneK, same proc except prompt string
+            - converted all getpassword calls to inputmain with [IsPassword] param
+ 11/18/2021 - increased all numeric string lenths by 1 to account for possible negatives needing extra char for "-"
+            - inputmain increases maxlen by 1 if AllowNegative
+            - inputmain prints mpl unless noinputfield specified -- can remove MPL from everywhere, some places will need added
+            - if interactiveedit specified, and no ansi, now prints current val like displayvalue flag used to
+ 11/20/2021 - Removed all WOC input procs and converted all calls (UGH!)
+            - inputmain - esc now aborts
+ 11/21/2021 - removed inputdefault, now using inputstring
+            - removed all redundant MPL calls (UGH!)
+ 11/22/2021 - OneK1 is now InputChar, now uses inputflags -- supports CapAll,NoInputField,NoLineFeed, 
+              displaykey param removed, was 99.9% unused
+            - replaced all calls to LOneK to InputChar (UGH!)
 todo:
-add inputvalidation for inputformatted, maybe have it pass '' if incomplete?
+add inputvalidation for inputformatted, maybe have it pass '' if incomplete? --PARAMS for AllowIncomplete
 inputflags : add different types like dir, filename etc, notabortable, askblank
+SHOULD BLANK PROMPT BE IN MAIN OR PRINTSTRING--main
 }
-UNIT Common3;
+UNIT Common3; { INPUT PROCS }
 
 INTERFACE
 
 USES
   Common;
 
-PROCEDURE InputMain(VAR S: STRING; MaxLen: Byte; InputFlags: InputFlagSet);
-{/}
-PROCEDURE InputDefault(VAR S: STRING; v: STRING; MaxLen: Byte; InputFlags: InputFlagSet; LineFeed: Boolean);
-PROCEDURE InputFormatted(DisplayStr: AStr; VAR InputStr: STRING; Format: STRING; Abortable: Boolean);
-PROCEDURE InputLongIntWC(S: AStr; VAR L: LongInt; InputFlags: InputFlagSet; LowNum,HighNum: LongInt; VAR Changed: Boolean);
-PROCEDURE InputLongIntWOC(S: AStr; VAR L: LongInt; InputFlags: InputFlagSet; LowNum,HighNum: LongInt);
-PROCEDURE InputWordWC(S: AStr; VAR W: Word;    InputFlags: InputFlagSet; LowNum,HighNum: Word; VAR Changed: Boolean);
-PROCEDURE InputWordWOC(S: AStr; VAR W: Word;    InputFlags: InputFlagSet; LowNum,HighNum: Word);
-PROCEDURE InputIntegerWC(S: AStr; VAR I: Integer; InputFlags: InputFlagSet; LowNum,HighNum: Integer; VAR Changed: Boolean);
-PROCEDURE InputIntegerWOC(S: AStr; VAR I: Integer; InputFlags: InputFlagSet; LowNum,HighNum: Integer);
-PROCEDURE InputByteWC(S: AStr; VAR B: Byte; InputFlags: InputFlagSet; LowNum,HighNum: Byte; VAR Changed: Boolean);
-PROCEDURE InputByteWOC(S: AStr; VAR B: Byte; InputFlags: InputFlagSet; LowNum,HighNum: Byte);
-PROCEDURE InputWN1(DisplayStr: AStr; VAR InputStr: AStr; MaxLen: Byte; InputFlags: InputFlagSet; VAR Changed: Boolean);
-PROCEDURE InputWNWC(DisplayStr: AStr; VAR InputStr: AStr; MaxLen: Byte; VAR Changed: Boolean);
-{ LeeW: Below was moved from COMMON/COMMON1 }
-PROCEDURE InputPath(CONST DisplayStr: AStr; VAR DirPath: Str40; CreateDir,AllowExit: Boolean; VAR Changed: Boolean);
-
-{PROCEDURE InputPath2(S: STRING; VAR Path: STRING; AskMkDir, Abortable: Boolean; VAR Changed: Boolean);}
-
+PROCEDURE InputMain(VAR S: STRING; MaxLen: Byte; InputFlags: InputFlagSet); { MAIN INPUT PROCEDURE }
 PROCEDURE MPL(MaxLen: Byte); { Print input field }
-PROCEDURE OneK1(VAR C: Char; ValidKeys: AStr; DisplayKey,LineFeed: Boolean); { allows lowercase input }
-PROCEDURE LOneK(DisplayStr: AStr; VAR C: Char; ValidKeys: AStr; DisplayKey,LineFeed: Boolean);
+{ Byte = 0 .. 255 | Integer = -32768 .. 32767 | LongInt = -2147483648 .. 2147483647 | Word = 0 .. 65535 }
+PROCEDURE InputByte(S: AStr; VAR B: Byte; InputFlags: InputFlagSet; LowNum,HighNum: Byte; VAR Changed: Boolean);
+PROCEDURE InputInteger(S: AStr; VAR I: Integer; InputFlags: InputFlagSet; LowNum,HighNum: Integer; VAR Changed: Boolean);
+PROCEDURE InputLongInt(S: AStr; VAR L: LongInt; InputFlags: InputFlagSet; LowNum,HighNum: LongInt; VAR Changed: Boolean);
+PROCEDURE InputWord(S: AStr; VAR W: Word; InputFlags: InputFlagSet; LowNum,HighNum: Word; VAR Changed: Boolean);
+PROCEDURE InputString(S: AStr; VAR InputStr: AStr; MaxLen: Byte; InputFlags: InputFlagSet; VAR Changed: Boolean);
+PROCEDURE InputChar(S: AStr; VAR C: Char; ValidKeys: AStr; InputFlags: InputFlagSet);
+{/}
+PROCEDURE InputFormatted(S: AStr; VAR InputStr: STRING; Format: STRING; Abortable: Boolean);
+PROCEDURE InputPath(S: AStr; VAR DirPath: Str40; CreateDir,AllowExit: Boolean; VAR Changed: Boolean);
+{PROCEDURE InputPath2(S: STRING; VAR Path: STRING; AskCreate, Abortable: Boolean; VAR Changed: Boolean);}
 
 IMPLEMENTATION
 
@@ -54,7 +53,7 @@ USES
   CRT,
   DOS;
   
-PROCEDURE InputPath(CONST DisplayStr: AStr; VAR DirPath: Str40; CreateDir,AllowExit: Boolean; VAR Changed: Boolean);
+PROCEDURE InputPath(S: AStr; VAR DirPath: Str40; CreateDir,AllowExit: Boolean; VAR Changed: Boolean);
 VAR
   TempDirPath: Str40;
   CurDir: PathStr;
@@ -63,7 +62,7 @@ BEGIN
   REPEAT
     TempDirPath := DirPath;
     Changed := FALSE;
-    InputWN1(DisplayStr,TempDirPath,39,[UpperOnly,InteractiveEdit],Changed);
+    InputString(S,TempDirPath,39,[CapAll,InteractiveEdit],Changed);
     TempDirPath := SQOutSp(TempDirPath);
 
     IF (Length(TempDirPath) = 1) THEN
@@ -171,85 +170,31 @@ BEGIN
     END;
 END;
 
-PROCEDURE OneK1(VAR C: Char; ValidKeys: AStr; DisplayKey,LineFeed: Boolean);
+PROCEDURE InputChar(S: AStr; VAR C: Char; ValidKeys: AStr; InputFlags: InputFlagSet);
 BEGIN
-  MPL(1);
+  Prt('^2'+S);
+  IF NOT (NoInputField IN InputFlags) THEN
+    MPL(1);
   TempPause := (Pause IN ThisUser.ACFlags);
   REPEAT
-    C := Char(GetKey);
+    IF (CapAll IN InputFlags) THEN
+      C := UpCase(Char(GetKey))
+    ELSE
+      C := Char(GetKey);
     IF (C = 'q') THEN
       C := UpCase(C);
   UNTIL (Pos(C,ValidKeys) > 0) OR (HangUp);
   IF (HangUp) THEN
     C := ValidKeys[1];
-  IF (DisplayKey) THEN
-    OutKey(C);
+  OutKey(C);
   IF (Trapping) THEN
     OutTrap(C);
   UserColor(0);
-  IF (LineFeed) THEN
+  IF NOT (NoLineFeed IN InputFlags) THEN
     NL;
 END;
 
-PROCEDURE LOneK(DisplayStr: AStr; VAR C: Char; ValidKeys: AStr; DisplayKey,LineFeed: Boolean);
-BEGIN
-  Prt('^2'+DisplayStr);
-  MPL(1);
-  TempPause := (Pause IN ThisUser.ACFlags);
-  REPEAT
-    C := UpCase(Char(GetKey));
-  UNTIL (Pos(C,ValidKeys) > 0) OR (HangUp);
-  IF (HangUp) THEN
-    C := ValidKeys[1];
-  IF (DisplayKey) THEN
-    OutKey(C);
-  IF (Trapping) THEN
-    OutTrap(C);
-  UserColor(0);
-  IF (LineFeed) THEN
-    NL;
-END;
-
-PROCEDURE InputDefault(VAR S: STRING; v: STRING; MaxLen: Byte; InputFlags: InputFlagSet; LineFeed: Boolean);
-VAR
-  C: Char;
-  Counter: Byte;
-BEGIN
-  MPL(MaxLen);
-  MCIAllowed := FALSE;
-  ColorAllowed := FALSE;
-  Prompt(v);
-  ColorAllowed := TRUE;
-  MCIAllowed := TRUE;
-  C := Char(GetKey);
-  IF (C <> #13) THEN
-  BEGIN
-    FOR Counter := 1 TO Length(v) DO
-      BackSpace;
-    Buf := C + Buf;
-    InputMain(S,MaxLen,InputFlags);
-    IF (S = '') THEN
-    BEGIN
-      S := v;
-      MPL(MaxLen);
-      Prompt(S);
-    END
-    ELSE IF (S = ' ') THEN
-      S := '';
-  END
-  ELSE
-  BEGIN
-    S := v;
-    IF NOT (NoLineFeed IN InputFlags) THEN
-      NL;
-  END;
-  UserColor(0);
-  IF (LineFeed) THEN
-    NL;
-END;
-
-
-PROCEDURE InputFormatted(DisplayStr: AStr; VAR InputStr: STRING; Format: STRING; Abortable: Boolean);
+PROCEDURE InputFormatted(S: AStr; VAR InputStr: STRING; Format: STRING; Abortable: Boolean);
 VAR
   c: Char;
   i,
@@ -258,16 +203,16 @@ VAR
   PROCEDURE UpdateString;
   BEGIN
     WHILE (NOT (Format[i] IN ['#','@']) AND (i <= Length(Format))) DO
-    BEGIN
-      OutKey(Format[i]);
-      InputStr := InputStr + Format[i];
-      Inc(i);
-    END;
+      BEGIN
+        OutKey(Format[i]);
+        InputStr := InputStr + Format[i];
+        Inc(i);
+      END;
   END;
 
 BEGIN
   InputStr := '';
-  Prt(DisplayStr);
+  Prt(S);
   MPL(Length(Format));
   i := 1;
   UpdateString;
@@ -276,45 +221,52 @@ BEGIN
     c := Char(GetKey);
     IF (i <= Length(Format)) THEN
       IF ((Format[i] = '@') AND (c IN ['a'..'z','A'..'Z'])) OR ((Format[i] = '#') AND (c IN ['0'..'9'])) THEN
-      BEGIN
-        c := UpCase(c);
-        OutKey(c);
-        InputStr := InputStr + c;
-        Inc(i);
-        UpdateString;
-      END;
+        BEGIN
+          c := UpCase(c);
+          OutKey(c);
+          InputStr := InputStr + c;
+          Inc(i);
+          UpdateString;
+        END;
     IF (c = ^H) THEN
     BEGIN
       WHILE ((i > FarBack) AND NOT (Format[i - 1] IN ['#','@'])) DO
-      BEGIN
-        BackSpace;
-        Dec(InputStr[0]);
-        Dec(i);
-      END;
+        BEGIN
+          BackSpace;
+          Dec(InputStr[0]);
+          Dec(i);
+        END;
       IF (i > FarBack) THEN
-      BEGIN
-        BackSpace;
-        Dec(InputStr[0]);
-        Dec(i);
-      END;
+        BEGIN
+          BackSpace;
+          Dec(InputStr[0]);
+          Dec(i);
+        END;
     END;
   UNTIL (HangUp) OR ((i > Length(Format)) OR (Abortable)) AND (c = #13);
   UserColor(0);
   NL;
 END;
 
-PROCEDURE InputLongIntWC(S: AStr; VAR L: LongInt; InputFlags: InputFlagSet; LowNum,HighNum: LongInt; VAR Changed: Boolean);
+PROCEDURE InputLongInt(S: AStr; VAR L: LongInt; InputFlags: InputFlagSet; LowNum,HighNum: LongInt; VAR Changed: Boolean);
 VAR
-  TempStr: Str10;
+  TempStr: STRING[11];
   SaveL: LongInt;
   TempL: Real;
 BEGIN
+  Changed := FALSE; { LeeW: Added }
   SaveL := L;
-  IF (NOT (DisplayValue IN InputFlags)) THEN
-    Prt(S+' (^1'+IntToStr(LowNum)+'^2-^1'+IntToStr(HighNum)+'^2): ')
+  {/}
+  IF NOT (NoInputRange IN InputFlags) THEN
+    S := '^2'+S+' ^2(^1'+IntToStr(LowNum)+'^2-^1'+IntToStr(HighNum)+'^2)' { Show valid input range }
   ELSE
-    Prt(S+' (^1'+IntToStr(LowNum)+'^2-^1'+IntToStr(HighNum)+'^2) [^1'+IntToStr(L)+'^2]: ');
-  MPL(Length(IntToStr(HighNum)));
+    S := '^2'+S;
+  IF (InteractiveEdit IN InputFlags) AND NOT (OkANSI) THEN
+    S := S+'^2 [^1'+IntToStr(L)+'^2]: ' { Show current value }
+  ELSE
+    S := S+'^2: ';
+  Prt(S);
+  {/}
   TempStr := IntToStr(L);
   InputMain(TempStr,Length(IntToStr(HighNum)),InputFlags);
   IF (TempStr <> '') THEN
@@ -333,26 +285,25 @@ BEGIN
     Changed := TRUE;
 END;
 
-PROCEDURE InputLongIntWOC(S: AStr; VAR L: LongInt; InputFlags: InputFlagSet; LowNum,HighNum: LongInt);
+PROCEDURE InputWord(S: AStr; VAR W: Word; InputFlags: InputFlagSet; LowNum,HighNum: Word; VAR Changed: Boolean);
 VAR
-  Changed: Boolean;
-BEGIN
-  Changed := FALSE;
-  InputLongIntWC(S,L,InputFlags,LowNum,HighNum,Changed);
-END;
-
-PROCEDURE InputWordWC(S: AStr; VAR W: Word; InputFlags: InputFlagSet; LowNum,HighNum: Word; VAR Changed: Boolean);
-VAR
-  TempStr: Str5;
+  TempStr: STRING[6];
   SaveW: Word;
-  TempW: Longint;
+  TempW: LongInt;
 BEGIN
+  Changed := FALSE; { LeeW: Added }
   SaveW := W;
-  IF (NOT (DisplayValue IN InputFlags)) THEN
-    Prt(S+' (^1'+IntToStr(LowNum)+'^2-^1'+IntToStr(HighNum)+'^2): ')
+  {/}
+  IF NOT (NoInputRange IN InputFlags) THEN
+    S := '^2'+S+' ^2(^1'+IntToStr(LowNum)+'^2-^1'+IntToStr(HighNum)+'^2)' { Show valid input range }
   ELSE
-    Prt(S+' (^1'+IntToStr(LowNum)+'^2-^1'+IntToStr(HighNum)+'^2) [^1'+IntToStr(W)+'^2]: ');
-  MPL(Length(IntToStr(HighNum)));
+    S := '^2'+S;
+  IF (InteractiveEdit IN InputFlags) AND NOT (OkANSI) THEN
+    S := S+'^2 [^1'+IntToStr(W)+'^2]: ' { Show current value }
+  ELSE
+    S := S+'^2: ';
+  Prt(S);
+  {/}
   TempStr := IntToStr(W);
   InputMain(TempStr,Length(IntToStr(HighNum)),InputFlags);
   IF (TempStr <> '') THEN
@@ -371,64 +322,62 @@ BEGIN
     Changed := TRUE;
 END;
 
-PROCEDURE InputWordWOC(S: AStr; VAR W: Word; InputFlags: InputFlagSet; LowNum,HighNum: Word);
+PROCEDURE InputInteger(S: AStr; VAR I: Integer; InputFlags: InputFlagSet; LowNum,HighNum: Integer; VAR Changed: Boolean);
 VAR
-  Changed: Boolean;
-BEGIN
-  Changed := FALSE;
-  InputWordWC(S,W,InputFlags,LowNum,HighNum,Changed);
-END;
-
-PROCEDURE InputIntegerWC(S: AStr; VAR I: Integer; InputFlags: InputFlagSet; LowNum,HighNum: Integer; VAR Changed: Boolean);
-VAR
-  TempStr: Str5;
+  TempStr: STRING[6];
   SaveI: Integer;
-  TempI: Longint;
+  TempI: LongInt;
 BEGIN
+  Changed := FALSE; { LeeW: Added }
   SaveI := I;
-  IF (NOT (DisplayValue IN InputFlags)) THEN
-    Prt(S+' (^1'+IntToStr(LowNum)+'^2-^1'+IntToStr(HighNum)+'^2): ')
+  {/}
+  IF NOT (NoInputRange IN InputFlags) THEN
+    S := '^2'+S+' ^2(^1'+IntToStr(LowNum)+'^2-^1'+IntToStr(HighNum)+'^2)' { Show valid input range }
   ELSE
-    Prt(S+' (^1'+IntToStr(LowNum)+'^2-^1'+IntToStr(HighNum)+'^2) [^1'+IntToStr(I)+'^2]: ');
-  MPL(Length(IntToStr(HighNum)));
+    S := '^2'+S;
+  IF (InteractiveEdit IN InputFlags) AND NOT (OkANSI) THEN
+    S := S+'^2 [^1'+IntToStr(I)+'^2]: ' { Show current value }
+  ELSE
+    S := S+'^2: ';
+  Prt(S);
+  {/}
   TempStr := IntToStr(I);
   InputMain(TempStr,Length(IntToStr(HighNum)),InputFlags);
   IF (TempStr <> '') THEN
-  BEGIN
-    TempI := StrToInt(TempStr);
-    IF ((TempI >= LowNum) AND (TempI <= HighNum)) THEN
-      I := TempI
-    ELSE
     BEGIN
-      NL;
-      Print('^8The range must be from '+IntToStr(LowNum)+' to '+IntToStr(HighNum)+'!^0');
-      PauseScr(FALSE);
+      TempI := StrToInt(TempStr);
+      IF ((TempI >= LowNum) AND (TempI <= HighNum)) THEN
+        I := TempI
+      ELSE
+        BEGIN
+          NL;
+          Print('^8The range must be from '+IntToStr(LowNum)+' to '+IntToStr(HighNum)+'!^0');
+          PauseScr(FALSE);
+        END;
     END;
-  END;
   IF (SaveI <> I) THEN
     Changed := TRUE;
 END;
 
-PROCEDURE InputIntegerWOC(S: AStr; VAR I: Integer; InputFlags: InputFlagSet; LowNum,HighNum: Integer);
+PROCEDURE InputByte(S: AStr; VAR B: Byte; InputFlags: InputFlagSet; LowNum,HighNum: Byte; VAR Changed: Boolean);
 VAR
-  Changed: Boolean;
-BEGIN
-  Changed := FALSE;
-  InputIntegerWC(S,I,InputFlags,LowNum,HighNum,Changed);
-END;
-
-PROCEDURE InputByteWC(S: AStr; VAR B: Byte; InputFlags: InputFlagSet; LowNum,HighNum: Byte; VAR Changed: Boolean);
-VAR
-  TempStr: Str3;
+  TempStr: STRING[4];
   SaveB: Byte;
   TempB: Integer;
 BEGIN
+  Changed := FALSE; { LeeW: Added }
   SaveB := B;
-  IF (NOT (DisplayValue IN InputFlags)) THEN
-    Prt('^2'+S+' (^1'+IntToStr(LowNum)+'^2-^1'+IntToStr(HighNum)+'^2): ')
+  {/}
+  IF NOT (NoInputRange IN InputFlags) THEN
+    S := '^2'+S+' ^2(^1'+IntToStr(LowNum)+'^2-^1'+IntToStr(HighNum)+'^2)' { Show valid input range }
   ELSE
-    Prt('^2'+S+' (^1'+IntToStr(LowNum)+'^2-^1'+IntToStr(HighNum)+'^2) [^1'+IntToStr(B)+'^2]: ');
-  MPL(Length(IntToStr(HighNum)));
+    S := '^2'+S;
+  IF (InteractiveEdit IN InputFlags) AND NOT (OkANSI) THEN
+    S := S+'^2 [^1'+IntToStr(B)+'^2]: ' { Show current value }
+  ELSE
+    S := S+'^2: ';
+  Prt(S);
+  {/}
   TempStr := IntToStr(B);
   InputMain(TempStr,Length(IntToStr(HighNum)),InputFlags);
   IF (TempStr <> '') THEN
@@ -447,38 +396,24 @@ BEGIN
     Changed := TRUE;
 END;
 
-PROCEDURE InputByteWOC(S: AStr; VAR B: Byte; InputFlags: InputFlagSet; LowNum,HighNum: Byte);
-VAR
-  Changed: Boolean;
-BEGIN
-  Changed := FALSE;
-  InputByteWC(S,B,InputFlags,LowNum,HighNum,Changed);
-END;
-
-PROCEDURE InputWN1(DisplayStr: AStr; VAR InputStr: AStr; MaxLen: Byte; InputFlags: InputFlagSet; VAR Changed: Boolean);
+PROCEDURE InputString(S: AStr; VAR InputStr: AStr; MaxLen: Byte; InputFlags: InputFlagSet; VAR Changed: Boolean);
 VAR
   SaveInputStr: AStr;
 BEGIN
-  Prt(DisplayStr);  
-  IF (NOT (ColorsAllowed IN InputFlags)) THEN
+  Changed := FALSE;
+  Prt(S);  
+  IF NOT (NoInputField IN InputFlags) THEN
     MPL(MaxLen);
   SaveInputStr := InputStr;
   InputMain(SaveInputStr,MaxLen,InputFlags);
-  IF (SaveInputStr = '') THEN
-    SaveInputStr := InputStr;
-  IF (SaveInputStr = ' ') THEN
-    IF PYNQ('Blank String? ',0,FALSE) THEN
+  IF (SaveInputStr = '') OR ((SaveInputStr = ' ') AND NOT (NoBlankPrompt IN InputFlags)) THEN
+    IF (NoBlankPrompt IN InputFlags) OR PYNQ('Blank String?',0,FALSE) THEN
       SaveInputStr := ''
     ELSE
       SaveInputStr := InputStr;
   IF (SaveInputStr <> InputStr) THEN
     Changed := TRUE;
   InputStr := SaveInputStr;
-END;
-
-PROCEDURE InputWNWC(DisplayStr: AStr; VAR InputStr: AStr; MaxLen: Byte; VAR Changed: Boolean);
-BEGIN
-  InputWN1(DisplayStr,InputStr,MaxLen,[ColorsAllowed,InterActiveEdit],Changed);
 END;
 
 PROCEDURE InputMain(VAR S: STRING; MaxLen: Byte; InputFlags: InputFlagSet);
@@ -532,14 +467,13 @@ VAR
   END;
 
 BEGIN
-(*
-  IF (NOT (NoInputField IN InputFlags)) THEN
-    MPL(MaxLen); { LeeW: Added }
-*)
-
+  IF (AllowNegative IN InputFlags) THEN
+    Inc(MaxLen); {For the "-"}
+  IF (NOT (NoInputField IN InputFlags)) AND (OkANSI) THEN
+    MPL(MaxLen); 
   IF (IsPassword IN InputFlags) THEN
     Echo := FALSE;
-
+    
   FirstKey := FALSE;
   IF (NOT (InterActiveEdit IN InputFlags)) OR (IsPassword IN InputFlags) OR NOT (OkANSI OR OkAvatar) THEN
     BEGIN
@@ -571,8 +505,14 @@ BEGIN
     SetCursor(InsertMode);
     c := GetKey;
 
-    IF (FirstKey) AND (C = 32) THEN
+    IF (FirstKey) AND (C = 32) THEN { SPACE - Clears field }
       C := 24;
+      
+    IF (C = 27) THEN { ESC - Aborts }
+      BEGIN
+        S := SaveS;
+        EXIT;
+      END;
 
     FirstKey := FALSE;
 
@@ -602,7 +542,7 @@ BEGIN
           BEGIN
             IF (NOT (NumbersOnly IN InputFlags)) THEN
               BEGIN
-                IF (UpperOnly IN InputFlags) OR (IsPassword IN InputFlags) THEN
+                IF (CapAll IN InputFlags) OR (IsPassword IN InputFlags) THEN
                   c := Ord(UpCase(Char(c)));
                 IF (CapWords IN InputFlags) THEN
                   IF (Cp > 1) THEN
@@ -674,6 +614,7 @@ BEGIN
     END;
     S[0] := Chr(Cl);
   UNTIL (c = 13) OR (HangUp);
+  
   {
   IF ((Redisplay IN InputFlags) AND (S = '')) THEN
     BEGIN

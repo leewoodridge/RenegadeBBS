@@ -1017,8 +1017,6 @@ BEGIN
           'L' : BEGIN
                   ClrScr;
                   ShowLogs;
-                  NL;
-                  PauseScr(FALSE);
                 END;
           'M' : IF (CPW) THEN
                 BEGIN
@@ -1048,10 +1046,7 @@ BEGIN
           'R' : IF (CPW) THEN
                 BEGIN
                   ClrScr;
-                  Print('^1User''s private messages to read (1-'+IntToStr(MaxUsers - 1)+')?^0');
-                  NL;
-                  Print('Enter User Number, Name, or Partial Search String.');
-                  Prt(': ');
+                  Print('^0Read private messages of which user?');
                   lFindUserWS(UNum);
                   IF (UNum < 1) THEN
                   BEGIN
@@ -1081,10 +1076,7 @@ BEGIN
           'W' : IF (CPW) THEN
                 BEGIN
                   ClrScr;
-                  Print('^1User to send private message from (1-'+IntToStr(MaxUsers - 1)+')?^0');
-                  NL;
-                  Print('Enter User Number, Name, or Partial Search String.');
-                  Prt(': ');
+                  Print('^0Send private message from which user?');
                   lFindUserWS(UNum);
                   IF (UNum < 1) THEN
                   BEGIN

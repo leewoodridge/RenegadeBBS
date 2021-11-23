@@ -1,5 +1,7 @@
 {$A+,B-,D+,E-,F+,I-,L+,N-,O+,R-,S+,V-}
-
+{
+11/15/2021 added slog loaded menu entry
+}
 UNIT Menus2;
 
 INTERFACE
@@ -100,6 +102,7 @@ BEGIN
     END;
 
     Update_Node(MemMenu.NodeActivityDesc,TRUE);
+    SysOpLog('Loaded Menu #'+IntToStr(CurMenu)+' ('+MemMenu.LDesc[1]+')'); { LeeW: Added }
 
     MQArea := FALSE;
     FQArea := FALSE;
@@ -334,9 +337,9 @@ VAR
     BEGIN
       CLS;
       {
-	  NL;
       NL;
-	  }
+      NL;
+      }
     END;
     IF (NOT (NoMenuTitle IN MemMenu.MenuFlags)) THEN
     BEGIN

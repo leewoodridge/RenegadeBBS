@@ -7,19 +7,14 @@ INTERFACE
 USES
   Common;
 
-FUNCTION Inputmessage(Pub,
-                      IsReply: Boolean;
-                      CONST MsgTitle: Str40;
-                      VAR MHeader: MHeaderRec;
-                      CONST ReadInMsg: AStr;
-                      MaxLineLen: Byte;
-                      MaxMsgLines: Integer): Boolean;
+FUNCTION InputMessage(Pub, IsReply: Boolean; CONST MsgTitle: Str40; VAR MHeader: MHeaderRec;
+                      CONST ReadInMsg: AStr; MaxLineLen: Byte; MaxMsgLines: Integer): Boolean;
 PROCEDURE Anonymous(Offline: Boolean; VAR MHeader: MHeaderRec);
 
 IMPLEMENTATION
 
 USES
-  Crt,
+  CRT,
   Common5,
   File8,
   File0,
@@ -41,82 +36,82 @@ VAR
   Counter: Byte;
 BEGIN
   IF (ReadMsgArea <> -1) THEN
-  BEGIN
-    An := MemMsgArea.Anonymous;
-    IF (An = ATNo) AND (AACS(General.AnonPubPost) AND (NOT Offline)) THEN
-      An := ATYes;
-    IF (RPostAn IN ThisUser.ACFlags) THEN
-      An := ATNo;
-  END
+    BEGIN
+      An := MemMsgArea.Anonymous;
+      IF (An = ATNo) AND (AACS(General.AnonPubPost) AND (NOT Offline)) THEN
+        An := ATYes;
+      IF (RPostAn IN ThisUser.ACFlags) THEN
+        An := ATNo;
+    END
   ELSE IF (AACS(General.AnonPrivPost)) THEN
     An := ATYes
   ELSE
     An := ATNo;
   IF (Offline) THEN
-  BEGIN
-    Abort := FALSE;
-    Next := FALSE;
-    IF (An = ATNo) THEN
-      FOR Counter := 1 TO 5 DO
-      BEGIN
-        HeaderL := Headerline(MHeader,FileSize(MsgHdrF),FileSize(MsgHdrF),Counter,Junk);
-        IF (HeaderL <> '') THEN
-          PrintACR(HeaderL);
-      END
+    BEGIN
+      Abort := FALSE;
+      Next := FALSE;
+      IF (An = ATNo) THEN
+        FOR Counter := 1 TO 5 DO
+          BEGIN
+            HeaderL := Headerline(MHeader,FileSize(MsgHdrF),FileSize(MsgHdrF),Counter,Junk);
+            IF (HeaderL <> '') THEN
+              PrintACR(HeaderL);
+          END
       ELSE
-      BEGIN
-        ReadMsg(FileSize(MsgHdrF),FileSize(MsgHdrF),FileSize(MsgHdrF));
-        Reset(MsgHdrF);
-        IF (IOResult = 2) THEN
-          ReWrite(MsgHdrF);
-        Reset(MsgTxtF,1);
-        IF (IOResult = 2) THEN
-          ReWrite(MsgTxtF,1);
-        IF (IOResult <> 0) THEN
-          SysOpLog('Anon: error opening message areas.');
-      END;
-  END;
+        BEGIN
+          ReadMsg(FileSize(MsgHdrF),FileSize(MsgHdrF),FileSize(MsgHdrF));
+          Reset(MsgHdrF);
+          IF (IOResult = 2) THEN
+            ReWrite(MsgHdrF);
+          Reset(MsgTxtF,1);
+          IF (IOResult = 2) THEN
+            ReWrite(MsgTxtF,1);
+          IF (IOResult <> 0) THEN
+            SysOpLog('Anon: error opening message areas.');
+        END;
+    END;
   CASE An OF
-    ATNo       : ;
-    ATForced   : IF (CoSysOp) THEN
-                   MHeader.From.Anon := 2
-                 ELSE
-                   MHeader.From.Anon := 1;
-    ATYes      : BEGIN
-                   NL;
-                   IF PYNQ(AOnOff(ReadMsgArea <> - 1,'Post anonymously? ','Send anonymously? '),0,FALSE) THEN
-                     IF (CoSysOp) THEN
-                       MHeader.From.Anon := 2
-                     ELSE
-                       MHeader.From.Anon := 1;
-                 END;
-    ATDearAbby : BEGIN
-                   NL;
-                   Print(AOnOff(ReadMsgArea <> - 1,'Post as:','Send as:'));
-                   NL;
-                   Print('1. Abby');
-                   Print('2. Problemed Person');
-                   Print('3. '+Caps(ThisUser.Name));
-                   NL;
-                   Prt('Which? ');
-                   LOneK('',Cmd,'123'^M,TRUE,TRUE);
-                   CASE Cmd OF
-                     '1' : MHeader.From.Anon := 3;
-                     '2' : MHeader.From.Anon := 4;
-                   END;
-                 END;
-     ATAnyName : BEGIN
-                   NL;
-                   Print('You can post under any name in this area.');
-                   NL;
-                   Prt('Name: ');
-                   InputDefault(UName,MHeader.From.A1S,36,[InterActiveEdit],TRUE);
-                   IF (UName <> MHeader.From.A1S) THEN
-                   BEGIN
-                     MHeader.From.Anon := 5;
-                     MHeader.From.A1S := Caps(UName);
-                   END;
-                 END;
+    ATNo        : ;
+    ATForced    : IF (CoSysOp) THEN
+                    MHeader.From.Anon := 2
+                  ELSE
+                    MHeader.From.Anon := 1;
+    ATYes       : BEGIN
+                    NL;
+                    IF PYNQ(AOnOff(ReadMsgArea <> - 1,'Post anonymously? ','Send anonymously? '),0,FALSE) THEN
+                      IF (CoSysOp) THEN
+                        MHeader.From.Anon := 2
+                      ELSE
+                        MHeader.From.Anon := 1;
+                  END;
+    ATDearAbby  : BEGIN
+                    NL;
+                    Print('^0'+AOnOff(ReadMsgArea <> - 1,'Post as:','Send as:'));
+                    NL;
+                    Print('^0(^11^0) Abby');
+                    Print('^0(^12^0) Problemed Person');
+                    Print('^0(^13^0) '+Caps(ThisUser.Name));
+                    NL;
+                    InputChar(': ',Cmd,'123'^M,[CapAll]);
+                    CASE Cmd OF
+                      '1' : MHeader.From.Anon := 3;
+                      '2' : MHeader.From.Anon := 4;
+                    END;
+                  END;
+     ATAnyName  : BEGIN {LeeW: Changed input proc}
+                    NL;
+                    Print('You can post under any name in this area.');
+                    NL;
+                    UName := MHeader.From.A1S;
+                    InputString('Name: ',UName,36,[InteractiveEdit],Changed);
+                    {InputDefault(UName,MHeader.From.A1S,36,[InterActiveEdit],TRUE);}
+                    IF (UName <> MHeader.From.A1S) THEN
+                      BEGIN
+                        MHeader.From.Anon := 5;
+                        MHeader.From.A1S := Caps(UName);
+                      END;
+                  END;
   END;
 END;
 
@@ -135,19 +130,19 @@ VAR
   PROCEDURE BkSpc;
   BEGIN
     IF (CKeyPos > 1) THEN
-    BEGIN
-      IF (S[CKeyPos - 2] = '^') AND (S[CKeyPos - 1] IN [#0..#9]) THEN
-        BEGIN
-          Dec(CKeyPos);
-          UserColor(0);
-        END
-      ELSE
-        BEGIN
-          BackSpace;
-          Dec(RP);
-        END;
-      Dec(CKeyPos);
-    END;
+      BEGIN
+        IF (S[CKeyPos - 2] = '^') AND (S[CKeyPos - 1] IN [#0..#9]) THEN
+          BEGIN
+            Dec(CKeyPos);
+            UserColor(0);
+          END
+        ELSE
+          BEGIN
+            BackSpace;
+            Dec(RP);
+          END;
+        Dec(CKeyPos);
+      END;
   END;
 
 BEGIN
@@ -331,16 +326,11 @@ BEGIN
   Write_Msg := FALSE;
 END;
 
-FUNCTION Inputmessage(Pub,
-                      IsReply: Boolean;
-                      CONST MsgTitle: Str40;
-                      VAR MHeader: MHeaderRec;
-                      CONST ReadInMsg: AStr;
-                      MaxLineLen: Byte;
-                      MaxMsgLines: Integer): Boolean;
+FUNCTION Inputmessage(Pub, IsReply: Boolean; CONST MsgTitle: Str40; VAR MHeader: MHeaderRec;
+                      CONST ReadInMsg: AStr; MaxLineLen: Byte; MaxMsgLines: Integer): Boolean;
 CONST
-  TopScreen = 3;       {first screen line for Text entry}
-  ScrollSize = 5;      {number OF lines to scroll by}
+  TopScreen = 3; { First screen line for text entry }
+  ScrollSize = 5; { Number of lines to scroll by }
 TYPE
   LinePointer = ^LineArray;
   LineArray = ARRAY [1..500] OF STRING[120];
@@ -348,11 +338,8 @@ VAR
   LinePtr: LinePointer;
   PhyLine: ARRAY [1..20] OF STRING[78];
   TotalLines: 1..500;
-
   MsgSubj: Str40;
-
   MsgTo: Str36;
-
   ScreenLines,
   MaxLines,
   LastQuoteLine,
@@ -360,7 +347,6 @@ VAR
   CurrentLine,
   TopLine,
   CCol: Integer;
-
   DisableMCI,
   CantAbort,
   Insert_Mode,
@@ -369,7 +355,7 @@ VAR
   PROCEDURE DoLines;
   BEGIN
     IF (OkANSI OR OkAvatar) THEN
-      Print('^2旼컴:컴컴:컴컴:컴컴:컴컴:컴컴:컴컴:컴컴쩡컴?컴컴:컴컴:컴컴:컴컴:컴컴:컴컴:컴커^0')
+      Print('^2旼컴:컴컴:컴컴:컴컴:컴컴:컴컴:컴컴:컴컴쩡컴:컴컴:컴컴:컴컴:컴컴:컴컴:컴컴:컴커^0')
     ELSE
       Print('[---:----:----:----:----:----:----:----|----:----:----:----:----:----:----:---]');
   END;
@@ -1310,14 +1296,8 @@ VAR
   PROCEDURE PrintMsgTitle;
   BEGIN
     NL;
-    (*
-    Print(FString.lentermsg1);
-    *)
-    lRGLngStr(6,FALSE);
-    (*
-    Print(FString.lentermsg2);
-    *)
-    lRGLNGStr(7,FALSE);
+    lRGLngStr(6,FALSE); (*Print(FString.lentermsg1);*)
+    lRGLNGStr(7,FALSE); (*Print(FString.lentermsg2);*)
     DoLines;
   END;
 
@@ -1346,43 +1326,45 @@ VAR
       TempMsgTo: Str36;
       UNum: Integer;
     BEGIN
-      { Print(FString.default + ^M^J); }
-      lRGLngStr(34,FALSE);
+      lRGLngStr(34,FALSE); { Print(FString.default + ^M^J); }
       IF (Pub) AND (NOT (MAInternet IN MemMsgArea.MAFlags)) THEN
-      BEGIN
-        Prt('To: ');
-        IF (MsgTo1 <> '') THEN
-          InputDefault(TempMsgTo,MsgTo1,36,[NoLineFeed,CapWords],FALSE)
-        ELSE
         BEGIN
-          MPL(36);
-          InputMain(TempMsgTo,36,[NoLineFeed,CapWords]);
-        END;
-        MsgTo1 := TempMsgTo;
-        UserColor(3);
-        FOR UNum := 1 TO LennMCI(MsgTo1) DO
-          BackSpace;
-        UNum := StrToInt(MsgTo1);
-        IF (UNum >= 1) AND (UNum <= (MaxUsers - 1)) AND NOT (NetMail IN MHeader.Status) THEN
-        BEGIN
-          LoadURec(User,UNum);
-          MsgTo1 := Caps(User.Name);
-          MHeader.MTO.UserNum := UNum;
-          MHeader.MTO.Real := User.RealName;
-          IF (Pub) AND (MARealName IN MemMsgArea.MAFlags) THEN
-            MsgTo1 := Caps(User.RealName)
+          IF (MsgTo1 <> '') THEN
+            BEGIN
+              TempMsgTo := MsgTo1;
+              InputString('^2To: ',TempMsgTo,36,[CapWords,InteractiveEdit,NoBlankPrompt,NoLineFeed],Changed); {lw}
+              {InputDefault(TempMsgTo,MsgTo1,36,[NoLineFeed,CapWords],FALSE)}
+            END
           ELSE
-            MsgTo1 := Caps(User.Name);
-        END;
-        IF (SQOutSp(MsgTo1) = '') THEN
-           MsgTo1 := 'All';
-        IF (MsgTo1 <> '') THEN
-        BEGIN
-          Prompt(MsgTo1);
-          UserColor(0);
-          NL;
-        END;
-      END
+            BEGIN
+              InputString('^2To: ',TempMsgTo,36,[CapWords,NoBlankPrompt,NoLineFeed],Changed); {lw}
+              {InputMain(TempMsgTo,36,[NoLineFeed,CapWords]);}
+            END;
+          MsgTo1 := TempMsgTo;
+          UserColor(3);
+          FOR UNum := 1 TO LennMCI(MsgTo1) DO
+            BackSpace;
+          UNum := StrToInt(MsgTo1);
+          IF (UNum >= 1) AND (UNum <= (MaxUsers - 1)) AND NOT (NetMail IN MHeader.Status) THEN
+            BEGIN
+              LoadURec(User,UNum);
+              MsgTo1 := Caps(User.Name);
+              MHeader.MTO.UserNum := UNum;
+              MHeader.MTO.Real := User.RealName;
+              IF (Pub) AND (MARealName IN MemMsgArea.MAFlags) THEN
+                MsgTo1 := Caps(User.RealName)
+              ELSE
+                MsgTo1 := Caps(User.Name);
+            END;
+          IF (SQOutSp(MsgTo1) = '') THEN
+            MsgTo1 := 'All';
+          IF (MsgTo1 <> '') THEN
+            BEGIN
+              Prompt(MsgTo1);
+              UserColor(0);
+              NL;
+            END;
+        END
       ELSE IF (NOT (MAInternet IN MemMsgArea.MAFlags)) THEN
         Print(PadLeftStr('^2To: ^3'+Caps(MsgTo1),40));
     END;
@@ -1392,24 +1374,27 @@ VAR
       TempMsgSubj: Str40;
     BEGIN
       IF (MHeader.FileAttached = 0) AND (NOT CantAbort2) THEN
-      BEGIN
-        Prt('Subject: ');
-        IF (MsgSubj1 <> '') THEN
-          InputDefault(TempMsgSubj,MsgSubj1,40,[NoLineFeed],FALSE)
-        ELSE
-        BEGIN
-          MPL(40);
-          InputMain(TempMsgSubj,40,[NoLineFeed]);
-        END;
-        IF (TempMsgSubj <> '') THEN
-          MsgSubj1 := TempMsgSubj
-        ELSE
         BEGIN
           IF (MsgSubj1 <> '') THEN
-            Prompt('^3'+MsgSubj1+'^0');
-        END;
-        NL;
-      END
+            BEGIN
+              TempMsgSubj := MsgSubj1;
+              InputString('^2Subject: ',TempMsgSubj,40,[InteractiveEdit,NoLineFeed],Changed);
+              {InputDefault(TempMsgSubj,MsgSubj1,40,[NoLineFeed],FALSE)}
+            END
+          ELSE
+            BEGIN
+              InputString('^2Subject: ',TempMsgSubj,40,[NoLineFeed],Changed);
+              {InputMain(TempMsgSubj,40,[NoLineFeed]);}
+            END;
+          IF (TempMsgSubj <> '') THEN
+            MsgSubj1 := TempMsgSubj
+          ELSE
+            BEGIN
+              IF (MsgSubj1 <> '') THEN
+                Prompt('^3'+MsgSubj1+'^0');
+            END;
+          NL;
+        END
       ELSE
         MsgSubj1 := MHeader.Subject;
       UserColor(0);
@@ -1425,8 +1410,7 @@ VAR
     BEGIN
       NL;
       Prt('File name: ');
-      MPL(40);
-      InputMain(FileName,SizeOf(FileName)-1,[UpperOnly]);
+      InputMain(FileName,SizeOf(FileName)-1,[CapAll]);
       NL;
       IF (NOT CoSysOp) OR (NOT IsUL(FileName)) THEN
         FileName := General.FileAttachPath+StripName(FileName);
@@ -1521,8 +1505,7 @@ VAR
       IF (CoSysOp) THEN
       BEGIN
         Prt('Enter file to import [Enter=Upload]: ');
-        MPL(40);
-        InputMain(TempStr1,40,[UpperOnly]);
+        InputMain(TempStr1,40,[CapAll]);
       END;
       IF (TempStr1 = '') THEN
       BEGIN
@@ -1597,8 +1580,7 @@ VAR
         REPEAT
           ExitMsg := TRUE;
           NL;
-          Prt('Full screen editor (^1?^2=^1Help^2): ');
-          LOneK('',Cmd,^M'ACFMQSTU?',TRUE,TRUE);
+          InputChar('^2Full Screen Editor [(^1?^2)Help]: ',Cmd,^M'ACFMQSTU?',[CapAll]);
           NL;
           CASE Cmd OF
             'A' : IF (CantAbort1) THEN
@@ -1781,8 +1763,7 @@ VAR
             SaveLine := FALSE;
             ShowCont := TRUE;
             NL;
-            Prt('Line editor (^1?^2=^1Help^2): ');
-            LOneK('',Cmd,^M'ACDFILMOPQRSTUZ?',TRUE,TRUE);
+            InputChar('Line editor (^1?^2=^1Help^2): ',Cmd,^M'ACDFILMOPQRSTUZ?',[CapAll]);
             IF (Cmd <> ^M) THEN
               NL;
             CASE Cmd OF
@@ -1816,7 +1797,7 @@ VAR
                     ELSE
                     BEGIN
                       LineNum1 := -1;
-                      InputIntegerWOC('Delete which line',LineNum1,[NumbersOnly],1,(TotalLines - 1));
+                      InputInteger('Delete which line',LineNum1,[NumbersOnly],1,(TotalLines - 1),Changed);
                       IF (LineNum1 >= 1) AND (LineNum1 <= (TotalLines - 1)) THEN
                       BEGIN
                         Abort := FALSE;
@@ -1885,7 +1866,7 @@ VAR
                     ELSE
                     BEGIN
                       LineNum1 := -1;
-                      InputIntegerWOC('Insert before which line',LineNum1,[NumbersOnly],1,TotalLines);
+                      InputInteger('Insert before which line',LineNum1,[NumbersOnly],1,TotalLines,Changed);
                       IF (LineNum1 >= 1) AND (LineNum1 <= TotalLines) THEN
                       BEGIN
                         NL;
@@ -1918,7 +1899,7 @@ VAR
                       ELSE
                       BEGIN
                         LineNum1 := -1;
-                        InputIntegerWOC('%LFStaring line number',LineNum1,[NumbersOnly],1,(TotalLines - 1));
+                        InputInteger('%LFStaring line number',LineNum1,[NumbersOnly],1,(TotalLines - 1),Changed);
                         IF (LineNum1 >= 1) AND (LineNum1 <= (TotalLines - 1)) THEN
                         BEGIN
                           NL;
@@ -1937,7 +1918,7 @@ VAR
                     ELSE
                     BEGIN
                       LineNum1 := -1;
-                      InputIntegerWOC('Line to replace string',LineNum1,[NumbersOnly],1,(TotalLines - 1));
+                      InputInteger('Line to replace string',LineNum1,[NumbersOnly],1,(TotalLines - 1),Changed);
                       IF (LineNum1 >= 1) AND (LineNum1 <= (TotalLines - 1)) THEN
                       BEGIN
                         TempStr3 := LinePtr^[LineNum1];
@@ -2078,7 +2059,7 @@ VAR
                     ELSE
                     BEGIN
                       LineNum1 := -1;
-                      InputIntegerWOC('Line number to replace',LineNum1,[NumbersOnly],1,(TotalLines - 1));
+                      InputInteger('Line number to replace',LineNum1,[NumbersOnly],1,(TotalLines - 1),Changed);
                       IF ((LineNum1 >= 1) AND (LineNum1 <= (TotalLines - 1))) THEN
                       BEGIN
                         Abort := FALSE;

@@ -1,22 +1,22 @@
 {$A+,B-,D+,E-,F+,I-,L+,N-,O+,R-,S+,V-}
-{	  (                                       	}
-{	 )\ )                           (         	}
-{	(()/(  (         (  (  (     )  )\ )  (		}
-{	 \(_))))\ (     ))\ )\))( ( /( (()/( ))\	}
-{	(_)) /((_))\ ) /((_|(_))\ )(_)) ((_))(( )	}
-{	| _ \_)) _(_/((_)) \( )(_|(_)_  _| (_))/	}
-{	|   / -_) ' \)) -_)/ _` |/ _` / _` / -_)	}
-{	|_|_\___|_||_|\___|\__, |\__,_\__,_\___|	}
-{	------------------ |___/ ----------------	}
-{	B U L L E T I N   B O A R D   S Y S T E M	}
-{	-----------------------------------------	}
+{     (                                         }
+{    )\ )                           (           }
+{   (()/(  (         (  (  (     )  )\ )  (     }
+{    \(_))))\ (     ))\ )\))( ( /( (()/( ))\    }
+{   (_)) /((_))\ ) /((_|(_))\ )(_)) ((_))(( )   }
+{   | _ \_)) _(_/((_)) \( )(_|(_)_  _| (_))/    }
+{   |   / -_) ' \)) -_)/ _` |/ _` / _` / -_)    }
+{   |_|_\___|_||_|\___|\__, |\__,_\__,_\___|    }
+{   ------------------ |___/ ----------------   }
+{   B U L L E T I N   B O A R D   S Y S T E M   }
+{   -----------------------------------------   }
 {
-	[DONE]
-	 - Removed all strings from FAE language file and the proc
-	 - Removed all MCIs from FAEMCI and the proc
-	[TO DO]
-	 - aesthetics
-	 - test fa list longer than 1 page for pagination
+    [DONE]
+     - Removed all strings from FAE language file and the proc
+     - Removed all MCIs from FAEMCI and the proc
+    [TO DO]
+     - aesthetics
+     - test fa list longer than 1 page for pagination
 }
 
 UNIT SysOp9; { File Area Editor }
@@ -125,26 +125,26 @@ VAR
     ELSE
     BEGIN
       MCIVars1.FirstRecNum := -1;
-      InputIntegerWOC('%LFFile area to start at? @',MCIVars1.FirstRecNum,[NumbersOnly],1,NumFileAreas);
+      InputInteger('%LFFile area to start at? ',MCIVars1.FirstRecNum,[NumbersOnly],1,NumFileAreas,Changed);
       IF (MCIVars1.FirstRecNum >= 1) AND (MCIVars1.FirstRecNum <= NumFileAreas) THEN
       BEGIN
         MCIVars1.LastRecNum := -1;
-        InputIntegerWOC('%LFFile area to end at? @',MCIVars1.LastRecNum,[NumbersOnly],1,NumFileAreas);
+        InputInteger('%LFFile area to end at? ',MCIVars1.LastRecNum,[NumbersOnly],1,NumFileAreas,Changed);
         IF (MCIVars1.LastRecNum >= 1) AND (MCIVars1.LastRecNum <= NumFileAreas) THEN
         BEGIN
           IF (MCIVars1.FirstRecNum > MCIVars1.LastRecNum) OR (MCIVars1.LastRecNum < MCIVars1.FirstRecNum) THEN
             Prompt('%LF^8Invalid record number order!^0%LF%PA')
           ELSE
           BEGIN
-            LOneK('%LFChange to which drive? (^1A^2-^1Z^2): @',MCIVars1.Drive,'ABCDEFGHIJKLMNOPQRSTUVWXYZ'^M,TRUE,TRUE);
+            InputChar('%LFChange to which drive? (^1A^2-^1Z^2): ',MCIVars1.Drive,'ABCDEFGHIJKLMNOPQRSTUVWXYZ'^M,[CapAll]);
             ChDir(MCIVars1.Drive+':');
             IF (IOResult <> 0) THEN
-			  Messages(7,0,'') (* Prompt('%LF^8Invalid drive!^0%LF%PA') {LeeW: Messages} *)
+              Messages(7,0,'') (* Prompt('%LF^8Invalid drive!^0%LF%PA') {LeeW: Messages} *)
             ELSE
             BEGIN
               ChDir(StartDir);
               Prompt('%LFUpdating the drive for file area '+IntToStr(MCIVars1.FirstRecNum)+
-			  ' to '+IntToStr(MCIVars1.LastRecNum)+'...');
+              ' to '+IntToStr(MCIVars1.LastRecNum)+'...');
               Reset(FileAreaFile);
               FOR RecNum := MCIVars1.FirstRecNum TO MCIVars1.LastRecNum DO
               BEGIN
@@ -159,7 +159,7 @@ VAR
               LastError := IOResult;
               Prompt('Done!');
               SysOpLog('* Changed file areas: '+IntToStr(MCIVars1.FirstRecNum)+
-			  ' - '+IntToStr(MCIVars1.LastRecNum)+' to '+MCIVars1.Drive+':\');
+              ' - '+IntToStr(MCIVars1.LastRecNum)+' to '+MCIVars1.Drive+':\');
             END;
           END;
         END;
@@ -182,7 +182,7 @@ VAR
     ELSE
     BEGIN
       RecNumToDelete := -1;
-      InputIntegerWOC('%LFFile area to delete? @',RecNumToDelete,[NumbersOnly],1,NumFileAreas);
+      InputInteger('%LFFile area to delete? ',RecNumToDelete,[NumbersOnly],1,NumFileAreas,Changed);
       IF (RecNumToDelete >= 1) AND (RecNumToDelete <= NumFileAreas) THEN
       BEGIN
         Reset(FileAreaFile);
@@ -191,7 +191,7 @@ VAR
         Close(FileAreaFile);
         LastError := IOResult;
         Prompt('%LFFile area: '+MemFileArea.AreaName);
-		
+        
         IF PYNQ('%LFAre you sure you want to delete it?',0,FALSE) THEN
         BEGIN
           Prompt('%LF[> Deleting file area ...');
@@ -247,7 +247,7 @@ VAR
   { --- }
   
   PROCEDURE CheckFileArea(MemFileArea: FileAreaRecordType; MCIVars1: MCIVarRecord; 
-						  StartErrMsg, EndErrMsg: Byte; VAR Ok: Boolean);
+                          StartErrMsg, EndErrMsg: Byte; VAR Ok: Boolean);
   VAR
     Counter: Byte;
   BEGIN
@@ -308,32 +308,33 @@ VAR
             Prompt('^1Editing file area '+IntToStr(MCIVars1.RecNumToEdit)+' of '+IntToStr(NumFileAreas))
           ELSE
             Prompt('^1Inserting file area '+IntToStr(MCIVars1.RecNumToEdit)+' of '+IntToStr(NumFileAreas + 1));
-		  NL;
-		  PrintACR('^1(^01^1) Area Name    : ^0'+MemFileArea.AreaName);
-		  PrintACR('^1(^02^1) File Name    : ^0'+MemFileArea.FileName+' ^1(^0'+GetDirPath(MemFileArea)+'.*^1)');
-		  PrintACR('^1(^03^1) DL Path      : ^0'+MemFileArea.DLPath);
-		  PrintACR('^1(^04^1) UL Path      : ^0'+MemFileArea.ULPath);
-		  PrintACR('^1(^05^1) Area ACS     : ^0'+AOnOff((MemFileArea.ACS = ''),'*None*',MemFileArea.ACS));
-		  PrintACR('^1(^06^1) DL/UL ACS    : ^0'+AOnOff((MemFileArea.DLACS = ''),'*None*',MemFileArea.DLACS)+
-		  '^1 / ^0'+AOnOff((MemFileArea.ULACS = ''),'*None*',MemFileArea.ULACS));
-		  PrintACR('^1(^07^1) Max Files    : ^0'+IntToStr(MemFileArea.MaxFiles));
-		  PrintACR('^1(^08^1) Password     : ^0'+AOnOff((MemFileArea.Password = ''),'*None*',MemFileArea.Password));
-		  PrintACR('^1(^09^1) Arc/Cmt Type : ^0'+AOnOff((MemFileArea.ArcType = 0),'*None*',
-		  General.FileArcInfo[MemFileArea.ArcType].Ext)+'^1 / ^0'+AOnOff((MemFileArea.CmtType = 0),'*None*',
-		  IntToStr(MemFileArea.CmtType)));
-		  PrintACR('^1(^0T^1) Flags        : ^0'+DisplayFAFlags(MemFileArea.FAFlags,'5','1'));
+          NL;
+          PrintACR('^1(^01^1) Area Name    : ^0'+MemFileArea.AreaName);
+          PrintACR('^1(^02^1) File Name    : ^0'+MemFileArea.FileName+' ^1(^0'+GetDirPath(MemFileArea)+'.*^1)');
+          PrintACR('^1(^03^1) DL Path      : ^0'+MemFileArea.DLPath);
+          PrintACR('^1(^04^1) UL Path      : ^0'+MemFileArea.ULPath);
+          PrintACR('^1(^05^1) Area ACS     : ^0'+AOnOff((MemFileArea.ACS = ''),'*None*',MemFileArea.ACS));
+          PrintACR('^1(^06^1) DL/UL ACS    : ^0'+AOnOff((MemFileArea.DLACS = ''),'*None*',MemFileArea.DLACS)+
+          '^1 / ^0'+AOnOff((MemFileArea.ULACS = ''),'*None*',MemFileArea.ULACS));
+          PrintACR('^1(^07^1) Max Files    : ^0'+IntToStr(MemFileArea.MaxFiles));
+          PrintACR('^1(^08^1) Password     : ^0'+AOnOff((MemFileArea.Password = ''),'*None*',MemFileArea.Password));
+          PrintACR('^1(^09^1) Arc/Cmt Type : ^0'+AOnOff((MemFileArea.ArcType = 0),'*None*',
+          General.FileArcInfo[MemFileArea.ArcType].Ext)+'^1 / ^0'+AOnOff((MemFileArea.CmtType = 0),'*None*',
+          IntToStr(MemFileArea.CmtType)));
+          PrintACR('^1(^0T^1) Flags        : ^0'+DisplayFAFlags(MemFileArea.FAFlags,'5','1'));
         END;
         IF (NOT Editing) THEN
           CmdStr := '123456789T'
         ELSE
           CmdStr := '123456789T[]FJL';
-		NL;
-        LOneK('^1Modify File Area Menu [(^0?^1)Help,(^0Q^1)uit]: ',Cmd1,'Q?'+CmdStr+^M,TRUE,TRUE);
+        NL;
+        InputChar('^1Modify File Area Menu [(^0?^1)Help,(^0Q^1)uit]: ',Cmd1,'Q?'+CmdStr+^M,[CapAll]);
         CASE Cmd1 OF
           '1' : REPEAT
                   TempMemFileArea1.AreaName := MemFileArea.AreaName;
                   OK := TRUE;
-                  InputWNWC('%LFNew area name: @',AreaName,(SizeOf(AreaName) - 1),Changed);
+                  InputString('%LFNew area name: ',AreaName,(SizeOf(AreaName) - 1),[InteractiveEdit],Changed);
+                  {^ LeeW: no blank}
                   CheckFileArea(MemFileArea,MCIVars1,1,1,Ok);
                   IF (NOT Ok) THEN
                     MemFileArea.AreaName := TempMemFileArea1.AreaName;
@@ -341,8 +342,8 @@ VAR
           '2' : REPEAT
                   OK := TRUE;
                   TempFileName := FileName;
-                  InputWN1('%LFNew file name (^1Do not enter ^2"^1.EXT^2"): @',TempFileName,(SizeOf(FileName) - 1),
-                           [UpperOnly,InterActiveEdit],Changed);
+                  InputString('%LFNew file name (^1Do not enter ^2"^1.EXT^2"): ',TempFileName,(SizeOf(FileName) - 1),
+                           [CapAll,InterActiveEdit],Changed);
                   TempFileName := SQOutSp(TempFileName);
                   IF (Pos('.',TempFileName) > 0) THEN
                     TempFileName := Copy(TempFileName,1,(Pos('.',TempFileName) - 1));
@@ -391,43 +392,44 @@ VAR
                   END;
                 UNTIL (Ok) OR (HangUp);
           '3' : BEGIN
-                  InputPath('^2New download path @',DLPath,Editing,FALSE,Changed);
+                  InputPath('^2New download path ',DLPath,Editing,FALSE,Changed);
                   IF (ULPath <> DLPath) AND (PYNQ('%LFSet the upload path to the download path?',0,FALSE)) THEN
                   BEGIN
                     ULPath := DLPath;
                     Changed := TRUE;
                   END;
                 END;
-          '4' : InputPath('^2New upload path @',ULPath,Editing,FALSE,Changed);
-          '5' : InputWN1('%LFNew ACS: @',ACS,(SizeOf(ACS) - 1),[InterActiveEdit],Changed);
+          '4' : InputPath('^2New upload path ',ULPath,Editing,FALSE,Changed);
+          '5' : InputString('%LFNew ACS: ',ACS,(SizeOf(ACS) - 1),[InterActiveEdit],Changed);
           '6' : BEGIN
-                  InputWN1('%LFNew download ACS: @',DLACS,(SizeOf(DLACS) - 1),[InterActiveEdit],Changed);
-				  {leew: ask same as other?}
-                  InputWN1('%LFNew upload ACS: @',ULACS,(SizeOf(ULACS) - 1),[InterActiveEdit],Changed);
+                  InputString('%LFNew download ACS: ',DLACS,(SizeOf(DLACS) - 1),[InterActiveEdit],Changed);
+                  {leew: ask same as other?}
+                  InputString('%LFNew upload ACS: ',ULACS,(SizeOf(ULACS) - 1),[InterActiveEdit],Changed);
                 END;
-          '7' : InputIntegerWC('%LFNew max files @',MaxFiles,[DisplayValue,NumbersOnly],0,32767,Changed);
-          '8' : InputWN1('%LFNew password: @',Password,(SizeOf(Password) - 1),[InterActiveEdit,UpperOnly],Changed);
+          '7' : InputInteger('%LFNew max files ',MaxFiles,[InteractiveEdit{DisplayValue},NumbersOnly],0,32767,Changed);
+          '8' : InputString('%LFNew password: ',Password,(SizeOf(Password) - 1),[InterActiveEdit,CapAll],Changed);
           '9' : BEGIN
                   REPEAT
                     OK := TRUE;
                     NL;
                     DisplayARCS;
-                    InputByteWC('%LFNew archive type (^10^2=^1None^2) @',MemFileArea.ArcType,
-                                [DisplayValue,NumbersOnly],0,NumArcs,Changed);
+                    InputByte('%LFNew archive type (^10^2=^1None^2) ',MemFileArea.ArcType,
+                                [InteractiveEdit{DisplayValue},NumbersOnly],0,NumArcs,Changed);
                     CheckFileArea(MemFileArea,MCIVars1,5,5,Ok);
                   UNTIL (Ok) OR (HangUp);
                   REPEAT
                     OK := TRUE;
                     NL;
                     DisplayCmt;
-                    InputByteWC('%LFNew comment type (^10^2=^1None^2) @',CmtType,[DisplayValue,NumbersOnly],0,3,Changed);
+                    InputByte('%LFNew comment type (^10^2=^1None^2) ',CmtType,[InteractiveEdit
+                        {DisplayValue},NumbersOnly],0,3,Changed);
                     CheckFileArea(MemFileArea,MCIVars1,6,6,Ok);
                   UNTIL (Ok) OR (HangUp)
                 END;
           'T' : BEGIN
                   REPEAT
-                    LOneK('%LFToggle which flag ('+DisplayFAFlags(MemFileArea.FAFlags,'5',
-					'4')+')^2) [^1?^2=^1Help^2,^1<CR>^2=^1Quit^2]: @',Cmd1,^M'CDGINPSU?',TRUE,TRUE);
+                    InputChar('%LFToggle which flag ('+DisplayFAFlags(MemFileArea.FAFlags,'5',
+                    '4')+')^2) [^1?^2=^1Help^2,^1<CR>^2=^1Quit^2]: ',Cmd1,^M'CDGINPSU?',[CapAll]);
                     CASE (Cmd1) OF
                       'C','D','G','N','P','S','U' :
                          ToggleFAFlags(Cmd1,FAFlags,Changed);
@@ -439,12 +441,12 @@ VAR
                                 MCIVars1.NewPath := GetDIRPath(MemFileArea);
                                 IF (Exist(MCIVars1.OldPath+'.DIR')) AND (NOT Exist(MCIVars1.NewPath+'.DIR')) THEN
                                 BEGIN
-								Prompt('%LFOld DIR/EXT/SCN file names: "^1'+MCIVars1.OldPath+'.*^0"');
-								Prompt('%LFNew DIR/EXT/SCN file names: "^1'+MCIVars1.NewPath+'.*^0"');
-								{
+                                Prompt('%LFOld DIR/EXT/SCN file names: "^1'+MCIVars1.OldPath+'.*^0"');
+                                Prompt('%LFNew DIR/EXT/SCN file names: "^1'+MCIVars1.NewPath+'.*^0"');
+                                {
                                 FAELngStr(43,MemFileArea,MCIVars1,FALSE);
                                 FAELngStr(44,MemFileArea,MCIVars1,FALSE);
-								}
+                                }
                                   IF PYNQ('%LFMove old data files to new directory?',0,FALSE) THEN
                                   BEGIN
                                     CopyMoveFile(FALSE,'%LF^0Moving "^1'+MCIVars1.OldPath+'.DIR^0" to "^1'+
@@ -461,12 +463,12 @@ VAR
                               END;
                             END;
                       '?' : BEGIN
-							  NL;
-							  LCmds(25,1,'N No Ratio',			'U Unhidden');
-							  LCmds(25,1,'G Show .GIF Specs',		'I .DIR files in DL Path');
-							  LCmds(25,1,'C CD-ROM / Read-Only',	'S Show Uploader Name');
-							  LCmds(25,1,'D Show Date Uploaded',	'P No Duplicate Checking');
-							END;
+                              NL;
+                              LCmds(25,1,'N No Ratio',          'U Unhidden');
+                              LCmds(25,1,'G Show .GIF Specs',       'I .DIR files in DL Path');
+                              LCmds(25,1,'C CD-ROM / Read-Only',    'S Show Uploader Name');
+                              LCmds(25,1,'D Show Date Uploaded',    'P No Duplicate Checking');
+                            END;
                     END;
                   UNTIL (Cmd1 = ^M) OR (HangUp);
                   Cmd1 := #0;
@@ -493,7 +495,7 @@ VAR
                   Cmd1 := #0;
                 END;
           'J' : BEGIN
-                  InputIntegerWOC('%LFJump to entry?',MCIVars1.RecNumToEdit,[Numbersonly],1,NumFileAreas);
+                  InputInteger('%LFJump to entry?',MCIVars1.RecNumToEdit,[Numbersonly],1,NumFileAreas,Changed);
                   IF (MCIVars1.RecNumToEdit < 1) OR (MCIVars1.RecNumToEdit > NumFileAreas) THEN
                     Cmd1 := #0;
                 END;
@@ -505,16 +507,16 @@ VAR
                   Cmd1 := #0;
                 END;
           '?' : BEGIN
-				  PrintACR('%LF^0<^1CR^0>Redisplay current screen');
-				  PrintACR('^11-9,T^0:Modify item');
+                  PrintACR('%LF^0<^1CR^0>Redisplay current screen');
+                  PrintACR('^11-9,T^0:Modify item');
                   IF (NOT Editing) THEN
                     PrintACR('^0(^1Q^0)uit and save')
                   ELSE
-				  BEGIN
-					PrintACR('^0(^1[^0)Back entry          ^0(^1]^0)Forward entry');
-					PrintACR('^0(^1F^0)irst entry in list  ^0(^1J^0)ump to entry');
-					PrintACR('^0(^1L^0)ast entry in list   ^0(^1Q^0)uit and save');
-					END;
+                  BEGIN
+                    PrintACR('^0(^1[^0)Back entry          ^0(^1]^0)Forward entry');
+                    PrintACR('^0(^1F^0)irst entry in list  ^0(^1J^0)ump to entry');
+                    PrintACR('^0(^1L^0)ast entry in list   ^0(^1Q^0)uit and save');
+                    END;
                 END;
         END;
       UNTIL (Pos(Cmd1,'Q[]FJL') <> 0) OR (HangUp);
@@ -537,7 +539,7 @@ VAR
     ELSE
     BEGIN
       RecNumToInsertBefore := -1;
-      InputIntegerWOC('%LFFile area to insert before? @',RecNumToInsertBefore,[NumbersOnly],1,(NumFileAreas + 1));
+      InputInteger('%LFFile area to insert before? ',RecNumToInsertBefore,[NumbersOnly],1,(NumFileAreas + 1),Changed);
       IF (RecNumToInsertBefore >= 1) AND (RecNumToInsertBefore <= (NumFileAreas + 1)) THEN
       BEGIN
         Reset(FileAreaFile);
@@ -600,7 +602,7 @@ VAR
                 Write(FileAreaScanFile,NewScanFileArea);
               Close(FileAreaScanFile);
             END;
-			{LeeW:done?msg}
+            {LeeW:done?msg}
             Seek(FileAreaFile,RecNum);
             Write(FileAreaFile,TempMemFileArea1);
             Inc(NumFileAreas);
@@ -630,7 +632,7 @@ VAR
     ELSE
     BEGIN
       MCIVars1.RecNumToEdit := -1;
-      InputIntegerWOC('%LFFile area to modify? @',MCIVars1.RecNumToEdit,[NumbersOnly],1,NumFileAreas);
+      InputInteger('%LFFile area to modify? ',MCIVars1.RecNumToEdit,[NumbersOnly],1,NumFileAreas,Changed);
       IF (MCIVars1.RecNumToEdit >= 1) AND (MCIVars1.RecNumToEdit <= NumFileAreas) THEN
       BEGIN
         SaveRecNumToEdit := -1;
@@ -727,12 +729,13 @@ VAR
     ELSE
     BEGIN
       RecNumToPosition := -1;
-      InputIntegerWOC('%LFPosition which file area? @',RecNumToPosition,[NumbersOnly],1,NumFileAreas);
+      InputInteger('%LFPosition which file area? ',RecNumToPosition,[NumbersOnly],1,NumFileAreas,Changed);
       IF (RecNumToPosition >= 1) AND (RecNumToPosition <= NumFileAreas) THEN
       BEGIN
         RecNumToPositionBefore := -1;
         Prompt('%LFAccording to the current numbering system.');
-        InputIntegerWOC('%LFPosition before which file area?',RecNumToPositionBefore,[Numbersonly],1,(NumFileAreas + 1));
+        InputInteger('%LFPosition before which file area?',RecNumToPositionBefore,[Numbersonly],
+        1,(NumFileAreas + 1),Changed);
         IF (RecNumToPositionBefore >= 1) AND (RecNumToPositionBefore <= (NumFileAreas + 1)) AND
            (RecNumToPositionBefore <> RecNumToPosition) AND (RecNumToPositionBefore <> (RecNumToPosition + 1)) THEN
         BEGIN
@@ -773,50 +776,50 @@ VAR
 
   PROCEDURE ListFileAreas(VAR RecNumToList1: Integer; MCIVars1: MCIVarRecord);
   VAR
-	NumDone: Integer;
-	NumOnLine: Byte; { LeeW: Added for double column list }
-	TempStr: AStr; { ^ }
+    NumDone: Integer;
+    NumOnLine: Byte; { LeeW: Added for double column list }
+    TempStr: AStr; { ^ }
   BEGIN
-	IF (RecNumToList1 < 1) OR (RecNumToList1 > NumFileAreas) THEN
-	  RecNumToList1 := 1;
-	Abort := FALSE;
-	Next := FALSE;
-	CLS;
-	PrintACR('^2+----+---------------------------------+----+---------------------------------+');
-	PrintACR('^2| ^1## ^2| ^1File Area Name                  ^2| ^1## ^2| ^1File Area Name                  ^2|');
-	PrintACR('^2+----+---------------------------------+----+---------------------------------+');
-	(*
-		+----+---------------------------------+----+---------------------------------+
-		| ## | File Area Name                  | ## | File Area Name                  |
-		+----+---------------------------------+----+---------------------------------+
-	*)
-	Reset(FileAreaFile);
-	NumDone := 0;
-	NumOnLine := 0; { LeeW: Added }
-	TempStr := ''; { ^ }
-	WHILE (NumDone < (PageLength - 5)) AND (RecNumToList1 >= 1) AND (RecNumToList1 <= NumFileAreas)
-	 AND (NOT Abort) AND (NOT HangUp) DO
-	  BEGIN
-		Seek(FileAreaFile,(RecNumToList1 - 1));
-		Read(FileAreaFile,MemFileArea);
-		WITH MemFileArea DO
-		  TempStr := TempStr+'^1'+'  '+PadLeftInt(RecNumToList1,4)+' '+PadLeftStr(AreaName,32); { Two column basic list }
-		Inc(NumOnLine);
-		IF (NumOnLine = 2) THEN
-		  BEGIN
-			PrintACR(TempStr);
-			NumOnLine := 0;
-			TempStr := '';
-		  END;
-		Inc(RecNumToList1);
-		Inc(NumDone);
-	  END;
-	Close(FileAreaFile);
-	LastError := IOResult;
-	IF (NumOnLine = 1) AND (NOT Abort) AND (NOT HangUp) THEN
-	  PrintACR(TempStr);
-	IF (NumFileAreas = 0) AND (NOT Abort) AND (NOT HangUp) THEN
-	  Messages(4,0,'file areas'); { "No file areas exist!" }
+    IF (RecNumToList1 < 1) OR (RecNumToList1 > NumFileAreas) THEN
+      RecNumToList1 := 1;
+    Abort := FALSE;
+    Next := FALSE;
+    CLS;
+    PrintACR('^2+----+---------------------------------+----+---------------------------------+');
+    PrintACR('^2| ^1## ^2| ^1File Area Name                  ^2| ^1## ^2| ^1File Area Name                  ^2|');
+    PrintACR('^2+----+---------------------------------+----+---------------------------------+');
+    (*
+        +----+---------------------------------+----+---------------------------------+
+        | ## | File Area Name                  | ## | File Area Name                  |
+        +----+---------------------------------+----+---------------------------------+
+    *)
+    Reset(FileAreaFile);
+    NumDone := 0;
+    NumOnLine := 0; { LeeW: Added }
+    TempStr := ''; { ^ }
+    WHILE (NumDone < (PageLength - 5)) AND (RecNumToList1 >= 1) AND (RecNumToList1 <= NumFileAreas)
+     AND (NOT Abort) AND (NOT HangUp) DO
+      BEGIN
+        Seek(FileAreaFile,(RecNumToList1 - 1));
+        Read(FileAreaFile,MemFileArea);
+        WITH MemFileArea DO
+          TempStr := TempStr+'^1'+'  '+PadLeftInt(RecNumToList1,4)+' '+PadLeftStr(AreaName,32); { Two column basic list }
+        Inc(NumOnLine);
+        IF (NumOnLine = 2) THEN
+          BEGIN
+            PrintACR(TempStr);
+            NumOnLine := 0;
+            TempStr := '';
+          END;
+        Inc(RecNumToList1);
+        Inc(NumDone);
+      END;
+    Close(FileAreaFile);
+    LastError := IOResult;
+    IF (NumOnLine = 1) AND (NOT Abort) AND (NOT HangUp) THEN
+      PrintACR(TempStr);
+    IF (NumFileAreas = 0) AND (NOT Abort) AND (NOT HangUp) THEN
+      Messages(4,0,'file areas'); { "No file areas exist!" }
   END;
   
   { --- }
@@ -828,9 +831,9 @@ BEGIN
   Cmd := #0;
   REPEAT
     IF (Cmd <> '?') THEN
-      ListFileAreas(RecNumToList,MCIVars);	  
-	  NL;
-    LOneK('^1File Area Editor [(^0?^1)Help,(^0Q^1)uit]: ',Cmd,'QCDIMP?'^M,TRUE,TRUE);
+      ListFileAreas(RecNumToList,MCIVars);    
+      NL;
+    InputChar('^1File Area Editor [(^0?^1)Help,(^0Q^1)uit]: ',Cmd,'QCDIMP?'^M,[CapAll]);
     CASE Cmd OF
       ^M  : IF (RecNumToList < 1) OR (RecNumToList > NumFileAreas) THEN
               RecNumToList := 1;
@@ -840,13 +843,13 @@ BEGIN
       'M' : ModifyFileArea(TempMemFileArea,MCIVars);
       'P' : PositionFileArea(TempMemFileArea,MCIVars);
       '?' : BEGIN
-			  {LCmds(17,'','');}
-			  Print('%LF<CR>Next screen or redisplay current screen');
-			  LCmds(23,1,'D Delete File Area',	'I Insert File Area');
-			  LCmds(23,1,'M Modify File Area',	'P Position File Area');
-			  LCmds(23,1,'C Change Storage Drive','T Toggle Display Format');
-			  LCmds(23,1,'Q Quit','');
-			END;
+              {LCmds(17,'','');}
+              Print('%LF<CR>Next screen or redisplay current screen');
+              LCmds(23,1,'D Delete File Area',  'I Insert File Area');
+              LCmds(23,1,'M Modify File Area',  'P Position File Area');
+              LCmds(23,1,'C Change Storage Drive','T Toggle Display Format');
+              LCmds(23,1,'Q Quit','');
+            END;
     END;
     IF (Cmd <> ^M) THEN
       RecNumToList := 1;
