@@ -45,7 +45,7 @@ $
 
 ; single character, color code ok
 $Auto_Message_Border_Characters
--
+Ä
 $
 
 $SysOp_Shelling_To_DOS
@@ -182,7 +182,7 @@ Reference
 $
 
 $Continue_Prompt
-Continue? [(Y)es, (N)o, (C)ontinuous]: @
+^3 PAUSE ^0 Continue? [(^1Y^0)es, (^1N^0)o, (^1C^0)ontinuous]: @
 $
 
 $Invisible_Login
@@ -194,7 +194,7 @@ Unable to send mail to that user!
 $
 
 $Send_Email
-%CLUser to send private message to (1-%UM)?
+%CL^0Sending private message to another user...
 $
 
 $Sending_Mass_Mail_To
@@ -464,7 +464,7 @@ You can't reply to an anonymous message!
 $
 
 $Auto_Message_Header
-Auto-Message:
+%CL^4Auto-Message
 $
 
 $Enter_OneLiner
@@ -472,7 +472,7 @@ Enter your OneLiner:
 $
 
 $Add_OneLiner
-Add a OneLiner?
+Would you like to add a OneLiner?
 $
 
 $Add_OneLiner_Confirm
@@ -480,7 +480,7 @@ Are you sure you want to add this OneLiner?
 $
 
 $OneLiner_Header
-%BN OneLiners
+%CL^4OneLiners
 $
 
 $No_OneLiners
@@ -1020,5 +1020,24 @@ $Force_Batch_UL
 $
 
 $Quote_Add
-Would you like to add a quote? 
+Would you like to add a Quote?
+$
+
+$Public_Messages_Header
+%CLÚÄÄÄÄÄÄÂÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÂÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÂÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÂÄÄÄÄÄÄÄÄ¿
+³ Msg# ³ Sender            ³ Receiver           ³  Subject           ³! Posted ³
+ÀÄÄÄÄÄÄÁÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÁÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÁÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÁÄÄÄÄÄÄÄÄÙ
+$
+
+$User_Not_Found
+^8User not found^0
+$
+
+@0 = User Name
+$User_Search_Ask
+^0Did you mean ^1@0^0? 
+$
+
+$Quote_Header
+%CL^4And now... A quote for you!
 $
