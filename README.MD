@@ -1,6 +1,15 @@
 # Renegade Bulletin Board System
 Copyright (c) 1991-2021 The Renegade Development Team ─ Cott Lang, Patrick Spence, Gary Hall, Jeff Herrings, T.J. McMillen, Chris Hoppman, Lee Palmer, and Lee Woodridge.
 #
+  * Added datesuffix, timestamp in timefunc.pas
+  * Timestamps for user log entries
+  * Added language strings for public message list header, user not found, user search ask prompt, quote header
+  * Fix for input lengths for negative numbers
+  * Changed/added inputflags
+  * Removed all input procs without changed check
+  * Removed all redundant input procs and changed all calls
+  * Removed all redundant MPL calls
+  * Combined lOneK and OneK1, now InputChar
   * Added language strings for UpdateUserInfo proc, force_batch_ul, force_batch_dl, add quote prompt
   * added a bunch of hangup checks to prevent leftover jibberish after disconnect
   * redo most cuser procs
