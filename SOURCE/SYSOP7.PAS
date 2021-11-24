@@ -447,13 +447,13 @@ VAR
                       END;
                 '2' : BEGIN
                         InputString('%LFNew menu title #1: ',LDesc[1],
-                                  (SizeOf(LDesc[1]) - 1),[InteractiveEdit],Changed);
+                                  (SizeOf(LDesc[1]) - 1),[InteractiveEdit,NoInputField],Changed);
                         IF (LDesc[1] <> '') THEN
                           InputString('New menu title #2: ',LDesc[2],
-                                    (SizeOf(LDesc[2]) - 1),[InteractiveEdit],Changed);
+                                    (SizeOf(LDesc[2]) - 1),[InteractiveEdit,NoInputField],Changed);
                         IF (LDesc[2] <> '') THEN
                           InputString('New menu title #3: ',LDesc[3],
-                                    (SizeOf(LDesc[3]) - 1),[InteractiveEdit],Changed);
+                                    (SizeOf(LDesc[3]) - 1),[InteractiveEdit,NoInputField],Changed);
                       END;
                 '3' : BEGIN
                         InputString('%LFNew file displayed for help: ',Directive,(SizeOf(Directive) - 1),

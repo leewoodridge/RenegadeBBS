@@ -590,7 +590,7 @@ BEGIN
   REPEAT
     GetDir(0,CurDir);
     Prompt('^0'+CurDir+'>');
-    InputMain(s1,SizeOf(s1)-1,[]);
+    InputMain(s1,SizeOf(s1)-1,[NoInputField]);
     Parse(s1);
     CheckStatus;
     DoCmd(s1);

@@ -45,7 +45,7 @@ PROCEDURE InputChar(S: AStr; VAR C: Char; ValidKeys: AStr; InputFlags: InputFlag
 {/}
 PROCEDURE InputFormatted(S: AStr; VAR InputStr: STRING; Format: STRING; Abortable: Boolean);
 PROCEDURE InputPath(S: AStr; VAR DirPath: Str40; CreateDir,AllowExit: Boolean; VAR Changed: Boolean);
-{PROCEDURE InputPath2(S: STRING; VAR Path: STRING; AskCreate, Abortable: Boolean; VAR Changed: Boolean);}
+{PROCEDURE InputPath2(S: STRING; VAR Path: STRING; AskMkDir, Abortable: Boolean; VAR Changed: Boolean);}
 
 IMPLEMENTATION
 
@@ -106,32 +106,30 @@ BEGIN
           IF (Length(TempDirPath) > 3) AND (NOT ExistDir(TempDirPath)) THEN
           BEGIN
             NL;
+			{---}
             IF PYNQ('Directory does not exist, create it? ',0,FALSE) THEN
-            BEGIN
-              Counter := 2;
-              WHILE (Counter <= Length(TempDirPath)) DO
               BEGIN
-                IF (TempDirPath[Counter] = '\') THEN
-                BEGIN
-                  IF (TempDirPath[Counter - 1] <> ':') THEN
-                  BEGIN
-                    IF (NOT ExistDir(Copy(TempDirPath,1,(Counter - 1)))) THEN
-                    BEGIN
-                      MkDir(Copy(TempDirPath,1,(Counter - 1)));
-                      LastError := IOResult;
-                      IF (LastError <> 0) THEN
-                      BEGIN
-                        NL;
-                        Print('Error creating directory: '+Copy(TempDirPath,1,(Counter - 1)));
-                        SysOpLog('^8Error creating directory: '+Copy(TempDirPath,1,(Counter - 1)));
-                        TempDirPath := '';
-                      END;
-                    END;
-                  END;
-                END;
-                Inc(Counter);
+				Counter := 2;
+				WHILE (Counter <= Length(TempDirPath)) DO
+				  BEGIN
+					IF (TempDirPath[Counter] = '\') THEN
+					  IF (TempDirPath[Counter - 1] <> ':') THEN
+						IF (NOT ExistDir(Copy(TempDirPath,1,(Counter - 1)))) THEN
+						  BEGIN
+							MkDir(Copy(TempDirPath,1,(Counter - 1)));
+							LastError := IOResult;
+							IF (LastError <> 0) THEN
+							  BEGIN
+								NL;
+								Print('Error creating directory: '+Copy(TempDirPath,1,(Counter - 1)));
+								SysOpLog('^8Error creating directory: '+Copy(TempDirPath,1,(Counter - 1)));
+								TempDirPath := '';
+							  END;
+						  END;
+					Inc(Counter);
+				  END;
               END;
-            END;
+			{---}
           END;
         END;
       END;
@@ -406,8 +404,8 @@ BEGIN
     MPL(MaxLen);
   SaveInputStr := InputStr;
   InputMain(SaveInputStr,MaxLen,InputFlags);
-  IF (SaveInputStr = '') OR ((SaveInputStr = ' ') AND NOT (NoBlankPrompt IN InputFlags)) THEN
-    IF (NoBlankPrompt IN InputFlags) OR PYNQ('Blank String?',0,FALSE) THEN
+  IF (SaveInputStr = '') OR (Length(SQOutSp(SaveInputStr)) = 0) THEN
+    IF NOT (NoBlankPrompt IN InputFlags) AND PYNQ('Blank String?',0,FALSE) THEN
       SaveInputStr := ''
     ELSE
       SaveInputStr := InputStr;
@@ -507,10 +505,17 @@ BEGIN
 
     IF (FirstKey) AND (C = 32) THEN { SPACE - Clears field }
       C := 24;
-      
-    IF (C = 27) THEN { ESC - Aborts }
+    
+    IF (C = 27) AND (AllowEscape IN InputFlags) THEN { ESC - Aborts }
       BEGIN
         S := SaveS;
+		IF (IsPassword IN InputFlags) THEN
+		  Echo := TRUE;
+		UserColor(0);
+		IF (NOT (NoLineFeed IN InputFlags)) THEN
+		  NL;
+		MLC := '';
+		SetCursor(FALSE);
         EXIT;
       END;
 

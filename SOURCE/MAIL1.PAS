@@ -1378,12 +1378,12 @@ VAR
           IF (MsgSubj1 <> '') THEN
             BEGIN
               TempMsgSubj := MsgSubj1;
-              InputString('^2Subject: ',TempMsgSubj,40,[InteractiveEdit,NoLineFeed],Changed);
+              InputString('^2Subject: ',TempMsgSubj,40,[InteractiveEdit,NoBlankPrompt,NoLineFeed],Changed);
               {InputDefault(TempMsgSubj,MsgSubj1,40,[NoLineFeed],FALSE)}
             END
           ELSE
             BEGIN
-              InputString('^2Subject: ',TempMsgSubj,40,[NoLineFeed],Changed);
+              InputString('^2Subject: ',TempMsgSubj,40,[NoBlankPrompt,NoLineFeed],Changed);
               {InputMain(TempMsgSubj,40,[NoLineFeed]);}
             END;
           IF (TempMsgSubj <> '') THEN

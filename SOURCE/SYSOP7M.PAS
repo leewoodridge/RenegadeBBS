@@ -255,7 +255,7 @@ VAR
                 InputChar('%LFModify menu [^1?^2=^1Help^2]: ',Cmd1,'Q123456T[]FJL?'^M,[CapAll]);
               CASE Cmd1 OF
                 '1' : InputString('%LF^0New long description:%LF^2: ',LDesc[1],(SizeOf(LDesc[1]) - 1),
-                [InteractiveEdit],Changed);
+                [InteractiveEdit,NoInputField],Changed);
                 '2' : InputString('%LFNew short description: ',SDesc,(SizeOf(SDesc) - 1),
                 [InteractiveEdit],Changed);
                 '3' : InputString('%LFNew menu keys: ',Ckeys,(SizeOf(CKeys) - 1),[InterActiveEdit,CapAll],Changed);

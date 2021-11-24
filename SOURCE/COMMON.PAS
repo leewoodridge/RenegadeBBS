@@ -184,14 +184,15 @@ TYPE
     CapWords,        { Forces capitalization of first character of words }
     { Interface }
     InteractiveEdit, { Interactive editing }
-    NoBlankPrompt,   { WILL NOT Enter on a blank string will save as blank (string), or -1(integer) ??? - LeeW: Added }
+    NoBlankPrompt,   { Will not prompt if you want to save a blank string, blank strings will revert 
+					   to previous data - LeeW: Added }
     NoInputField,    { No MPL(#) - LeeW: Added }
     NoInputRange,    { Don't display valid input range after prompt (numeric input only) - LeeW: Added }
     NoLineFeed,      { No linefeed after <CR> pressed }
-    (*
-    AllowAbort       { Enter on a blank string will abort, leaving unchanged }
     
-    *)
+    AllowEscape,     { ESC aborts, leaving unchanged }
+    
+    
     { Input type }
     NumbersOnly,     { Numeric values only } {IsNumberOnly}
     AllowNegative,   { Negative numbers allowed }
