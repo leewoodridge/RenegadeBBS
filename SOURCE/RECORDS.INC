@@ -2,6 +2,7 @@
 LeeW: search for ** to find proposed changes to data files
 TODO: add user flag to force password change next logon 
 10/07/2021 - Updated names of user flags so they're intuitive; ARFlags, ACFlags, StatusFlags
+12/2/2021 - Combined GeneralRec lightbar booleans, all lightbars either on or off now
 }
 CONST
   Build = '1.25';
@@ -102,18 +103,18 @@ TYPE
   ACFlagSet = SET OF ACFlagType;
 
   StatusFlagType =
-    (LockedOut,                   { if locked out }
-    Deleted,                      { if deleted }
-    TrapActivity,                 { if trapping users activity }
-    TrapSeparate,                 { if trap to seperate TRAP file }
-    ChatAuto,                     { if auto chat trapping }
-    ChatSeparate,                 { if separate chat file to trap to }
-    SLogSeparate,                 { if separate SysOp log }
+    (LockedOut,                   { Is user locked out }
+    Deleted,                      { Is user deleted }
+    TrapActivity,                 { Is users activity being logged }
+    TrapSeparate,                 { Is activity log separate file }
+    ChatAuto,                     { Is users chat being logged }
+    ChatSeparate,                 { Is chat log separate file }
+    SLogSeparate,                 { Is users SysOp log entries separate file }
     
-    CLSMsg,                       { if clear-screens }
+    CLSMsg,                       { Is user clearing screen between messages }
     RIP,                          { if RIP graphics can be used }
-    FSEditor,                     { if Full Screen Editor }
-    AutoDetect,                   { Use auto-detected emulation }
+    FSEditor,                     { Is user using full-screen editor }
+    AutoDetect,                   { Is user having emulation auto-detected }
     FileAreaLightBar,
     MsgAreaLightBar,
 {
@@ -559,17 +560,17 @@ TYPE
     IsTopWindow,                    { is window at top OF screen? }
     ReCompress,                     { recompress like archives? }
     RewardSystem,                   { use file rewarding system? }
-    TrapGroup,                      { record group chats? } (** UNUSED -- REMOVE THIS! **)
+    TrapGroup,                      { record group chats? } (** UNUSED -- REMOVE THIS! or implement??**)
     QWKTimeIgnore,                  { ignore time remaining for qwk download? }
     NetworkMode,                    { Network mode ? }
     WindowOn,                       { is the sysop window on? }
     ChatCall,                       { Whether system keeps beeping after chat}
-    DailyLimits,                    { Daily file limits on/off }
-    MultiNode,                      { enable multinode support }
+    DailyLimits,                    { Daily file limits }
+    MultiNode,                      { MultiNode mode }
     PerCall,                        { time limits are per call or per day?}
     TestUploads,                    { perform integrity tests on uploads? }
-    UseFileAreaLightBar,            {  }                (** COMBINE THESE 2 TO UseLightbars **)
-    UseMsgAreaLightBar,             {  }                (** ^ **)
+    UseLightBars,            		{ use LightBars? }
+    UnUsedBoolean0,           		{ / } {was msgarealightbar}
     UnUsedBoolean1,                 { / }
     UnUsedBoolean2: Boolean;        { / }
 
@@ -607,6 +608,7 @@ TYPE
     
     NewUserQToggles:                { Toggles for new user application questions }
       ARRAY [1..30] OF Boolean;
+	(*AskTagLine: Boolean;			{ Prompt user to add random tagline to messages? }*)
     
   END; { END OF GENERALREC }
 

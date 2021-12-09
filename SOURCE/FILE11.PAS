@@ -35,8 +35,8 @@ PROCEDURE CreateTempDir;
 IMPLEMENTATION
 
 USES
-  Dos,
-  Crt,
+  DOS,
+  CRT,
   ArcView,
   Common5,
   File0,
@@ -705,12 +705,9 @@ VAR
   SaveConfSystem: Boolean;
 BEGIN
   NL;
-  { Print(FString.SearchLine); }
-  lRGLngStr(20,FALSE);
-  { Print(FString.lGFNLine1); }
-  lRGLngStr(28,FALSE);
-  { Prt(FString.GFNLine2); }
-  lRGLngStr(29,FALSE);
+  lRGLngStr(20,FALSE); { Print(FString.SearchLine); }
+  lRGLngStr(28,FALSE); { Print(FString.lGFNLine1); }
+  lRGLngStr(29,FALSE); { Prt(FString.GFNLine2); }
   FName := '';
   GetFileName(FName);
   IF (FName = '') THEN
@@ -851,11 +848,9 @@ VAR
   SaveConfSystem: Boolean;
 BEGIN
   NL;
-  { Print(FString.FindLine1); }
-  lRGLngStr(21,FALSE);
+  lRGLngStr(21,FALSE); { Print(FString.FindLine1); }
   NL;
-  { Print(FString.FindLine2); }
-  lRGLngStr(22,FALSE);
+  lRGLngStr(22,FALSE); { Print(FString.FindLine2); }
   Prt(': ');
   InputMain(SearchString,SizeOf(SearchString)-1,[CapAll]);
   IF (SearchString = '') THEN
@@ -902,58 +897,52 @@ BEGIN
   IF (FileArea <> FArea) THEN
     ChangeFileArea(FArea);
   IF (FileArea = FArea) THEN
-  BEGIN
-    RecNo(FileInfo,'*.*',DirFileRecNum);
-    IF (BadDownloadPath) THEN
-      Exit;
-    IF (NOT Global) OR (NewScanFileArea) THEN
-    BEGIN
-      Found := FALSE;
-      LIL := 0;
-      CLS;
-{      Prompt('^0Scanning ^1'+MemFileArea.AreaName+' #'+IntToStr(CompFileArea(FileArea,0))+'^0 ...');}
-        lRGLngStr(95,FALSE);
-      WHILE (DirFileRecNum <> -1) AND (NOT Abort) AND (NOT HangUp) DO
-      BEGIN
+	BEGIN
+      RecNo(FileInfo,'*.*',DirFileRecNum);
+      IF (BadDownloadPath) THEN
+		EXIT;
+      IF (NOT Global) OR (NewScanFileArea) THEN
+		BEGIN
+		  Found := FALSE;
+		  LIL := 0;
+		  {CLS;}
+		  lRGLngStr(95,FALSE); {Prompt('^0Scanning ^1'+MemFileArea.AreaName+' #'+IntToStr(CompFileArea(FileArea,0))+'^0 ...');}
+		  WHILE (DirFileRecNum <> -1) AND (NOT Abort) AND (NOT HangUp) DO
+			BEGIN
+			  Seek(FileInfoFile,DirFileRecNum);
+			  Read(FileInfoFile,FileInfo);
+			  IF ((CanSee(FileInfo)) AND (DayNum(PD2Date(FileInfo.FileDate)) >= DayNum(PD2Date(NewFileDate))))
+				 OR (CanSee(FileInfo) AND (FINotVal IN FileInfo.FIFlags)) THEN
+				BEGIN
+				  WITH FArray[FArrayRecNum] DO
+					BEGIN
+					  FArrayFileArea := FileArea;
+					  FArrayDirFileRecNum := DirFileRecNum;
+					END;
+				  DisplayFileAreaHeader;
+				  lDisplay_File(FileInfo,FArrayRecNum,'',FALSE);
 
-        Seek(FileInfoFile,DirFileRecNum);
-        Read(FileInfoFile,FileInfo);
-
-        IF ((CanSee(FileInfo)) AND (DayNum(PD2Date(FileInfo.FileDate)) >= DayNum(PD2Date(NewFileDate))))
-           OR (CanSee(FileInfo) AND (FINotVal IN FileInfo.FIFlags)) THEN
-        BEGIN
-
-          WITH FArray[FArrayRecNum] DO
-          BEGIN
-            FArrayFileArea := FileArea;
-            FArrayDirFileRecNum := DirFileRecNum;
-          END;
-
-          DisplayFileAreaHeader;
-          lDisplay_File(FileInfo,FArrayRecNum,'',FALSE);
-
-          Inc(FArrayRecNum);
-          IF (FArrayRecNum = 100) THEN
-            FArrayRecNum := 0;
-
-          Found := TRUE;
-        END;
-        NRecNo(FileInfo,DirFileRecNum);
-        IF (DirFileRecNum = -1) AND (Found) AND (Lines > FileRedisplayLines) AND (NOT Abort) AND (NOT HangUp) THEN
-        BEGIN
-          Lines := PageLength;
-          Pause_Files;
-        END;
-      END;
-      IF (NOT Found) THEN
-      BEGIN
-        LIL := 0;
-        BackErase(15 + LennMCI(MemFileArea.AreaName) + Length(IntToStr(CompFileArea(FArea,0))));
-      END;
-    END;
-    Close(FileInfoFile);
-    Close(ExtInfoFile);
-  END;
+				  Inc(FArrayRecNum);
+				  IF (FArrayRecNum = 100) THEN
+					FArrayRecNum := 0;
+				  Found := TRUE;
+				END;
+			  NRecNo(FileInfo,DirFileRecNum);
+			  IF (DirFileRecNum = -1) AND (Found) AND (Lines > FileRedisplayLines) AND (NOT Abort) AND (NOT HangUp) THEN
+				BEGIN
+				  Lines := PageLength;
+				  Pause_Files;
+				END;
+			END;
+		  IF (NOT Found) THEN
+			BEGIN
+			  LIL := 0;
+			  BackErase(15 + LennMCI(MemFileArea.AreaName) + Length(IntToStr(CompFileArea(FArea,0))));
+			END;
+		END;
+      Close(FileInfoFile);
+      Close(ExtInfoFile);
+	END;
 END;
 
 PROCEDURE GlobalNewFileScan(VAR FArrayRecNum: Byte);
@@ -962,13 +951,13 @@ VAR
 BEGIN
   FArea := 1;
   WHILE (FArea >= 1) AND (FArea <= NumFileAreas) AND (NOT Abort) AND (NOT HangUp) DO
-  BEGIN
-    NewFileScan(FArea,TRUE,FArrayRecNum);
-    IF (TextRec(NewFilesF).Mode = FMOutPut) THEN
-      Output_File_Stuff('');
-    WKey;
-    Inc(FArea);
-  END;
+	BEGIN
+      NewFileScan(FArea,TRUE,FArrayRecNum);
+      IF (TextRec(NewFilesF).Mode = FMOutPut) THEN
+		Output_File_Stuff('');
+      WKey;
+      Inc(FArea);
+	END;
 END;
 
 PROCEDURE NewFilesScanSearchType(CONST MenuOption: Str50);
@@ -988,19 +977,13 @@ BEGIN
   ELSE IF (StrToInt(MenuOption) <> 0) THEN
     NewFileScan(StrToInt(MenuOption),FALSE,FArrayRecNum)
   ELSE
-  BEGIN
-    {
-    NL;
-    Print('|03List Files - |11P |03to Pause');
-    NL;
-    }
-    lRGLngStr(19,FALSE);
-
-    IF PYNQ('%LFSearch all file areas? ',0,FALSE) THEN
-      GlobalNewFileScan(FArrayRecNum)
-    ELSE
-      NewFileScan(FileArea,FALSE,FArrayRecNum);
-  END;
+	BEGIN
+      lRGLngStr(19,FALSE); {"List Files - P to Pause"}
+      IF PYNQ('%LFSearch all file areas? ',0,FALSE) THEN
+		GlobalNewFileScan(FArrayRecNum)
+      ELSE
+		NewFileScan(FileArea,FALSE,FArrayRecNum);
+	END;
   FileArea := SaveFileArea;
   LoadFileArea(FileArea);
 END;

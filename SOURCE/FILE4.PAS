@@ -224,7 +224,8 @@ BEGIN
   Reset(ProtocolFile);
   REPEAT
     ShowProts(CmdStr,UL,DL,Batch,Resume);
-    InputChar(lRGLngStr(17,TRUE),Cmd,CmdStr,[CapAll]);
+	lRGLngStr(17,FALSE);
+    InputChar('',Cmd,CmdStr,[CapAll]);
     RecNum := FindProt(Cmd,UL,DL,Batch,Resume);
     IF (RecNum = -99) THEN
     BEGIN

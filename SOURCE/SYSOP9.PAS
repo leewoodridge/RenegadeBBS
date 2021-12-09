@@ -14,6 +14,8 @@
     [DONE]
      - Removed all strings from FAE language file and the proc
      - Removed all MCIs from FAEMCI and the proc
+	 - 12/8/2021 deleting file area reports correct name/sysop log
+				- file area list prints to bottom of pagelen now
     [TO DO]
      - aesthetics
      - test fa list longer than 1 page for pagination
@@ -190,7 +192,7 @@ VAR
         Read(FileAreaFile,TempMemFileArea1);
         Close(FileAreaFile);
         LastError := IOResult;
-        Prompt('%LFFile area: '+MemFileArea.AreaName);
+        Prompt('%LFFile area: '+TempMemFileArea1.AreaName); {LeeW: Was reporting wrong area name, was MemFileArea}
         
         IF PYNQ('%LFAre you sure you want to delete it?',0,FALSE) THEN
         BEGIN
@@ -210,7 +212,7 @@ VAR
           Close(FileAreaFile);
           LastError := IOResult;
           Dec(NumFileAreas);
-          SysOpLog('* Deleted file area: '+MemFileArea.AreaName);
+          SysOpLog('* Deleted file area: '+TempMemFileArea1.AreaName); {LeeW: Again, reporting wrong name}
           Ok := TRUE;
           Ok1 := TRUE;
           OK2 := TRUE;
@@ -797,7 +799,7 @@ VAR
     NumDone := 0;
     NumOnLine := 0; { LeeW: Added }
     TempStr := ''; { ^ }
-    WHILE (NumDone < (PageLength - 5)) AND (RecNumToList1 >= 1) AND (RecNumToList1 <= NumFileAreas)
+    WHILE (NumDone < (PageLength - 6)*2) AND (RecNumToList1 >= 1) AND (RecNumToList1 <= NumFileAreas)
      AND (NOT Abort) AND (NOT HangUp) DO
       BEGIN
         Seek(FileAreaFile,(RecNumToList1 - 1));

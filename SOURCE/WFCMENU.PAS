@@ -728,7 +728,7 @@ VAR
             ClrScr;
             Write(Copy(CTim(EventStartTime),4,5)+':00 - Event: ');
             WriteLn('"'+EventDescription+'"');
-            SL1('');
+            {SL1('');}
             SL1('Executing event: '+IntToStr(EventNum)+' '+EventDescription+' on '+DateStr+' '+TimeStr+
                 ' from node '+IntToStr(ThisNode));
             IF (EventIsShell IN EFlags) THEN

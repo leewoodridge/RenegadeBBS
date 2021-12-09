@@ -378,41 +378,36 @@ VAR
   TempDate: Str10;
   Key: CHAR;
 BEGIN
-  {
-  NL;
-  Prt(FString.FileNewScan);
-  }
-  lRGLngStr(54,FALSE);
+  lRGLngStr(54,FALSE); {NL;Prt(FString.FileNewScan);}
   MPL(10);
   Prompt(PD2Date(NewFileDate));
   Key := Char(GetKey);
   IF (Key = #13) THEN
-  BEGIN
-    NL;
-    TempDate := PD2Date(NewFileDate);
-  END
-  ELSE
-  BEGIN
-    Buf := Key;
-    DOBackSpace(1,10);
-    InputFormatted('',TempDate,'##/##/####',TRUE);
-    IF (TempDate = '') THEN
+	BEGIN
+      NL;
       TempDate := PD2Date(NewFileDate);
-   Print('|00');
-  END;
-  IF (DayNum(TempDate) = 0) OR (DayNum(TempDate) > DayNum(DateStr)) THEN
-  BEGIN
-    NL;
-    Print('^8Invalid date entered!^0');
-  END
+	END
   ELSE
-  BEGIN
-    NL;
-   Print('|00');
-{  Print('New file scan date set to: ^1'+TempDate+'^0');}
-    NewFileDate := Date2PD(TempDate);
-    SL1('Reset file new scan date to: ^1'+TempDate+'.|00');
-  END;
+	BEGIN
+      Buf := Key;
+      DoBackSpace(1,10);
+      InputFormatted('',TempDate,'##/##/####',TRUE);
+      IF (TempDate = '') THEN
+		TempDate := PD2Date(NewFileDate);
+	  Print('|00');
+	END;
+  IF (DayNum(TempDate) = 0) OR (DayNum(TempDate) > DayNum(DateStr)) THEN
+	BEGIN
+      NL;
+      Print('^8Invalid date entered!^0');
+	END
+  ELSE
+	BEGIN
+      NL;
+      Print('|00');
+	  {Print('New file scan date set to: ^1'+TempDate+'^0');}
+      NewFileDate := Date2PD(TempDate);
+      SysOpLog('Set file new scan date to: '+TempDate); {LeeW: Was SL1}
+	END;
 END;
-
 END.

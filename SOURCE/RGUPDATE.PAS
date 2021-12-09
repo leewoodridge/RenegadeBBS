@@ -213,8 +213,8 @@ TYPE
     MultiNode,                         { enable multinode support }
     PerCall,                           { time limits are per call or per day?}
     TestUploads,                       { perform integrity tests on uploads? }
-    UseFileAreaLightBar,
-    UseMsgAreaLightBar,
+    UseLightBars,
+    UnUsedBoolean0,
     UnUsedBoolean1,
     UnUsedBoolean2: Boolean;
     FileArcInfo:                       { archive specs }
@@ -680,8 +680,8 @@ BEGIN
     MultiNode := OldGeneral.MultiNode;
     PerCall := OldGeneral.PerCall;
     TestUploads := OldGeneral.TestUploads;
-    UseFileAreaLightBar := OldGeneral.UseFileAreaLightBar;
-    UseMsgAreaLightBar := OldGeneral.UseMsgAreaLightBar;
+    UseLightBars := OldGeneral.UseLightBars;
+    UnUsedBoolean0 := OldGeneral.UnUsedBoolean0;
     UnUsedBoolean1 := OldGeneral.UnUsedBoolean1;
     UnUsedBoolean2 := OldGeneral.UnUsedBoolean2;
     FOR Counter := 1 TO MaxArcs DO

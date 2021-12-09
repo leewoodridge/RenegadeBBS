@@ -1,7 +1,8 @@
 {$A+,B-,D+,E-,F+,I-,L+,N-,O+,R-,S+,V-}
 {
-added 2nd line of question to list, **will mess up page list length** FIX!
-list aesthetics
+ 11/24/2021 - Added 2ND line of question to list
+            - List aesthetics
+ 11/25/2021 - Changed list lengths, verify
 }
 UNIT SysOp10;
 
@@ -32,20 +33,20 @@ VAR
     FillChar(Topic,SizeOf(Topic),0);
     WITH Topic DO
       BEGIN
-		Question1 := '<< New Voting Topic >>';
-		Question2 := '';
-		ACS := 'VV';
-		ChoiceNumber := 0;
-		NumVotedQuestion := 0;
-		CreatedBy := Caps(User.Name);
-		AddAnswersACS := General.AddChoice;
-		FOR Counter := 1 TO MaxChoices DO
+        Question1 := '<< New Voting Topic >>';
+        Question2 := '';
+        ACS := 'VV';
+        ChoiceNumber := 0;
+        NumVotedQuestion := 0;
+        CreatedBy := Caps(User.Name);
+        AddAnswersACS := General.AddChoice;
+        FOR Counter := 1 TO MaxChoices DO
           WITH Answers[Counter] DO
-			BEGIN
-			  Answer1 := '<< New Topic Choice >>';
-			  Answer2 := '';
-			  NumVotedAnswer := 0;
-			END;
+            BEGIN
+              Answer1 := '<< New Topic Choice >>';
+              Answer2 := '';
+              NumVotedAnswer := 0;
+            END;
       END;
   END;
 
@@ -167,7 +168,7 @@ VAR
                                 (SizeOf(Topic.Answers[RecNum].Answer2) - 1),[InteractiveEdit],Changed);
                   END;
             '2' : InputInteger('%LFNew number of voters',Topic.Answers[RecNum].NumVotedAnswer,
-							   [InteractiveEdit,NumbersOnly],0,(MaxUsers - 1),Changed);
+                               [InteractiveEdit,NumbersOnly],0,(MaxUsers - 1),Changed);
             '[' : IF (RecNum > 1) THEN
                     Dec(RecNum)
                   ELSE
@@ -226,7 +227,7 @@ VAR
     PrintACR('^5<^4##^5> <^4Votes^5> <^4Choice^5>');
     HL;
     NumDone := 0;
-    WHILE (NumDone < (PageLength - 5)/2) AND (RecNumToList1 >= 1) AND (RecNumToList1 <= Topic.ChoiceNumber)
+    WHILE (NumDone < (PageLength - 7)/2) AND (RecNumToList1 >= 1) AND (RecNumToList1 <= Topic.ChoiceNumber)
           AND (NOT Abort) AND (NOT HangUp) DO
     BEGIN
       PrintACR(' ^1'+PadLeftInt(RecNumToList1,4)+
@@ -371,7 +372,7 @@ VAR
           Next := FALSE;
           {CLS;}
           IF (Editing) THEN
-		    ConfigHeader('^1Editing Voting Topic #'+IntToStr(RecNumToEdit)+' Of '+IntToStr(NumVotes))
+            ConfigHeader('^1Editing Voting Topic #'+IntToStr(RecNumToEdit)+' Of '+IntToStr(NumVotes))
             
           ELSE
             ConfigHeader('^1Inserting Voting Topic #'+IntToStr(RecNumToEdit)+' Of '+IntToStr(NumVotes + 1));
@@ -383,7 +384,7 @@ VAR
           PrintACR('^0(^13^0) ACS To Vote : ^1'+AOnOff(ACS = '','*None*',ACS));
           PrintACR('^0(^14^0) ACS To Add  : ^1'+AOnOff(AddAnswersACS = '','*None*',AddAnswersACS));
           PrintACR('^0(^15^0) Total Votes : ^1'+IntToStr(NumVotedQuestion));
-		  NL;
+          NL;
           PrintACR('^0 - This topic has ^1'+IntToStr(ChoiceNumber)+'^0 '+Plural('choice',ChoiceNumber));
         END;
         IF (NOT Editing) THEN
@@ -406,7 +407,7 @@ VAR
                 END;
           '2' : BEGIN
                   Print('%LFWho is the new author of this voting topic?');
-                  lFindUserWS(UNum);
+                  LFindUserWS(UNum);
                   IF (Unum < 1) THEN
                     PauseScr(FALSE)
                   ELSE
@@ -695,19 +696,22 @@ VAR
     HL;
     Reset(VotingFile);
     NumDone := 0;
-    WHILE (NumDone < (PageLength - 5)) AND (RecNumToList1 >= 1) AND (RecNumToList1 <= NumVotes)
+    WHILE (NumDone < (PageLength - 7)) AND (RecNumToList1 >= 1) AND (RecNumToList1 <= NumVotes)
           AND (NOT Abort) AND (NOT HangUp) DO
     BEGIN
       Seek(VotingFile,(RecNumToList1 - 1));
       Read(VotingFile,Topic);
       WITH Topic DO
-	    BEGIN
+        BEGIN
           PrintACR('^1 '+PadLeftInt(RecNumToList1,4)+
-				   '^1 '+PadLeftInt(NumVotedQuestion,7)+
+                   '^1 '+PadLeftInt(NumVotedQuestion,7)+
                    '^1 '+PadLeftStr(Question1,60));
-		  IF (Question2 <> '') THEN
-            PrintACR('^0'+PadLeftStr('^1',14)+PadLeftStr(Question2,60));
-		END;	 
+          IF (Question2 <> '') THEN
+            BEGIN
+              PrintACR(PadLeftStr('^1',14)+PadLeftStr(Question2,60));
+              Inc(NumDone); { Adds 1 line }
+            END;
+        END;     
       WKey;
       Inc(RecNumToList1);
       Inc(NumDone);
@@ -715,7 +719,7 @@ VAR
     Close(VotingFile);
     LastError := IOResult;
     IF (NumVotes = 0) THEN
-	  Messages(4,0,'voting topics'); {Print('*** No voting topics defined ***');}
+      Messages(4,0,'voting topics'); {Print('*** No voting topics defined ***');}
   END;
 
 BEGIN
@@ -736,7 +740,7 @@ BEGIN
       'R' : ResetTopic(RecNumToList);
       'S' : RecalculateTopics;
       '?' : BEGIN
-			  NL;
+              NL;
               Print('^0<^1CR^0>Next Page/Refresh');
               Print('^0(^1?^0)Help/First Voting Topic');
               LCmds(20,1,'Delete Voting Topic','Insert Voting Topic');

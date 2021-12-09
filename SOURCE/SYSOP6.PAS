@@ -912,7 +912,7 @@ VAR
     Abort := FALSE;
     Next := FALSE;
     ConfigHeader('Event Editor');
-    PrintACR('^5<^4A^5> <^4##^5> <^4Description^5>                  <^4Schedule^5> <^4Time^5>');
+    PrintACR('^5<^4A^5> <^4##^5> <^4Description^5>                  <^4Schedule^5>');
     HL;
     Reset(EventFile);
     NumDone := 0;
@@ -922,22 +922,21 @@ VAR
         Seek(EventFile,(RecNumToList1 - 1));
         Read(EventFile,Event);
         WITH Event DO
-          PrintACR(' ^0'+PadLeftStr(AOnOff(EventIsActive IN EFlags,'^9'+#251,'^0-'),2)+' '+
-                   ' ^0'+PadLeftInt(RecNumToList1,3)+' '+
+          PrintACR(' '+PadLeftStr(AOnOff(EventIsActive IN EFlags,'^9'+#251,'^8-'),3)+
+                   ' ^1'+PadLeftInt(RecNumToList1,4)+
                    ' ^1'+PadLeftStr(EventDescription,30)+               
-                   ' ^0'+PadLeftStr(AOnOff(EventDayOfMonth <> 0,
-                                    IntToStr(EventDayOfMonth)+DateSuffix(EventDayOfMonth),
-                                    DaysEventActive(EventDays,'4','0')),7)+'   '+ {Days}
-                   ' ^0'+PadLeftStr(Copy(CTim(EventStartTime),4,5),6)); {Time}
+                   ' ^5D: ^1'+PadLeftStr(AOnOff(EventDayOfMonth <> 0,
+                                    IntToStr(EventDayOfMonth)+AllCaps(DateSuffix(EventDayOfMonth)), {Day of month}
+                                    DaysEventActive(EventDays,'1','5'))+ {Days of week}
+                   ' ^5T: ^1'+Copy(CTim(EventStartTime),4,5),20)); {Time}
         Inc(RecNumToList1);
         Inc(NumDone);
       END;
     Close(EventFile);
     LastError := IOResult;
     IF (NumEvents = 0) THEN
-      Print('*** No events defined ***');
+      Messages(4,0,'events'); {Print('*** No events defined ***');}
   END;
-
 
 BEGIN
   IF (MemEventArray[Numevents] <> NIL) THEN

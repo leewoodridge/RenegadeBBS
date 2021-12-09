@@ -1,8 +1,8 @@
 {$A+,B-,D+,E-,F+,I-,L+,N-,O+,R-,S+,V-}
-{lfinduserws changed username string from astr to string[36]
- 
- 11/18/2021 moved finduser to logon.pas only place its used, doesn't seem like it'll be useful anywhere else
-            lfinduserws added search string before
+{
+ 00/00/2021 - SearchUser changed username string from astr to string[36] 
+ 11/18/2021 - Moved finduser to logon.pas only place its used, doesn't seem like it'll be useful anywhere else
+            - lfinduserws added search string before
 }
 UNIT MiscUser;
 
@@ -21,7 +21,7 @@ IMPLEMENTATION
 USES
   DOS;
 
-PROCEDURE lFindUserWS(VAR UserNum: Integer);
+PROCEDURE lFindUserWS(VAR UserNum: Integer); { Quit = -1 | Not Found = 0 }
 VAR
   User: UserRecordType;
   UserIDX: UserIDXRec;

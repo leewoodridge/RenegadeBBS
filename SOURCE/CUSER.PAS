@@ -740,7 +740,7 @@ VAR
 
   PROCEDURE ToggleLightbars;
   BEGIN
-    IF (NOT General.UseFileAreaLightBar) OR (NOT General.UseMsgAreaLightBar) THEN
+    IF (NOT General.UseLightBars){ OR (NOT General.UseMsgAreaLightBar)} THEN
       BEGIN
         lRGLngStr(170,FALSE); {"Lightbars not available"}
         Done1 := TRUE;

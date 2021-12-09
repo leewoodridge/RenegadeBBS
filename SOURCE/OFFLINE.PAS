@@ -103,9 +103,7 @@ VAR
   l: LongInt;
 BEGIN
   NL;
-  Prt('Enter oldest date for new messages (mm/dd/yyyy): ');
-
-  InputFormatted('',S,'##/##/####',TRUE);
+  InputFormatted('Enter oldest date for new messages (mm/dd/yyyy): ',S,'##/##/####',TRUE);
   IF (DayNum(S) = 0) THEN
   BEGIN
     NL;
@@ -132,7 +130,7 @@ BEGIN
     END;
     MsgArea := SaveMsgArea;
     LoadMsgArea(MsgArea);
-    SL1('Reset message last read pointers.');
+    SysOpLog('Set message new scan date to: '+S);
   END;
 END;
 

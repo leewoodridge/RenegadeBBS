@@ -186,6 +186,7 @@ END;
 
 PROCEDURE GoVote(TopicNum: Byte);
 VAR
+S: AStr; {LeeW: Added, logging}
   InputStr: Str2;
   ChoiceNum: Byte;
 BEGIN
@@ -260,10 +261,12 @@ BEGIN
         Topic.Answers[ChoiceNum].NumVotedAnswer := 1;
         Inc(Topic.NumVotedQuestion);
         ThisUser.Vote[TopicNum] := ChoiceNum;
+		{/}
         SL1('Added choice to '+Topic.Question1+':');
         SysOpLog(Topic.Answers[ChoiceNum].Answer1);
         IF (Topic.Answers[ChoiceNum].Answer2 <> '') THEN
           SysOpLog(Topic.Answers[ChoiceNum].Answer2);
+		{/ ^ LeeW: improve this}
       END;
     END;
   END

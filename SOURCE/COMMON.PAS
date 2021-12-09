@@ -32,6 +32,11 @@ Lee Woodridge
             - removed all instances of [displayvalue] from input cmds, and replaced with interactiveedit
                if interactiveedit is used and user no support ansi then it will show current value at end of prompt "...[123]"
  11/23/2021 - increased number parameter of plural from byte to integer
+ 
+ log formatting prefix proposal
+ [+] warning??
+ [!] ERROR
+ [$] security
 *)
 UNIT Common;
 
@@ -185,7 +190,7 @@ TYPE
     { Interface }
     InteractiveEdit, { Interactive editing }
     NoBlankPrompt,   { Will not prompt if you want to save a blank string, blank strings will revert 
-					   to previous data - LeeW: Added }
+                       to previous data - LeeW: Added }
     NoInputField,    { No MPL(#) - LeeW: Added }
     NoInputRange,    { Don't display valid input range after prompt (numeric input only) - LeeW: Added }
     NoLineFeed,      { No linefeed after <CR> pressed }
@@ -512,13 +517,13 @@ VAR
 FUNCTION Timer: LongInt;
 PROCEDURE NewCompTables;
 FUNCTION NSL: LongInt;
-FUNCTION AgeUser(CONST BirthDate: LongInt): Word;
+FUNCTION AgeUser(CONST BirthDate: LongInt): Word; { Calculate age from birthdate }
 PROCEDURE Update_Screen;
 FUNCTION PageLength: Word; { Users PageLen if InCom, else Hi(WindMax) }
 PROCEDURE lStatus_Screen(WhichScreen: Byte; Message: AStr; OneKey: Boolean; VAR Answer: AStr);
 PROCEDURE SaveGeneral(X: Boolean);
 PROCEDURE SKey1(VAR c: Char); { SysOp control keys }
-FUNCTION VerLine(B: Byte): STRING;
+FUNCTION VerLine(B: Byte): STRING; { Renegade BBS version information }
 PROCEDURE Toggle(VAR TheVar: Boolean); { Toggles a boolean } { LeeW: Added }
 FUNCTION PHours(CONST DisplayStr: AStr; LoTime,HiTime: Integer): AStr; {**move to timefunc}
 PROCEDURE DisplayBuffer(MCIFunction: MCIFunctionType; Data1, Data2:Pointer);
@@ -535,7 +540,6 @@ PROCEDURE PauseScr(IsCont: Boolean); { Pause the screen }
 FUNCTION HiMsg: Word;
 FUNCTION OnNode(UserNumber: Integer): Byte;
 PROCEDURE ScreenDump(CONST FileName: AStr);
-FUNCTION StrToInt(S: Str11): LongInt;
 FUNCTION ValueR(S: AStr): REAL;
 PROCEDURE ShellDOS(MakeBatch: Boolean; CONST Command: AStr; VAR ResultCode: Integer);
 PROCEDURE SysOpShell;
@@ -580,11 +584,11 @@ PROCEDURE ANSIG(X,Y: Byte); { ANSI go to position }
 PROCEDURE CLS; { ANSI Clear screen }
 PROCEDURE DOSANSI(CONST c: Char);
 { Disk operations }
-FUNCTION DiskKBFree(DrivePath: AStr): LongInt;
-FUNCTION Exist(FileName: AStr): Boolean;
-FUNCTION ExistDir(Path: PathStr): Boolean;
-PROCEDURE Kill(CONST FileName: AStr);
-PROCEDURE PurgeDir(s: AStr; SubDirs: Boolean);
+FUNCTION DiskKBFree(DrivePath: AStr): LongInt; { Calculate drive free space }
+FUNCTION Exist(FileName: AStr): Boolean; { Does file exist? }
+FUNCTION ExistDir(Path: PathStr): Boolean; { Does directory exist? }
+PROCEDURE Kill(CONST FileName: AStr); { Delete file }
+PROCEDURE PurgeDir(s: AStr; SubDirs: Boolean); { Delete directory }
 PROCEDURE MakeDir(VAR Path: PathStr; AskMakeDir: Boolean);
 FUNCTION CheckDriveSpace(S,Path: AStr; MinSpace: Integer): Boolean;
 FUNCTION ExistDrive(Drive: Char): Boolean;
@@ -622,7 +626,7 @@ FUNCTION GetC(c: Byte): STRING;
 PROCEDURE ShowColors;
 PROCEDURE SetC(C: Byte);
 PROCEDURE UserColor(Color: Byte);
-FUNCTION StripColor(CONST InString: STRING): STRING;
+FUNCTION StripColor(CONST InString: STRING): STRING; { Returns string with all color codes removed }
 { Input }
     { IN COMMON3 }
 PROCEDURE InputLongInt(S: AStr; VAR L: LongInt; InputFlags: InputFlagSet; LowNum,HighNum: LongInt; VAR Changed: Boolean);
@@ -644,16 +648,17 @@ FUNCTION PYNQ(CONST InString: AStr; MaxLen: Byte; YN: Boolean): Boolean; { Yes/N
 FUNCTION InKey: Word;
 PROCEDURE WKey;
 { string stuff}
-PROCEDURE BackSpace;
-PROCEDURE DoBackSpace(Start,Finish: Byte);
+PROCEDURE BackSpace; { Single backspace }
+PROCEDURE DoBackSpace(Start,Finish: Byte); { Multiple backspaces }
 PROCEDURE LCmds(Len,c: Byte; c1,c2: AStr); { 2 column command list }
 PROCEDURE LCmds3(Len,c: Byte; c1,c2,c3: AStr); { 3 column command list }
-PROCEDURE Messages(MsgNum,I: Integer; S: AStr);
+PROCEDURE Messages(MsgNum,I: Integer; S: AStr); { Common system messages }
 FUNCTION ConvertBytes(BytesToConvert: LongInt; OneChar: Boolean): STRING;
 FUNCTION ConvertKB(KBToConvert: LongInt; OneChar: Boolean): STRING;
 FUNCTION StripName(InString: STRING): STRING;
-FUNCTION IntToStr(L: LongInt): STRING;
-FUNCTION RealToStr(R: Real; W,D: Byte): STRING;
+FUNCTION IntToStr(L: LongInt): STRING; { Convert integer to string }
+FUNCTION StrToInt(S: Str11): LongInt; { Convert string to integer }
+FUNCTION RealToStr(R: Real; W,D: Byte): STRING; { Convert real to string }
 FUNCTION PadLeftStr(InString: STRING; MaxLen: Byte): STRING;
 FUNCTION PadRightStr(InString: STRING; MaxLen: Byte): STRING;
 FUNCTION PadLeftInt(L: LongInt; MaxLen: Byte): STRING;
@@ -661,33 +666,33 @@ FUNCTION PadRightInt(L: LongInt; MaxLen: Byte): STRING;
 FUNCTION lRGLNGStr(StrNum: LongInt; PassValue: Boolean): AStr; { Prints/passes string from language file (RGLNG) }
 FUNCTION StripLeadSpace(S: STRING): STRING;
 FUNCTION StripTrailSpace(S: STRING): STRING;
-FUNCTION SemiCmd(S: AStr; B: Byte): STRING;
+FUNCTION SemiCmd(S: AStr; B: Byte): STRING; { retrieve command parameters separated by ;s }
 FUNCTION MCI(CONST s: STRING): STRING;
 FUNCTION Plural(InString: STRING; Number: Integer): STRING; { Passes string, or string + s if number value <> 1 }
-FUNCTION FormattedTime(TimeUsed: LongInt): STRING;
-FUNCTION FormatNumber(L: LongInt): STRING;
-FUNCTION ToLower(S: STRING): STRING; { Convert string to lowercase } { LeeW: Moved from OneLiner }
+FUNCTION FormattedTime(TimeUsed: LongInt): STRING; { Returns time - E.G. "10 Seconds" }
+FUNCTION FormatNumber(L: LongInt): STRING; { Returns “thousands-separated” number - E.G. "1,250" }
+FUNCTION ToLower(S: STRING): STRING; { Returns string in all lowercase }
 FUNCTION LennMCI(CONST InString: STRING): Integer; { Returns string length minus MCIs and color codes }
 FUNCTION Substitute(Src: STRING; CONST Old,New: STRING): STRING; { Replace part of a string }
 FUNCTION BSlash(InString: AStr; b: Boolean): AStr;
 FUNCTION AllCaps(InString: STRING): STRING; { Returns string in all uppercase }
 FUNCTION Caps(InString: STRING): STRING; { Returns string with first letters of words capitalized }
 PROCEDURE Star(InString: AStr); { Display string with * indent }
-PROCEDURE Prompt(CONST InString: STRING);
+PROCEDURE Print(CONST InString: STRING); {print w/ no abort and +^M^J}
+PROCEDURE PrintACR(InString: STRING);
+PROCEDURE Prompt(CONST InString: STRING); {print w/ no abort}
+PROCEDURE Prt(CONST InString: STRING); {print w/ no abort and usercolor 0}
 FUNCTION SQOutSp(InString: STRING): STRING; { Removes all spaces in a string }
 FUNCTION Centre(InString: AStr): STRING; { Pads string to be centered on screen }
-PROCEDURE Print(CONST InString: STRING);
 PROCEDURE NL; { Carriage return }
-PROCEDURE Prt(CONST InString: STRING);
 FUNCTION AOnOff(b: Boolean; CONST s1,s2: AStr): STRING; { Returns strings depending on boolean state }
 FUNCTION ShowOnOff(b: Boolean): STRING; { "On" or "Off" depending on boolean state }
 FUNCTION ShowYesNo(b: Boolean): STRING; { "Yes" or "No" depending on boolean state }
-PROCEDURE PrintMain(CONST ss: STRING);
-PROCEDURE PrintACR(InString: STRING);
+PROCEDURE PrintMain(CONST ss: STRING); { MAIN PRINT PROCEDURE }
 { Art files }
 PROCEDURE PrintF(FileName: PathStr); { Checks path formatting, and for ANSI if avail, else ASCII } {>}
 PROCEDURE PrintFile(FileName: PathStr); { Checks if random and daily art files exist } {>}
-PROCEDURE PFL(FN: PathStr); { The actual file printing procedure }
+PROCEDURE PFL(FN: PathStr); { MAIN FILE PRINTING PROCEDURE }
 
 IMPLEMENTATION
 
@@ -1100,6 +1105,7 @@ BEGIN
 END;
 
 FUNCTION lRGLngStr(StrNum: LongInt; PassValue: Boolean): AStr;
+ {leew: passing value with true param only outputs last line -- look into this}
 VAR
   b: Byte; { LeeW: Added - for counter }
   StrPointerFile: FILE OF StrPointerRec;
@@ -1124,10 +1130,10 @@ BEGIN
     Inc(TotLoad,(Length(S) + 1));
     { -- }
     CASE StrNum OF
-      201 : FOR b := 0 TO 0 DO { $ENTER_STATE_PROVINCE }
+      177 : FOR b := 0 TO 1 DO { $FORWARDING_TO }
               IF (LangStringArray[b] <> '') THEN
                 S := Substitute(S,'@'+IntToStr(b),LangStringArray[b]);
-      177 : FOR b := 0 TO 1 DO { $FORWARDING_TO }
+	  201 : FOR b := 0 TO 0 DO { $ENTER_STATE_PROVINCE }
               IF (LangStringArray[b] <> '') THEN
                 S := Substitute(S,'@'+IntToStr(b),LangStringArray[b]);
                 (*
@@ -1164,12 +1170,7 @@ BEGIN
       LangStringArray[b] := '';
   { ^ LeeW: Clear passed strings here, check if there's better way to do this -- dispose? }
 END;
-{
-PROCEDURE GetPassword(VAR PW: AStr; Len: Byte);
-BEGIN
-  Common3.GetPassword(PW,Len);
-END;
-}
+
 PROCEDURE MakeDir(VAR Path: PathStr; AskMakeDir: Boolean);
 VAR
   CurDir: PathStr;
@@ -1316,74 +1317,73 @@ VAR
 BEGIN
   Counter := 1;
   WHILE (Counter <= MaxConfigurable) AND (MCIBuffer^[Counter] <> #0) DO
-  BEGIN
-    TempStr := '';
-    WHILE (Counter <= MaxConfigurable) AND (MCIBuffer^[Counter] <> #13) DO
-      IF (MCIBuffer^[Counter] = '~') AND (Counter + 2 <= MaxConfigurable) THEN
-      BEGIN
-        cs := MCIFunction(MCIBuffer^[Counter + 1] + MCIBuffer^[Counter + 2],Data1,Data2);
-        IF (cs = MCIBuffer^[Counter + 1] + MCIBuffer^[Counter + 2]) THEN
-        BEGIN
-          TempStr := TempStr + '~';
-          Inc(Counter);
-          Continue;
-        END;
-        Inc(Counter,3);
-        IF ((Counter + 1) <= MaxConfigurable) AND (MCIBuffer^[Counter] IN ['#','{','}']) THEN
-        BEGIN
-          IF (MCIBuffer^[Counter] = '}') THEN
-            Justify := 0
-          ELSE IF (MCIBuffer^[Counter] = '{') THEN
-            Justify := 1
-          ELSE
-            Justify := 2;
-          IF (MCIBuffer^[Counter + 1] IN ['0'..'9']) THEN
-          BEGIN
-            X2 := Ord(MCIBuffer^[Counter + 1]) - 48;
-            Inc(Counter, 2);
-            IF (MCIBuffer^[Counter] IN ['0'..'9']) THEN
-            BEGIN
-              X2 := X2 * 10 + Ord(MCIBuffer^[Counter]) - 48;
-              Inc(Counter,1);
-            END;
-            IF (X2 > 0) THEN
-              CASE Justify OF
-                0 : cs := PadRightStr(cs,X2);
-                1 : cs := PadLeftStr(cs,X2);
-                2 : WHILE (Length(cs) < X2) DO
-                    BEGIN
-                      cs := ' ' + cs;
-                      IF (Length(cs) < X2) THEN
-                        cs := cs + ' ';
-                    END;
-              END;
-          END;
-        END;
-        IF ((Length(cs) + Length(TempStr)) <= 255) THEN
-        BEGIN
-          Move(cs[1],TempStr[Length(TempStr)+1],Length(cs));
-          Inc(TempStr[0],Length(cs));
-        END
-        ELSE
-          IF (Length(TempStr) < 255) THEN
-          BEGIN
-            Move(cs[1],TempStr[Length(TempStr) + 1],(255 - Length(TempStr)));
-            TempStr[0] := #255;
-          END;
-      END
-      ELSE
-      BEGIN
-        Inc(TempStr[0]);
-        TempStr[Length(TempStr)] := MCIBuffer^[Counter];
-        Inc(Counter);
-      END;
-
-    IF (Counter <= MaxConfigurable) AND (MCIBuffer^[Counter] = #13) THEN
-      Inc(Counter,2);
-    CROff := TRUE;
-    PrintACR(TempStr);
+	BEGIN
+      TempStr := '';
+      WHILE (Counter <= MaxConfigurable) AND (MCIBuffer^[Counter] <> #13) DO
+		IF (MCIBuffer^[Counter] = '~') AND (Counter + 2 <= MaxConfigurable) THEN
+		  BEGIN
+			cs := MCIFunction(MCIBuffer^[Counter + 1] + MCIBuffer^[Counter + 2],Data1,Data2);
+			IF (cs = MCIBuffer^[Counter + 1] + MCIBuffer^[Counter + 2]) THEN
+			  BEGIN
+				TempStr := TempStr + '~';
+				Inc(Counter);
+				Continue;
+			  END;
+			Inc(Counter,3);
+			IF ((Counter + 1) <= MaxConfigurable) AND (MCIBuffer^[Counter] IN ['#','{','}']) THEN
+			  BEGIN
+				IF (MCIBuffer^[Counter] = '}') THEN
+				  Justify := 0
+				ELSE IF (MCIBuffer^[Counter] = '{') THEN
+				  Justify := 1
+				ELSE
+				  Justify := 2;
+				IF (MCIBuffer^[Counter + 1] IN ['0'..'9']) THEN
+				  BEGIN
+					X2 := Ord(MCIBuffer^[Counter + 1]) - 48;
+					Inc(Counter, 2);
+					IF (MCIBuffer^[Counter] IN ['0'..'9']) THEN
+					  BEGIN
+						X2 := X2 * 10 + Ord(MCIBuffer^[Counter]) - 48;
+						Inc(Counter,1);
+					  END;
+					IF (X2 > 0) THEN
+					  CASE Justify OF
+						0 : cs := PadRightStr(cs,X2);
+						1 : cs := PadLeftStr(cs,X2);
+						2 : WHILE (Length(cs) < X2) DO
+							  BEGIN
+								cs := ' ' + cs;
+								IF (Length(cs) < X2) THEN
+								  cs := cs + ' ';
+							  END;
+					  END;
+				  END;
+			  END;
+			IF ((Length(cs) + Length(TempStr)) <= 255) THEN
+			  BEGIN
+				Move(cs[1],TempStr[Length(TempStr)+1],Length(cs));
+				Inc(TempStr[0],Length(cs));
+			  END
+			ELSE
+			  IF (Length(TempStr) < 255) THEN
+				BEGIN
+				  Move(cs[1],TempStr[Length(TempStr) + 1],(255 - Length(TempStr)));
+				  TempStr[0] := #255;
+				END;
+		  END
+	  ELSE
+		BEGIN
+		  Inc(TempStr[0]);
+		  TempStr[Length(TempStr)] := MCIBuffer^[Counter];
+		  Inc(Counter);
+		END;
+	  IF (Counter <= MaxConfigurable) AND (MCIBuffer^[Counter] = #13) THEN
+		  Inc(Counter,2);
+	  CROff := TRUE;
+	  Prompt(TempStr);
+	END;
   END;
-END;
 
 FUNCTION FormatNumber(L: LongInt): STRING;
 VAR
@@ -2314,7 +2314,7 @@ BEGIN
     InString := ' ' + InString;
   IF (StrLen > MaxLen) THEN
     InString[0] := Chr(MaxLen + (Length(InString) - StrLen));
-  PadRightStr := Instring;
+  PadRightStr := InString;
 END;
 
 FUNCTION PadLeftInt(L: LongInt; MaxLen: Byte): STRING;
@@ -2556,7 +2556,7 @@ VAR
   C: Word;
   TempTimer: LongInt;
   
-FUNCTION Chinkey: Char;
+FUNCTION ChInKey: Char;
 VAR
   C: Char;
 BEGIN
@@ -2656,9 +2656,9 @@ BEGIN
           TimedOut := TRUE;
           PrintF('TIMEOUT');
           IF (NoFile) THEN
-            Print(^M^J^M^J'Time out - disconnecting.'^M^J^M^J);
+		    lRGLngStr(242,FALSE); { Timeout message } {Print(^M^J^M^J'Time out - disconnecting.'^M^J^M^J);}
           HangUp := TRUE;
-          SysOpLog('Inactivity timeout at '+TimeStr);
+          SysOpLog('Inactivity timeout at '+TimeStr); {LeeW: Add how long?}
         END;
         IF (General.TimeOutBell <> - 1) AND ((TempTimer - LastKeyHit) > (General.TimeOutBell * 60)) AND
            (NOT Tf) THEN
@@ -2696,12 +2696,14 @@ BEGIN
             END;
             LastTimeSlice := Ticks;
           END
+		  
           ELSE IF (MultiNodeChat) AND (NOT InChat) AND (ABS(Ticks - LastCheckTimeSlice) > 9) THEN
           BEGIN
             LastCheckTimeSlice := Ticks;
             TeleConfCheck;
             LIL := 1;
           END;
+		  
         END;
         IF (InChat) THEN
           C := Ord(Chinkey)
@@ -2710,7 +2712,7 @@ BEGIN
       END;
       IF (UserOn) AND ((GetPackDateTime - CreditsLastUpdated) > 60) AND NOT (FNoCredits IN ThisUser.ACFlags) THEN
       BEGIN
-        Inc(ThisUser.Debit,General.Creditminute * ((GetPackDateTime - CreditsLastUpdated) DIV 60));
+        Inc(ThisUser.Debit,General.CreditMinute * ((GetPackDateTime - CreditsLastUpdated) DIV 60));
         CreditsLastUpdated := GetPackDateTime;
       END;
     END;
@@ -2902,6 +2904,7 @@ FUNCTION PYNQ(CONST InString: AStr; MaxLen: Byte; YN: Boolean): Boolean;
 VAR
   Cmd: Char;
   W: Word;
+  
   PROCEDURE PrintYesNo;
   BEGIN
         IF (YN) THEN
@@ -2915,11 +2918,12 @@ VAR
             Prt('^7'+lRGLngStr(97,TRUE)+'^0'); { No selected }
           END;
   END;
+  
 BEGIN
   UserColor(2);
   Prompt(InString+' ');
   {/}
-  IF (OkANSI) AND (General.UseFileAreaLightBar) THEN
+  IF (OkANSI) AND (General.UseLightBars) THEN
     BEGIN
       IF (NOT HangUp) THEN
         BEGIN
@@ -3124,7 +3128,7 @@ BEGIN
                       END
                     (* LeeW: Added ANSI go to position MCI %XY00;00% *)
                     ELSE IF (UpCase(s[i + 1]) = 'X') AND (UpCase(s[i + 2]) = 'Y') AND 
-							(s[i + 5] = ';') AND (s[i + 8] = '%') THEN
+                            (s[i + 5] = ';') AND (s[i + 8] = '%') THEN
                       BEGIN
                         cs := '';
                         Inc(i, 3);
@@ -3237,10 +3241,10 @@ BEGIN
     InString := InString + ^M^J;
   PrintMain(InString);
   IF (Abort) THEN
-	BEGIN
+    BEGIN
       CurrentColor := (255 - CurrentColor);
       UserColor(0);
-	END;
+    END;
   CROff := FALSE;
 END;
 
@@ -4591,19 +4595,19 @@ BEGIN
   IF (OkANSI) OR (OkVT100) THEN
     SerialOut(^[+'['+IntToStr(Len)+'D'+^[+'[K')
   ELSE IF (OkAvatar) THEN
-  BEGIN
-    FOR Counter := 1 TO Len DO
-      Com_Send(^H);
-    SerialOut(^V^G);
-  END
+	BEGIN
+      FOR Counter := 1 TO Len DO
+		Com_Send(^H);
+      SerialOut(^V^G);
+	END
   ELSE
     FOR Counter := 1 TO Len DO
-    BEGIN
-      Com_Send(^H);
-      Com_Send(' ');
-      Com_Send(^H);
-    END;
-  GotoXY((WhereX - Len),WhereY);
+	  BEGIN
+		Com_Send(^H);
+		Com_Send(' ');
+		Com_Send(^H);
+      END;
+  GoToXY((WhereX - Len),WhereY);
   ClrEOL;
 END;
 

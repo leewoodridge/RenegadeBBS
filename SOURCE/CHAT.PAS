@@ -74,8 +74,11 @@ BEGIN
     IF (Reason <> '') THEN
     BEGIN
       Inc(ChatAttempts);
+	  SysOpLog('Paged SysOp '#196' Reason: "'+Reason+'"');
+	  {
       SysOpLog('^4Chat attempt:');
       SL1(Reason);
+	  }
       IF (NOT SysOpAvailable) AND AACS(General.OverRideChat) THEN
         PrintF('CHATOVR');
       IF (SysOpAvailable) OR (AACS(General.OverRideChat) AND PYNQ(^M^J'SysOp is not available. Override? ',0,FALSE)) THEN
@@ -420,10 +423,10 @@ BEGIN
   S := 'Chatted for '+FormattedTime(ChatTime);
   IF (CFO) THEN
     BEGIN
-      S := S+'  -{ Recorded in Chat';
+      S := S+' (Recorded to CHAT';
       IF (ChatSeparate IN ThisUser.SFlags) THEN
         S := S + IntToStr(UserNum);
-      S := S+'.LOG }-';
+      S := S+'.LOG)';
     END;
   SysOpLog(S);
   InChat := FALSE;
@@ -864,10 +867,10 @@ BEGIN
   S := 'Chatted for '+FormattedTime(ChatTime);
   IF (CFO) THEN
     BEGIN
-      S := S+'  -{ Recorded in Chat';
+      S := S+' (Recorded to CHAT';
       IF (ChatSeparate IN ThisUser.SFlags) THEN
         S := S + IntToStr(UserNum);
-      S := S+'.LOG }-';
+      S := S+'.LOG)';
     END;
   SysOpLog(S);
   InChat := FALSE;

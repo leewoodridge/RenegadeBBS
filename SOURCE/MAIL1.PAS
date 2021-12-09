@@ -2146,23 +2146,19 @@ VAR
     Counter: Integer;
     AddTagLine: Boolean;
   BEGIN
-
     IF (ReadInMsg <> '') THEN
-    BEGIN
-
-      Assign(InportFile,ReadInMsg);
-      ReWrite(InportFile);
-      IF (IOResult = 0) THEN
       BEGIN
-        FOR LineNum1 := 1 TO (TotalLines - 1) DO
-          WriteLn(InportFile,LinePtr^[LineNum1]);
-        Close(InportFile);
-      END;
-
-    END
+		Assign(InportFile,ReadInMsg);
+		ReWrite(InportFile);
+		IF (IOResult = 0) THEN
+		  BEGIN
+			FOR LineNum1 := 1 TO (TotalLines - 1) DO
+			  WriteLn(InportFile,LinePtr^[LineNum1]);
+			Close(InportFile);
+		  END;
+	  END
     ELSE
-    BEGIN
-
+      BEGIN
       AddTagLine := FALSE;
       IF (MAQuote IN MemMsgArea.MAFlags) THEN
         AddTagLine := PYNQ('Add a tagline to your message? ',0,TRUE);
@@ -2177,23 +2173,22 @@ VAR
       GetDayOfWeek(MHeader.DayOfWeek);
 
       IF (Pub AND (MemMsgArea.MAType IN [1,2])) OR (NOT Pub AND (NetMail IN MHeader.Status)) THEN
-      BEGIN
-        NewEchoMail := TRUE;
-        IF (NOT (MAScanOut IN MemMsgArea.MAFlags)) THEN
-          UpdateBoard;
-      END;
+		BEGIN
+          NewEchoMail := TRUE;
+          IF (NOT (MAScanOut IN MemMsgArea.MAFlags)) THEN
+			UpdateBoard;
+		END;
 
       MHeader.From.UserNum := UserNum;
-
       UserName := AllCaps(ThisUser.Name);
 
       IF (NOT Pub) AND (NetMail IN MHeader.Status) AND (ThisUser.Name <> AllCaps(ThisUser.RealName)) THEN
         IF (General.AllowAlias) THEN
-        BEGIN
-          NL;
-          IF PYNQ('Send this with your real name? ',0,TRUE) THEN
-            UserName := AllCaps(ThisUser.RealName);
-        END;
+          BEGIN
+			NL;
+			IF PYNQ('Send this with your real name? ',0,TRUE) THEN
+              UserName := AllCaps(ThisUser.RealName);
+		  END;
 
       MHeader.From.A1S := UserName;
       MHeader.From.Real := AllCaps(ThisUser.RealName);
@@ -2205,24 +2200,24 @@ VAR
         Include(MHeader.Status,Unvalidated);
 
       IF (AACS(MemMsgArea.MCIACS)) THEN
-      BEGIN
-        Include(MHeader.Status,AllowMCI);
-        IF (DisableMCI1) THEN
-          Exclude(MHeader.Status,AllowMCI);
-      END;
+		BEGIN
+          Include(MHeader.Status,AllowMCI);
+          IF (DisableMCI1) THEN
+			Exclude(MHeader.Status,AllowMCI);
+		END;
 
       IF (Pub) THEN
-      BEGIN
-        MHeader.MTO.Name := MsgTo;
-        MHeader.MTO.Real := MsgTo;
-        MHeader.MTO.A1S := MsgTo;
-      END;
+		BEGIN
+          MHeader.MTO.Name := MsgTo;
+          MHeader.MTO.Real := MsgTo;
+          MHeader.MTO.A1S := MsgTo;
+		END;
 
       IF (NOT (NetMail IN MHeader.Status)) THEN
         Anonymous(FALSE,MHeader);
 
       NL;
-      Prompt('^1Saving...');
+      Prompt('^0Saving...');
 
       Reset(MsgTxtF,1);
       IF (IOResult = 2) THEN

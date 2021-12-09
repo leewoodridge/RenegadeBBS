@@ -9,17 +9,12 @@ Lee Woodridge
  11/01/2021 - All string files combined into RGLNG.TXT
             - #193 unused -- replace with something NOT UNTIL I FINISH MULTINODE CHAT
             - Too many nested IF, ELSE IF statements causing internal stack overflow 
-                - temp fixed by starting over after each section but
-                  should consider changing to CASE, if that'll fix it -- have to look into this
-                  NO, NO STRINGS IN CASE... hmmm
- 11/12/2021 - 234/235 added updateuserinfo strings
-              236 Force batch DL, 237 Force batch UL
-              179 Add quote prompt
+                - temp fixed by starting over after each section
+ 11/12/2021 - Added updateuserinfo strings (#234/235), Force batch DL (#236), Force batch UL (#237), Add quote prompt (#179)
  11/15/2021 - Added reading public messages list header (#238)
- 11/18/2021 - Added: User not found string(#239)
-                     User search ask string(#240)
-					 quote header (#241)
- --- 
+ 11/18/2021 - Added User not found string (#239), User search ask string (#240), quote header (#241)
+ 11/25/2021 - Added timeout message (#242)
+ -
 bug where if a string is empty, like:
 $TEST_STRING
 $
@@ -46,6 +41,7 @@ VAR
   RGStrNum: LongInt;
   Done,
   Found: Boolean;
+  i: integer; {leew: added}
 
 FUNCTION AllCaps(S: STRING): STRING;
 VAR
@@ -72,18 +68,27 @@ BEGIN
   Exist := (DOSError = 0);
 END;
 
+FUNCTION IntToStr(L: LongInt): STRING;
+VAR
+  S: STRING[11];
+BEGIN
+  Str(L,S);
+  IntToStr := S;
+END;
+
 BEGIN
   ClrScr;
   WriteLn('Renegade Language String Compiler - Version 3.6');
-  Writeln('Copyright (c) 2021 The Renegade Developement Team');
+  Writeln('Copyright (c) 2021 The Renegade Development Team');
   IF (NOT Exist('RGLNG.TXT')) THEN
     BEGIN
       WriteLn;
       WriteLn(^G^G^G'RGLNG.TXT does not exist!');
-      Exit;
+      EXIT;
     END
   ELSE
     BEGIN
+	i := 0; {leew: added}
       WriteLn;
       Write('Compiling language strings ... ');
       Found := TRUE;
@@ -98,6 +103,7 @@ BEGIN
           ReadLn(F,S);
           IF (S <> '') AND (S[1] = '$') THEN
             BEGIN
+			inc(i); {leew: added}
               Delete(S,1,1);
               S := AllCaps(S);
               RGStrNum := -1;
@@ -293,7 +299,7 @@ BEGIN
                 RGStrNum := 94
               ELSE IF (S = 'NEW_FILE_SCANNING') THEN
                 RGStrNum := 95
-              ELSE IF (S = 'LIGHTBAR_YES') THEN
+              ELSE IF (S = 'LIGHTBAR_YES') THEN {LeeW: Added here to end of LNG}
                 RgStrNum := 96
               ELSE IF (S = 'LIGHTBAR_NO') THEN
                 RgStrNum := 97
@@ -410,7 +416,7 @@ BEGIN
                 RGStrNum := 152
               ELSE IF (S = 'NEW_USER_IN_RESPONSE_TO_SUBJ') THEN
                 RGStrNum := 153
-              ELSE IF (S = 'ABORTED') THEN
+              ELSE IF (S = 'ABORTED') THEN  {LeeW: Added here to end of NOTE}
                 RgStrNum := 154
               ELSE IF (S = 'SAVED') THEN
                 RgStrNum := 155
@@ -485,11 +491,11 @@ BEGIN
                 RGStrNum := 189
               ELSE IF (S = 'NEW_USER_PASSWORD') THEN
                 RGStrNum := 190
-              ELSE IF (S = 'TELECONF_NORMAL') THEN
+              ELSE IF (S = 'TELECONF_NORMAL') THEN  {LeeW: Added here to end}
                 RGStrNum := 191
               ELSE IF (S = 'TELECONF_ANONYMOUS') THEN
                 RGStrNum := 192
-              ELSE IF (S = 'TELECONF_GLOBAL') THEN {**}
+              ELSE IF (S = 'TELECONF_GLOBAL') THEN {*this likely won't be used after teleconf rewrite}
                 RGStrNum := 193
               ELSE IF (S = 'TELECONF_PRIVATE') THEN
                 RGStrNum := 194
@@ -587,12 +593,17 @@ BEGIN
                 RgStrNum := 240
               ELSE IF (S = 'QUOTE_HEADER') THEN
                 RgStrNum := 241
+              ELSE IF (S = 'TIMEOUT') THEN
+                RgStrNum := 242
               {// END OF COMB }
                 (*
               ELSE IF (S = '') THEN
                 RgStrNum := 
                 *)
                 ;
+				
+			  {/}
+				
               IF (RGStrNum = -1) THEN
                 BEGIN
                   WriteLn('Error!');
@@ -631,7 +642,7 @@ BEGIN
           Close(RGStrFile);
           Close(StrPointerFile);
           IF (Found) THEN
-            WriteLn('Done!')
+            WriteLn('Done! ('+IntToStr(i)+' strings)')
           ELSE
             BEGIN
               Erase(StrPointerFile);

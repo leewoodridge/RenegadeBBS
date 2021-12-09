@@ -106,30 +106,30 @@ BEGIN
           IF (Length(TempDirPath) > 3) AND (NOT ExistDir(TempDirPath)) THEN
           BEGIN
             NL;
-			{---}
+            {---}
             IF PYNQ('Directory does not exist, create it? ',0,FALSE) THEN
               BEGIN
-				Counter := 2;
-				WHILE (Counter <= Length(TempDirPath)) DO
-				  BEGIN
-					IF (TempDirPath[Counter] = '\') THEN
-					  IF (TempDirPath[Counter - 1] <> ':') THEN
-						IF (NOT ExistDir(Copy(TempDirPath,1,(Counter - 1)))) THEN
-						  BEGIN
-							MkDir(Copy(TempDirPath,1,(Counter - 1)));
-							LastError := IOResult;
-							IF (LastError <> 0) THEN
-							  BEGIN
-								NL;
-								Print('Error creating directory: '+Copy(TempDirPath,1,(Counter - 1)));
-								SysOpLog('^8Error creating directory: '+Copy(TempDirPath,1,(Counter - 1)));
-								TempDirPath := '';
-							  END;
-						  END;
-					Inc(Counter);
-				  END;
+                Counter := 2;
+                WHILE (Counter <= Length(TempDirPath)) DO
+                  BEGIN
+                    IF (TempDirPath[Counter] = '\') THEN
+                      IF (TempDirPath[Counter - 1] <> ':') THEN
+                        IF (NOT ExistDir(Copy(TempDirPath,1,(Counter - 1)))) THEN
+                          BEGIN
+                            MkDir(Copy(TempDirPath,1,(Counter - 1)));
+                            LastError := IOResult;
+                            IF (LastError <> 0) THEN
+                              BEGIN
+                                NL;
+                                Print('Error creating directory: '+Copy(TempDirPath,1,(Counter - 1)));
+                                SysOpLog('^8Error creating directory: '+Copy(TempDirPath,1,(Counter - 1)));
+                                TempDirPath := '';
+                              END;
+                          END;
+                    Inc(Counter);
+                  END;
               END;
-			{---}
+            {---}
           END;
         END;
       END;
@@ -509,13 +509,13 @@ BEGIN
     IF (C = 27) AND (AllowEscape IN InputFlags) THEN { ESC - Aborts }
       BEGIN
         S := SaveS;
-		IF (IsPassword IN InputFlags) THEN
-		  Echo := TRUE;
-		UserColor(0);
-		IF (NOT (NoLineFeed IN InputFlags)) THEN
-		  NL;
-		MLC := '';
-		SetCursor(FALSE);
+        IF (IsPassword IN InputFlags) THEN
+          Echo := TRUE;
+        UserColor(0);
+        IF (NOT (NoLineFeed IN InputFlags)) THEN
+          NL;
+        MLC := '';
+        SetCursor(FALSE);
         EXIT;
       END;
 

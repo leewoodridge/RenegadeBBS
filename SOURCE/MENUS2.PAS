@@ -1,6 +1,6 @@
 {$A+,B-,D+,E-,F+,I-,L+,N-,O+,R-,S+,V-}
 {
-11/15/2021 added slog loaded menu entry
+11/15/2021 added slog loaded menu entry -- REMOVE GLOBAL, others???
 }
 UNIT Menus2;
 
