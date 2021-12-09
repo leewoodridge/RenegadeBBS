@@ -38,12 +38,12 @@ $NewScan_Done
 Done!
 $
 
-; @U = Username, @D = Date
+### @U = Username, @D = Date
 $Auto_Message_Title
 ^0 - Posted by ^1@U^0 on ^1@D^0
 $
 
-; single character, color code ok
+### Single character, color code OK
 $Auto_Message_Border_Characters
 Ä
 $
@@ -69,9 +69,7 @@ Time Left [%TL] (?=Help) %LFBulletin Menu: @
 $
 
 $Protocol_Prompt
-Press [G] To Transfer If Logged On By http://renegadebbs.info
-
-Otherwise, Press [ENTER] To Transfer, [B]atch, [N]ext, [Q]uit: @
+: @
 $
 
 $List_Files
@@ -154,7 +152,7 @@ $Newscan_Global_Complete
 $
 
 $Chat_Reason
-%UN, State your reason for a Chat Session.
+%UN, State your reason for paging the SysOp
 $
 
 $User_Defined_Question_One
@@ -431,61 +429,7 @@ $New_File_Scanning
 %CLScanning ... [%FB - %HM]@
 $
 
-$Lightbar_Yes
- Yes 
-$
-
-$Lightbar_No
- No 
-$
-
-$No_Auto_Message
-There's no auto-message
-$
-
-$Posted_Anonymously
-(Posted Anonymously)
-$
-
-$Auto_Message_Restricted
-You are restricted from writing auto-messages
-$
-
-$Post_Anonymously?
-Post Anonymously?
-$
-
-$No_Auto_Message_Reply
-There's no auto-message to reply to!
-$
-
-$Cant_Reply_Anonymous
-You can't reply to an anonymous message!
-$
-
-$Auto_Message_Header
-%CL^4Auto-Message
-$
-
-$Enter_OneLiner
-Enter your OneLiner:
-$
-
-$Add_OneLiner
-Would you like to add a OneLiner?
-$
-
-$Add_OneLiner_Confirm
-Are you sure you want to add this OneLiner?
-$
-
-$OneLiner_Header
-%CL^4OneLiners
-$
-
-$No_OneLiners
-There are no OneLiners yet
-$
+### END OF LNG, START OF NOTE ###
 
 $Internal_Use_Only
 ^8This is for internal use only^0
@@ -667,6 +611,113 @@ $New_User_In_Response_To_Subj
 New User Application
 $
 
+### END OF NOTE, START OF MAIN ###
+
+$Baud_Override_PW
+%LFBaud rate override password: @
+$
+
+$Caller_Logon
+%LF[Node %ND] Login: @
+$
+
+$Logon_As_New
+%LFLogon as new? @
+$
+
+$User_Logon_Password
+%LFEnter Password: @
+$
+
+$User_Logon_Phone_Number
+%LFLast 4 Digits of phone #: ###-###-@
+$
+
+$SysOp_Logon_Password
+%LFSysOp Password: @
+$
+
+$Forgot_PW_Question
+%LFPlease answer the following question to logon to the BBS.
+
+What is your favorite Pet's name?
+: @
+$
+
+$Verify_Birth_Date
+%LFPlease verify your date of birth (mm/dd/yyyy): @
+$
+
+$Logon_Withdraw_Bank
+Withdraw from Time Bank? @
+$
+
+$Shuttle_Logon
+%LF[Node %ND] Login: @
+$
+
+$New_User_Password
+%LFNew User Password: @
+$
+
+### END OF NOTE, NEW SINCE 1.25 BELOW ###
+
+$Lightbar_Yes
+ Yes 
+$
+
+$Lightbar_No
+ No 
+$
+
+$No_Auto_Message
+There's no auto-message
+$
+
+$Posted_Anonymously
+(Posted Anonymously)
+$
+
+$Auto_Message_Restricted
+You are restricted from writing auto-messages
+$
+
+$Post_Anonymously?
+Post Anonymously?
+$
+
+$No_Auto_Message_Reply
+There's no auto-message to reply to!
+$
+
+$Cant_Reply_Anonymous
+You can't reply to an anonymous message!
+$
+
+$Auto_Message_Header
+%CL^4Auto-Message
+$
+
+$Enter_OneLiner
+Enter your OneLiner:
+$
+
+$Add_OneLiner
+Would you like to add a OneLiner?
+$
+
+$Add_OneLiner_Confirm
+Are you sure you want to add this OneLiner?
+$
+
+$OneLiner_Header
+%CL^4OneLiners
+$
+
+$No_OneLiners
+There are no OneLiners yet
+$
+
 $Aborted
 ^8Aborted!
 $
@@ -758,60 +809,13 @@ $Cant_Forward_User
 ^8%LFYou can not forward mail to that user!^0
 $
 
-@0 = User Name, @1 = User Number
+### @0 = User Name, @1 = User Number
 $Forwarding_To
 ^0%LFYour mail is now being forwarded to ^1@0 ^0(^1#@1^0)
 $
 
 $QWK_Config
 %LFQWK Mail Configuration%LF%LFAvailable archive formats: %LF
-$
-
-$Baud_Override_PW
-%LFBaud rate override password: @
-$
-
-$Caller_Logon
-%LF[Node %ND] Login: @
-$
-
-$Logon_As_New
-%LFLogon as new? @
-$
-
-$User_Logon_Password
-%LFEnter Password: @
-$
-
-$User_Logon_Phone_Number
-%LFLast 4 Digits of phone #: ###-###-@
-$
-
-$SysOp_Logon_Password
-%LFSysOp Password: @
-$
-
-$Forgot_PW_Question
-%LFPlease answer the following question to logon to the BBS.
-
-What is your favorite Pet's name?
-: @
-$
-
-$Verify_Birth_Date
-%LFPlease verify your date of birth (mm/dd/yyyy): @
-$
-
-$Logon_Withdraw_Bank
-Withdraw from Time Bank? @
-$
-
-$Shuttle_Logon
-%LF[Node %ND] Login: @
-$
-
-$New_User_Password
-%LFNew User Password: @
 $
 
 $Teleconf_Normal
@@ -862,7 +866,7 @@ $Enter_City
 %LF^2Enter your city
 $
 
-@0 = 'state' OR 'province' depending on country
+### @0 = 'state' OR 'province' depending on country
 $Enter_State_Province
 %LF^2Enter your @0 abbreviation: @
 $
@@ -1033,11 +1037,15 @@ $User_Not_Found
 ^8User not found^0
 $
 
-@0 = User Name
+### @0 = User Name
 $User_Search_Ask
 ^0Did you mean ^1@0^0? 
 $
 
 $Quote_Header
 %CL^4And now... A quote for you!
+$
+
+$Timeout
+^0%LF%LFYou've been logged off due to inactivity. Call back when you've got the time!
 $
