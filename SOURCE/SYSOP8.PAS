@@ -167,7 +167,67 @@ VAR
       QWKIndex := 0;
     END;
   END;
-
+  
+  PROCEDURE ResetMsgAreaColors;
+  VAR
+    LastRecNum,
+    RecNum: Integer;
+  BEGIN
+    IF (NumMsgAreas = 0) THEN
+      Messages(4,0,'message areas')
+    ELSE
+	  BEGIN
+	    IF PYNQ('%LFAre you sure you want to reset all message area colors?',0,FALSE) THEN
+		(*FirstRecNum := -1;
+      InputInteger('%LFMessage area to start at?',FirstRecNum,[NumbersOnly],1,NumMsgAreas,Changed);
+      IF (FirstRecNum >= 1) AND (FirstRecNum <= NumMsgAreas) THEN
+	  *)
+      BEGIN
+	  (*
+        LastRecNum := -1;
+        InputInteger('%LFMessage area to end at?',LastRecNum,[NumbersOnly],1,NumMsgAreas,Changed);
+        IF (LastRecNum >= 1) AND (LastRecNum <= NumMsgAreas) THEN
+        BEGIN
+          IF (FirstRecNum > LastRecNum) OR (LastRecNum < FirstRecNum) THEN
+            Messages(8,0,'')
+          ELSE
+          BEGIN
+            InputChar('%LFChange to which drive? (^1A^2-^1Z^2): ',Drive,'ABCDEFGHIJKLMNOPQRSTUVWXYZ'^M,[CapAll]);
+            ChDir(Drive+':');
+            IF (IOResult <> 0) THEN
+              Messages(7,0,'')
+            ELSE*)
+            BEGIN
+              {ChDir(StartDir);}
+              Prompt('%LFRestoring default message area colors ... ');
+              Reset(MsgAreaFile);
+              FOR RecNum := 1{FirstRecNum} TO NumMsgAreas{LastRecNum} DO
+              BEGIN
+                Seek(MsgAreaFile,(RecNum - 1));
+                Read(MsgAreaFile,MemMsgArea);
+                
+				{changecolorshere!}
+				MemMsgArea.Text_Color := General.Text_Color;
+				MemMsgArea.Quote_Color := General.Quote_Color;
+				MemMsgArea.Tear_Color := General.Tear_Color;
+				MemMsgArea.Origin_Color := General.Origin_Color;
+				
+                Seek(MsgAreaFile,(RecNum - 1));
+                Write(MsgAreaFile,MemMsgArea);
+              END;
+              Close(MsgAreaFile);
+              LastError := IOResult;
+              Print('Done');
+              SysOpLog('* Reset all message area colors to defaults');
+            END;
+          END;
+        END;
+      END;
+	  (*
+    END
+  END;
+  *)
+  
   PROCEDURE ChangeMsgAreaDrive(Drive: Char; FirstRecNum: Integer);
   VAR
     LastRecNum,
@@ -1100,7 +1160,7 @@ BEGIN
   REPEAT
     IF (Cmd <> '?') THEN
       ListMsgAreas(RecNumToList);
-    InputChar('%LFMessage area editor [^1?^2=^1Help^2]: ',Cmd,'QCDIMPRTX?'^M,[CapAll]);
+    InputChar('%LFMessage area editor [^1?^2=^1Help^2]: ',Cmd,'QCDIMPRTX^?'^M,[CapAll]);
     CASE Cmd OF
       ^M  : IF (RecNumToList < 0) OR (RecNumToList > NumMsgAreas) THEN
               RecNumToList := 0;
@@ -1131,14 +1191,16 @@ BEGIN
               Close(MsgAreaDefFile);
               Cmd := #0;
             END;
+	  '^' : ResetMsgAreaColors;
       '?' : BEGIN
               Print('%LF^0<^1CR^0>Next screen or redisplay current screen');
               Print('^0(^1?^0)Help/First message area');
-              LCmds(22,3,'Change message storage drive','');
-              LCmds(22,3,'Delete message area','Insert message area');
-              LCmds(22,3,'Modify message area','Position message area');
-              LCmds(22,3,'Quit','Renumber QWK index');
-              LCmds(22,3,'Toggle display format','XDefault configuration');
+              LCmds(22,1,'Change message storage drive','');
+              LCmds(22,1,'Delete message area','Insert message area');
+              LCmds(22,1,'Modify message area','Position message area');
+              LCmds(22,1,'Quit','Renumber QWK index');
+              LCmds(22,1,'Toggle display format','XDefault configuration');
+			  LCmds(22,1,'^Reset base colors','');
             END;
     END;
     IF (Cmd <> ^M) THEN
