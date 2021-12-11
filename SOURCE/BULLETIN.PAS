@@ -6,13 +6,13 @@ Lee Woodridge
  11/18/2021 - Fixed bug where rgquote wasn't displaying fallback text if artfile existed but no ansi
             - Header and footer for quote now use standardized format, like automsg and oneliners
  11/20/2021 - moved findonlyonce to maint, nested in logonmaint
+ 12/10/2021 - fixed case issue for ~to and ~tl in lastcaller mci, MAYBE
 }
 INTERFACE
 
 USES
   Common;
 
-{FUNCTION FindOnlyOnce: Boolean;}
 FUNCTION NewBulletins: Boolean;
 PROCEDURE Bulletins(MenuOption: Str50);
 PROCEDURE UList(MenuOption: Str50);
@@ -377,7 +377,7 @@ BEGIN
             'C' : TodaysCallerMCI := LastCallerPtr^.Location;
             'O' : BEGIN
                     s1 := PDT2Dat(LastCallerPtr^.LogonTime,0);
-                    s1[0] := Char(Pos('m',s1) - 2);
+                    s1[0] := Char(Pos('M',s1) - 2);
                     s1[Length(s1)] := s1[Length(s1) + 1];
                     TodaysCallerMCI := s1;
                   END;
@@ -387,7 +387,7 @@ BEGIN
                     ELSE
                     BEGIN
                       s1 := PDT2Dat(LastCallerPtr^.LogoffTime,0);
-                      s1[0] := Char(Pos('m',s1) - 2);
+                      s1[0] := Char(Pos('M',s1) - 2);
                       s1[Length(s1)] := s1[Length(s1) + 1];
                     END;
                     TodaysCallerMCI := s1;
