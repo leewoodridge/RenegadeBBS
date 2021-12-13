@@ -188,8 +188,8 @@ VAR
       Next := FALSE;
       CLS; { starts at color 28 }
       PrintACR('зддддддбдддддддддддддддддддбддддддддддддддддддддбдддддддддддддддддддбдддддддд©');
-      PrintACR('? Msg# ? Sender            ? Receiver           ?  '+
-               'Subject           ?! Posted ?');
+      PrintACR('Ё Msg# Ё Sender            Ё Receiver           Ё  '+
+               'Subject           Ё! Posted Ё');
       PrintACR('юддддддадддддддддддддддддддаддддддддддддддддддддадддддддддддддддддддадддддддды');
       PrintACR('''* "2#      Exodus              $Nuclear              %Re: Renegade       &01/01/93');
       PrintACR('''> "3#      Nuclear             $Exodus               %RG Update          &01/01/93');
@@ -288,8 +288,8 @@ VAR
       Print(Centre('|The QWKЪSystem is now gathering mail.'));
       NL;
       PrintACR('sздддддбдддддддддддддддддддддддбдддддддддбддддддбдддддддддбдддддбддддддбдддддд©');
-      PrintACR('s?t Num s?u Message base name     s?v  Short  s?w Echo s?x  Total  '+
-               's?y New s?z Your s?{ Size s?');
+      PrintACR('sЁt Num sЁu Message base name     sЁv  Short  sЁw Echo sЁx  Total  '+
+               'sЁy New sЁz Your sЁ{ Size sЁ');
       PrintACR('sюдддддадддддддддддддддддддддддадддддддддаддддддадддддддддадддддаддддддадддддды');
       PrintACR('   }1    ~General                 GENERAL    ─No      │530     ┌328    ┐13    └103k');
       PrintACR('   }2    ~Not so general          NSGEN      ─No      │854     ┌ 86    ┐15     └43k');
@@ -329,9 +329,9 @@ VAR
       Abort := FALSE;
       Next := FALSE;
       CLS;   { starts at 135 }
-      PrintACR('┤здддддбдддддддддддддддддддбддддддддддддддддддддддддбдддддддддддддддддддддддддд?');
-      PrintACR('┤?┬ Num ┤?┴ Date/Time         ┤?┼ Sender                 ┤?▀ Subject                  ┤?');
-      PrintACR('┤юдддддадддддддддддддддддддаддддддддддддддддддддддддадддддддддддддддддддддддддд?');
+      PrintACR('┤здддддбдддддддддддддддддддбддддддддддддддддддддддддбдддддддддддддддддддддддддд©');
+      PrintACR('┤Ё┬ Num ┤Ё┴ Date/Time         ┤Ё┼ Sender                 ┤Ё▀ Subject                  ┤Ё');
+      PrintACR('┤юдддддадддддддддддддддддддаддддддддддддддддддддддддадддддддддддддддддддддддддды');
       PrintACR('    ▄1  █01 Jan 1993  01:00a ▌Exodus                   ▐Renegade');
       PrintACR('    ▄1  █01 Jan 1993  01:00a ▌Nuclear                  ▐Upgrades');
       NL;
