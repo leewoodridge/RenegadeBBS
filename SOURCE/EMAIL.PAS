@@ -947,14 +947,14 @@ BEGIN
                   END;
             '?' : BEGIN
                     NL;
-                    LCmds(17,3,'-Read previous','Again');
-                    LCmds(17,3,'Delete message','Forward messages');
-                    LCmds(17,3,'Goto message','List messages');
-                    LCmds(17,3,'Move message','Next message');
-                    LCmds(17,3,'Reply to message','Show user');
-                    LCmds(17,3,'User editor','Validate user');
-                    LCmds(17,3,'Xtract to file','Zap (Delete w/o reciept)');
-                    LCmds(17,3,'Quit','');
+                    LCmds(17,1,'-Read previous','Again');
+                    LCmds(17,1,'Delete message','Forward messages');
+                    LCmds(17,1,'Goto message','List messages');
+                    LCmds(17,1,'Move message','Next message');
+                    LCmds(17,1,'Reply to message','Show user');
+                    LCmds(17,1,'User editor','Validate user');
+                    LCmds(17,1,'Xtract to file','Zap (Delete w/o reciept)');
+                    LCmds(17,1,'Quit','');
                   END;
           ELSE
             IF (SNum < MNum) THEN
@@ -1062,13 +1062,13 @@ BEGIN
               ELSE
                 ExtractMsgToFile(MsgNum,MHeader);
         '?' : BEGIN
-                Print('%LF<^3CR^1>Next message');
-                LCmds(20,3,'Again','Edit message');
-                LCmds(20,3,'Delete message','-Previous message');
+                Print('%LF^0<^1CR^0>Next message');
+                LCmds(20,1,'Again','Edit message');
+                LCmds(20,1,'Delete message','-Previous message');
                 IF (CoSysOp) THEN
-                  LCmds(20,3,'Xtract to file','Quit')
+                  LCmds(20,1,'Xtract to file','Quit')
                 ELSE
-                  LCmds(20,3,'Quit','');
+                  LCmds(20,1,'Quit','');
               END;
       ELSE
         Inc(MsgNum);

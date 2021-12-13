@@ -397,9 +397,9 @@ BEGIN
                   NL;
                   CASE Cmd OF
                     '?' : BEGIN
-                            LCmds(19,3,'Add more to list','Do it!');
-                            LCmds(19,3,'List files in list','Remove files from list');
-                            LCmds(19,3,'Quit','');
+                            LCmds(19,1,'Add more to list','Do it!');
+                            LCmds(19,1,'List files in list','Remove files from list');
+                            LCmds(19,1,'Quit','');
                           END;
                     'D' : BEGIN
                             RecNum := 0;

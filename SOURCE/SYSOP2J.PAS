@@ -160,12 +160,12 @@ VAR
       PrintACR(PadLeftStr('',28)+'This is the latest upgrade available');
       PrintACR(PadLeftStr('',28)+'Uploaded by: Nuclear');
       NL;
-      LCmds3(20,3,'A Border','B File Name field','C Pts Field');
-      LCmds3(20,3,'D Size field','E Desc Field','F Area field');
+      LCmds3(20,1,'A Border','B File Name field','C Pts Field');
+      LCmds3(20,1,'D Size field','E Desc Field','F Area field');
       NL;
-      LCmds3(20,3,'G File name','H File Points','I File size');
-      LCmds3(20,3,'J File desc','K Extended','L Status flags');
-      LCmds(20,3,'M Uploader','N Search Match');
+      LCmds3(20,1,'G File name','H File Points','I File size');
+      LCmds3(20,1,'J File desc','K Extended','L Status flags');
+      LCmds(20,1,'M Uploader','N Search Match');
       InputChar('%LFFile color to change [^1A^2-^1N^2,^1<CR>^2=^1Quit^2]: ',Cmd1,^M'ABCDEFGHIJKLMN',[CapAll]);
       IF (Cmd1 IN ['A'..'N']) THEN
       BEGIN
@@ -194,11 +194,11 @@ VAR
       PrintACR('''* "2#      Exodus              $Nuclear              %Re: Renegade       &01/01/93');
       PrintACR('''> "3#      Nuclear             $Exodus               %RG Update          &01/01/93');
       NL;
-      LCmds3(20,3,'A Border','B Msg Num field','C Sender Field');
-      LCmds3(20,3,'D Receiver field','E Subject Field','F Date field');
+      LCmds3(20,1,'A Border','B Msg Num field','C Sender Field');
+      LCmds3(20,1,'D Receiver field','E Subject Field','F Date field');
       NL;
-      LCmds3(20,3,'G Msg Num','H Msg Sender','I Msg Receiver');
-      LCmds3(20,3,'J Subject','K Msg Date','L Status flags');
+      LCmds3(20,1,'G Msg Num','H Msg Sender','I Msg Receiver');
+      LCmds3(20,1,'J Subject','K Msg Date','L Status flags');
       InputChar('%LFMessage color to change [^1A^2-^1L^2,^1<CR>^2=^1Quit^2]: ',Cmd1,^M'ABCDEFGHIJKL',[CapAll]);
       IF (Cmd1 IN ['A'..'L']) THEN
       BEGIN
@@ -230,9 +230,9 @@ VAR
       NumFAreas := 0;
       LFileAreaList(FArea,NumFAreas,10,TRUE);   { starts at 45 }
       NL;
-      LCmds3(20,3,'A Border','B Base Num field','C Base Name Field');
+      LCmds3(20,1,'A Border','B Base Num field','C Base Name Field');
       NL;
-      LCmds3(20,3,'D Scan Indicator','E Base Number','F Base Name');
+      LCmds3(20,1,'D Scan Indicator','E Base Number','F Base Name');
       InputChar('%LFFile area color to change [^1A^2-^1F^2,^1<CR>^2=^1Quit^2]: ',Cmd1,^M'ABCDEF',[CapAll]);
       IF (Cmd1 IN ['A'..'F']) THEN
       BEGIN
@@ -295,13 +295,13 @@ VAR
       PrintACR('   }2    ~Not so general          NSGEN      ÄNo      Å854     Ç 86    É15     Ñ43k');
       PrintACR('   }3    ~Vague                   VAGUE      ÄNo      Å985     Ç148     É8     Ñ74k');
       NL;
-      LCmds3(20,3,'A Border','B Base num field','C Base name field');
-      LCmds3(20,3,'D Short field','E Echo field','F Total field');
-      LCmds3(20,3,'G New field','H Your field','I Size field');
+      LCmds3(20,1,'A Border','B Base num field','C Base name field');
+      LCmds3(20,1,'D Short field','E Echo field','F Total field');
+      LCmds3(20,1,'G New field','H Your field','I Size field');
       NL;
-      LCmds3(20,3,'J Title','K Base Number','L Base name');
-      LCmds3(20,3,'M Short','N Echo flag','O Total Msgs');
-      LCmds3(20,3,'P New Msgs','R Your Msgs','S Msgs size');
+      LCmds3(20,1,'J Title','K Base Number','L Base name');
+      LCmds3(20,1,'M Short','N Echo flag','O Total Msgs');
+      LCmds3(20,1,'P New Msgs','R Your Msgs','S Msgs size');
       InputChar('%LFQWK color to change [^1A^2-^1S^2,^1<CR>^2=^1Quit^2]: ',Cmd1,^M'ABCDEFGHIJKLMNOPRS'^M,[CapAll]);
       IF (Cmd1 IN ['A'..'P','R'..'S']) THEN
       BEGIN
@@ -335,11 +335,11 @@ VAR
       PrintACR('    å1  ç01 Jan 1993  01:00a éExodus                   èRenegade');
       PrintACR('    å1  ç01 Jan 1993  01:00a éNuclear                  èUpgrades');
       NL;
-      LCmds3(20,3,'A Border','B Number field','C Date/Time field');
-      LCmds(20,3,'D Sender field','E Subject field');
+      LCmds3(20,1,'A Border','B Number field','C Date/Time field');
+      LCmds(20,1,'D Sender field','E Subject field');
       NL;
-      LCmds3(20,3,'F Number','G Date/Time','H Sender');
-      LCmds(20,3,'I Subject','');
+      LCmds3(20,1,'F Number','G Date/Time','H Sender');
+      LCmds(20,1,'I Subject','');
       InputChar('%LFEmail color to change [^1A^2-^1I^2,^1<CR>^2=^1Quit^2]: ',Cmd1,^M'QABCDEFGHI',[CapAll]);
       IF (Cmd1 IN ['A'..'I']) THEN
       BEGIN
@@ -536,12 +536,12 @@ VAR
                   Print('%LF^0<^1CR^0>Redisplay current screen');
                   Print('^11^0-^18^0:Modify item');
                   IF (NOT Editing) THEN
-                    LCmds(20,3,'Quit and save','')
+                    LCmds(20,1,'Quit and save','')
                   ELSE
                   BEGIN
-                    LCmds(20,3,'[Back entry',']Forward entry');
-                    LCmds(20,3,'First entry in list','Jump to entry');
-                    LCmds(20,3,'Last entry in list','Quit and save');
+                    LCmds(20,1,'[Back entry',']Forward entry');
+                    LCmds(20,1,'First entry in list','Jump to entry');
+                    LCmds(20,1,'Last entry in list','Quit and save');
                   END;
                 END;
         END;
@@ -804,9 +804,9 @@ BEGIN
       '?' : BEGIN
               Print('%LF^0<^1CR^0>Next screen or redisplay current screen');
               Print('^0(^1?^0)Help/First color scheme');
-              LCmds(20,3,'Delete color scheme','Insert color scheme');
-              LCmds(20,3,'Modify color scheme','Position color scheme');
-              LCmds(20,3,'Quit','');
+              LCmds(20,1,'Delete color scheme','Insert color scheme');
+              LCmds(20,1,'Modify color scheme','Position color scheme');
+              LCmds(20,1,'Quit','');
             END;
     END;
     IF (CMD <> ^M) THEN

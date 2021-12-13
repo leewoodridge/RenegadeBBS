@@ -549,9 +549,9 @@ VAR
                     'T' : FSF := FS_Trapping;
                     '?' : BEGIN
                             NL;
-                            LCmds(15,3,'Alert','Chat-buffering');
-                            LCmds(15,3,'Deleted','Locked-out');
-                            LCmds(15,3,'Separate SysOp logging','Trapping');
+                            LCmds(15,1,'Alert','Chat-buffering');
+                            LCmds(15,1,'Deleted','Locked-out');
+                            LCmds(15,1,'Separate SysOp logging','Trapping');
                           END;
                     END;
                     IF (Cmd1 IN ['A','C','D','L','S','T']) THEN
@@ -669,9 +669,9 @@ VAR
               END;
         '?' : BEGIN
                 Print('^10-9,AGPKN^0: Change option');
-                LCmds(14,3,'List options','Toggle options on/off');
-                LCmds(14,3,'Clear options','User''s who match');
-                LCmds(14,3,'Quit','');
+                LCmds(14,1,'List options','Toggle options on/off');
+                LCmds(14,1,'Clear options','User''s who match');
+                LCmds(14,1,'Quit','');
               END;
       END;
     UNTIL (Cmd1 = 'Q') OR (HangUp);

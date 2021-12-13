@@ -1133,7 +1133,7 @@ BEGIN
       177 : FOR b := 0 TO 1 DO { $FORWARDING_TO }
               IF (LangStringArray[b] <> '') THEN
                 S := Substitute(S,'@'+IntToStr(b),LangStringArray[b]);
-	  201 : FOR b := 0 TO 0 DO { $ENTER_STATE_PROVINCE }
+      201 : FOR b := 0 TO 0 DO { $ENTER_STATE_PROVINCE }
               IF (LangStringArray[b] <> '') THEN
                 S := Substitute(S,'@'+IntToStr(b),LangStringArray[b]);
                 (*
@@ -1317,72 +1317,72 @@ VAR
 BEGIN
   Counter := 1;
   WHILE (Counter <= MaxConfigurable) AND (MCIBuffer^[Counter] <> #0) DO
-	BEGIN
+    BEGIN
       TempStr := '';
       WHILE (Counter <= MaxConfigurable) AND (MCIBuffer^[Counter] <> #13) DO
-		IF (MCIBuffer^[Counter] = '~') AND (Counter + 2 <= MaxConfigurable) THEN
-		  BEGIN
-			cs := MCIFunction(MCIBuffer^[Counter + 1] + MCIBuffer^[Counter + 2],Data1,Data2);
-			IF (cs = MCIBuffer^[Counter + 1] + MCIBuffer^[Counter + 2]) THEN
-			  BEGIN
-				TempStr := TempStr + '~';
-				Inc(Counter);
-				Continue;
-			  END;
-			Inc(Counter,3);
-			IF ((Counter + 1) <= MaxConfigurable) AND (MCIBuffer^[Counter] IN ['#','{','}']) THEN
-			  BEGIN
-				IF (MCIBuffer^[Counter] = '}') THEN
-				  Justify := 0
-				ELSE IF (MCIBuffer^[Counter] = '{') THEN
-				  Justify := 1
-				ELSE
-				  Justify := 2;
-				IF (MCIBuffer^[Counter + 1] IN ['0'..'9']) THEN
-				  BEGIN
-					X2 := Ord(MCIBuffer^[Counter + 1]) - 48;
-					Inc(Counter, 2);
-					IF (MCIBuffer^[Counter] IN ['0'..'9']) THEN
-					  BEGIN
-						X2 := X2 * 10 + Ord(MCIBuffer^[Counter]) - 48;
-						Inc(Counter,1);
-					  END;
-					IF (X2 > 0) THEN
-					  CASE Justify OF
-						0 : cs := PadRightStr(cs,X2);
-						1 : cs := PadLeftStr(cs,X2);
-						2 : WHILE (Length(cs) < X2) DO
-							  BEGIN
-								cs := ' ' + cs;
-								IF (Length(cs) < X2) THEN
-								  cs := cs + ' ';
-							  END;
-					  END;
-				  END;
-			  END;
-			IF ((Length(cs) + Length(TempStr)) <= 255) THEN
-			  BEGIN
-				Move(cs[1],TempStr[Length(TempStr)+1],Length(cs));
-				Inc(TempStr[0],Length(cs));
-			  END
-			ELSE
-			  IF (Length(TempStr) < 255) THEN
-				BEGIN
-				  Move(cs[1],TempStr[Length(TempStr) + 1],(255 - Length(TempStr)));
-				  TempStr[0] := #255;
-				END;
-		  END
-	  ELSE
-		BEGIN
-		  Inc(TempStr[0]);
-		  TempStr[Length(TempStr)] := MCIBuffer^[Counter];
-		  Inc(Counter);
-		END;
-	  IF (Counter <= MaxConfigurable) AND (MCIBuffer^[Counter] = #13) THEN
-		  Inc(Counter,2);
-	  CROff := TRUE;
-	  Prompt(TempStr);
-	END;
+        IF (MCIBuffer^[Counter] = '~') AND (Counter + 2 <= MaxConfigurable) THEN
+          BEGIN
+            cs := MCIFunction(MCIBuffer^[Counter + 1] + MCIBuffer^[Counter + 2],Data1,Data2);
+            IF (cs = MCIBuffer^[Counter + 1] + MCIBuffer^[Counter + 2]) THEN
+              BEGIN
+                TempStr := TempStr + '~';
+                Inc(Counter);
+                Continue;
+              END;
+            Inc(Counter,3);
+            IF ((Counter + 1) <= MaxConfigurable) AND (MCIBuffer^[Counter] IN ['#','{','}']) THEN
+              BEGIN
+                IF (MCIBuffer^[Counter] = '}') THEN
+                  Justify := 0
+                ELSE IF (MCIBuffer^[Counter] = '{') THEN
+                  Justify := 1
+                ELSE
+                  Justify := 2;
+                IF (MCIBuffer^[Counter + 1] IN ['0'..'9']) THEN
+                  BEGIN
+                    X2 := Ord(MCIBuffer^[Counter + 1]) - 48;
+                    Inc(Counter, 2);
+                    IF (MCIBuffer^[Counter] IN ['0'..'9']) THEN
+                      BEGIN
+                        X2 := X2 * 10 + Ord(MCIBuffer^[Counter]) - 48;
+                        Inc(Counter,1);
+                      END;
+                    IF (X2 > 0) THEN
+                      CASE Justify OF
+                        0 : cs := PadRightStr(cs,X2);
+                        1 : cs := PadLeftStr(cs,X2);
+                        2 : WHILE (Length(cs) < X2) DO
+                              BEGIN
+                                cs := ' ' + cs;
+                                IF (Length(cs) < X2) THEN
+                                  cs := cs + ' ';
+                              END;
+                      END;
+                  END;
+              END;
+            IF ((Length(cs) + Length(TempStr)) <= 255) THEN
+              BEGIN
+                Move(cs[1],TempStr[Length(TempStr)+1],Length(cs));
+                Inc(TempStr[0],Length(cs));
+              END
+            ELSE
+              IF (Length(TempStr) < 255) THEN
+                BEGIN
+                  Move(cs[1],TempStr[Length(TempStr) + 1],(255 - Length(TempStr)));
+                  TempStr[0] := #255;
+                END;
+          END
+      ELSE
+        BEGIN
+          Inc(TempStr[0]);
+          TempStr[Length(TempStr)] := MCIBuffer^[Counter];
+          Inc(Counter);
+        END;
+      IF (Counter <= MaxConfigurable) AND (MCIBuffer^[Counter] = #13) THEN
+          Inc(Counter,2);
+      CROff := TRUE;
+      Prompt(TempStr);
+    END;
   END;
 
 FUNCTION FormatNumber(L: LongInt): STRING;
@@ -2656,7 +2656,7 @@ BEGIN
           TimedOut := TRUE;
           PrintF('TIMEOUT');
           IF (NoFile) THEN
-		    lRGLngStr(242,FALSE); { Timeout message } {Print(^M^J^M^J'Time out - disconnecting.'^M^J^M^J);}
+            lRGLngStr(242,FALSE); { Timeout message } {Print(^M^J^M^J'Time out - disconnecting.'^M^J^M^J);}
           HangUp := TRUE;
           SysOpLog('Inactivity timeout at '+TimeStr); {LeeW: Add how long?}
         END;
@@ -2696,14 +2696,14 @@ BEGIN
             END;
             LastTimeSlice := Ticks;
           END
-		  
+          
           ELSE IF (MultiNodeChat) AND (NOT InChat) AND (ABS(Ticks - LastCheckTimeSlice) > 9) THEN
           BEGIN
             LastCheckTimeSlice := Ticks;
             TeleConfCheck;
             LIL := 1;
           END;
-		  
+          
         END;
         IF (InChat) THEN
           C := Ord(Chinkey)
@@ -3830,24 +3830,24 @@ BEGIN
     c := UpCase(Char(GetKey));
     SaveS := s;
     IF ((Pos(c,Allowed) <> 0) AND (s = '')) THEN
-    BEGIN
-      GotCmd := TRUE;
-      s := c;
-    END
+      BEGIN
+        GotCmd := TRUE;
+        s := c;
+      END
     ELSE IF (Pos(c,'0123456789') > 0) OR (c = '-') THEN
-    BEGIN
-      IF ((Length(s) < 6) OR ((Pos('-',s) > 0) AND (Length(s) < 11))) THEN
-        s := s + c;
-    END
+      BEGIN
+        IF ((Length(s) < 6) OR ((Pos('-',s) > 0) AND (Length(s) < 11))) THEN
+          s := s + c;
+      END
     ELSE IF ((s <> '') AND (c = ^H)) THEN
       Dec(s[0])
     ELSE IF (c = ^X) THEN
-    BEGIN
-      FOR Counter := 1 TO Length(s) DO
-        BackSpace;
-      s := '';
-      SaveS := '';
-    END
+      BEGIN
+        FOR Counter := 1 TO Length(s) DO
+          BackSpace;
+        s := '';
+        SaveS := '';
+      END
     ELSE IF (c = #13) THEN
       GotCmd := TRUE;
     IF (Length(s) < Length(SaveS)) THEN
@@ -4595,17 +4595,17 @@ BEGIN
   IF (OkANSI) OR (OkVT100) THEN
     SerialOut(^[+'['+IntToStr(Len)+'D'+^[+'[K')
   ELSE IF (OkAvatar) THEN
-	BEGIN
+    BEGIN
       FOR Counter := 1 TO Len DO
-		Com_Send(^H);
+        Com_Send(^H);
       SerialOut(^V^G);
-	END
+    END
   ELSE
     FOR Counter := 1 TO Len DO
-	  BEGIN
-		Com_Send(^H);
-		Com_Send(' ');
-		Com_Send(^H);
+      BEGIN
+        Com_Send(^H);
+        Com_Send(' ');
+        Com_Send(^H);
       END;
   GoToXY((WhereX - Len),WhereY);
   ClrEOL;

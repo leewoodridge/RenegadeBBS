@@ -290,7 +290,7 @@ VAR
                                     ToggleCmdFlags(Cmd1,CmdFlags,Changed);
                             '?' : BEGIN
                                     NL;
-                                    LCmds(17,3,'Hidden command','UnHidden Command');
+                                    LCmds(17,1,'Hidden command','UnHidden Command');
                                   END;
                           END;
                         UNTIL (Cmd1 = ^M) OR (HangUp);
@@ -332,9 +332,9 @@ VAR
                 '?' : BEGIN
                         Print('%LF^0<^1CR^0>Redisplay screen');
                         Print('^11-6,N,T^0:Modify item');
-                        LCmds(20,3,'[Back entry',']Forward entry');
-                        LCmds(20,3,'First entry in list','Jump to entry');
-                        LCmds(20,3,'Last entry in list','Quit and save');
+                        LCmds(20,1,'[Back entry',']Forward entry');
+                        LCmds(20,1,'First entry in list','Jump to entry');
+                        LCmds(20,1,'Last entry in list','Quit and save');
                       END;
               END;
             UNTIL (Pos(Cmd1,'Q[]FJL') <> 0) OR (HangUp);
@@ -473,10 +473,10 @@ BEGIN
             END;
       '?' : BEGIN
               Print('%LF^0<^1CR^0>Redisplay screen');
-              LCmds(20,3,'Delete command','Insert command');
-              LCmds(20,3,'Long generic menu','Modify commands');
-              LCmds(20,3,'Position command','Quit');
-              LCmds(20,3,'Short generic menu','');
+              LCmds(20,1,'Delete command','Insert command');
+              LCmds(20,1,'Long generic menu','Modify commands');
+              LCmds(20,1,'Position command','Quit');
+              LCmds(20,1,'Short generic menu','');
             END;
     END;
   UNTIL (Cmd = 'Q') OR (HangUp);

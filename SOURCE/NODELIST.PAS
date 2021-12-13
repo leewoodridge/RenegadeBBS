@@ -638,9 +638,9 @@ BEGIN
           'C' : ToggleNetAttr(Crash,NetAttribute);
           'P' : ToggleNetAttr(Private,NetAttribute);
           '?' : BEGIN
-                  LCmds3(15,3,'Private','Crash','Attached File');
-                  LCmds3(15,3,'InTransit','KillSent','Hold');
-                  LCmds3(15,3,'Req file','Update Req','Local');
+                  LCmds3(15,1,'Private','Crash','Attached File');
+                  LCmds3(15,1,'InTransit','KillSent','Hold');
+                  LCmds3(15,1,'Req file','Update Req','Local');
                 END;
         END;
     UNTIL (Cmd IN ['Q',^M]) OR (HangUp);

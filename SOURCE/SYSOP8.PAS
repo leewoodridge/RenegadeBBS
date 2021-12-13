@@ -168,7 +168,7 @@ VAR
     END;
   END;
   
-  PROCEDURE ResetMsgAreaColors;
+  PROCEDURE ResetMsgAreaColors; {LeeW: Add EMAIL!}
   VAR
     LastRecNum,
     RecNum: Integer;
@@ -176,14 +176,14 @@ VAR
     IF (NumMsgAreas = 0) THEN
       Messages(4,0,'message areas')
     ELSE
-	  BEGIN
-	    IF PYNQ('%LFAre you sure you want to reset all message area colors?',0,FALSE) THEN
-		(*FirstRecNum := -1;
+      BEGIN
+        IF PYNQ('%LFAre you sure you want to reset all message area colors?',0,FALSE) THEN
+        (*FirstRecNum := -1;
       InputInteger('%LFMessage area to start at?',FirstRecNum,[NumbersOnly],1,NumMsgAreas,Changed);
       IF (FirstRecNum >= 1) AND (FirstRecNum <= NumMsgAreas) THEN
-	  *)
+      *)
       BEGIN
-	  (*
+      (*
         LastRecNum := -1;
         InputInteger('%LFMessage area to end at?',LastRecNum,[NumbersOnly],1,NumMsgAreas,Changed);
         IF (LastRecNum >= 1) AND (LastRecNum <= NumMsgAreas) THEN
@@ -206,12 +206,12 @@ VAR
                 Seek(MsgAreaFile,(RecNum - 1));
                 Read(MsgAreaFile,MemMsgArea);
                 
-				{changecolorshere!}
-				MemMsgArea.Text_Color := General.Text_Color;
-				MemMsgArea.Quote_Color := General.Quote_Color;
-				MemMsgArea.Tear_Color := General.Tear_Color;
-				MemMsgArea.Origin_Color := General.Origin_Color;
-				
+                {changecolorshere!}
+                MemMsgArea.Text_Color := General.Text_Color;
+                MemMsgArea.Quote_Color := General.Quote_Color;
+                MemMsgArea.Tear_Color := General.Tear_Color;
+                MemMsgArea.Origin_Color := General.Origin_Color;
+                
                 Seek(MsgAreaFile,(RecNum - 1));
                 Write(MsgAreaFile,MemMsgArea);
               END;
@@ -223,7 +223,7 @@ VAR
           END;
         END;
       END;
-	  (*
+      (*
     END
   END;
   *)
@@ -521,10 +521,10 @@ VAR
                   TempMemMsgArea1.MAType := MaType;
                   Print('%LF^1Message area types:^0');
                   NL;
-                  LCmds(10,3,'Local','');
-                  LCmds(10,3,'Echomail','');
-                  LCmds(10,3,'Groupmail','');
-                  LCmds(10,3,'QWKmail','');
+                  LCmds(10,1,'Local','');
+                  LCmds(10,1,'Echomail','');
+                  LCmds(10,1,'Groupmail','');
+                  LCmds(10,1,'QWKmail','');
                   InputChar('%LFNew message area type [^1L^2,^1E^2,^1G^2,^1Q^2,^1<CR>^2=^1Quit^2]: ',Cmd1,'LEGQ'^M,[CapAll]);
                   CASE Cmd1 OF
                     'L' : MAType := 0;
@@ -587,11 +587,11 @@ VAR
                   TempMemMsgArea1.Anonymous := Anonymous;
                   Print('%LF^1Anonymous types:^0');
                   NL;
-                  LCmds(40,3,'Yes, Anonymous allowed, selectively','');
-                  LCmds(40,3,'No, Anonymous not allowed','');
-                  LCmds(40,3,'Forced Anonymous','');
-                  LCmds(40,3,'Dear Abby','');
-                  LCmds(40,3,'Any Name','');
+                  LCmds(40,1,'Yes, Anonymous allowed, selectively','');
+                  LCmds(40,1,'No, Anonymous not allowed','');
+                  LCmds(40,1,'Forced Anonymous','');
+                  LCmds(40,1,'Dear Abby','');
+                  LCmds(40,1,'Any Name','');
                   InputChar('%LFNew anonymous type [^1Y^2,^1N^2,^1F^2,^1D^2,^1A^2,^1<CR>^2=^1Quit^2]: ',
                             Cmd1,'YNFDA'^M,[CapAll]);
                   CASE Cmd1 OF
@@ -657,9 +657,9 @@ VAR
                             ToggleMAFlags(Cmd1,MAFlags,Changed);
                       '?' : BEGIN
                               NL;
-                              LCmds(22,3,'Kludge Line Strip','SEEN-BY Line Strip');
-                              LCmds(22,3,'Origin Line Strip','Tear/Origin Line Add');
-                              LCmds(22,3,'Internet Flag','');
+                              LCmds(22,1,'Kludge Line Strip','SEEN-BY Line Strip');
+                              LCmds(22,1,'Origin Line Strip','Tear/Origin Line Add');
+                              LCmds(22,1,'Internet Flag','');
                             END;
                     END;
                   UNTIL (Cmd1 = ^M) OR (HangUp);
@@ -708,9 +708,9 @@ VAR
                             ToggleMAFlags(Cmd1,MAFlags,Changed);
                       '?' : BEGIN
                               NL;
-                              LCmds(25,3,'Real names','Unhidden');
-                              LCmds(25,3,'AFilter ANSI/8-bit ASCII','Private msgs allowed');
-                              LCmds(25,3,'Force Read','Quote/Tagline');
+                              LCmds(25,1,'Real names','Unhidden');
+                              LCmds(25,1,'AFilter ANSI/8-bit ASCII','Private msgs allowed');
+                              LCmds(25,1,'Force Read','Quote/Tagline');
                             END;
                     END;
                   UNTIL (Cmd1 = ^M) OR (HangUp);
@@ -1191,7 +1191,7 @@ BEGIN
               Close(MsgAreaDefFile);
               Cmd := #0;
             END;
-	  '^' : ResetMsgAreaColors;
+      '^' : ResetMsgAreaColors;
       '?' : BEGIN
               Print('%LF^0<^1CR^0>Next screen or redisplay current screen');
               Print('^0(^1?^0)Help/First message area');
@@ -1200,7 +1200,7 @@ BEGIN
               LCmds(22,1,'Modify message area','Position message area');
               LCmds(22,1,'Quit','Renumber QWK index');
               LCmds(22,1,'Toggle display format','XDefault configuration');
-			  LCmds(22,1,'^Reset base colors','');
+              LCmds(22,1,'^Reset base colors','');
             END;
     END;
     IF (Cmd <> ^M) THEN

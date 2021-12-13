@@ -346,12 +346,12 @@ VAR
                   Print('%LF^0<^1CR^0>Redisplay current screen');
                   Print('^1A^0-^1C^0:Modify item');
                   IF (NOT Editing) THEN
-                    LCmds(20,3,'Quit and save','')
+                    LCmds(20,1,'Quit and save','')
                   ELSE
                   BEGIN
-                    LCmds(20,3,'[Back entry',']Forward entry');
-                    LCmds(20,3,'First entry in list','Jump to entry');
-                    LCmds(20,3,'Last entry in list','Quit and save');
+                    LCmds(20,1,'[Back entry',']Forward entry');
+                    LCmds(20,1,'First entry in list','Jump to entry');
+                    LCmds(20,1,'Last entry in list','Quit and save');
                   END;
                 END;
         END;
@@ -548,9 +548,9 @@ BEGIN
       '?' : BEGIN
               Print('%LF^0<^1CR^0>Next Screen or redisplay screen');
               Print('^0(^1?^0)Help/First conference');
-              LCmds(18,3,'Delete conference','Insert conference');
-              LCmds(18,3,'Modify conference','Position conference');
-              LCmds(18,3,'Quit','');
+              LCmds(18,1,'Delete conference','Insert conference');
+              LCmds(18,1,'Modify conference','Position conference');
+              LCmds(18,1,'Quit','');
             END;
     END;
     IF (Cmd <> ^M) THEN

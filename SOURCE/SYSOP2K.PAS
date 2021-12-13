@@ -220,12 +220,12 @@ VAR
                   Print('%LF^0<^1CR^0>Redisplay current screen');
                   Print('^11^0-^18^0:Modify item');
                   IF (NOT Editing) THEN
-                    LCmds(20,3,'Quit and save','')
+                    LCmds(20,1,'Quit and save','')
                   ELSE
                   BEGIN
-                    LCmds(20,3,'[Back entry',']Forward entry');
-                    LCmds(20,3,'First entry in list','Jump to entry');
-                    LCmds(20,3,'Last entry in list','Quit and save');
+                    LCmds(20,1,'[Back entry',']Forward entry');
+                    LCmds(20,1,'First entry in list','Jump to entry');
+                    LCmds(20,1,'Last entry in list','Quit and save');
                   END;
                 END;
         END;
@@ -350,8 +350,8 @@ BEGIN
               Print('%LF^0<^1CR^0>Next screen or redisplay current screen');
               Print('^0(^1?^0)Help/First archive');
               Print('^11^0-^13^0:Modify Item');
-              LCmds(16,3,'Delete archive','Insert archive');
-              LCmds(16,3,'Modify archive','Quit');
+              LCmds(16,1,'Delete archive','Insert archive');
+              LCmds(16,1,'Modify archive','Quit');
             END;
     END;
   UNTIL (Cmd = 'Q') OR (HangUp);

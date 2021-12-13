@@ -719,13 +719,13 @@ BEGIN
       '?' : BEGIN
               NL;
               Print('^11-7^0:Modify item');
-              LCmds(18,3,'Move file','Delete file');
-              LCmds(18,3,'Extended edit','Hatched toggle');
-              LCmds(18,3,'Previous file','Next file');
-              LCmds(18,3,'Resume toggle','Toggle availability');
-              LCmds(18,3,'Validation toggle','Withdraw credit');
-              LCmds(18,3,'Internal listing','Get Description');
-              LCmds(18,3,'Uploader','Quit');
+              LCmds(18,1,'Move file','Delete file');
+              LCmds(18,1,'Extended edit','Hatched toggle');
+              LCmds(18,1,'Previous file','Next file');
+              LCmds(18,1,'Resume toggle','Toggle availability');
+              LCmds(18,1,'Validation toggle','Withdraw credit');
+              LCmds(18,1,'Internal listing','Get Description');
+              LCmds(18,1,'Uploader','Quit');
               DontShowList := TRUE;
             END;
       ^M  : Cmd := 'N';

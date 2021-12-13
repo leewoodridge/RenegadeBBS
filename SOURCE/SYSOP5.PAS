@@ -321,12 +321,12 @@ VAR
                   Print('%LF^0<^1CR^0>Redisplay current screen');
                   Print('^1A^0-^1E^0,^1G^0-^1I^0,^1K^0,^1M^0-^1P^0,^1R^0-^1S^0:Modify item');
                   IF (NOT Editing) THEN
-                    LCmds(20,3,'Quit and save','')
+                    LCmds(20,1,'Quit and save','')
                   ELSE
                   BEGIN
-                    LCmds(20,3,'[Back entry',']Forward entry');
-                    LCmds(20,3,'First entry in list','Jump to entry');
-                    LCmds(20,3,'Last entry in list','Quit and save');
+                    LCmds(20,1,'[Back entry',']Forward entry');
+                    LCmds(20,1,'First entry in list','Jump to entry');
+                    LCmds(20,1,'Last entry in list','Quit and save');
                   END;
                 END;
         END;
@@ -535,8 +535,8 @@ BEGIN
       '?' : BEGIN
               Print('%LF^0<^1CR^0>Next screen or redisplay current screen');
               Print('^0(^1?^0)Help/First history date');
-              LCmds(20,3,'Delete history date','Insert history date');
-              LCmds(20,3,'Modify history date','Quit');
+              LCmds(20,1,'Delete history date','Insert history date');
+              LCmds(20,1,'Modify history date','Quit');
             END;
     END;
     IF (Cmd <> ^M) THEN

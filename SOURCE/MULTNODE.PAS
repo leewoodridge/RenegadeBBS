@@ -5,15 +5,16 @@ Lee Woodridge
             - Cleaned up procs
  10/12/2021 - Teleconf strings for normal,anon,priv,global used to be in liner, now in main lang
             - Indenting...
-			
-			added can't set teleconf room 1 private
-			11/1/2021 fixed bug where someone you ignored could still send you msg out of chat
-			
-			to do --- 
-			not be able to change room 1 topic
-			joining empty room should set you as mod
-			leaving room displays to every room i think
-			combine teleconfcheck and checkstatus???
+ 12/12/2021 - removed pause from msgnode
+            
+            added can't set teleconf room 1 private
+            11/1/2021 fixed bug where someone you ignored could still send you msg out of chat
+            
+            to do --- 
+            not be able to change room 1 topic
+            joining empty room should set you as mod
+            leaving room displays to every room i think
+            combine teleconfcheck and checkstatus???
 }
 
 UNIT Multnode;
@@ -54,26 +55,26 @@ VAR
   Y2: Byte;
 BEGIN
   IF (OnLine+(Length(s) DIV 80) > MCIPosRecArray[2].Y) THEN
-	BEGIN
-	  ANSIG(MCIPosRecArray[1].X,MCIPosRecArray[1].Y); { Start line }
-	  FOR b := Length(s) DIV 80 DOWNTO 0 DO
-		Dec(OnLine);
-	  FOR b := Length(s) DIV 80 DOWNTO 0 DO
-		Prompt(#27'[M'); { Delete line }
-	  ANSIG(1,OnLine);
-	  FOR b := Length(s) DIV 80 DOWNTO 0 DO
-		Prompt(#27'[L'); { Insert line }
-	  Print(s);
-	  FOR b := Length(s) DIV 80 DOWNTO 0 DO
-		Inc(OnLine)
-	END
+    BEGIN
+      ANSIG(MCIPosRecArray[1].X,MCIPosRecArray[1].Y); { Start line }
+      FOR b := Length(s) DIV 80 DOWNTO 0 DO
+        Dec(OnLine);
+      FOR b := Length(s) DIV 80 DOWNTO 0 DO
+        Prompt(#27'[M'); { Delete line }
+      ANSIG(1,OnLine);
+      FOR b := Length(s) DIV 80 DOWNTO 0 DO
+        Prompt(#27'[L'); { Insert line }
+      Print(s);
+      FOR b := Length(s) DIV 80 DOWNTO 0 DO
+        Inc(OnLine)
+    END
   ELSE
-	BEGIN
-	  ANSIG(1,OnLine);
-	  Print(s);
-	  FOR b := Length(s) DIV 80 DOWNTO 0 DO
-		Inc(OnLine)
-	END;
+    BEGIN
+      ANSIG(1,OnLine);
+      Print(s);
+      FOR b := Length(s) DIV 80 DOWNTO 0 DO
+        Inc(OnLine)
+    END;
 END;
 
 PROCEDURE TeleConfCheck;
@@ -98,7 +99,7 @@ BEGIN
           MultiNodeChat := FALSE;  { Avoid recursive calls during pause! }
           SaveMCIAllowed := MCIAllowed;
           MCIAllowed := FALSE;
-		  PrintMsg(s);
+          PrintMsg(s);
           MCIAllowed := SaveMCIAllowed;
           MultiNodeChat := TRUE;
           ANSIG(MCIPosRecArray[0].X,MCIPosRecArray[0].Y); { Go to input field }
@@ -298,28 +299,28 @@ BEGIN
     s := MCI(s);
   IF (s <> '') THEN
     BEGIN
-	  LoadNode(NodeNum);
+      LoadNode(NodeNum);
       IF (NOT Forced) THEN
         BEGIN
-		  IF ((ThisNode MOD 8) IN NodeR.Forget[ThisNode DIV 8]) THEN
-			BEGIN
+          IF ((ThisNode MOD 8) IN NodeR.Forget[ThisNode DIV 8]) THEN
+            BEGIN
               Print({^M^J}'^8That node is ignoring you!^0');
-			  {pause?}
-			  Exit;
-			END;
-			(*
-		  IF NOT (NodeR.GroupChat) THEN
-				LowLevelSend({^M^J}'^0Message from ^1'+Caps(ThisUser.Name)+'^0 on node ^1'+IntToStr(ThisNode)+'^0:'{^M^J},NodeNum);
-				*)
-				(*
+              {pause?}
+              Exit;
+            END;
+            (*
+          IF NOT (NodeR.GroupChat) THEN
+                LowLevelSend({^M^J}'^0Message from ^1'+Caps(ThisUser.Name)+'^0 on node ^1'+IntToStr(ThisNode)+'^0:'{^M^J},NodeNum);
+                *)
+                (*
           LoadNode(NodeNum);
           IF NOT ((ThisNode MOD 8) IN NodeR.Forget[ThisNode DIV 8]) THEN
-		    BEGIN
-			  IF NOT (NodeR.GroupChat) THEN
-				LowLevelSend({^M^J}'^0Message from ^1'+Caps(ThisUser.Name)+'^0 on node ^1'+IntToStr(ThisNode)+'^0:'{^M^J},NodeNum);
-			END
+            BEGIN
+              IF NOT (NodeR.GroupChat) THEN
+                LowLevelSend({^M^J}'^0Message from ^1'+Caps(ThisUser.Name)+'^0 on node ^1'+IntToStr(ThisNode)+'^0:'{^M^J},NodeNum);
+            END
           ELSE
-		    *)
+            *)
         END;
       IF (NodeNum = 0) THEN
         BEGIN { Send message to all nodes }
@@ -334,17 +335,17 @@ BEGIN
         END
       ELSE
         BEGIN { Normal message }
-		  IF (NodeR.GroupChat) THEN
-		    LowLevelSend(MCI(lRGLngStr(194,TRUE)) + s,NodeNum)
-		  ELSE
-			BEGIN
+          IF (NodeR.GroupChat) THEN
+            LowLevelSend(MCI(lRGLngStr(194,TRUE)) + s,NodeNum)
+          ELSE
+            BEGIN
               LowLevelSend('^0Message from ^1'+Caps(ThisUser.Name)+'^0 on node ^1'+IntToStr(ThisNode)+'^0:',NodeNum);
-			  LowLevelSend(s,NodeNum);
-			END;
+              LowLevelSend(s,NodeNum);
+            END;
           {SysOp log here}
         END;
     END;
-  PauseScr(FALSE);
+  {PauseScr(FALSE);}
   {save/restorecolor}
 END;
 
@@ -506,14 +507,14 @@ VAR
     Reset(RoomFile);
     Seek(RoomFile,(Chan - 1));
 
-	WITH Room DO
-	  BEGIN
-		Topic := '';
-		Anonymous := FALSE;
-		Private := FALSE;
-		Occupied := FALSE;
-		Moderator := 0;
-	  END;
+    WITH Room DO
+      BEGIN
+        Topic := '';
+        Anonymous := FALSE;
+        Private := FALSE;
+        Occupied := FALSE;
+        Moderator := 0;
+      END;
 
     Write(RoomFile,Room);
     Close(RoomFile);
@@ -538,7 +539,7 @@ VAR
       FOR i := 1 TO MaxNodes DO
         BEGIN
           LoadNode(i);
-		  { should we check for multinodechat??}
+          { should we check for multinodechat??}
           IF (i <> ThisNode) AND (NOT ((ThisNode MOD 8) IN Forget[ThisNode DIV 8])) AND { not yourself, and not ignoring you}
           ((NodeR.GroupChat) AND (NodeR.Room = RoomNumber)) OR
           ((NodeR.Channel = ChatChannel) AND (ChatChannel > 0){ AND ChannelOnly})
@@ -552,7 +553,7 @@ VAR
         END;
         IF (MultiNodeChat) AND NOT AACS(General.TeleConfMCI) THEN
           MCIAllowed := FALSE;
-		PrintMsg(s);
+        PrintMsg(s);
         MCIAllowed := TRUE;
   END;
 
@@ -581,14 +582,14 @@ VAR
       END;
     WITH Room DO
       BEGIN
-	  (*
+      (*
     ANSIG(MCIPosRecArray[3].X,MCIPosRecArray[3].Y); { Room number position }
     Prt(PadLeftInt(Chan,3));
     ANSIG(MCIPosRecArray[4].X,MCIPosRecArray[4].Y); { Room topic position }
     Prt('topic');
     ANSIG(MCIPosRecArray[5].X,MCIPosRecArray[5].Y); { Room moderator position }
     Prt(IntToStr(Moderator));
-	*)
+    *)
         ANSIG(MCIPosRecArray[4].X,MCIPosRecArray[4].Y); { Topic }
         IF (Chan = 1) THEN
           Topic := '%BN'; {add this to lang}
@@ -598,23 +599,23 @@ VAR
         IF (People = 0) THEN
           PrintMsg('^0 '#254' You''re the only one in this room^0')
         ELSE
-		  BEGIN
-		    s := '';
-		    j := 1;
-			WHILE (J <= MaxNodes) AND (NOT Abort) DO
-			  BEGIN
-				LoadNode(j);
-				IF (NodeR.GroupChat) AND (NodeR.Room = Chan) AND (j <> ThisNode) THEN
-				  IF NOT (NInvisible IN NodeR.Status) OR (CoSysOp) THEN
-					BEGIN
-					  s := s+'^1'+AllCaps(NodeR.UserName)+'^0, ';
-					END;
-				Inc(j);
-			  END;
-		  s := Copy(s,1,(Length(s) - 2));
-		  s := s+AOnOff(People = 1,' is',' are')+' also here';
-		  PrintMsg('^0 '#254' '+s);
-		  END;
+          BEGIN
+            s := '';
+            j := 1;
+            WHILE (J <= MaxNodes) AND (NOT Abort) DO
+              BEGIN
+                LoadNode(j);
+                IF (NodeR.GroupChat) AND (NodeR.Room = Chan) AND (j <> ThisNode) THEN
+                  IF NOT (NInvisible IN NodeR.Status) OR (CoSysOp) THEN
+                    BEGIN
+                      s := s+'^1'+AllCaps(NodeR.UserName)+'^0, ';
+                    END;
+                Inc(j);
+              END;
+          s := Copy(s,1,(Length(s) - 2));
+          s := s+AOnOff(People = 1,' is',' are')+' also here';
+          PrintMsg('^0 '#254' '+s);
+          END;
           {Print('^1There '+AOnOff(People = 1,'is','are')+' '+IntToStr(People)+
                 ' other '+AOnOff(People = 1,'person','people')+' present.');
                 SendMessage('',ThisUser.TeleConfEcho); {leew}  
@@ -646,11 +647,11 @@ VAR
       END;
     IF (People = 0) THEN
       {Room.Occupied := FALSE;}
-	  RemoveRoom(Chan);
-	  
+      RemoveRoom(Chan);
+      
     IF (NOT IsInvisible) THEN
       SaveRoom(Chan);
-	  {leew: reset room here!}
+      {leew: reset room here!}
   END;
 
   FUNCTION Name2Number(VAR s,sname: ASTR): INTEGER;
@@ -721,7 +722,7 @@ VAR
   VAR
     People: WORD;
     i: WORD;
-	UsersInRoom: STRING;
+    UsersInRoom: STRING;
   BEGIN
     UsersInRoom := '';
     LoadRoom(Chan);
@@ -730,41 +731,41 @@ VAR
       BEGIN
         LoadNode(i);
         IF (NodeR.Room = Chan) AND (NodeR.GroupChat) {AND (i <> ThisNode)} THEN
-		  BEGIN
-			Inc(People);
-			UsersInRoom := UsersInRoom+'^1'+NodeR.UserName+'^0, ';
-		  END;
+          BEGIN
+            Inc(People);
+            UsersInRoom := UsersInRoom+'^1'+NodeR.UserName+'^0, ';
+          END;
       END;
-	  UsersInRoom := Copy(UsersInRoom,1,(Length(UsersInRoom) - 2)); { Remove last ', ' }
-	  
-	IF (Room.Occupied) THEN
+      UsersInRoom := Copy(UsersInRoom,1,(Length(UsersInRoom) - 2)); { Remove last ', ' }
+      
+    IF (Room.Occupied) THEN
       BEGIN
         IF (Room.Moderator > 0) THEN
           LoadURec(User,Room.Moderator)
         ELSE
           User.Name := 'None';
-		  
+          
         PrintMsg('^0Conference Room: ^1'+PadLeftInt(Chan,5)+' ^0Moderator: ^1'+Caps(User.Name));
         PrintMsg('^0Type: ^1'+PadLeftStr(AOnOff(Room.Private,'Private','Public'),17)+'^0Topic: ^1'+Room.Topic);
-		IF (People <> 0) THEN
-		  PrintMsg('^0People: ^1'+IntToStr(People)+' - '+UsersInRoom)
-		ELSE
-		  PrintMsg('^0People: ^1'+IntToStr(People));
+        IF (People <> 0) THEN
+          PrintMsg('^0People: ^1'+IntToStr(People)+' - '+UsersInRoom)
+        ELSE
+          PrintMsg('^0People: ^1'+IntToStr(People));
         
-		IF (Room.Anonymous) THEN
-		  PrintMsg('This room is in anonymous mode.');
+        IF (Room.Anonymous) THEN
+          PrintMsg('This room is in anonymous mode.');
       END;
-(*	  
+(*    
     j := 1;
     WHILE (J <= MaxNodes) AND (NOT Abort) DO
-	  BEGIN
-		LoadNode(j);
-		IF (NodeR.GroupChat) AND (NodeR.Room = Chan) THEN
-		  IF NOT (NInvisible IN NodeR.Status) OR (CoSysOp) THEN
-			PrintMsg('^1'+Caps(NodeR.UserName)+' on node '+IntToStr(j));
+      BEGIN
+        LoadNode(j);
+        IF (NodeR.GroupChat) AND (NodeR.Room = Chan) THEN
+          IF NOT (NInvisible IN NodeR.Status) OR (CoSysOp) THEN
+            PrintMsg('^1'+Caps(NodeR.UserName)+' on node '+IntToStr(j));
         Inc(j);
       END;
-	*)  
+    *)  
   END;
 
   PROCEDURE InputMain(VAR s: STRING);
@@ -860,10 +861,10 @@ VAR
     repeat
       mlc := s;
       MultiNodeChat := TRUE;
-	  {
+      {
       IF (cp > 1) AND MultiNodeChat AND NOT ThisUser.TeleConfInt THEN
         MultiNodeChat := FALSE;
-		}
+        }
       C := CHAR(GetKey);
       IF (Timer - LastCheck > 1) THEN
       BEGIN
@@ -1006,10 +1007,10 @@ BEGIN { Teleconference }
   PrintF('TELECONF');
   IF (NoFile) THEN
   Print('^0  Welcome to Teleconferencing.  Type ^5/?^0 for help or ^5/Q^0 to quit.');
-	
-	ANSIG(MCIPosRecArray[1].X,MCIPosRecArray[1].Y);
-	OnLine := WhereY;
-	
+    
+    ANSIG(MCIPosRecArray[1].X,MCIPosRecArray[1].Y);
+    OnLine := WhereY;
+    
   AddToRoom(RoomNumber);
   
   Done := FALSE;
@@ -1023,33 +1024,33 @@ BEGIN { Teleconference }
       MultiNodeChat := TRUE;
       LoadNode(ThisNode);
       {CheckStatus;}
-	  (*WITH Room DO
-		BEGIN
-		  ANSIG(MCIPosRecArray[3].X,MCIPosRecArray[3].Y); { Room number position }
-		  Prt(PadLeftInt(RoomNumber,3));
-		  ANSIG(MCIPosRecArray[4].X,MCIPosRecArray[4].Y); { Room topic position }
-		  Prt(PadLeftStr(Topic,40));
-		  
-		  s := '';
-		  j := 1;
-		  WHILE (J <= MaxNodes) DO
-			BEGIN
-			  LoadNode(j);
-			  IF NodeR.User = Moderator THEN
-			    s := AllCaps(NodeR.UserName);
-			  Inc(j);
-			END;  
-		  IF (s='') THEN
-			s := 'None';
-			  
-		  LoadNode(ThisNode);
-		  NodeR.Room := RoomNumber;
-		  SaveNode(ThisNode);
-		  
-		  ANSIG(MCIPosRecArray[5].X,MCIPosRecArray[5].Y); { Room moderator position }
-	 	  Prt(PadLeftStr(s,36));
-		  s := '';
-		END;*)
+      (*WITH Room DO
+        BEGIN
+          ANSIG(MCIPosRecArray[3].X,MCIPosRecArray[3].Y); { Room number position }
+          Prt(PadLeftInt(RoomNumber,3));
+          ANSIG(MCIPosRecArray[4].X,MCIPosRecArray[4].Y); { Room topic position }
+          Prt(PadLeftStr(Topic,40));
+          
+          s := '';
+          j := 1;
+          WHILE (J <= MaxNodes) DO
+            BEGIN
+              LoadNode(j);
+              IF NodeR.User = Moderator THEN
+                s := AllCaps(NodeR.UserName);
+              Inc(j);
+            END;  
+          IF (s='') THEN
+            s := 'None';
+              
+          LoadNode(ThisNode);
+          NodeR.Room := RoomNumber;
+          SaveNode(ThisNode);
+          
+          ANSIG(MCIPosRecArray[5].X,MCIPosRecArray[5].Y); { Room moderator position }
+          Prt(PadLeftStr(s,36));
+          s := '';
+        END;*)
       (*ANSIG(1,23); *)
       ANSIG(MCIPosRecArray[0].X,MCIPosRecArray[0].Y); { LeeW: Go to input field }
       Clear_EOL; { LeeW: Clear input field }
@@ -1135,9 +1136,9 @@ BEGIN { Teleconference }
                         ELSE
                           Nope(NotModerator);
                       END
-					ELSE IF (AllCaps(Copy(s,2,2)) = 'RP') AND (Length(s) = 3) THEN { Toggle room between private / public}
-					  BEGIN
-						IF (Room.Moderator = UserNum) OR (CoSysOp) {AND (RoomNumber <> 1)} THEN
+                    ELSE IF (AllCaps(Copy(s,2,2)) = 'RP') AND (Length(s) = 3) THEN { Toggle room between private / public}
+                      BEGIN
+                        IF (Room.Moderator = UserNum) OR (CoSysOp) {AND (RoomNumber <> 1)} THEN
                           BEGIN
                             LoadRoom(RoomNumber);
                             Room.Private := NOT Room.Private;
@@ -1145,10 +1146,10 @@ BEGIN { Teleconference }
                             SendMessage('^0 '#254' This room is now ^1'+AOnOff(Room.Private,'PRIVATE','PUBLIC')+ 
                                         '^0',TRUE);
                           END
-						ELSE
-						  Nope(NotModerator);
-					  END
-					ELSE IF (AllCaps(Copy(s,2,8)) = 'REMEMBER') AND (AllCaps(Copy(s,10,1)) = ' ') THEN { Stop ignoring user}
+                        ELSE
+                          Nope(NotModerator);
+                      END
+                    ELSE IF (AllCaps(Copy(s,2,8)) = 'REMEMBER') AND (AllCaps(Copy(s,10,1)) = ' ') THEN { Stop ignoring user}
                       BEGIN
                         s := Copy(s,(Pos(' ',s) + 1), 255);
                         i := Name2Number(s,SaveName);
@@ -1162,8 +1163,8 @@ BEGIN { Teleconference }
                         ELSE
                           Nope(NotOnLine);
                       END
-					ELSE
-					  Nope(NotValid);
+                    ELSE
+                      Nope(NotValid);
               'F' : IF (AllCaps(Copy(s,2,6)) = 'FORGET') AND (AllCaps(Copy(s,8,1)) = ' ') THEN { Ignore user }
                       BEGIN
                         s := Copy(s,9,(Length(s) - 8));
@@ -1185,8 +1186,8 @@ BEGIN { Teleconference }
                           Nope(NotOnLine);
                         s := '';
                       END
-						ELSE
-						  Nope(NotValid);
+                        ELSE
+                          Nope(NotValid);
               'E' : IF (AllCaps(Copy(s,2,5)) = 'EJECT') THEN { Ban user from room }
                       BEGIN
                         IF (Room.Moderator = UserNum) OR (CoSysOp) THEN
@@ -1208,7 +1209,7 @@ BEGIN { Teleconference }
                                         NodeR.Room := 1;
                                         SaveNode(i);
                                         SendMessage('^9 * ^1'+AllCaps(SaveName)+'^9 has just been ejected from the room by ^1'+
-												    AllCaps(ThisUser.Name)+'^0',TRUE);
+                                                    AllCaps(ThisUser.Name)+'^0',TRUE);
                                         SysOpLog('Ejected '+SaveName);
                                       END;
                                   END
@@ -1235,26 +1236,26 @@ BEGIN { Teleconference }
                       END;
 
               'I' : IF (AllCaps(Copy(s,2,6)) = 'INVITE') THEN
-					  BEGIN
-						s := Copy(s,9,(Length(s) - 3));
-						i := Name2Number(s,SaveName);
-						if roomnumber = 1 then
-						continue;
-						IF (i > 0) AND (i <= MaxNodes) THEN
+                      BEGIN
+                        s := Copy(s,9,(Length(s) - 3));
+                        i := Name2Number(s,SaveName);
+                        if roomnumber = 1 then
+                        continue;
+                        IF (i > 0) AND (i <= MaxNodes) THEN
                           BEGIN
-							LoadNode(i);
-							s := '^0 '#254' ^1'+AllCaps(ThisUser.Name)+'^0 has invited you to join conference room ^1#'
-								 +IntToStr(RoomNumber)+'^0';
-							NodeR.Invited[RoomNumber DIV 8] := NodeR.Invited[RoomNumber DIV 8] + [RoomNumber MOD 8];
-							NodeR.Booted[RoomNumber DIV 8] := NodeR.Booted[RoomNumber DIV 8] - [RoomNumber MOD 8];
-							PrintMsg('^0'+SaveName+' on node '+IntToStr(i)+' has been invited.');
-							SaveNode(i);
-							IF (i <> ThisNode) THEN
+                            LoadNode(i);
+                            s := '^0 '#254' ^1'+AllCaps(ThisUser.Name)+'^0 has invited you to join conference room ^1#'
+                                 +IntToStr(RoomNumber)+'^0';
+                            NodeR.Invited[RoomNumber DIV 8] := NodeR.Invited[RoomNumber DIV 8] + [RoomNumber MOD 8];
+                            NodeR.Booted[RoomNumber DIV 8] := NodeR.Booted[RoomNumber DIV 8] - [RoomNumber MOD 8];
+                            PrintMsg('^0'+SaveName+' on node '+IntToStr(i)+' has been invited.');
+                            SaveNode(i);
+                            IF (i <> ThisNode) THEN
                               LowLevelSend(s,i);
                           END
-						ELSE
+                        ELSE
                           Nope(NotOnline);
-						s := '';
+                        s := '';
                         END;
               'J' : IF (S[3] <> ' ') OR (Copy(S,4,(Length(s) - 3)) = '') THEN { Join room }
                       Nope(NotValid)
@@ -1296,14 +1297,14 @@ BEGIN { Teleconference }
                     ELSE
                       BEGIN
                         IF (CoSysOp) OR (Room.Moderator = UserNum) OR ((Room.Moderator = 0) AND (RoomNumber <> 1)) THEN
-						{ leew ^^fix this only sysops mod room 1}
+                        { leew ^^fix this only sysops mod room 1}
                           BEGIN
                             s := Copy(S,4,40);
                             LoadRoom(RoomNumber);
                             Room.Topic := s;
                             IF (NOT IsInvisible) THEN
                               SendMessage('^0[ Conference "'+Room.Topic+'" is now moderated by '+
-							  Caps(ThisUser.Name)+' ]',TRUE);
+                              Caps(ThisUser.Name)+' ]',TRUE);
                             IF (Room.Moderator = 0) THEN
                               BEGIN
                                 FOR i := 1 TO MaxNodes DO
@@ -1332,22 +1333,22 @@ BEGIN { Teleconference }
                             LoadNode(i);
                             IF ((ThisNode MOD 8) IN NodeR.Forget[ThisNode DIV 8]) THEN
                               PrintMsg('^8 '#254' That user is ignoring you!'{^M^J})
-							ELSE IF (i = ThisNode) THEN
-							  PrintMsg('^8Talking to ourselves, are we?')
-							ELSE IF NOT (NAvail IN NodeR.Status) THEN
+                            ELSE IF (i = ThisNode) THEN
+                              PrintMsg('^8Talking to ourselves, are we?')
+                            ELSE IF NOT (NAvail IN NodeR.Status) THEN
                               Nope(NotOnline)
                             ELSE IF NOT (NInvisible IN NodeR.Status) THEN
                               BEGIN
                                 PrintMsg('^0 '#254' Private message "^1'+s+'^0" sent to ^1'+AllCaps(SaveName)+'^0');
                                 IF AACS(General.TeleConfMCI) THEN
                                   s := MCI(s);
-								IF NodeR.GroupChat THEN
-								  s := MCI(lRGLngStr(194,TRUE)) + s
-								ELSE
-								  BEGIN
+                                IF NodeR.GroupChat THEN
+                                  s := MCI(lRGLngStr(194,TRUE)) + s
+                                ELSE
+                                  BEGIN
 LowLevelSend({^M^J}'^0Message from ^1'+Caps(ThisUser.Name)+'^0 on node ^1'+IntToStr(ThisNode)+'^0:'{^M^J},{NodeNum}i);
                                   s := '[notinchat] '+s; {LeeW}
-								  END;
+                                  END;
                                 LowLevelSend(s,i)
                               END
                             ELSE
@@ -1360,10 +1361,10 @@ LowLevelSend({^M^J}'^0Message from ^1'+Caps(ThisUser.Name)+'^0 on node ^1'+IntTo
               'Q' : BEGIN { Quit teleconference }
                       s := Copy(s,4,40);
                       IF (s <> '') THEN
-					    IF (Room.Anonymous) THEN
-						  s := MCI(lRGLngStr(192,TRUE)) + s
-						ELSE
-						  s := MCI(lRGLngStr(191,TRUE)) + s;
+                        IF (Room.Anonymous) THEN
+                          s := MCI(lRGLngStr(192,TRUE)) + s
+                        ELSE
+                          s := MCI(lRGLngStr(191,TRUE)) + s;
                         (*s := {'^0'+}AllCaps(ThisUser.Name)+' '+s;*)
                       LoadNode(ThisNode);
                       SaveNode(ThisNode);
@@ -1393,7 +1394,7 @@ LowLevelSend({^M^J}'^0Message from ^1'+Caps(ThisUser.Name)+'^0 on node ^1'+IntTo
               'W' : ListNodes; { Show nodelist }
               '?' : PrintF('TELEHELP'); { Show teleconference help }
             END;
-			{add invalid cmd message to / not found}
+            {add invalid cmd message to / not found}
           IF (s[1] = '/') THEN
             s := '';
         END
@@ -1415,7 +1416,7 @@ LowLevelSend({^M^J}'^0Message from ^1'+Caps(ThisUser.Name)+'^0 on node ^1'+IntTo
             s := MCI(s);
           SendMessage(s,TRUE);
         END;
-	END;
+    END;
   MultiNodeChat := FALSE;
   IF (General.MultiNode) THEN
     BEGIN

@@ -205,9 +205,9 @@ VAR
             '?' : BEGIN
                     Print('%LF^0<^1CR^0>Redisplay screen');
                     Print('^11-2^0:Modify item');
-                    LCmds(20,3,'[Back entry',']Forward entry');
-                    LCmds(20,3,'First entry in list','Jump to entry');
-                    LCmds(20,3,'Last entry in list','Quit and save');
+                    LCmds(20,1,'[Back entry',']Forward entry');
+                    LCmds(20,1,'First entry in list','Jump to entry');
+                    LCmds(20,1,'Last entry in list','Quit and save');
                   END;
           END;
         UNTIL (Cmd1 = 'Q') OR (HangUp);
@@ -265,8 +265,8 @@ VAR
         '?' : BEGIN
                 Print('%LF^0<^1CR^0>Next screen or redisplay current screen');
                 Print('^0(^1?^0)Help/First topic choice');
-                LCmds(20,3,'Delete topic choice','Insert topic choice');
-                LCmds(20,3,'Modify topic choice','Quit');
+                LCmds(20,1,'Delete topic choice','Insert topic choice');
+                LCmds(20,1,'Modify topic choice','Quit');
               END;
       END;
       IF (Cmd1 <> ^M) THEN
@@ -466,12 +466,12 @@ VAR
                   Print('%LF^0<^1CR^0>Redisplay current screen');
                   Print('^11^0-^15^0,^1C^0:Modify item');
                   IF (NOT Editing) THEN
-                    LCmds(20,3,'Quit and save','')
+                    LCmds(20,1,'Quit and save','')
                   ELSE
                   BEGIN
-                    LCmds(20,3,'[Back entry',']Forward entry');
-                    LCmds(20,3,'First entry in list','Jump to entry');
-                    LCmds(20,3,'Last entry in list','Quit and save');
+                    LCmds(20,1,'[Back entry',']Forward entry');
+                    LCmds(20,1,'First entry in list','Jump to entry');
+                    LCmds(20,1,'Last entry in list','Quit and save');
                   END;
                 END;
         END;

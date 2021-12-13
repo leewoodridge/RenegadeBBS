@@ -9,7 +9,7 @@ UNIT SysOp2H;
 
 INTERFACE
 
-procedure GetPipeColor (VAR ColorVar: Byte; s: STRING);
+PROCEDURE GetPipeColor (VAR ColorVar: Byte; s: STRING);
 PROCEDURE NetworkConfiguration;
 
 IMPLEMENTATION
@@ -17,9 +17,10 @@ IMPLEMENTATION
 USES
   Common,
   NodeList,
+  SysOp2, { ConfigHeader }
   TimeFunc; { ZeroPad }
   
-  procedure GetPipeColor (VAR ColorVar: Byte; s: STRING);
+  PROCEDURE GetPipeColor (VAR ColorVar: Byte; s: STRING);
   CONST
     ColorName: ARRAY[0..7] OF STRING[7] = ('Black','Blue','Green','Cyan','Red','Magenta','Yellow','White');
   VAR
@@ -64,40 +65,43 @@ BEGIN
     BEGIN
       Abort := FALSE;
       Next := FALSE;
+      {
       Print('%CL^1Network Configuration:');
+      NL;}
+      ConfigHeader('Network Mail Configuration');
+      PrintACR('^0(^1A^0) Net Addresses ...');
+      PrintACR('^0(^1B^0) Origin Line     : ^1'+Origin);
       NL;
-      PrintACR('^0A. Net addresses');
-      PrintACR('^0B. Origin line     : ^1'+Origin);
+      PrintACR(PadLeftStr('^0(^1C^0) Strip IFNA Kludge Lines : ^1'+ShowYesNo(SKludge),39)+
+               PadLeftStr('^0(^11^0) Standard Text Color : |'+ZeroPad(IntToStr(Text_Color))+'Text',39));
+      PrintACR(PadLeftStr('^0(^1D^0) Strip SEEN-BY Lines     : ^1'+ShowYesNo(SSeenBy),39)+
+               PadLeftStr('^0(^12^0) Quoted Text Color   : |'+ZeroPad(IntToStr(Quote_Color))+'Quoted',39));
+      PrintACR(PadLeftStr('^0(^1E^0) Strip Origin Lines      : ^1'+ShowYesNo(SOrigin),39)+
+               PadLeftStr('^0(^13^0) Tear Line Color     : |'+ZeroPad(IntToStr(Tear_Color))+'Tear',39));
+      PrintACR(PadLeftStr('^0(^1F^0) Add Tear/Origin Line    : ^1'+ShowYesNo(AddTear),39)+
+               PadLeftStr('^0(^14^0) Origin Line Color   : |'+ZeroPad(IntToStr(Origin_Color))+'Origin',39));
       NL;
-      PrintACR(PadLeftStr('^0C. Strip IFNA kludge lines : ^1'+ShowYesNo(SKludge),39)+
-               PadLeftStr('^01. Color of standard text : |'+ZeroPad(IntToStr(Text_Color))+'Text',39));
-      PrintACR(PadLeftStr('^0D. Strip SEEN-BY lines     : ^1'+ShowYesNo(SSeenBy),39)+
-               PadLeftStr('^02. Color of quoted text   : |'+ZeroPad(IntToStr(Quote_Color))+'Quoted',39));
-      PrintACR(PadLeftStr('^0E. Strip origin lines      : ^1'+ShowYesNo(SOrigin),39)+
-               PadLeftStr('^03. Color of tear line     : |'+ZeroPad(IntToStr(Tear_Color))+'Tear',39));
-      PrintACR(PadLeftStr('^0F. Add tear/origin line    : ^1'+ShowYesNo(AddTear),39)+
-               PadLeftStr('^04. Color of origin line   : |'+ZeroPad(IntToStr(Origin_Color))+'Origin',39));
-      NL;
-      PrintACR('^0G. Default Echomail path   : ^1'+DefEchoPath);
-      PrintACR('^0H. Netmail path            : ^1'+NetMailPath);
-      PrintACR('^0I. Netmail attributes      : ^1'+NetMail_Attr(NetAttribute));
-      PrintACR('^0J. UUCP gate address       : ^1'+PadLeftStr('^1'+IntToStr(AKA[20].Zone)+':'+IntToStr(AKA[20].Net)+
-                                                       '/'+IntToStr(AKA[20].Node)+'.'+IntToStr(AKA[20].Point),20));
+      PrintACR('^0(^1G^0) Default EchoMail Path   : ^1'+DefEchoPath);
+      PrintACR('^0(^1H^0) Default NetMail Path    : ^1'+NetMailPath);
+      PrintACR('^0(^1I^0) NetMail Attributes      : ^1'+NetMail_Attr(NetAttribute));
+      PrintACR('^0(^1J^0) UUCP Gate Address       : ^1'+PadLeftStr('^1'+IntToStr(AKA[20].Zone)+':'+IntToStr(AKA[20].Net)+
+                                                                   '/'+IntToStr(AKA[20].Node)+'.'+IntToStr(AKA[20].Point),20));
       InputChar('%LFEnter selection [^1A^2-^1J^2,^11^2-^14^2,^1Q^2=^1Quit^2]: ',Cmd,'QABCDEFGHIJ1234'{^M},[CapAll]);
       CASE Cmd OF
         'A' : BEGIN
                 REPEAT
                   Abort := FALSE;
                   Next := FALSE;
-                  Print('%CL^1Network Addresses:^0');
-                  NL;
+                { Print('%CL^1Network Addresses:^0');
+                  NL; }
+                  ConfigHeader('Network Mail Addresses');
                   FOR Counter := 0 TO 19 DO
                   BEGIN
-                    Prompt('^0'+Chr(Counter + 65)+'. Address #'+PadLeftInt(Counter,2)+' : '+
-                    PadLeftStr('^1'+IntToStr(AKA[Counter].Zone)+
-                        ':'+IntToStr(AKA[Counter].Net)+
-                        '/'+IntToStr(AKA[Counter].Node)+
-                        '.'+IntToStr(AKA[Counter].Point),20));
+                    Prompt(PadLeftStr('^0(^1'+Chr(Counter + 65)+'^0) Address #'+PadLeftInt(Counter,2)+' :^1'+
+                                      ' '+IntToStr(AKA[Counter].Zone)+
+                                      ':'+IntToStr(AKA[Counter].Net)+
+                                      '/'+IntToStr(AKA[Counter].Node)+
+                                      '.'+IntToStr(AKA[Counter].Point),39));
                     IF (Odd(Counter)) THEN
                       NL;
                   END;
@@ -127,9 +131,9 @@ BEGIN
                            ToggleNetAttrS(Cmd,NetAttribute);
                     '?' : BEGIN
                             NL;
-                            LCmds(22,3,'Crash mail','Hold');
-                            LCmds(22,3,'In-Transit','Kill-Sent');
-                            LCmds(22,3,'Local','Private');
+                            LCmds(22,1,'Crash mail','Hold');
+                            LCmds(22,1,'In-Transit','Kill-Sent');
+                            LCmds(22,1,'Local','Private');
                           END;
                   END;
                 UNTIL (Cmd = 'Q') OR (HangUp);

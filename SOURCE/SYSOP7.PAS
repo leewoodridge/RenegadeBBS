@@ -544,12 +544,12 @@ VAR
                                     ToggleMenuFlags(Cmd1,MenuFlags,Changed);
                             '?' : BEGIN
                                     NL;
-                                    LCmds(21,3,'Clear screen','Don''t center titles');
-                                    LCmds(21,3,'No menu prompt','Pause before display');
-                                    LCmds(21,3,'Auto Time display','Force line input');
-                                    LCmds(21,3,'Titles not displayed','1 No ANS prompt');
-                                    LCmds(21,3,'2 No AVT prompt','3 No RIP prompt');
-                                    LCmds(21,3,'4 No Global disp','5 No global use');
+                                    LCmds(21,1,'Clear screen','Don''t center titles');
+                                    LCmds(21,1,'No menu prompt','Pause before display');
+                                    LCmds(21,1,'Auto Time display','Force line input');
+                                    LCmds(21,1,'Titles not displayed','1 No ANS prompt');
+                                    LCmds(21,1,'2 No AVT prompt','3 No RIP prompt');
+                                    LCmds(21,1,'4 No Global disp','5 No global use');
                                   END;
                           END;
                         UNTIL (Cmd1 = ^M) OR (HangUp);
@@ -591,10 +591,10 @@ VAR
                 '?' : BEGIN
                         Print('%LF^0<^1CR^0>Redisplay screen');
                         Print('^11-9,C,N,T^0:Modify item');
-                        LCmds(16,3,'[Back entry',']Forward entry');
-                        LCmds(16,3,'Command Editor','First entry in list');
-                        LCmds(16,3,'Jump to entry','Last entry in list');
-                        LCmds(16,3,'Quit and save','');
+                        LCmds(16,1,'[Back entry',']Forward entry');
+                        LCmds(16,1,'Command Editor','First entry in list');
+                        LCmds(16,1,'Jump to entry','Last entry in list');
+                        LCmds(16,1,'Quit and save','');
                       END;
               END;
             UNTIL (Pos(Cmd1,'QC[]FJL') <> 0) OR (HangUp);
@@ -630,8 +630,8 @@ BEGIN
       'M' : ModifyMenu;
       '?' : BEGIN
               Print('%LF^0<^1CR^0>Redisplay screen');
-              LCmds(12,3,'Delete menu','Insert menu');
-              LCmds(12,3,'Modify menu','Quit');
+              LCmds(12,1,'Delete menu','Insert menu');
+              LCmds(12,1,'Modify menu','Quit');
             END;
     END;
     IF (CMD <> ^M) THEN

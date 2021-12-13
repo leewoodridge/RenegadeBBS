@@ -344,11 +344,11 @@ VAR
                 BEGIN
                   Print('%LF^1External event type');
                   NL;
-                  LCmds(18,3,'1Errorlevel','');
-                  LCmds(18,3,'2Shell','');
-                  LCmds(18,3,'3Sort Files','');
-                  LCmds(18,3,'4Pack Message Areas','');
-                  LCmds(18,3,'5Files.BBS','');
+                  LCmds(18,1,'1Errorlevel','');
+                  LCmds(18,1,'2Shell','');
+                  LCmds(18,1,'3Sort Files','');
+                  LCmds(18,1,'4Pack Message Areas','');
+                  LCmds(18,1,'5Files.BBS','');
                   InputChar('%LFWhich external event? [^11^2-^15^2,^1<CR>^2=^1Quit^2]: ',Cmd1,^M'12345',[CapAll]);
                   IF (Cmd1 <> ^M) THEN
                   BEGIN
@@ -486,13 +486,13 @@ VAR
                             REPEAT
                               Print('%LF^1Active Days: ^1'+DaysEventActive(EventDays,'5','4')+'^0');
                               NL;
-                              LCmds(11,3,'1Sunday','');
-                              LCmds(11,3,'2Monday','');
-                              LCmds(11,3,'3Tuesday','');
-                              LCmds(11,3,'4Wednesday','');
-                              LCmds(11,3,'5Thursday','');
-                              LCmds(11,3,'6Friday','');
-                              LCmds(11,3,'7Saturday','');
+                              LCmds(11,1,'1Sunday','');
+                              LCmds(11,1,'2Monday','');
+                              LCmds(11,1,'3Tuesday','');
+                              LCmds(11,1,'4Wednesday','');
+                              LCmds(11,1,'5Thursday','');
+                              LCmds(11,1,'6Friday','');
+                              LCmds(11,1,'7Saturday','');
                               InputChar('%LFToggle which day? [^11^2-^17^2,^1<CR>^2=^1Quit^2]: ',Cmd1,^M'1234567',[CapAll]);
                               IF (Cmd1 <> ^M) THEN
                               BEGIN
@@ -544,8 +544,8 @@ VAR
                 BEGIN
                   Print('%LF^1Internal event type:');
                   NL;
-                  LCmds(7,3,'1Logon','');
-                  LCmds(7,3,'2Chat','');
+                  LCmds(7,1,'1Logon','');
+                  LCmds(7,1,'2Chat','');
                   InputChar('%LFWhich internal event? [^11^2-^12^2,^1<CR>^2=^1Quit^2]: ',Cmd1,^M'12',[CapAll]);
                   IF (Cmd1 <> ^M) THEN
                   BEGIN

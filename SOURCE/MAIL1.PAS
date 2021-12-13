@@ -1,4 +1,5 @@
 {$A+,B-,D+,E-,F+,I-,L+,N-,O+,R-,S+,V-}
+{12/13/2021 incorporated add quote help into prompt}
 
 UNIT Mail1;
 
@@ -236,7 +237,9 @@ BEGIN
                Inc(CKeyPos);
                Dec(RP);
              END;
-        ^P : IF (OkANSI OR OkAvatar) AND (CKeyPos < (StrLen - 1)) THEN
+        ^P : IF (OkANSI OR OkAvatar) AND (CKeyPos < (StrLen - 1)) THEN 
+        {LeeW: This doesn't seem to work?
+        prints '^#' but doesn't actually change color???}
              BEGIN
                CKey := Char(GetKey);
                IF (CKey IN ['0'..'9']) THEN
@@ -442,9 +445,9 @@ VAR
     Count_Lines;
     ANSIG(CCol,((CurrentLine - TopLine) + TopScreen));
     IF (Pos('>',Copy(LinePtr^[CurrentLine],1,4)) > 0) THEN
-      UserColor(7)
+      SetC(CurrentColor - (CurrentColor MOD 16) + MemMsgArea.Quote_Color)
     ELSE
-      UserColor(0);
+      SetC(CurrentColor - (CurrentColor MOD 16) + MemMsgArea.Text_Color);
   END;
 
   PROCEDURE Set_PhyLine;
@@ -499,7 +502,7 @@ VAR
       END
       ELSE
       BEGIN
-        IF (LinePtr^[CurrentLine] <> PhyLine[Phline]) THEN
+        IF (LinePtr^[CurrentLine] <> PhyLine[PhLine]) THEN
         BEGIN
           Reposition (TRUE);
           MCIAllowed := FALSE;
@@ -1079,14 +1082,14 @@ VAR
       Reset(QuoteFile);
       REPEAT
         NL;
-        Prt('First line to quote [^1?^2=^1Help^2]: ');
+        Prt('^2Enter first line to quote [(^1H^2)eader,(^1Q^2)uit]: ^3');
         Scaninput(TempStr1,'HQ?'^M);
-        IF (TempStr1 = '?') THEN
+        {IF (TempStr1 = '?') THEN
         BEGIN
           NL;
           Print('^0<^1Q^0>uit, <^1H^0>eader, <^1?^0>Help, or first line to quote.');
         END
-        ELSE IF (TempStr1 = 'H') THEN
+        ELSE} IF (TempStr1 = 'H') THEN
         BEGIN
           WHILE (TempStr1 > '') AND (NOT EOF(QuoteFile)) AND (CurrentLine <= MaxLines) DO
           BEGIN
@@ -1117,7 +1120,7 @@ VAR
       END;
       IF (Fline > 0) THEN
       BEGIN
-        Prt('Last line to quote: ');
+        Prt('^2Enter last line to quote: ^3');
         Scaninput(TempStr1,'Q'^M);
         IF (TempStr1 <> #13) THEN
           Nline := StrToInt(TempStr1)
@@ -1198,11 +1201,10 @@ VAR
       END;
       GKey := GetKey;
       CASE GKey OF
-         47 :
-             IF (CCol = 1) AND (NOT InportFileOpen) THEN
-               GKey := 27
-             ELSE
-               Insert_Char(Char(GKey));
+         47 : IF (CCol = 1) AND (NOT InportFileOpen) THEN
+                GKey := 27
+              ELSE
+                Insert_Char(Char(GKey));
          127 :
              Delete_Char;
          32..254 :
@@ -1326,20 +1328,16 @@ VAR
       TempMsgTo: Str36;
       UNum: Integer;
     BEGIN
+    
+      IF (MsgTo1 <> '') THEN {LeeW: Quick and dirty fix for jibberish data}
+        TempMsgTo := MsgTo1
+      ELSE
+        TempMsgTo := '';
+    
       lRGLngStr(34,FALSE); { Print(FString.default + ^M^J); }
       IF (Pub) AND (NOT (MAInternet IN MemMsgArea.MAFlags)) THEN
         BEGIN
-          IF (MsgTo1 <> '') THEN
-            BEGIN
-              TempMsgTo := MsgTo1;
-              InputString('^2To: ',TempMsgTo,36,[CapWords,InteractiveEdit,NoBlankPrompt,NoLineFeed],Changed); {lw}
-              {InputDefault(TempMsgTo,MsgTo1,36,[NoLineFeed,CapWords],FALSE)}
-            END
-          ELSE
-            BEGIN
-              InputString('^2To: ',TempMsgTo,36,[CapWords,NoBlankPrompt,NoLineFeed],Changed); {lw}
-              {InputMain(TempMsgTo,36,[NoLineFeed,CapWords]);}
-            END;
+          InputString('^2To: ',TempMsgTo,36,[CapWords,InteractiveEdit,NoBlankPrompt,NoLineFeed],Changed);
           MsgTo1 := TempMsgTo;
           UserColor(3);
           FOR UNum := 1 TO LennMCI(MsgTo1) DO
@@ -1373,27 +1371,23 @@ VAR
     VAR
       TempMsgSubj: Str40;
     BEGIN
+    
+      IF (MsgSubj1 <> '') THEN
+        TempMsgSubj := MsgSubj1
+      ELSE
+        TempMsgSubj := '';
+    
       IF (MHeader.FileAttached = 0) AND (NOT CantAbort2) THEN
         BEGIN
-          IF (MsgSubj1 <> '') THEN
-            BEGIN
-              TempMsgSubj := MsgSubj1;
-              InputString('^2Subject: ',TempMsgSubj,40,[InteractiveEdit,NoBlankPrompt,NoLineFeed],Changed);
-              {InputDefault(TempMsgSubj,MsgSubj1,40,[NoLineFeed],FALSE)}
-            END
-          ELSE
-            BEGIN
-              InputString('^2Subject: ',TempMsgSubj,40,[NoBlankPrompt,NoLineFeed],Changed);
-              {InputMain(TempMsgSubj,40,[NoLineFeed]);}
-            END;
+          InputString('^2Subject: ',TempMsgSubj,40,[InteractiveEdit,NoBlankPrompt,NoLineFeed],Changed);
           IF (TempMsgSubj <> '') THEN
-            MsgSubj1 := TempMsgSubj
+            MsgSubj1 := TempMsgSubj{
           ELSE
             BEGIN
               IF (MsgSubj1 <> '') THEN
-                Prompt('^3'+MsgSubj1+'^0');
-            END;
-          NL;
+                Print('^3'+MsgSubj1+'^0');
+            END};
+          {NL;}
         END
       ELSE
         MsgSubj1 := MHeader.Subject;
@@ -1473,9 +1467,9 @@ VAR
         Reading_A_Msg := TRUE;
         IF (NOT DOSANSIOn) THEN
           IF (Pos('>',Copy(LinePtr^[LineNum1],1,4)) > 0) THEN
-            UserColor(7)
+            SetC(CurrentColor - (CurrentColor MOD 16) + MemMsgArea.Quote_Color)
           ELSE
-            UserColor(0);
+            SetC(CurrentColor - (CurrentColor MOD 16) + MemMsgArea.Text_Color);
         PrintACR(LinePtr^[LineNum1]);
         Reading_A_Msg := FALSE;
         Inc(LineNum1);
@@ -2148,15 +2142,15 @@ VAR
   BEGIN
     IF (ReadInMsg <> '') THEN
       BEGIN
-		Assign(InportFile,ReadInMsg);
-		ReWrite(InportFile);
-		IF (IOResult = 0) THEN
-		  BEGIN
-			FOR LineNum1 := 1 TO (TotalLines - 1) DO
-			  WriteLn(InportFile,LinePtr^[LineNum1]);
-			Close(InportFile);
-		  END;
-	  END
+        Assign(InportFile,ReadInMsg);
+        ReWrite(InportFile);
+        IF (IOResult = 0) THEN
+          BEGIN
+            FOR LineNum1 := 1 TO (TotalLines - 1) DO
+              WriteLn(InportFile,LinePtr^[LineNum1]);
+            Close(InportFile);
+          END;
+      END
     ELSE
       BEGIN
       AddTagLine := FALSE;
@@ -2173,11 +2167,11 @@ VAR
       GetDayOfWeek(MHeader.DayOfWeek);
 
       IF (Pub AND (MemMsgArea.MAType IN [1,2])) OR (NOT Pub AND (NetMail IN MHeader.Status)) THEN
-		BEGIN
+        BEGIN
           NewEchoMail := TRUE;
           IF (NOT (MAScanOut IN MemMsgArea.MAFlags)) THEN
-			UpdateBoard;
-		END;
+            UpdateBoard;
+        END;
 
       MHeader.From.UserNum := UserNum;
       UserName := AllCaps(ThisUser.Name);
@@ -2185,10 +2179,10 @@ VAR
       IF (NOT Pub) AND (NetMail IN MHeader.Status) AND (ThisUser.Name <> AllCaps(ThisUser.RealName)) THEN
         IF (General.AllowAlias) THEN
           BEGIN
-			NL;
-			IF PYNQ('Send this with your real name? ',0,TRUE) THEN
+            NL;
+            IF PYNQ('Send this with your real name? ',0,TRUE) THEN
               UserName := AllCaps(ThisUser.RealName);
-		  END;
+          END;
 
       MHeader.From.A1S := UserName;
       MHeader.From.Real := AllCaps(ThisUser.RealName);
@@ -2200,18 +2194,18 @@ VAR
         Include(MHeader.Status,Unvalidated);
 
       IF (AACS(MemMsgArea.MCIACS)) THEN
-		BEGIN
+        BEGIN
           Include(MHeader.Status,AllowMCI);
           IF (DisableMCI1) THEN
-			Exclude(MHeader.Status,AllowMCI);
-		END;
+            Exclude(MHeader.Status,AllowMCI);
+        END;
 
       IF (Pub) THEN
-		BEGIN
+        BEGIN
           MHeader.MTO.Name := MsgTo;
           MHeader.MTO.Real := MsgTo;
           MHeader.MTO.A1S := MsgTo;
-		END;
+        END;
 
       IF (NOT (NetMail IN MHeader.Status)) THEN
         Anonymous(FALSE,MHeader);

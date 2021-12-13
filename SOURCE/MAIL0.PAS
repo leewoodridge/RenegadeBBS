@@ -434,7 +434,7 @@ BEGIN
 
 
     IF (MHeader.Origindate <> '') THEN
-      S1 := Substitute(S1,'@D',MHeader.Origindate)
+      S1 := Substitute(S1,'@D',MHeader.OriginDate)
     ELSE
     BEGIN
       Packtodate(DT,MHeader.Date);
@@ -691,11 +691,11 @@ BEGIN
              S := S + '5Unsent'
            ELSE
              S := S + '5Normal';
-         IF (NOT Pub) AND (Netmail IN MHeader.Status) THEN
-           S := S + ' Netmail';
+         IF (NOT Pub) AND (NetMail IN MHeader.Status) THEN
+           S := S + ' NetMail';
          S := PadLeftStr(S,39) + '^0Origin : ^1';
-         IF (MHeader.Origindate <> '') THEN
-           S := S + MHeader.Origindate
+         IF (MHeader.OriginDate <> '') THEN
+           S := S + MHeader.OriginDate
          ELSE
            S := S + 'Local';
        END;

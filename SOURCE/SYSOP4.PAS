@@ -332,13 +332,13 @@ BEGIN
         ELSE
           CASE S[1] of
             '?' : BEGIN
-                    LCmds(14,3,'+Forward line','-Back line');
-                    LCmds(14,3,'Top','Bottom');
-                    LCmds(14,3,'Print line','List');
-                    LCmds(14,3,'Insert lines','Delete line');
-                    LCmds(14,3,'Replace line','Clear all');
-                    LCmds(14,3,'Quit (Abort)','Save');
-                    LCmds(14,3,'*Center line','!Memory Available');
+                    LCmds(14,1,'+Forward line','-Back line');
+                    LCmds(14,1,'Top','Bottom');
+                    LCmds(14,1,'Print line','List');
+                    LCmds(14,1,'Insert lines','Delete line');
+                    LCmds(14,1,'Replace line','Clear all');
+                    LCmds(14,1,'Quit (Abort)','Save');
+                    LCmds(14,1,'*Center line','!Memory Available');
                   END;
             '!' : Print('Heap space available: '+IntToStr(MemAvail));
             '*' : IF (Cur <> NIL) THEN
