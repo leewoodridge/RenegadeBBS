@@ -1,0 +1,30 @@
+1 Handle
+2 Real Name
+3 Country
+4 Address
+5 City, State
+6 Zip Code
+7 Phone Number
+8 Age
+9 Gender
+10 SysOp Defined Question #1
+11 SysOp Defined Question #2
+12 SysOp Defined Question #3
+13 Password
+14 Forgot Password Question Answer
+15 Terminal Emulation
+16 ANSI Color Toggle
+17 Color Scheme
+18 Screen Size
+19 Screen Clearing
+20 Screen Pausing
+21 Hotkey Input
+22 Expert Mode
+23 Lightbars Toggle
+24 Editor Toggle
+25 Mailbox Toggle
+26 QWK Configuration
+27 * UNUSED *
+28 * UNUSED *
+29 * UNUSED *
+30 * UNUSED *
