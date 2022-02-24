@@ -356,7 +356,6 @@ VAR
   TempDir,                  { Temporary Directory base name }
   InResponseTo: STRING[40]; { reason FOR reply }
   LastDIRFileName: Str12;   { last filename FOR recno/nrecno }
-  LastDIRRecNum,            { last record # FOR recno/nrecno }
   CurrentColor,             { Current ANSI color }
   ExitErrorLevel,           { Errorlevel to exit with }
   TShuttleLogon,            { type OF special Shuttle Logon command }
@@ -365,6 +364,7 @@ VAR
   PublicPostsToday,         { posts made by User this call }
   FeedBackPostsToday,       { feedback sent by User this call }
   PrivatePostsToday: Byte;  { E-mail sent by User this call }
+  LastDIRRecNum,            { last record # FOR recno/nrecno }
   ChatAttempts,             { number chat attempts made by User }
   LIL,                      { lines on screen since last PauseScr() }
   PublicReadThisCall,       { # public messages has Read this call }
@@ -1098,7 +1098,7 @@ END;
 FUNCTION PHours(CONST DisplayStr: AStr; LoTime,HiTime: Integer): AStr;
 BEGIN
   IF (LoTime <> HiTime) THEN
-    PHours := ZeroPad(IntToStr(LoTime DIV 60))+':'+ZeroPad(IntToStr(LoTime MOD 60))+'....'+
+    PHours := ZeroPad(IntToStr(LoTime DIV 60))+':'+ZeroPad(IntToStr(LoTime MOD 60))+' '#196' '+
               ZeroPad(IntToStr(HiTime DIV 60))+':'+ZeroPad(IntToStr(HiTime MOD 60))
   ELSE
     PHours := DisplayStr;
@@ -1954,7 +1954,7 @@ BEGIN
              Inc(Counter);
            END;
      '|' : IF (Length(InString) > (Counter + 1)) AND (InString[Counter + 1] IN ['0'..'9']) AND
-              (Instring[Counter + 2] IN ['0'..'9']) THEN
+              (InString[Counter + 2] IN ['0'..'9']) THEN
            BEGIN
              Dec(StrLen,3);
              Inc(Counter);
@@ -1975,7 +1975,8 @@ VAR
   s: AStr;
 BEGIN
   s := '';
-  s := s+'^0(^'+Chr(c + Ord('0'))+c1[1]+'^0)'+PadLeftStr(Copy(c1,2,LennMCI(c1)-1),Len-1);
+  IF (c1 <> '') THEN {LeeW: Added}
+    s := s+'^0(^'+Chr(c + Ord('0'))+c1[1]+'^0)'+PadLeftStr(Copy(c1,2,LennMCI(c1)-1),Len-1);
   IF (c2 <> '') THEN
     s := s+'^0(^'+Chr(c + Ord('0')) + c2[1]+'^0)'+PadLeftStr(Copy(c2,2,LennMCI(c2)-1),Len-1);
   IF (c3 <> '') THEN
@@ -2301,7 +2302,7 @@ BEGIN
     ELSE
       FOR Counter := StrLen TO (MaxLen - 1) DO
         InString := InString + ' ';
-  PadLeftStr := Instring;
+  PadLeftStr := InString;
 END;
 
 FUNCTION PadRightStr(InString: STRING; MaxLen: Byte): STRING;
@@ -2971,12 +2972,12 @@ VAR
   StrLen,
   Counter: Integer;
 BEGIN
-  StrLen := LennMCI(Instring);
+  StrLen := LennMCI(InString);
   IF (StrLen < ThisUser.LineLen) THEN
   BEGIN
     Counter := ((ThisUser.LineLen - StrLen) DIV 2);
-    Move(Instring[1],Instring[Counter + 1],Length(Instring));
-    Inc(Instring[0],Counter);
+    Move(InString[1],InString[Counter + 1],Length(InString));
+    Inc(InString[0],Counter);
     FillChar(InString[1],Counter,#32);
   END;
   Centre := InString;
@@ -3233,7 +3234,7 @@ BEGIN
   IF (AllowAbort) AND (Abort) THEN
     Exit;
   Abort := FALSE;
-  TurnOff := (InString[Length(Instring)] = #29);
+  TurnOff := (InString[Length(InString)] = #29);
   IF (TurnOff) THEN
     Dec(InString[0]);
   CheckHangup;
@@ -3325,7 +3326,7 @@ BEGIN
   IF (b) THEN
     BEGIN
       WHILE (Copy(InString,(Length(InString) - 1),2) = '\\') DO
-        InString := Copy(Instring,1,(Length(InString) - 2));
+        InString := Copy(InString,1,(Length(InString) - 2));
       IF (Copy(InString,Length(InString),1) <> '\') THEN
         InString := InString + '\';
     END
@@ -4326,6 +4327,8 @@ BEGIN
                   }
                   'N' : Add := General.BBSName;
                   'P' : Add := General.BBSPhone;
+                  'F' : Add := IntToStr(HighFileArea); { LeeW: Added - Highest file base number }
+                  'M' : Add := IntToStr(HighMsgArea); { LeeW: Added - Highest message base number }
                 END;
           'C' : CASE UpCase(S[Index + 2]) OF
                   {

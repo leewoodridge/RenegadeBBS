@@ -722,13 +722,13 @@ TYPE
     FileName: STRING[12];    { Filename }
     Description: STRING[50]; { File description }
     FilePoints: Integer;     { File points }
-    Downloaded: LongInt;     { Number DLs }
-    FileSize: LongInt;       { File size in Bytes }
-    OwnerNum: Integer;       { ULer OF file }
-    OwnerName: STRING[36];   { ULer's name }
-    FileDate: UnixTime;      { Date ULed }
-    VPointer: LongInt;       { Pointer to verbose descr, -1 if none }
-    VTextSize: Integer;      { Verbose descr textsize - 50 Bytes x 99 Lines = 4950 max }
+    Downloaded: LongInt;     { Number of downloads }
+    FileSize: LongInt;       { File size (Bytes) }
+    OwnerNum: Integer;       { Uploader user number }
+    OwnerName: STRING[36];   { Uploader user name }
+    FileDate: UnixTime;      { Date uploaded }
+    VPointer: LongInt;       { Pointer to verbose description (-1 = None) }
+    VTextSize: Integer;      { Verbose description textsize (50 Bytes * 99 Lines = 4950 max) }
     FIFlags: FIFlagSet;      { File status }
   END;
 
@@ -939,8 +939,8 @@ TYPE
   MenuFlagSet = SET OF MenuFlagType;
 
   CmdFlagType =
-     (Hidden,    { H: is command ALWAYS hidden? }
-      UnHidden); { U: is command ALWAYS visible? }
+     (Hidden,    { H: Command is always hidden }
+      UnHidden); { U: Command is always visible }
 
   CmdFlagSet = SET OF CmdFlagType;
 

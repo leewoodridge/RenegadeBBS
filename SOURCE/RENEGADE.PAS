@@ -54,17 +54,17 @@ USES
   TimeFunc,
   WFCMenu;
 
-{$O Archive1  } {$O Archive2  } {$O Archive3  } {$O ArcView   } {$O AutoMsg   } {$O BBSList   } {$O Boot      } {$O Bulletin  }
-{$O CUser     } {$O Chat      } {$O Common1   } {$O Common2   } {$O Common3   } {$O Common4   } {$O Doors     } {$O EMail     }
-{$O Events    } {$O ExecBat   } {$O File0     } {$O File1     } {$O File2     } {$O File4     } {$O File5     } {$O File6     }
-{$O File7     } {$O File8     } {$O File9     } {$O File10    } {$O File11    } {$O File12    } {$O File13    } {$O File14    }
-{$O Logon     } {$O Mail0     } {$O Mail1     } {$O Mail2     } {$O Mail3     } {$O Mail4     } {$O Maint     } {$O Menus2    }
-{$O Menus3    } {$O MiscUser  } {$O MsgPack   } {$O MultNode  } {$O MyIO      } {$O NewUsers  } {$O Nodelist  } {$O Offline   }
-{$O OneLiner  } {$O Script    } {$O ShortMsg  } {$O Stats     } {$O SysOp1    } {$O SysOp2    } {$O SysOp2A   } {$O SysOp2B   }
-{$O SysOp2C   } {$O SysOp2D   } {$O SysOp2E   } {$O SysOp2F   } {$O SysOp2G   } {$O SysOp2H   } {$O SysOp2I   } {$O SysOp2J   }
-{$O SysOp2K   } {$O SysOp2L   } {$O SysOp2M   } {$O SysOp2O   } {$O SysOp3    } {$O SysOp4    } {$O SysOp5    } {$O SysOp6    }
-{$O SysOp7    } {$O SysOp7M   } {$O SysOp8    } {$O SysOp9    } {$O SysOp10   } {$O SysOp11   } {$O SysOp12   } {$O TimeBank  }
-{$O TimeFunc  } {$O Vote      } {$O WFCMenu   }
+{$O Archive1 } {$O Archive2 } {$O Archive3 } {$O ArcView  } {$O AutoMsg  } {$O BBSList   } {$O Boot     } {$O Bulletin }
+{$O CUser    } {$O Chat     } {$O Common1  } {$O Common2  } {$O Common3  } {$O Common4   } {$O Doors    } {$O EMail    }
+{$O Events   } {$O ExecBat  } {$O File0    } {$O File1    } {$O File2    } {$O File4     } {$O File5    } {$O File6    }
+{$O File7    } {$O File8    } {$O File9    } {$O File10   } {$O File11   } {$O File12    } {$O File13   } {$O File14   }
+{$O Logon    } {$O Mail0    } {$O Mail1    } {$O Mail2    } {$O Mail3    } {$O Mail4     } {$O Maint    } {$O Menus2   }
+{$O Menus3   } {$O MiscUser } {$O MsgPack  } {$O MultNode } {$O MyIO     } {$O NewUsers  } {$O Nodelist } {$O Offline  }
+{$O OneLiner } {$O Script   } {$O ShortMsg } {$O Stats    } {$O SysOp1   } {$O SysOp2    } {$O SysOp2A  } {$O SysOp2B  }
+{$O SysOp2C  } {$O SysOp2D  } {$O SysOp2E  } {$O SysOp2F  } {$O SysOp2G  } {$O SysOp2H   } {$O SysOp2I  } {$O SysOp2J  }
+{$O SysOp2K  } {$O SysOp2L  } {$O SysOp2M  } {$O SysOp2O  } {$O SysOp3   } {$O SysOp4    } {$O SysOp5   } {$O SysOp6   }
+{$O SysOp7   } {$O SysOp7M  } {$O SysOp8   } {$O SysOp9   } {$O SysOp10  } {$O SysOp11   } {$O SysOp12  } {$O TimeBank }
+{$O TimeFunc } {$O Vote     } {$O WFCMenu  }
 
 CONST
   NeedToHangUp: Boolean = FALSE;
@@ -478,8 +478,6 @@ BEGIN
   TextBackGround(0);
   TextColor(7);
   ClrScr;
-  {TextColor(14);}
-
 
   IF (NeedToHangUp) THEN
     BEGIN
@@ -526,7 +524,7 @@ BEGIN
       WriteLn('Done!');
     END;
      
-  IF (NewEchoMail) AND (ExitErrorLevel = 0) THEN
+  IF (NewEchoMail) AND (ExitErrorLevel = 0) THEN {LeeW: Shouldn't this check for param?}
     ExitErrorLevel := 2;
     
   Write(' - Resetting node status ... ');
