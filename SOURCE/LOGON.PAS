@@ -768,25 +768,25 @@ BEGIN
 
   {SL1('');}
 
-  S := ' ^9* ^1Logon node '+IntToStr(ThisNode)+' ['+Dat+'] (';
+  S := ' ^9* ^5Logon Node ^4'+IntToStr(ThisNode)+'^5 [ ^4'+Dat+'^5 ] (^4';
   IF (ComPortSpeed > 0) THEN
     BEGIN
-      S := S + IntToStr(ActualSpeed)+' baud';
+      S := S + IntToStr(ActualSpeed)+' ^5Baud';
       IF (Reliable) THEN
-        S := S + '/Reliable)'
+        S := S + '/^4Reliable^5)'
       ELSE
-        S := S + ')';
+        S := S + '^5)';
       IF (CallerIDNumber <> '') THEN {LeeW: Fixed?}
         BEGIN
           IF (NOT Telnet) THEN
-            S := S + ' PH#: '+CallerIDNumber
+            S := S + ' PH#: ^4'+CallerIDNumber
           ELSE
-            S := S + ' IP#: '+CallerIDNumber;
+            S := S + ' IP#: ^4'+CallerIDNumber;
         END;
     END
   ELSE
-    S := S + 'Keyboard)';
-  SL1(S);
+    S := S + 'Keyboard^5)';
+  SL1(S{+'^0'});
 
   Nu := FALSE;
   Pw := '';

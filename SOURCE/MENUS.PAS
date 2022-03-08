@@ -596,13 +596,16 @@ BEGIN
   CASE Cmd[1] OF
     '^' : CASE Cmd[2] OF { Command for testing }
             '^' : BEGIN
-			{
-			filename := 'RENEGADE.ANS';
-			GetDayOfWeek(DayOfWeek);
-			 FileName[length(filename)-1] := Chr(DayOfWeek + 48);
-					print(filename);
+			{print(MemCmd^[CmdToExec].CmdKeys);
+			print(memcmdrec.options);
+			pausescr(false);}
+					PrintF('xy');
+					print('%XY02;02%2');
+					print('%XY03;03%3');
+					print('%XY04;04%4');
+					print('%XY05;05%5');
+					ansig(20,20);
 					pausescr(false);
-					}
                   END;
           END;
     '$' : CASE Cmd[2] OF

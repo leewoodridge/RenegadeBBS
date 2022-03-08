@@ -35,7 +35,8 @@ USES
   Common,
   File0,
   File2,
-  SysOp2K;
+  SysOp2K,
+  SysOp2; { configheader and hl }
 
 PROCEDURE FileAreaEditor;
 TYPE
@@ -791,19 +792,12 @@ VAR
       RecNumToList1 := 1;
     Abort := FALSE;
     Next := FALSE;
-    CLS;
+    ConfigHeader('File Area Editor');
     CASE DisplayType OF
-      1 : BEGIN
-            PrintACR('^5+----+---------------------------------+----+---------------------------------+');
-            PrintACR('^5| ^4## ^5| ^4File Area Name                  ^5| ^4## ^5| ^4File Area Name                  ^5|');
-            PrintACR('^5+----+---------------------------------+----+---------------------------------+');
-          END;
-      2 : BEGIN
-            PrintACR('^5+----+----------------+--------+-----------------------+----------------------+');
-            PrintACR('^5| ^4## ^5| ^4File Area Name ^5| ^4Data F ^5| ^4DL Path               ^5| ^4UL Path              ^5|');
-            PrintACR('^5+----+----------------+--------+-----------------------+----------------------+');
-          END;
+      1 : PrintACR('^5<^4##^5> <^4File Area Name^5>                  <^4##^5> <^4File Area Name^5>                  ');
+      2 : PrintACR('^5<^4##^5> <^4File Area Name^5>      <^4Dat^5>    <^4DL Path^5>            <^4UL Path^5>            ');
     END;
+	HL;
     Reset(FileAreaFile);
     NumDone := 0;
     NumOnLine := 0; { LeeW: Added }
@@ -815,9 +809,9 @@ VAR
         Read(FileAreaFile,MemFileArea);
         WITH MemFileArea DO
          CASE DisplayType OF
-          1 : TempStr := TempStr+'^1'+'  '+PadLeftInt(RecNumToList1,4)+' ^0'+PadLeftStr(AreaName,32); { Two column basic list }
-          2 : PrintACR('^1  '+PadLeftInt(RecNumToList1,4)+'^0'+
-                       ' '+PadLeftStr(AreaName,16)+
+          1 : TempStr := TempStr+'^1 '+PadLeftInt(RecNumToList1,4)+' ^0'+PadLeftStr(AreaName,33);
+          2 : PrintACR('^1 '+PadLeftInt(RecNumToList1,4)+'^0'+
+                       ' '+PadLeftStr(AreaName,21)+
                        ' '+PadLeftStr(FileName,8)+
                        ' '+PadLeftStr(DLPath,20)+
                        ' '+PadLeftStr(ULPath,20));
@@ -851,7 +845,7 @@ BEGIN
     IF (Cmd <> '?') THEN
       ListFileAreas(RecNumToList,MCIVars);    
       NL;
-    InputChar('^1File Area Editor [(^0?^1)Help,(^0Q^1)uit]: ',Cmd,'QCDIMPT?'^M,[CapAll]);
+    InputChar('^2File Area Editor [^1CDIMPT^2,(^1?^2)Help,(^1Q^2)uit]: ',Cmd,'QCDIMPT?'^M,[CapAll]);
     CASE Cmd OF
       ^M  : IF (RecNumToList < 1) OR (RecNumToList > NumFileAreas) THEN
               RecNumToList := 1;
@@ -862,11 +856,10 @@ BEGIN
       'P' : PositionFileArea(TempMemFileArea,MCIVars);
       'T' : DisplayType := ((DisplayType MOD 2) + 1);
       '?' : BEGIN
-              {LCmds(17,'','');}
               Print('%LF<CR>Next screen or redisplay current screen');
-              LCmds(23,1,'D Delete File Area',  'I Insert File Area');
-              LCmds(23,1,'M Modify File Area',  'P Position File Area');
-              LCmds(23,1,'C Change Storage Drive','T Toggle Display Format');
+              LCmds(23,1,'D Delete File Area',  	'I Insert File Area');
+              LCmds(23,1,'M Modify File Area',  	'P Position File Area');
+              LCmds(23,1,'C Change Storage Drive',	'T Toggle Display Format');
               LCmds(23,1,'Q Quit','');
             END;
     END;

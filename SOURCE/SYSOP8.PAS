@@ -3,8 +3,7 @@
 Lee Woodridge
  10/20/2021 - Color config now uses pipe codes instead of caret codes
  11/10/2021 - changed default new base options -- sysop acs and colors
- add submenu for changing color options
- 
+			- add submenu for changing color options
 }
 UNIT SysOp8;
 
@@ -168,7 +167,7 @@ VAR
     END;
   END;
   
-  PROCEDURE ResetMsgAreaColors; {LeeW: Add EMAIL!}
+  PROCEDURE ResetMsgAreaColors;
   VAR
     LastRecNum,
     RecNum: Integer;
@@ -178,55 +177,46 @@ VAR
     ELSE
       BEGIN
         IF PYNQ('%LFAre you sure you want to reset all message area colors?',0,FALSE) THEN
-        (*FirstRecNum := -1;
-      InputInteger('%LFMessage area to start at?',FirstRecNum,[NumbersOnly],1,NumMsgAreas,Changed);
-      IF (FirstRecNum >= 1) AND (FirstRecNum <= NumMsgAreas) THEN
-      *)
-      BEGIN
-      (*
-        LastRecNum := -1;
-        InputInteger('%LFMessage area to end at?',LastRecNum,[NumbersOnly],1,NumMsgAreas,Changed);
-        IF (LastRecNum >= 1) AND (LastRecNum <= NumMsgAreas) THEN
-        BEGIN
-          IF (FirstRecNum > LastRecNum) OR (LastRecNum < FirstRecNum) THEN
-            Messages(8,0,'')
-          ELSE
-          BEGIN
-            InputChar('%LFChange to which drive? (^1A^2-^1Z^2): ',Drive,'ABCDEFGHIJKLMNOPQRSTUVWXYZ'^M,[CapAll]);
-            ChDir(Drive+':');
-            IF (IOResult <> 0) THEN
-              Messages(7,0,'')
-            ELSE*)
-            BEGIN
-              {ChDir(StartDir);}
+		  BEGIN
+            BEGIN { Public message areas }
               Prompt('%LFRestoring default message area colors ... ');
               Reset(MsgAreaFile);
               FOR RecNum := 1{FirstRecNum} TO NumMsgAreas{LastRecNum} DO
-              BEGIN
-                Seek(MsgAreaFile,(RecNum - 1));
-                Read(MsgAreaFile,MemMsgArea);
+				BEGIN
+                  Seek(MsgAreaFile,(RecNum - 1));
+                  Read(MsgAreaFile,MemMsgArea);
                 
-                {changecolorshere!}
-                MemMsgArea.Text_Color := General.Text_Color;
-                MemMsgArea.Quote_Color := General.Quote_Color;
-                MemMsgArea.Tear_Color := General.Tear_Color;
-                MemMsgArea.Origin_Color := General.Origin_Color;
+                  MemMsgArea.Text_Color := General.Text_Color;
+                  MemMsgArea.Quote_Color := General.Quote_Color;
+                  MemMsgArea.Tear_Color := General.Tear_Color;
+                  MemMsgArea.Origin_Color := General.Origin_Color;
                 
-                Seek(MsgAreaFile,(RecNum - 1));
-                Write(MsgAreaFile,MemMsgArea);
-              END;
+                  Seek(MsgAreaFile,(RecNum - 1));
+                  Write(MsgAreaFile,MemMsgArea);
+				END;
               Close(MsgAreaFile);
-              LastError := IOResult;
-              Print('Done');
-              SysOpLog('* Reset all message area colors to defaults');
             END;
+			BEGIN { Private messages }
+			  Assign(EMailFile,General.DataPath+'MEMAIL.DAT');
+			  Reset(EMailFile);
+              Seek(EMailFile,0);
+              Read(EMailFile,MemMsgArea);
+			  
+			  MemMsgArea.Text_Color := General.Text_Color;
+              MemMsgArea.Quote_Color := General.Quote_Color;
+              MemMsgArea.Tear_Color := General.Tear_Color;
+              MemMsgArea.Origin_Color := General.Origin_Color;
+			  
+			  Seek(EMailFile,0);
+			  Write(EMailFile,MemMsgArea);
+			  Close(EMailFile);
+			END;
+			{LastError := IOResult;}
+            Print('Done');
+            SysOpLog('* Reset all message area colors to defaults');
           END;
-        END;
-      END;
-      (*
-    END
+	  END;
   END;
-  *)
   
   PROCEDURE ChangeMsgAreaDrive(Drive: Char; FirstRecNum: Integer);
   VAR
@@ -646,7 +636,7 @@ VAR
                   Cmd1 := #0;
                   Changed := TRUE; {LeeW: Cheating here, fix}
                 END;
-          'O' : FindMenu('%LFNew read menu (^10^2=^1Default^2)',MessageReadMenu,0,NumMenus,Changed);
+          'O' : FindMenu('%LF^2New read menu (^10^2=^1Default^2)',MessageReadMenu,0,NumMenus,Changed);
           'P' : IF (MAType IN [1,2]) THEN
                 BEGIN
                   REPEAT
@@ -1087,17 +1077,17 @@ VAR
   BEGIN
     WITH MemMsgArea DO
       CASE DisplayType OF
-        1 : PrintACR('^1'+PadRightInt(RecNumToList1,5)+
-                     ' ^1'+PadLeftStr(Name,24)+
-                     ' ^1'+Copy('LEGQ',(MAType + 1),1)+DisplayMAFlags(MAFlags,'5','4')+
-                     ' ^9'+PadLeftStr(AOnOff(ACS = '','*None*',ACS),10)+
+        1 : PrintACR(' ^1'+PadLeftInt(RecNumToList1,4)+
+                     ' ^0'+PadLeftStr(Name,24)+
+                     ' ^1'+Copy('LEGQ',(MAType + 1),1)+DisplayMAFlags(MAFlags,'1','0')+
+                     ' ^0'+PadLeftStr(AOnOff(ACS = '','*None*',ACS),9)+
                      ' '+PadLeftStr(AOnOff(PostACS = '','*None*',PostACS),9)+
                      ' '+PadLeftStr(AOnOff(MCIACS = '','*None*',MCIACS),9)+
-                     ' ^1'+PadLeftInt(MaxMsgs,6)+
+                     ' ^0'+PadLeftInt(MaxMsgs,6)+
                      ' '+AnonTypeChar(Anonymous));
-        2 : PrintACR('^1'+PadRightInt(RecNumToList1,5)+
-                     ' ^1'+PadLeftStr(Name,27)+
-                     ' ^1'+PadLeftStr(AOnOff(MAType IN [0,3],'*None*',NodeStr(AKA)),11)+
+        2 : PrintACR(' ^1'+PadLeftInt(RecNumToList1,4)+
+                     ' ^0'+PadLeftStr(Name,27)+
+                     ' ^0'+PadLeftStr(AOnOff(MAType IN [0,3],'*None*',NodeStr(AKA)),11)+
                      ' '+PadLeftStr(AOnOff(MsgPath = '','*None*',MsgPath),33));
       END;
   END;
@@ -1111,18 +1101,13 @@ VAR
     MCIAllowed := FALSE;
     Abort := FALSE;
     Next := FALSE;
-    CLS;
+    {CLS;} ConfigHeader('Message Area Editor');
     CASE DisplayType OF
-      1 : BEGIN
-            PrintACR('^1#####^2:^1Message area name       ^2:^1Flag   ^2:^1ACS       ^2:^1Post ACS ^2:^1MCI ACS'+
-                     '  ^2:^1MaxM  ^2:^1A');
-            PrintACR('^2=====:========================:=======:==========:=========:=========:======:=');
-          END;
-      2 : BEGIN
-            PrintACR('^1#####^2:^1Message area name          ^2:^1Address    ^2:^1Message path');
-            PrintACR('^2=====:===========================:===========:=================================');
-          END;
+      1 : PrintACR('^5<^4##^5> <^4Message Area Name^5>      <^4Flag^5>  <^4Read    ^5/ ^4Post    ^5/ ^4MCI ACS^5> '
+					+'<^4Max^5>  <^4A^5>');
+      2 : PrintACR('^5<^4##^5> <^4Message Area Name^5>         <^4Address^5>   <^4Path^5>                            ');
     END;
+	HL;
     IF (RecNumToList1 = 0) THEN
     BEGIN
       NumDone := 0;
@@ -1160,7 +1145,7 @@ BEGIN
   REPEAT
     IF (Cmd <> '?') THEN
       ListMsgAreas(RecNumToList);
-    InputChar('%LFMessage area editor [^1?^2=^1Help^2]: ',Cmd,'QCDIMPRTX^?'^M,[CapAll]);
+    InputChar('%LF^2Message Area Editor [^1CDIMPRTX^2,(^1?^2)Help,(^1Q^2)uit]: ',Cmd,'QCDIMPRTX^?'^M,[CapAll]);
     CASE Cmd OF
       ^M  : IF (RecNumToList < 0) OR (RecNumToList > NumMsgAreas) THEN
               RecNumToList := 0;

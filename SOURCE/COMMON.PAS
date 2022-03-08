@@ -9,7 +9,7 @@ Lee Woodridge
             - Added: ACS 'Q' check for menu #
             - Removed: Redundant $V- above LCmds3
             - Added: Toggle proc instead of writing "x := not x" everywhere
-            - Added: Linefeed to MPL if input field extends past users LineLen
+            - Added: Linefeed to MPL if input field would extend past users LineLen
  ...        - Added: MCIPos/MCIPosArray to pull location data from ANSIs
  10/26/2021 - Fixed: lightbar yes/no question no longer eats itself if color codes/MCIs in string
  10/27/2021 - Moved: TeleconfCheck to MULTNODE
@@ -34,9 +34,9 @@ Lee Woodridge
  11/23/2021 - increased number parameter of plural from byte to integer
  
  log formatting prefix proposal
- [+] warning??
+ [%] warning??
  [!] ERROR
- [$] security
+ [*] security
 *)
 UNIT Common;
 
@@ -210,12 +210,9 @@ TYPE
     *)
     ); 
 
-  InputFlagSet = SET OF InputFlagType; {  }
-
-  ValidationKeyType = SET OF '!'..'~'; (* Remove q and Q *)
-
-  ConferenceKeyType = SET OF '@'..'Z'; {  }
-
+  InputFlagSet = SET OF InputFlagType;    {  }
+  ValidationKeyType = SET OF '!'..'~';    (* Remove q and Q *)
+  ConferenceKeyType = SET OF '@'..'Z'; 	  {  }
   CompArrayType = ARRAY[0..1] OF Integer; {  }
 
 CONST
@@ -248,7 +245,7 @@ CONST
   TempPause: Boolean = TRUE;              { is Pause on OR off?  Set at prompts, OneK, used everywhere }
   OfflineMail: Boolean = FALSE;           { Is user in offline mail system? }
   MultiNodeChat: Boolean = FALSE;         { Is user in multinode chat? }
-  ChatChannel: Integer = 0;               { What chat channel are we IN? }
+  ChatChannel: Integer = 0;               { What teleconference chat channel are we IN? }
   DisplayingMenu: Boolean = FALSE;        { Is a menu being displayed? }
   InVisEdit: Boolean = FALSE;             { Is user in the fullscreen editor? }
   MenuAborted: Boolean = FALSE;           { Was the menu aborted? }
@@ -318,15 +315,15 @@ CONST
   AnswerBaud: LongInt = 0;                { Baud rate to answer phone at }
   ExtEventTime: Word = 0;                 { Number of minutes before external event }
   IsInvisible: Boolean = FALSE;           { Run IN invisible Mode? }
-  SaveNAvail: Boolean = FALSE;         {  }
-  LastWFCX: Byte = 1;                  {  }
-  LastWFCY: Byte = 1;                  {  }
-  ANSIDetected: Boolean = FALSE;       {  }
+  SaveNAvail: Boolean = FALSE;         	  {  }
+  LastWFCX: Byte = 1;                     {  }
+  LastWFCY: Byte = 1;                     {  }
+  ANSIDetected: Boolean = FALSE;          {  }
   
 VAR
-  LangStringArray:                     { LeeW: Added }
-    ARRAY[0..9] OF STRING[40];
-  MCIPosRecArray:                      { LeeW: Added }
+  LangStringArray:                     { LeeW: Added - Strings to pass through the language file }
+    ARRAY[0..9] OF STRING{[40]};
+  MCIPosRecArray:                      { LeeW: Added - MCI positioning records "%00-09" }
     ARRAY[0..9] OF MCIPos;
   LightBarArray:                       {  }
     ARRAY[1..50] OF LightBarRecordType;
@@ -1142,6 +1139,10 @@ BEGIN
                 S := Substitute(S,'@'+IntToStr(b),LangStringArray[b]);
                 *)
       240 : FOR b := 0 TO 0 DO { $USER_SEARCH_ASK }
+              IF (LangStringArray[b] <> '') THEN
+                S := Substitute(S,'@'+IntToStr(b),LangStringArray[b]);
+      261,
+	  262 : FOR b := 0 TO 1 DO { $TOP_USERS_HEADER, $TOP_FILES_HEADER }
               IF (LangStringArray[b] <> '') THEN
                 S := Substitute(S,'@'+IntToStr(b),LangStringArray[b]);
     END;
@@ -3111,17 +3112,17 @@ BEGIN
   i := 1;
   IF ((NOT Abort) OR (NOT AllowAbort)) AND (NOT HangUp) THEN  { can't change IN loop }
     WHILE (i <= Length(s)) DO
-    BEGIN
-      CASE s[i] OF
-        '%' : IF MCIAllowed AND (i + 1 < Length(s)) THEN
-              BEGIN
-                IF (UpCase(s[i + 1]) = 'P') AND (UpCase(s[i + 2]) = 'A') THEN
-                BEGIN
-                  Inc(i,2);
-                  PauseScr(FALSE)
-                END
-                    (* LeeW: Added ANSI store position MCI %00 - %09 *)
-                    ELSE IF (s[i + 1] IN ['0'..'9']) AND (s[i + 2] IN ['0'..'9']) THEN
+      BEGIN
+        CASE s[i] OF
+		  '%' : IF MCIAllowed AND (i + 1 < Length(s)) THEN
+				  BEGIN
+					IF (UpCase(s[i + 1]) = 'P') AND (UpCase(s[i + 2]) = 'A') THEN
+					  BEGIN
+						Inc(i,2);
+						PauseScr(FALSE)
+					  END
+					(* LeeW: Added ANSI store position MCI %00 - %09 *)
+                    ELSE IF (s[i + 1] IN ['0'{..'9'}]) AND (s[i + 2] IN ['0'..'9']) THEN
                       BEGIN
                         MCIPosRecArray[StrToInt(s[i+1]+s[i+2])].X := WhereX;
                         MCIPosRecArray[StrToInt(s[i+1]+s[i+2])].Y := WhereY;
@@ -3422,14 +3423,10 @@ END;
 
 FUNCTION AACS1(User: UserRecordType; UNum: Integer; s: ACString): Boolean;
 VAR
-  s1,
-  s2: AStr;
-  c,
-  c1,
-  c2: Char;
+  s1, s2: AStr;
+  c, c1, c2: Char;
   i,
-  p1,
-  p2,
+  p1, p2,
   j: Integer;
   b: Boolean;
 
@@ -3616,13 +3613,13 @@ BEGIN
         Delete(s1,i,1);
     END;
     WHILE (Pos('%%',s1) <> 0) DO
-      Delete(s1,Pos('%%',s1),1);   {leave only "%"}
+      Delete(s1,Pos('%%',s1),1);   {Leave only "%"}
     WHILE (Pos('^^', s1) <> 0) DO
-      Delete(s1,Pos('^^',s1),1);   {leave only "^"}
+      Delete(s1,Pos('^^',s1),1);   {Leave only "^"}
     WHILE (Pos('%^', s1) <> 0) DO
-      Delete(s1,Pos('%^',s1)+1,1); {leave only "%"}
+      Delete(s1,Pos('%^',s1)+1,1); {Leave only "%"}
     WHILE (Pos('^%', s1) <> 0) DO
-      Delete(s1,Pos('^%',s1),1);   {leave only "%"}
+      Delete(s1,Pos('^%',s1),1);   {Leave only "%"}
     Delete(s,p1,((p2 - p1) + 1));
     Insert(s1,s,p1);
   END;
@@ -3724,11 +3721,10 @@ BEGIN
       Reset(UserFile);
       IF (IOResult <> 0) THEN
         BEGIN
-          SysOpLog('Error opening USERS.DAT.');
+          SysOpLog('Error opening USERS.DAT.'); {LeeW: Add more helpful error info}
           Exit;
         END;
     END;
-
   IF (UserNumber <> UserNum) OR (NOT UserOn) THEN
     BEGIN
       Seek(UserFile,UserNumber);
@@ -3736,10 +3732,8 @@ BEGIN
     END
   ELSE
     User := ThisUser;
-
   IF (NOT FO) THEN
     Close(UserFile);
-
   LastError := IOResult;
 END;
 
@@ -3758,13 +3752,10 @@ BEGIN
           Exit;
         END;
     END;
-
   Seek(UserFile,UserNumber);
   Write(UserFile,User);
-
   IF (NOT FO) THEN
     Close(UserFile);
-
   IF (UserNumber = UserNum) THEN
     ThisUser := User
   ELSE
@@ -3966,7 +3957,7 @@ BEGIN
   Prompt('^1'+InString+'^0');
 END;
 
-FUNCTION ctp(t,b: LongInt): STRING;
+FUNCTION CTP(t,b: LongInt): STRING;
 VAR
   s: AStr;
   n: LongInt;
@@ -3976,7 +3967,7 @@ BEGIN
   ELSE
     n := (t * 100) DIV b;
   Str(n:6,s);
-  ctp := s;
+  CTP := s;
 END;
 
 FUNCTION CInKey: Char;
@@ -4123,23 +4114,21 @@ BEGIN
   IF (NOT AllowContinue) AND NOT (PrintingFile AND AllowAbort) THEN
     IsCont := FALSE;
   IF (IsCont) THEN
-    { Prompt(FString.Continue) }
-    lRGLngStr(44,FALSE)
+    lRGLngStr(44,FALSE) { Prompt(FString.Continue) }
   ELSE
-    { Prompt({FString.lPause); }
-    lRGLngStr(5,FALSE);
+    lRGLngStr(5,FALSE); { Prompt({FString.lPause); }
   LIL := 1;
   IF (IsCont) THEN
-  BEGIN
-    REPEAT
-      Cmd := UpCase(Char(GetKey));
-      CASE Cmd OF
-        'C' : IF (IsCont) THEN
-                TempPause := FALSE;
-        'N' : Abort := TRUE;
-      END;
-    UNTIL (Cmd IN ['Y','N','Q','C',^M]) OR (HangUp);
-  END
+	BEGIN
+      REPEAT
+        Cmd := UpCase(Char(GetKey));
+        CASE Cmd OF
+		  'C' : IF (IsCont) THEN
+				  TempPause := FALSE;
+          'N' : Abort := TRUE;
+        END;
+      UNTIL (Cmd IN ['Y','N','Q','C',^M]) OR (HangUp);
+	END
   ELSE
     Cmd := Char(GetKey);
   IF (IsCont) THEN

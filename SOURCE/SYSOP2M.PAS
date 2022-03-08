@@ -12,13 +12,11 @@
 {   -----------------------------------------   }
 {
     [DONE]
-     - 
+     - new user message user config now users lfinduserws
     [TO DO]
-     - new user msg, use user search input, should check for forward, deleted user etc
      - Allow toggle of new user application message to be mandatory or optional
-     birthdate/ph# validation at logon bypass if set to '' but require to update
-     
-     ''+PadRightStr('',23)+AOnOff((NewAppMsgMandatory),'Mandatory','Optional')
+	 ''+PadRightStr('',23)+AOnOff((NewAppMsgMandatory),'Mandatory','Optional')
+     - birthdate/ph# validation at logon bypass if set to '' but require to update -- is this fixed???
      
 }
 
@@ -32,6 +30,7 @@ IMPLEMENTATION
 
 USES
   Common,
+  MiscUser, {lFindUserWS}
   SysOp2; {ConfigHeader}
 
 PROCEDURE NewUserTogglesConfiguration;
@@ -82,7 +81,7 @@ BEGIN
         PrintACR(PadLeftStr('^0(^1M^0) Forgot PW Answer : ^1'+ShowYesNo(NewUserQToggles[14] = TRUE),39)+
                  PadLeftStr('^0(^11^0) New User Message : ^1'+AOnOff((NewApp = -1),'No','Yes ^0'+#196+' #^1'
                                                              +PadLeftInt(NewApp,5)),39));
-		Print('^0 - "^1'+PadLeftStr(General.ForgotPWQuestion+'^0"',79));
+		PrintACR(PadLeftStr('^0 - "^1'+General.ForgotPWQuestion+'^0"',79));
       END;
     {MCIAllowed := TRUE;}
     NL;
@@ -171,14 +170,14 @@ BEGIN
                     'E' : BEGIN
                             NL;
                             {new user application letter -- mandatory or optional?}
-                            InputInteger('^2New user message goes to which user number?',TempInt,[NumbersOnly],1,
-                                            (MaxUsers - 1),Changed);
-                            {&&^^LeeW: Wording--use finduser??}
+							Print('^0Send new user message to which user?');
+							lFindUserWS(TempInt);
                             {NewAppMsgMandatory := YNQ('Should the new user letter be mandatory?',TRUE);}
                           END;
                     'D' : TempInt := -1;
                   END;
-                  NewApp := TempInt;
+				  IF (TempInt <> 0) THEN
+					NewApp := TempInt;
                   {Cmd := #0;}
                 END;
               END;

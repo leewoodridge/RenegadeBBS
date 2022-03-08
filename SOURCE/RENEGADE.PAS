@@ -13,20 +13,24 @@
 {   -----------------------------------------   }
 
 {$A+} { Align data for faster execution }
-{$B-} { Shortcut boolean eval }
+{$B-} { Shortcut boolean evaluation }
 {$D+} { No debug info }
 {$E-} { No math-co library }
 {$F+} { Force far calls }
 {$I-} { Disable I/O check }
 {$L+} { Local symbols }
 {$N-} { No math-co use }
-{$P+} { Allow openstring }
+{$P+} { Allow open strings }
 {$O+} { Use overlays }
 {$Q-} { No overflow check }
 {$R-} { No range check }
 {$S-} { Don't check stack usage }
 {$V-} { Variable string length allowed }
 {$X+} { Allow extended syntax }
+
+{
+ 02/24/2022	- Exodus added command line parameter help
+}
 
 PROGRAM Renegade;
 
@@ -157,25 +161,30 @@ BEGIN
     IF ((SC(ParamStr(Counter),1) = '-') OR (SC(ParamStr(Counter),1) = '/')) THEN
       CASE SC(ParamStr(Counter),2) OF
           '?' : BEGIN { Command line parameters help }
+				  ClrScr;
                   TextColor(LightGray);
                   TextBackground(Black);
-                  WriteLn('Renegade BBS supports the following command-line parameters, please see the ');
-                  WriteLn('manual for more detailed information.');
-                  WriteLn('');
-                  WriteLn('/D   : Don''t Load Overlay file to EMS');
-                  WriteLn(' - CONNECTION -');
-                  WriteLn('/L : Local mode | /N# : Specify which node # to load');
-                  WriteLn('/T : Net2BBS | /TC : NetSerial or Com/IP | /H# : Specify sock handle');
-                  WriteLn('/B# : User already connected at # baud | /C : Reliable');
-                  WriteLn('/ID# or /IP#  : Specify caller ID/IP information');
-                  WriteLn(' - MAINTENANCE -');
-                  WriteLn('/F : Verify FILES.BBS | /P : Pack message bases | /S : Sort file areas');
-                  WriteLn(' - QWK -');
-                  WriteLn('/M# : Create QWK packet for user # | /U# : Upload REP packet for user #');
-                  WriteLn(' - EXIT -');
-                  WriteLn('/EE# : Critical errorlevel | /EN# : Normal errorlevel (NewMail=2,Forces /Q)');
-                  WriteLn('/Q   : Exit to DOS, instead of WFC when user logs off');
-                  WriteLn('/X#  : Log user off in # minutes for external event');
+				  WriteLn('ษอออออออออออออออออออออออออออออออออออออออออออออออออออออออออออออออออออออออออออออป');
+				  WriteLn('บ         Renegade BBS Supports the Following Command-Line Parameters         บ');
+				  WriteLn('บอออออออออออออออออออออออออออออออออออออออออออออออออออออออออออออออออออออออออออออบ');
+				  WriteLn('บ            ๚ LOADING ๚               บ               ๚ EXIT ๚               บ');
+				  WriteLn('บอออออออออออออออออออออออออออออออออออออออออออออออออออออออออออออออออออออออออออออบ');
+				  WriteLn('บ  -L  : Logon Locally to Renegade     บ  -Q  : Exit to DOS After Hangup      บ');
+				  WriteLn('บ                                      บ  -X# : Log User Off in # Minutes     บ');
+				  WriteLn('บ  -N# : Specify Which Node # to Load  บ -EE# : Critical Errorlevel           บ');
+				  WriteLn('บ  -T  : If Using Net2BBS              บ -EN# : Normal Errorlevel             บ');
+				  WriteLn('บ  -TC : If Using NetSerial or COM/IP  บออออออออออออออออออออออออออออออออออออออบ');
+				  WriteLn('บ  -B# : Force Baudrate #####          บ               ๚ QWK ๚                บ');
+				  WriteLn('บ  -D  : Load Overlay File to DISK     บออออออออออออออออออออออออออออออออออออออบ');
+				  WriteLn('บ                                      บ  -M# : Create QWK Packet For User #  บ');
+				  WriteLn('บออออออออออออออออออออออออออออออออออออออบ  -U# : Upload REP Packet For User #  บ');
+				  WriteLn('บ  ๚ OPTIONAL CONNECTION PARAMETERS ๚  บออออออออออออออออออออออออออออออออออออออบ');
+				  WriteLn('บออออออออออออออออออออออออออออออออออออออบ           ๚ MAINTENANCE ๚            บ');
+				  WriteLn('บ  -H# : Specify Socket Handle         บออออออออออออออออออออออออออออออออออออออบ');
+				  WriteLn('บ  -C  : Reliable Connection Flag      บ  -F  : Import FILES.BBS              บ');
+				  WriteLn('บ  -ID#: Pass Caller-ID Info           บ  -P  : Pack Message Bases            บ');
+				  WriteLn('บ  -IP#: Pass Caller-IP Info           บ  -S  : Sort File Areas               บ');
+				  WriteLn('ศอออออออออออออออออออออออออออออออออออออออออออออออออออออออออออออออออออออออออออออผ');
                           {---------------------------------------|----------------------------------------} {80 CHARS}
                   Halt;
                 END;
@@ -524,7 +533,7 @@ BEGIN
       WriteLn('Done!');
     END;
      
-  IF (NewEchoMail) AND (ExitErrorLevel = 0) THEN {LeeW: Shouldn't this check for param?}
+  IF (NewEchoMail) AND (ExitErrorLevel = 0) THEN {LeeW: Shouldn't this check against ExitNormal instead of 0?}
     ExitErrorLevel := 2;
     
   Write(' - Resetting node status ... ');

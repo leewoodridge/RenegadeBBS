@@ -21,6 +21,7 @@ USES
   ShortMsg,
   SysOp2G,
   SysOp7,
+  SysOp11, {ShowLogs}
   TimeFunc,
   MiscUser;
 
@@ -918,8 +919,7 @@ BEGIN
       SaveUNum := UNum;
     END;
     NL;
-    Prt('User editor [^1?^2=^1Help^2]: ');
-    InputChar('',Cmd,'Q?[]=${}*ABCDEFGHIJKLMNOPRSTUVWXYZ12345-+_;:\/^'^M,[CapAll]);
+    InputChar('User Editor [(^1?^2^2)Help,(^1Q^2)uit]: ',Cmd,'Q?[]=${}*ABCDEFGHIJKLMNOPRSTUVWXYZ12345-+_;:\/^'^M,[CapAll]);
     IF (Cmd IN ['A','F','L'..'O','S'..'X','Z','/','{','}','-',';','^','?','<','\','=','_']) THEN
       NL;
     CASE Cmd OF
@@ -1007,11 +1007,12 @@ BEGIN
                       END;
                 ':' : AutoList := NOT AutoList;
                 '\' : BEGIN
-                        TempStr := General.LogsPath+'SLOG'+IntToStr(UNum)+'.LOG';
-                        PrintF(TempStr);
-                        IF (NoFile) THEN
-                          Print('"'+TempStr+'": File not found.');
-                        PauseScr(FALSE);
+						PrintF(General.LogsPath+'SLOG'+IntToStr(UNum)+'.LOG');
+						IF NOT (NoFile) THEN
+						  PauseScr(FALSE)
+						ELSE
+						  IF PYNQ('SLOG'+IntToStr(UNum)+'.LOG not found '#196' View the normal SysOp log instead?',0,FALSE) THEN
+							ShowLogs;
                       END;
               END;
             END;
@@ -1034,30 +1035,53 @@ BEGIN
                   '$' : BEGIN
                           REPEAT
                             NL;
-                            InputChar('^2Clear Fields [^1A^2-^1M^2,(^1?^2)Help,(^1Q^2)uit]: ',Cmd,'Q?ABCDEFGHIJKL',[CapAll]);
+                            InputChar('^2Clear Fields [^1A^2-^1M^2,(^1*^2)All,(^1?^2)Help,(^1Q^2)uit]: ',Cmd,
+									  'Q?*ABCDEFGHIJKL',[CapAll]);
                             CASE Cmd OF
-                              'A': User.RealName := '';
-                            { ' ': User.Country := ''; }
-                              'B': User.Street := '';
-                              'C': User.CityState := '';
-                              'D': User.ZipCode := '';
-                              'E': User.Birthdate := -1869054590; {10/10/1910}
-                              'F': User.Ph := '';
-                              'G': User.UsrDefStr[1] := '';
-                              'H': User.UsrDefStr[2] := '';
-                              'I': User.UsrDefStr[3] := '';
-                              'J': User.ForgotPWAnswer := '';
-                              'K': User.Note := '';
-                              'L': User.Sex := #0;
+							  '*' : BEGIN
+									  IF PYNQ('Are you SURE you want to clear all personal information?',0,FALSE) THEN
+										BEGIN
+										END;
+									  IF PYNQ('Are you SURE you want to clear all user preferences?',0,FALSE) THEN
+										BEGIN
+										END;
+									  IF PYNQ('Are you SURE you want to clear all user statistics?',0,FALSE) THEN
+										BEGIN
+										END;
+									END;
+                              'A' : User.RealName := '';
+                            { ' ' : User.Country := ''; }
+                              'B' : User.Street := '';
+                              'C' : User.CityState := '';
+                              'D' : User.ZipCode := '';
+                              'E' : User.Birthdate := -1869054590; {10/10/1910}
+                              'F' : User.Ph := '';
+                              'G' : User.UsrDefStr[1] := '';
+                              'H' : User.UsrDefStr[2] := '';
+                              'I' : User.UsrDefStr[3] := '';
+                              'J' : User.ForgotPWAnswer := '';
+                              'K' : User.Note := '';
+                              'L' : User.Sex := #0;
                               '?' : BEGIN
-                                     NL;
-                                     LCmds3(19,1,'A Real Name',        'B Address',   'C City, State');
-                                     LCmds3(19,1,'D Zip Code',         'E Birthdate', 'F Phone Number');
-                                     LCmds3(19,1,'G '+PadLeftStr(lRGLngStr(41,TRUE),16),
-                                                 'H '+PadLeftStr(lRGLngStr(42,TRUE),16),
-                                                 'I '+PadLeftStr(lRGLngStr(43,TRUE),16));
-                                     LCmds3(19,1,'J Forgot PW Answer', 'K Note',      'L Gender');
-                                   END;
+                                      NL;
+									  Print('^5'#196#196' ^4PERSONAL INFO ^5'#196#196);
+                                      LCmds3(19,1,'A Real Name',        'B Address',   'C City, State');
+                                      LCmds3(19,1,'D Zip Code',         'E Birthdate', 'F Phone Number');
+                                      LCmds3(19,1,'G '+PadLeftStr(lRGLngStr(41,TRUE),16),
+                                                  'H '+PadLeftStr(lRGLngStr(42,TRUE),16),
+                                                  'I '+PadLeftStr(lRGLngStr(43,TRUE),16));
+                                      LCmds3(19,1,'J Forgot PW Answer', 'K Note',      'L Gender');
+									  Print('^5'#196#196' ^4USER PREFERENCES ^5'#196#196);
+									  {
+									  
+									  }
+									  LCmds3(19,1,'','','');
+									  Print('^5'#196#196' ^4USER STATISTICS ^5'#196#196);
+									  {
+									  
+									  }
+									  LCmds3(19,1,'','','');
+									END;
                             END;
                           UNTIL (Cmd = 'Q') OR (HangUp);
                           Cmd := #0;
@@ -1332,7 +1356,7 @@ BEGIN
                           IF (TempStr <> '') THEN
                             User.CallerID := TempStr;
                         END;
-                  'Y' : FindMenu('%LFEnter new start menu (^10^2=^1Default^2)',User.UserStartMenu,0,NumMenus,Changed);
+                  'Y' : FindMenu('%LF^2Enter new start menu (^10^2=^1Default^2)',User.UserStartMenu,0,NumMenus,Changed);
                   'Z' : BEGIN
                           Print('Question:');
                           NL;

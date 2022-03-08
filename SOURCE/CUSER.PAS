@@ -490,7 +490,7 @@ VAR
         NL;
         Print(General.ForgotPWQuestion);
         lRGLngStr(212,FALSE); {"Your answer"}
-        InputMain(TmpForgotPWAnswer,(SizeOf(User.ForgotPWAnswer)-1),[InterActiveEdit,CapWords]);
+        InputMain(TmpForgotPWAnswer,(SizeOf(User.ForgotPWAnswer)-1),[CapAll,InterActiveEdit]);
         IF (TmpForgotPWAnswer <> '') THEN
           BEGIN
             IF (How = 2) AND (TmpForgotPWAnswer <> User.ForgotPWAnswer) THEN
@@ -967,7 +967,7 @@ BEGIN
           BEGIN { 2 = "OP" Menu command, 3 = User editor }
             WW(Which);
             IF (NOT Done1) THEN
-              Print('^8Function aborted!^0'); {use lang}
+			  lRGLngStr(154,FALSE); {"Aborted!"} (*Print('^8Function aborted!^0');*)
             IF (How=2) THEN
               PauseScr(FALSE);
           END;

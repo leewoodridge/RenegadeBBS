@@ -21,7 +21,7 @@ USES
   SysOp7,
   TimeFunc;
 
-PROCEDURE GetTimeRange(CONST prompt: string; VAR LoTime,HiTime: Integer);
+PROCEDURE GetTimeRange(CONST Prompt: STRING; VAR LoTime,HiTime: Integer);
 VAR
   TempStr: Str5;
   LowTime,
@@ -168,12 +168,12 @@ BEGIN
                     NL;
                     InputChar('^2System Menus [^11^2-^16^2,<^1CR^2>Quit]: ',Cmd,^M'123456',[CapAll]);
                     CASE Cmd OF
-                      '1' : FindMenu('%LFMenu for global commands (^10^2=^1None^2)',GlobalMenu,0,NumMenus,Changed);
-                      '2' : FindMenu('%LFMenu to start all users at',AllStartMenu,1,NumMenus,Changed);
-                      '3' : FindMenu('%LFMenu for shuttle logon (^10^2=^1None^2)',ShuttleLogonMenu,0,NumMenus,Changed);
-                      '4' : FindMenu('%LFMenu for new user information',NewUserInformationMenu,1,NumMenus,Changed);
-                      '5' : FindMenu('%LFMenu for message read',MessageReadMenu,1,NumMenus,Changed);
-                      '6' : FindMenu('%LFMenu for file listing',FileListingMenu,1,NumMenus,Changed);
+                      '1' : FindMenu('%LF^2Menu for global commands (^10^2=^1None^2)',GlobalMenu,0,NumMenus,Changed);
+                      '2' : FindMenu('%LF^2Menu to start all users at',AllStartMenu,1,NumMenus,Changed);
+                      '3' : FindMenu('%LF^2Menu for shuttle logon (^10^2=^1None^2)',ShuttleLogonMenu,0,NumMenus,Changed);
+                      '4' : FindMenu('%LF^2Menu for new user information',NewUserInformationMenu,1,NumMenus,Changed);
+                      '5' : FindMenu('%LF^2Menu for message read',MessageReadMenu,1,NumMenus,Changed);
+                      '6' : FindMenu('%LF^2Menu for file listing',FileListingMenu,1,NumMenus,Changed);
                     END;
                   UNTIL (Cmd = ^M) OR (HangUp);
                   Cmd := #0;

@@ -892,6 +892,7 @@ END;
 PROCEDURE NewFileScan(FArea: Integer; Global: Boolean; VAR FArrayRecNum: Byte);
 {^^ LeeW: EXO reporting this locking up -- investigate}
 VAR
+counter,
   DirFileRecNum: Integer;
   Found: Boolean;
 BEGIN
@@ -938,7 +939,10 @@ BEGIN
           IF (NOT Found) THEN
             BEGIN
               LIL := 0;
-              BackErase(15 + LennMCI(MemFileArea.AreaName) + Length(IntToStr(CompFileArea(FArea,0))));
+              {BackErase(15 + LennMCI(MemFileArea.AreaName) + Length(IntToStr(CompFileArea(FArea,0))));}
+			  FOR Counter := 1 TO LennMCI(lRGLngStr(95,TRUE)) DO
+				BackSpace;
+				{LeeW: fixed that ^^ should we check to make sure the lang isn't %DF???}
             END;
         END;
       Close(FileInfoFile);
@@ -1118,9 +1122,7 @@ BEGIN
       SaveFArea := FArea;
       IF (InputStr = '?') THEN
         lFileAreaList(FArea,NumFAreas,5,FALSE);
-      {
-      %LFChange file area? [^1#^2,^1?^2=^1Help^2,^1Q^2=^1Quit^2]: @
-      }
+      {%LFChange file area? [^1#^2,^1?^2=^1Help^2,^1Q^2=^1Quit^2]: @}
       FileAreaScanInput(LRGLngStr(72,TRUE),Length(IntToStr(HighFileArea)),InputStr,'Q[]?',LowFileArea,HighFileArea);
       IF (InputStr <> 'Q') THEN
       BEGIN

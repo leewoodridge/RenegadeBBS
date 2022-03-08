@@ -14,6 +14,8 @@ Lee Woodridge
  11/15/2021 - Added reading public messages list header (#238)
  11/18/2021 - Added User not found string (#239), User search ask string (#240), quote header (#241)
  11/25/2021 - Added timeout message (#242)
+ ... top users/files in here somewhere
+ 02/24/2022 - Added change conference strings (#256-259)
  -
 bug where if a string is empty, like:
 $TEST_STRING
@@ -595,7 +597,47 @@ BEGIN
                 RgStrNum := 241
               ELSE IF (S = 'TIMEOUT') THEN
                 RgStrNum := 242
-              {// END OF COMB }
+              ELSE IF (S = 'TOP_USERS_TIME') THEN
+                RgStrNum := 243
+              ELSE IF (S = 'TOP_USERS_KB_UPLOADED') THEN
+                RgStrNum := 244
+              ELSE IF (S = 'TOP_USERS_KB_DOWNLOADED') THEN
+                RgStrNum := 245
+              ELSE IF (S = 'TOP_USERS_PRV_MSG') THEN
+                RgStrNum := 246
+              ELSE IF (S = 'TOP_USERS_PUB_MSG') THEN
+                RgStrNum := 247
+              ELSE IF (S = 'TOP_USERS_FEEDBACK') THEN
+                RgStrNum := 248
+              ELSE IF (S = 'TOP_USERS_CALLS') THEN
+                RgStrNum := 249
+              ELSE IF (S = 'TOP_USERS_UPLOADS') THEN
+                RgStrNum := 250
+              ELSE IF (S = 'TOP_USERS_DOWNLOADS') THEN
+                RgStrNum := 251
+              ELSE IF (S = 'TOP_USERS_FILE_POINTS') THEN
+                RgStrNum := 252
+              ELSE IF (S = 'TOP_USERS_FILE_RATIO') THEN
+                RgStrNum := 253
+              ELSE IF (S = 'TOP_USERS_POST_CALL_RATIO') THEN
+                RgStrNum := 254
+              ELSE IF (S = 'TOP_FILES') THEN
+                RgStrNum := 255
+              ELSE IF (S = 'CONFERENCE_CURRENT') THEN
+                RgStrNum := 256
+              ELSE IF (S = 'CONFERENCE_CHANGE_PROMPT') THEN
+                RgStrNum := 257
+              ELSE IF (S = 'CONFERENCE_ACCESS_DENIED') THEN
+                RgStrNum := 258
+              ELSE IF (S = 'CONFERENCE_JOINED') THEN
+                RgStrNum := 259
+              ELSE IF (S = 'INVALID_PARAMETER') THEN
+                RgStrNum := 260
+              ELSE IF (S = 'TOP_USERS_HEADER') THEN
+                RgStrNum := 261
+              ELSE IF (S = 'TOP_FILES_HEADER') THEN
+                RgStrNum := 262
+				{// END OF COMB }
                 (*
               ELSE IF (S = '') THEN
                 RgStrNum := 

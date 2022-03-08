@@ -654,23 +654,23 @@ TYPE
   MAFlagSet = SET OF MessageAreaFlagType;
 
   MessageAreaRecordType = {$IFDEF WIN32} PACKED {$ENDIF} RECORD { MBASES.DAT : Message area records }
-    Name: STRING[40];       { message area description }
+    Name: STRING[40];       { Message area name }
     FileName: STRING[8];    { HDR/DAT data filename }
     MsgPath: STRING[40];    { messages pathname   } (** NOT USED -- DELETE **)
-    ACS,                    { access requirement }
-    PostACS,                { post access requirement }
-    MCIACS,                 { MCI usage requirement }
-    SysOpACS: ACString;     { Message area sysop requirement }
-    MaxMsgs: Word;          { max message count }
-    Anonymous: AnonTyp;     { anonymous type }
-    Password: STRING[20];   { area password }
-    MAFlags: MAFlagSet;     { message area status vars }
-    MAType: Integer;        { Area type (0=Local,1=Echo, 3=Qwk) }
-    Origin: STRING[50];     { origin line }
-    Text_Color,             { color OF standard text } {**CHANGE THESE TO STRING[6] "|00|00" **}
-    Quote_Color,            { color OF quoted text }
-    Tear_Color,             { color OF tear line }
-    Origin_Color,           { color OF origin line }
+    ACS,                    { Access ACS }
+    PostACS,                { Post ACS }
+    MCIACS,                 { MCI ACS }
+    SysOpACS: ACString;     { SysOp ACS }
+    MaxMsgs: Word;          { Maximum Messages }
+    Anonymous: AnonTyp;     { Anonymous type }
+    Password: STRING[20];   { Password }
+    MAFlags: MAFlagSet;     { Area flags }
+    MAType: Integer;        { Area type (0=Local,1=Echo,3=QWK) }
+    Origin: STRING[50];     { Origin line }
+    Text_Color,             { Color of standard text } {**CHANGE THESE TO STRING[6] "|00|00" **}
+    Quote_Color,            { Color of quoted text }
+    Tear_Color,             { Color of tear line }
+    Origin_Color,           { Color of origin line }
     MessageReadMenu: Byte;  {  }
     QuoteStart,             {  }
     QuoteEnd: STRING[70];   {  }

@@ -961,11 +961,9 @@ BEGIN
       'P' : PositionEvent(TempEvent,RecNumToList);
       '?' : BEGIN
               NL;
-              Print('^0<^1CR^0> Next Page / Refresh');
-              {Print('^0(^1?^0)Help/First event');}
+              Print('^0<^1CR^0>Next Page / Refresh');
               LCmds(13,1,'Delete Event','Insert Event');
               LCmds(13,1,'Modify Event','Position Event');
-              {LCmds(13,3,'Quit','');}
             END;
     END;
     IF (Cmd <> ^M) THEN

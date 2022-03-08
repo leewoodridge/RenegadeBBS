@@ -681,15 +681,15 @@ BEGIN
 
                     '?' : BEGIN
                             NL;
-                            LCmds(15,3,'From','To');
-                            LCmds(15,3,'Subject','Edit text');
-                            LCmds(15,3,'Oops','Display header');
+                            LCmds(15,1,'From','To');
+                            LCmds(15,1,'Subject','Edit text');
+                            LCmds(15,1,'Oops','Display header');
                             IF (MsgSysOp) THEN
                             BEGIN
-                              LCmds(15,5,'Permanent','Validation');
-                              LCmds(15,5,'Rescan','Anonymous');
+                              LCmds(15,1,'Permanent','Validation');
+                              LCmds(15,1,'Rescan','Anonymous');
                             END;
-                            LCmds(15,3,'Quit','');
+                            LCmds(15,1,'Quit','');
                           END;
                   END;
                 UNTIL (Cmd1 IN ['Q',^M]) OR (HangUp);
@@ -1206,9 +1206,9 @@ BEGIN
       IF (Cmd = '?') THEN
       BEGIN
         NL;
-        LCmds(15,5,'From field','To field');
-        LCmds(15,5,'Subject field','All text');
-        LCmds(15,5,'Your messages','Quit');
+        LCmds(15,1,'From field','To field');
+        LCmds(15,1,'Subject field','All text');
+        LCmds(15,1,'Your messages','Quit');
       END;
     UNTIL (Cmd <> '?') OR (HangUp);
   NL;
@@ -1399,14 +1399,14 @@ BEGIN
   ELSE
     BEGIN
       MArea := 1;
-      lRGLngStr(35,FALSE); { Global newscan begin }
+      lRGLngStr(35,FALSE); {"Global new message scan beginning"}
       WHILE (MArea >= 1) AND (MArea <= NumMsgAreas) AND (NOT Abort) AND (NOT HangUp) DO
         BEGIN
           NewScan(MArea);
           WKey;
           Inc(MArea);
         END;
-      lRGLngStr(36,FALSE); { Global newscan end }
+      lRGLngStr(36,FALSE); {"Global new message scan complete"}
       SysOpLog('Global new scan of message areas');
     END;
   MsgArea := SaveMsgArea;

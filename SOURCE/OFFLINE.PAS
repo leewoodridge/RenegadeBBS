@@ -6,13 +6,13 @@ INTERFACE
 
 PROCEDURE SetMessageAreaNewScanDate;
 PROCEDURE DownloadPacket;
-PROCEDURE uploadpacket(Already: Boolean);
+PROCEDURE UploadPacket(Already: Boolean);
 
 IMPLEMENTATION
 
 USES
-  Crt,
-  Dos,
+  CRT,
+  DOS,
   Common,
   Archive1,
   ExecBat,
@@ -793,7 +793,7 @@ BEGIN
 END;
 
 
-PROCEDURE uploadpacket(Already:Boolean);
+PROCEDURE UploadPacket(Already:Boolean);
 VAR
   F: FILE;
   User: UserRecordType;

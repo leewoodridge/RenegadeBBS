@@ -1,14 +1,19 @@
 {$A+,B-,D+,E-,F+,I-,L+,N-,O+,R-,S+,V-}
-UNIT SysOp12;
+{
+12/15/2021 Conference editor aesthetics
+02/24/2022 Change conference strings added to lang
+}
+UNIT SysOp12; { Conference stuff }
 
 INTERFACE
 
 USES
-  Common;
+  Common,
+  SysOp2; {ConfigHeader/HL}
 
 FUNCTION FindConference(Key: Char; VAR Conference: ConferenceRecordType): Boolean;
 FUNCTION ShowConferences: AStr;
-PROCEDURE ChangeConference(MenuOption: Str50);
+PROCEDURE ChangeConference(MenuOption: Str50); {LeeW: Menu command}
 PROCEDURE ConferenceEditor;
 
 IMPLEMENTATION
@@ -34,7 +39,7 @@ BEGIN
   FindConference := Found;
 END;
 
-FUNCTION ShowConferences: AStr;
+FUNCTION ShowConferences: AStr; {LeeW: Used for DOOR.SYS drop file}
 VAR
   TempStr: AStr;
   RecNumToList: Integer;
@@ -66,53 +71,62 @@ END;
 PROCEDURE DisplayConferenceRecords(RecNumToList: Integer; DisplayListNum: Boolean);
 VAR
   TempStr: AStr;
-  NumOnline: Byte;
+  NumOnLine: Byte;
 BEGIN
   AllowContinue := TRUE;
   Abort := FALSE;
   Next := FALSE;
-  CLS;
-  IF (DisplayListNum) THEN
-  BEGIN
-    PrintACR('^1##^2:^1C^2:^1Name                            ^1##^2:^1C^2:^1Name');
-    PrintACR('^2==:=:==============================  ==:=:==============================');
-  END
+  IF (DisplayListNum) THEN { LeeW: Used for sysop conference editor }
+	BEGIN
+	  {
+	  PrintACR('^1##^2:^1C^2:^1Name                            ^1##^2:^1C^2:^1Name');
+      PrintACR('^2==:=:==============================  ==:=:==============================');
+	  }
+	  PrintACR('^5<^4##^5> <^4K^5/^4Description^5>                   <^4##^5> <^4K^5/^4Description^5>                   ');
+	  HL;
+	END
   ELSE
-  BEGIN
-    PrintACR(' ^1C^2:^1Name                            ^1C^2:^1Name');
-    PrintACR(' ^2=:==============================  =:==============================');
-  END;
+	BEGIN { LeeW: Used for user display }
+	  PrintF('CONFRH'); {leew: add footer}
+	  IF (NoFile) THEN
+		BEGIN
+		  PrintACR(' ^1C^2:^1Name                            ^1C^2:^1Name');
+		  PrintACR(' ^2=:==============================  =:==============================');
+		END;
+	END;
   Reset(ConferenceFile);
   TempStr := '';
-  NumOnline := 0;
+  NumOnLine := 0;
   RecNumToList := 1;
   WHILE (RecNumToList <= NumConfKeys) AND (NOT Abort) AND (NOT HangUp) DO
-  BEGIN
-    Seek(ConferenceFile,(RecNumToList - 1));
-    Read(ConferenceFile,Conference);
-    IF (DisplayListNum) THEN
-      TempStr := TempStr + PadLeftStr('^1'+PadRightInt(RecNumToList,2)+
-                           ' ^1'+Conference.Key+
-                           ' ^1'+Conference.Name,37)
-    ELSE
-      TempStr := TempStr + PadLeftStr(' ^1'+Conference.Key+
+	BEGIN
+      Seek(ConferenceFile,(RecNumToList - 1));
+      Read(ConferenceFile,Conference);
+      IF (DisplayListNum) THEN
+		TempStr := TempStr + ' ^1'+PadLeftInt(RecNumToList,4)+
+                             ' ^1'+PadLeftStr(Conference.Key,1)+
+                             ' ^0'+PadLeftStr(Conference.Name,31)
+      ELSE
+		TempStr := TempStr + PadLeftStr(' ^1'+Conference.Key+
                            ' ^1'+Conference.Name,34);
-    Inc(NumOnline);
-    IF (NumOnline = 2) THEN
-    BEGIN
-      PrintaCR(TempStr);
-      NumOnline := 0;
-      TempStr := '';
-    END;
-    Inc(RecNumToList);
-  END;
+      Inc(NumOnLine);
+      IF (NumOnLine = 2) THEN
+		BEGIN
+		  PrintACR(TempStr);
+		  NumOnLine := 0;
+		  TempStr := '';
+		END;
+      Inc(RecNumToList);
+	END;
   Close(ConferenceFile);
   LastError := IOResult;
   AllowContinue := FALSE;
   IF (NumOnline = 1) AND (NOT Abort) AND (NOT HangUp) THEN
-    PrintaCR(TempStr);
+    PrintACR(TempStr);
   IF (NumConfKeys = 0) AND (NOT Abort) AND (NOT HangUp) THEN
     Print('^8No conference records.');
+  IF NOT (DisplayListNum) THEN
+    PrintF('CONFRT');
 END;
 
 PROCEDURE ChangeConference(MenuOption: Str50);
@@ -127,54 +141,54 @@ BEGIN
   ELSE
     Cmd := #0;
   IF (Cmd <> #0) AND (Cmd <> '?') AND (NOT (Cmd IN ConfKeys)) THEN
-  BEGIN
-    Print('%NLCommand error, operation aborted!');
-    SysOpLog('^8Change conference cmd error, invalid options: "'+Cmd+'".');
-    Exit;
-  END;
+	BEGIN
+      Print('%LF^8[!] ^0Invalid menu command parameter - Aborted!^0');
+      SysOpLog('^8[!] ^1Invalid menu command parameter! Cmd: "OR" Param:"'+Cmd+'"');
+      Exit;
+	END;
   IF (Cmd = '?') THEN
-  BEGIN
-    PrintF('CONFLIST');
-    IF (NoFile) THEN
-      DisplayConferenceRecords(RecNumToList,FALSE);
-  END
+	BEGIN
+      PrintF('CONFLIST');
+	  IF (NoFile) THEN
+		DisplayConferenceRecords(RecNumToList,FALSE);
+	END
   ELSE IF (Cmd IN ConfKeys) AND FindConference(Cmd,Conference) THEN
-  BEGIN
-    IF ((AACS(Conference.ACS))) THEN
-    BEGIN
-      CurrentConf := Cmd;
-      ThisUser.LastConf := CurrentConf;
-    END;
-  END
+	BEGIN
+      IF ((AACS(Conference.ACS))) THEN
+		BEGIN
+		  CurrentConf := Cmd;
+		  ThisUser.LastConf := CurrentConf;
+		END;
+	END
   ELSE
-  BEGIN
-    OneKCmds := '';
-    FOR Cmd := '@' TO 'Z' DO
-      IF (Cmd IN ConfKeys) THEN
-        OneKCmds := OneKCmds + Cmd;
-    Print('%LF^2Current conference: ^1%CT - %CN');
-    REPEAT
-      InputChar('%LFJoin which conference? (^1?^2=^1List^2,<^1CR^2>=^1Quit^2): ',Cmd,^M'?'+OneKCmds,[CapAll]);
-      IF (Cmd = '?') THEN
-      BEGIN
-        PrintF('CONFLIST');
-        IF (NoFile) THEN
-          DisplayConferenceRecords(RecNumToList,FALSE);
-      END
-      ELSE IF (Cmd IN ConfKeys) AND FindConference(Cmd,Conference) THEN
-        IF (NOT AACS(Conference.ACS)) THEN
-          Print('%LF^8You do not have the required access level for this conference!^0')
-        ELSE
-        BEGIN
-          CurrentConf := Cmd;
-          ThisUser.LastConf := CurrentConf;
-          PrintF('CONF'+Cmd);
-          IF (NoFile) THEN
-            Print('%LFJoined conference: ^1%CT - %CN');
-          Cmd := ^M;
-        END;
-    UNTIL (Cmd = ^M) OR (HangUp);
-  END;
+	BEGIN
+      OneKCmds := '';
+      FOR Cmd := '@' TO 'Z' DO
+		IF (Cmd IN ConfKeys) THEN
+          OneKCmds := OneKCmds + Cmd;
+	  REPEAT
+		lRGLngStr(256,FALSE); {"You are currently in conference "General (@)""}
+		InputChar(lRGLngStr(257,TRUE),Cmd,^M'?'+OneKCmds,[CapAll]); {Change conference prompt}
+		IF (Cmd = '?') THEN
+		  BEGIN
+			PrintF('CONFLIST');
+			IF (NoFile) THEN
+			  DisplayConferenceRecords(RecNumToList,FALSE);
+		  END
+		ELSE IF (Cmd IN ConfKeys) AND FindConference(Cmd,Conference) THEN
+          IF (NOT AACS(Conference.ACS)) THEN
+			lRGLngStr(258,FALSE) {"Insufficient ACS"}
+          ELSE
+			BEGIN
+			  CurrentConf := Cmd;
+			  ThisUser.LastConf := CurrentConf;
+			  PrintF('CONF'+Cmd);
+			  IF (NoFile) THEN
+				lRGLngStr(259,FALSE); {"Joined conference "General (@)""}
+			  Cmd := ^M;
+			END;
+      UNTIL (Cmd = ^M) OR (HangUp);
+	END;
   NewCompTables;
 END;
 
@@ -280,21 +294,21 @@ VAR
         BEGIN
           Abort := FALSE;
           Next := FALSE;
-          CLS;
+          {CLS;}
           IF (Editing) THEN
-            PrintACR('^1Editing conference record #'+IntToStr(RecNumToEdit)+' of '+IntToStr(NumConfKeys))
+		    ConfigHeader('Editing Conference Record #'+IntToStr(RecNumToEdit)+' Of '+IntToStr(NumConfKeys))
           ELSE
-            PrintACR('^1Inserting conference record #'+IntToStr(RecNumToEdit)+' of '+IntToStr(NumConfKeys + 1));
-          NL;
-          PrintACR('^0A. Key        : ^1'+Key);
-          PrintACR('^0B. Description: ^1'+Name);
-          PrintACR('^0C. ACS        : ^1'+AOnOff(ACS = '','*None*',ACS));
+			ConfigHeader('Inserting Conference Record #'+IntToStr(RecNumToEdit)+' Of '+IntToStr(NumConfKeys + 1));
+          {NL;}
+          PrintACR('^0(^1A^0) Key         : ^1'+Key);
+          PrintACR('^0(^1B^0) Description : ^1'+Name);
+          PrintACR('^0(^1C^0) ACS         : ^1'+AOnOff(ACS = '','[NONE]',ACS));
         END;
         IF (NOT Editing) THEN
           CmdStr := 'ABC'
         ELSE
           CmdStr := 'ABC[]FJL';
-        InputChar('%LFModify menu [^1?^2=^1Help^2]: ',Cmd1,'Q?'+CmdStr+^M,[CapAll]);
+        InputChar('%LF^2Modify Conference [(^1?)^2Help,(^1Q)^2uit]: ',Cmd1,'Q?'+CmdStr+^M,[CapAll]);
         CASE Cmd1 OF
           'A' : BEGIN
                   Print('%LF^8You can not modify the conference key.');
@@ -538,19 +552,22 @@ BEGIN
   Cmd := #0;
   REPEAT
     IF (Cmd <> '?') THEN
-      DisplayConferenceRecords(RecNumToList,TRUE);
-    InputChar('%LFConference editor [^1?^2=^1Help^2]: ',Cmd,'QDIMP?'^M,[CapAll]);
+	  BEGIN
+		ConfigHeader('Conference Editor');
+		DisplayConferenceRecords(RecNumToList,TRUE);
+	  END;
+    InputChar('%LF^2Conference Editor [^1DIMP^2,(^1?^2)Help,(^1Q^2)uit]: ',Cmd,'QDIMP?'^M,[CapAll]);
     CASE Cmd OF
       'D' : DeleteConference(TempConference,RecNumToList);
       'I' : InsertConference(TempConference,Cmd,RecNumToList);
       'M' : ModifyConference(TempConference,Cmd,RecNumToList);
       'P' : PositionConference(TempConference,RecNumToList);
       '?' : BEGIN
-              Print('%LF^0<^1CR^0>Next Screen or redisplay screen');
-              Print('^0(^1?^0)Help/First conference');
-              LCmds(18,1,'Delete conference','Insert conference');
-              LCmds(18,1,'Modify conference','Position conference');
-              LCmds(18,1,'Quit','');
+              Print('%LF^0<^1CR^0>Next Page / Refresh');
+              {Print('^0(^1?^0)Help');}
+              LCmds(18,1,'Delete Conference','Insert Conference');
+              LCmds(18,1,'Modify Conference','Position Conference');
+              {LCmds(18,1,'Quit','');}
             END;
     END;
     IF (Cmd <> ^M) THEN
@@ -558,5 +575,4 @@ BEGIN
   UNTIL (Cmd = 'Q') OR (HangUp);
   LastError := IOResult;
 END;
-
 END.

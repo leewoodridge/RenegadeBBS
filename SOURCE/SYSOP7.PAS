@@ -1,4 +1,7 @@
 {$A+,B+,D+,E+,F+,I+,L+,N-,O+,R-,S+,V-}
+{
+12/17/2021 aesthetic changes
+}
 UNIT SysOp7;
 
 INTERFACE
@@ -14,6 +17,7 @@ IMPLEMENTATION
 USES
   Common5,
   Menus2,
+  SysOp2, {configheader/hl}
   SysOp7M;
 
 PROCEDURE DisplayMenus(VAR RecNumToList1: Integer; DisplayListNum: Boolean);
@@ -24,43 +28,51 @@ BEGIN
   Next := FALSE;
   AllowContinue := TRUE;
   MCIAllowed := FALSE;
-  CLS;
+  {CLS;}
   IF (DisplayListNum) THEN
-  BEGIN
-    PrintACR('^1###^2:^1Menu #^2:^1Menu name');
-    PrintACR('^2===:======:====================================================================');
-  END
+	BEGIN
+      {
+      PrintACR('^1###^2:^1Menu #^2:^1Menu name');
+      PrintACR('^2===:======:====================================================================');
+  	  }
+	  PrintACR('^5<^4I#^5> <^4M#^5> <^4Menu Name^5>');
+	  HL;
+	END
   ELSE
-  BEGIN
-    PrintACR('^1Menu #^2:^1Menu name');
-    PrintACR('^2======:====================================================================');
-  END;
+	BEGIN
+	{
+      PrintACR('^1Menu #^2:^1Menu name');
+      PrintACR('^2======:====================================================================');
+	  }
+	  PrintACR('^5<^4##^5> <^4Menu Name^5>');
+	  HL;
+	END;
   Reset(MenuFile);
   NumDone := 0;
   WHILE (NumDone < (PageLength - 7)) AND (RecNumToList1 >= 1) AND (RecNumToList1 <= NumMenus)
         AND (NOT Abort) AND (NOT HangUp) DO
-  BEGIN
-    Seek(MenuFile,MenuRecNumArray[RecNumToList1]);
-    Read(MenuFile,MenuR);
-    WITH MenuR DO
-    BEGIN
-      IF (DisplayListNum) THEN
-        PrintACR('^1'+PadRightInt(RecNumToList1,3)+
-                 ' ^1'+PadRightInt(MenuNum,6)+
-                 ' ^1'+PadLeftStr(LDesc[1],68))
-      ELSE
-        PrintACR('^1'+PadRightInt(MenuNum,6)+
-                 ' ^1'+PadLeftStr(LDesc[1],68));
-    END;
-    Inc(RecNumToList1);
-    Inc(NumDone);
-  END;
+	BEGIN
+      Seek(MenuFile,MenuRecNumArray[RecNumToList1]);
+      Read(MenuFile,MenuR);
+      WITH MenuR DO
+		BEGIN
+		  IF (DisplayListNum) THEN
+            PrintACR(' ^1'+PadLeftInt(RecNumToList1,4)+
+					 ' ^1'+PadLeftInt(MenuNum,4)+
+					 ' ^0'+PadLeftStr(LDesc[1],68))
+		  ELSE
+			PrintACR(' ^1'+PadLeftInt(MenuNum,4)+
+					 ' ^0'+PadLeftStr(LDesc[1],73));
+		END;
+      Inc(RecNumToList1);
+      Inc(NumDone);
+	END;
   Close(MenuFile);
   LastError := IOResult;
   MCIAllowed := TRUE;
   AllowContinue := FALSE;
   IF (NumMenus = 0) THEN
-     Print('*** No menus defined ***');
+     Print('*** No menus defined ***'); {leew: messages!}
      {
   IF (DisplayListNum) THEN
     PrintACR('%LF^0[Users start at menu number: ^1'+IntToStr(General.AllStartMenu)+'^0]');
@@ -80,6 +92,7 @@ BEGIN
   RecNumToList := 1;
   InputStr := '?';
   REPEAT
+  ConfigHeader('System Menus Configuration');
     IF (InputStr = '?') THEN
       DisplayMenus(RecNumToList,FALSE);
     Prt(DisplayStr+' (^1'+IntToStr(LowMenuNum)+'^2-^1'+IntToStr(HighMenuNum)+'^2)'+
@@ -446,13 +459,13 @@ VAR
                         Changed := TRUE;
                       END;
                 '2' : BEGIN
-                        InputString('%LFNew menu title #1: ',LDesc[1],
+                        InputString('%LFNew menu title #1: %LF',LDesc[1],
                                   (SizeOf(LDesc[1]) - 1),[InteractiveEdit,NoInputField],Changed);
                         IF (LDesc[1] <> '') THEN
-                          InputString('New menu title #2: ',LDesc[2],
+                          InputString('New menu title #2: %LF',LDesc[2],
                                     (SizeOf(LDesc[2]) - 1),[InteractiveEdit,NoInputField],Changed);
                         IF (LDesc[2] <> '') THEN
-                          InputString('New menu title #3: ',LDesc[3],
+                          InputString('New menu title #3: %LF',LDesc[3],
                                     (SizeOf(LDesc[3]) - 1),[InteractiveEdit,NoInputField],Changed);
                       END;
                 '3' : BEGIN
@@ -461,7 +474,8 @@ VAR
                         InputString('%LFNew file displayed for extended help: ',LongMenu,(SizeOf(LongMenu) - 1),
                                  [InterActiveEdit,CapAll],Changed);
                       END;
-                '4' : InputString('%LFNew menu prompt: ',MenuPrompt,(SizeOf(MenuPrompt) - 1),[InteractiveEdit],Changed);
+                '4' : InputString('%LFNew menu prompt: %LF',MenuPrompt,(SizeOf(MenuPrompt) - 1),[InteractiveEdit,NoInputField],
+				Changed);
                 '5' : InputString('%LFNew menu ACS: ',ACS,(SizeOf(ACS) - 1),[InterActiveEdit],Changed);
                 '6' : InputString('%LFNew password: ',Password,(SizeOf(Password) - 1),[InterActiveEdit,CapAll],Changed);
                 '7' : BEGIN
@@ -473,7 +487,7 @@ VAR
                           Changed := FALSE;
                         END;
                         Close(MenuFile);
-                        FindMenu('%LFNew fallback menu (^10^2=^1None^2)',SaveMenuNum,0,NumMenus,Changed);
+                        FindMenu('%LF^2New fallback menu (^10^2=^1None^2)',SaveMenuNum,0,NumMenus,Changed);
                         Reset(MenuFile);
                         Seek(MenuFile,MenuRecNumArray[SaveRecNumToModify]);
                         Read(MenuFile,MenuR);
@@ -620,8 +634,11 @@ BEGIN
   Cmd := #0;
   REPEAT
     IF (Cmd <> '?') THEN
+	begin
+	configheader('Menu Editor');
       DisplayMenus(RecNumToList,TRUE);
-    InputChar('%LFMenu editor [^1?^2=^1Help^2]: ',Cmd,'QDIM?'^M,[CapAll]);
+	  end;
+    InputChar('%LF^2Menu Editor [^1DIM^2,(^1?^2)Help,(^1Q^2)uit]: ',Cmd,'QDIM?'^M,[CapAll]);
     CASE Cmd OF
       ^M  : IF (RecNumToList < 1) OR (RecNumToList > NumMenus) THEN
               RecNumToList := 1;
@@ -629,9 +646,10 @@ BEGIN
       'I' : InsertMenu;
       'M' : ModifyMenu;
       '?' : BEGIN
-              Print('%LF^0<^1CR^0>Redisplay screen');
-              LCmds(12,1,'Delete menu','Insert menu');
-              LCmds(12,1,'Modify menu','Quit');
+			  NL;
+              Print('^0<^1CR^0>Refresh/Next Page');
+              LCmds(12,1,'Delete Menu','Insert Menu');
+              LCmds(12,1,'Modify Menu','');
             END;
     END;
     IF (CMD <> ^M) THEN

@@ -105,9 +105,9 @@ BEGIN
                     IF (Odd(Counter)) THEN
                       NL;
                   END;
-                  InputChar('%LFEnter selection [^1A^2-^1T^2,^1<CR>^2=^1Quit^2]: ',Cmd,^M'ABCDEFGHIJKLMNOPQRST',[CapAll]);
+                  InputChar('%LF^2Network Mail Addresses [^1A^2-^1T^2,<^1CR^2>Quit]: ',Cmd,^M'ABCDEFGHIJKLMNOPQRST',[CapAll]);
                   IF (Cmd IN ['A'..'T']) THEN
-                    GetNewAddr('%LFEnter new network address (^1Z^2:^1N^2/^1N^2.^1P^2 format): ',30,
+                    GetNewAddr('%LF^2Enter Network Address (^1Z^2:^1N^2/^1N^2.^1P^2): ',30,
                                 AKA[(Ord(Cmd) - 65)].Zone,
                                 AKA[(Ord(Cmd) - 65)].Net,
                                 AKA[(Ord(Cmd) - 65)].Node,
@@ -115,13 +115,13 @@ BEGIN
                 UNTIL (Cmd = ^M) OR (HangUp);
                 Cmd := #0;
               END;
-        'B' : InputString('%LF^0Enter new origin line:%LF^2: ',Origin,50,[],Changed);
+        'B' : InputString('%LF^2Enter Origin Line: ',Origin,50,[InteractiveEdit],Changed);
         'C' : SKludge := NOT SKludge;
         'D' : SSeenBy := NOT SSeenBy;
         'E' : SOrigin := NOT SOrigin;
         'F' : AddTear := NOT AddTear;
-        'G' : InputPath('%LF^0Enter new default echomail path (^1End with a ^0"^1\^0"):%LF^2:',DefEchoPath,TRUE,FALSE,Changed);
-        'H' : InputPath('%LF^0Enter new netmail path (^1End with a ^0"^1\^0"):%LF^2:',NetMailPath,TRUE,FALSE,Changed);
+        'G' : InputPath('%LF^2Enter Default EchoMail Path: ',DefEchoPath,TRUE,FALSE,Changed);
+        'H' : InputPath('%LF^2Enter Default NetMail Path: ',NetMailPath,TRUE,FALSE,Changed);
         'I' : BEGIN
                 REPEAT
                   Print('%LF^0Netmail attributes: ^1'+NetMail_Attr(NetAttribute)+'^0');

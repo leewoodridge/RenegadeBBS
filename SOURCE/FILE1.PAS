@@ -229,7 +229,7 @@ BEGIN
   IF (IsPaused IN TransferFlags) AND (NOT (IsFileAttach IN TransferFlags)) THEN
     BEGIN
       NL;
-      InputChar('^0Press [^1Enter^0] to Continue or [^1Q^0]uit: ',Cmd,'Q'^M,[CapAll]);
+      InputChar('^0Press [^1ENTER^0] to Continue, or (^1Q^0)uit: ',Cmd,'Q'^M,[CapAll]);
       IF (Cmd = 'Q') THEN
         BEGIN
           Include(TransferFlags,IsKeyboardAbort);
@@ -1404,84 +1404,71 @@ PROCEDURE LFileAreaList(VAR FArea,NumFAreas: Integer; AdjPageLen: Byte; ShowScan
 VAR
   ScanChar: Str1;
   TempStr: AStr;
-  NumOnline,
+  NumOnLine,
   NumDone: Byte;
   SaveFileArea: Integer;
 BEGIN
   SaveFileArea := FileArea;
   Abort := FALSE;
   Next := FALSE;
-  NumOnline := 0;
+  NumOnLine := 0;
   TempStr := '';
 
   FillChar(LightBarArray,SizeOf(LightBarArray),0);
   LightBarCounter := 0;
-
-  {
-  $New_Scan_Char_File
-  ş
-  $
-  }
+  
   IF (ShowScan) THEN
     ScanChar := lRGLngStr(55,TRUE);
-  {
-  %CL-ÚÄÄÄÄÄÂÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÂÄÄÄÄÄÂÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄ¿
-  -³. Num -³/ Name                           -³. Num -³/ Name                           -³
-  -ÀÄÄÄÄÄÁÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÁÄÄÄÄÄÁÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÙ
-  }
-  lRGLngStr(59,FALSE);
+
+  lRGLngStr(59,FALSE); { File area list header }
   Reset(FileAreaFile);
   NumDone := 0;
   WHILE (NumDone < (PageLength - AdjPageLen)) AND (FArea >= 1) AND (FArea <= NumFileAreas) AND (NOT Abort) AND (NOT HangUp) DO
-  BEGIN
-    LoadFileArea(FArea);
-    IF (ShowScan) THEN
-      LoadNewScanFile(NewScanFileArea);
-    IF AACS(MemFileArea.ACS) OR (FAUnHidden IN MemFileArea.FAFlags) THEN
     BEGIN
+      LoadFileArea(FArea);
+      IF (ShowScan) THEN
+        LoadNewScanFile(NewScanFileArea);
+      IF AACS(MemFileArea.ACS) OR (FAUnHidden IN MemFileArea.FAFlags) THEN
+        BEGIN
+          IF (General.UseLightBars) AND (FileAreaLightBar IN ThisUser.SFlags) THEN
+            BEGIN
+              Inc(LightBarCounter);
+              LightBarArray[LightBarCounter].CmdToExec := CompFileArea(FArea,0);
+              LightBarArray[LightBarCounter].CmdToShow := MemFileArea.AreaName;
+              IF (NumOnLine = 0) THEN
+                BEGIN
+                  LightBarArray[LightBarCounter].XPos := 8;
+                  LightBarArray[LightBarCounter].YPos := WhereY;
+                END
+              ELSE
+                BEGIN
+                  LightBarArray[LightBarCounter].XPos := 47;
+                  LightBarArray[LightBarCounter].YPos := WhereY;
+                END;
+            END;
 
-      IF (General.UseLightBars) AND (FileAreaLightBar IN ThisUser.SFlags) THEN
-      BEGIN
-        Inc(LightBarCounter);
-        LightBarArray[LightBarCounter].CmdToExec := CompFileArea(FArea,0);
-        LightBarArray[LightBarCounter].CmdToShow := MemFileArea.AreaName;
-        IF (NumOnline = 0) THEN
-        BEGIN
-          LightBarArray[LightBarCounter].Xpos := 8;
-          LightBarArray[LightBarCounter].YPos := WhereY;
-        END
-        ELSE
-        BEGIN
-          LightBarArray[LightBarCounter].Xpos := 47;
-          LightBarArray[LightBarCounter].YPos := WhereY;
+          TempStr := TempStr + AOnOff(ShowScan AND NewScanFileArea,'0'+ScanChar[1],' ')+
+                     PadLeftStr(PadRightStr('1'+IntToStr(CompFileArea(FArea,0)),5)+
+                     +'2 '+MemFileArea.AreaName,37)+' ';
+          Inc(NumOnLine);
+          IF (NumOnLine = 2) THEN
+            BEGIN
+              PrintACR(TempStr);
+              NumOnLine := 0;
+              Inc(NumDone);
+              TempStr := '';
+            END;
+          Inc(NumFAreas);
         END;
-      END;
-
-      TempStr := TempStr + AOnOff(ShowScan AND NewScanFileArea,'0'+ScanChar[1],' ')+
-                           PadLeftStr(PadRightStr('1'+IntToStr(CompFileArea(FArea,0)),5)+
-                           +'2 '+MemFileArea.AreaName,37)+' ';
-      Inc(NumOnline);
-      IF (NumOnLine = 2) THEN
-      BEGIN
-        PrintACR(TempStr);
-        NumOnline := 0;
-        Inc(NumDone);
-        TempStr := '';
-      END;
-      Inc(NumFAreas);
+      WKey;
+      Inc(FArea);
     END;
-    WKey;
-    Inc(FArea);
-  END;
   Close(FileAreaFile);
   LastError := IOResult;
-  IF (NumOnline = 1) AND (NOT Abort) AND (NOT HangUp) THEN
+  IF (NumOnLine = 1) AND (NOT Abort) AND (NOT HangUp) THEN
     PrintACR(TempStr)
   ELSE IF (NumFAreas = 0) AND (NOT Abort) AND (NOT HangUp) THEN
-    LRGLngStr(67,FALSE);
-  {
-  %LF^8No file areas!^0
-  }
+    LRGLngStr(67,FALSE); { %LF^8No file areas!^0 }
   FileArea := SaveFileArea;
   LoadFileArea(FileArea);
 END;
@@ -1550,7 +1537,7 @@ BEGIN
     END;
 END;
 
-PROCEDURE Do_Unlisted_Download;
+PROCEDURE Do_Unlisted_Download; {LeeW: UnlistedDownloadPrompt}
 VAR
   PathFileName: Str52;
 BEGIN

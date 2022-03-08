@@ -299,7 +299,8 @@ BEGIN
     END;
 
   TempStr := '^0Call # ^1'+IntToStr(General.CallerNum)+'^5 | ^0User: ^1'+Caps(ThisUser.Name)+'^5 | '+
-             '^0User Call # ^1'+IntToStr(ThisUser.OnToday); {add last call?}
+             '^0User Call # ^1'+IntToStr(ThisUser.OnToday)+'^0 (Today) ^1'+IntToStr(ThisUser.LoggedOn)+'^0 (Total) ';
+			 {add last call?}
   SL1(TempStr);
   
     BEGIN { LOGGING INFO }
@@ -641,7 +642,7 @@ BEGIN
 }
       {SL1('^2Read: ^1'+IntToStr(PublicReadThisCall)+'^2 / Time on: ^1'+IntToStr(TotTimeOn));}
       
-      SL1('^0Time: ^1'+IntToStr(TotTimeOn)+
+      SL1('^0Time: ^1'+IntToStr(TotTimeOn)+{' ('+IntToStr(ThisUser.TLToday)+'Left)'+}
           '^5 | ^0Posted: ^1'+IntToStr(PublicPostsToday)+'^5 | ^0Read: ^1'+IntToStr(PublicReadThisCall)+
           '^5 | ^0DL: ^1'+IntToStr(DownloadsToday)+' ^0(^1'+IntToStr(DownloadKBytesToday)+'^0 kB)'+
           '^5 | ^0UL: ^1'+IntToStr(UploadsToday)+' ^0(^1'+IntToStr(UploadKBytesToday)+'^0 kB)');
@@ -652,7 +653,7 @@ BEGIN
   LastError := IOResult;
 
   {SL1('^1Logoff node '+IntToStr(ThisNode)+' ^1'+'['+Dat+']');}
-  SL1(' ^8* ^1Logoff node '+IntToStr(ThisNode)+' '+'['+Dat+']');
+  SL1(' ^8* ^5Logoff Node ^4'+IntToStr(ThisNode)+'^5 '+'[ ^4'+Dat+'^5 ]^0');
   
   SL1('^0-'); { Separator }
 

@@ -21,7 +21,9 @@
  11/22/2021 - OneK1 is now InputChar, now uses inputflags -- supports CapAll,NoInputField,NoLineFeed, 
               displaykey param removed, was 99.9% unused
             - replaced all calls to LOneK to InputChar (UGH!)
+ 12/22/2021 - quick and dirty hack to make inputformatted populate field like interactiveedit, except no arrowkey movement
 todo:
+make inputformatted interactive if string is defined
 add inputvalidation for inputformatted, maybe have it pass '' if incomplete? --PARAMS for AllowIncomplete
 inputflags : add different types like dir, filename etc, notabortable, askblank
 SHOULD BLANK PROMPT BE IN MAIN OR PRINTSTRING--main
@@ -40,9 +42,9 @@ PROCEDURE InputByte(S: AStr; VAR B: Byte; InputFlags: InputFlagSet; LowNum,HighN
 PROCEDURE InputInteger(S: AStr; VAR I: Integer; InputFlags: InputFlagSet; LowNum,HighNum: Integer; VAR Changed: Boolean);
 PROCEDURE InputLongInt(S: AStr; VAR L: LongInt; InputFlags: InputFlagSet; LowNum,HighNum: LongInt; VAR Changed: Boolean);
 PROCEDURE InputWord(S: AStr; VAR W: Word; InputFlags: InputFlagSet; LowNum,HighNum: Word; VAR Changed: Boolean);
-PROCEDURE InputString(S: AStr; VAR InputStr: AStr; MaxLen: Byte; InputFlags: InputFlagSet; VAR Changed: Boolean);
-PROCEDURE InputChar(S: AStr; VAR C: Char; ValidKeys: AStr; InputFlags: InputFlagSet);
 {/}
+PROCEDURE InputChar(S: AStr; VAR C: Char; ValidKeys: AStr; InputFlags: InputFlagSet);
+PROCEDURE InputString(S: AStr; VAR InputStr: AStr; MaxLen: Byte; InputFlags: InputFlagSet; VAR Changed: Boolean);
 PROCEDURE InputFormatted(S: AStr; VAR InputStr: STRING; Format: STRING; Abortable: Boolean);
 PROCEDURE InputPath(S: AStr; VAR DirPath: Str40; CreateDir,AllowExit: Boolean; VAR Changed: Boolean);
 {PROCEDURE InputPath2(S: STRING; VAR Path: STRING; AskMkDir, Abortable: Boolean; VAR Changed: Boolean);}
@@ -194,6 +196,7 @@ END;
 
 PROCEDURE InputFormatted(S: AStr; VAR InputStr: STRING; Format: STRING; Abortable: Boolean);
 VAR
+  tempstr: string;
   c: Char;
   i,
   FarBack: Byte;
@@ -209,12 +212,24 @@ VAR
   END;
 
 BEGIN
+  TempStr := InputStr;
   InputStr := '';
-  Prt(S);
+  Prt('^2'+S);
   MPL(Length(Format));
   i := 1;
   UpdateString;
   FarBack := i;
+  
+  WHILE (i <= Length(TempStr)) AND (Format[i] IN ['#','@']) DO
+    BEGIN
+      c := UpCase(InputStr[i]);
+      OutKey(c);
+      InputStr := InputStr + c;
+      Inc(i);
+      UpdateString;
+    END;
+    {^ LeeW: Quick and dirty hack to populate field}
+  
   REPEAT
     c := Char(GetKey);
     IF (i <= Length(Format)) THEN
@@ -227,20 +242,20 @@ BEGIN
           UpdateString;
         END;
     IF (c = ^H) THEN
-    BEGIN
-      WHILE ((i > FarBack) AND NOT (Format[i - 1] IN ['#','@'])) DO
-        BEGIN
-          BackSpace;
-          Dec(InputStr[0]);
-          Dec(i);
-        END;
-      IF (i > FarBack) THEN
-        BEGIN
-          BackSpace;
-          Dec(InputStr[0]);
-          Dec(i);
-        END;
-    END;
+      BEGIN
+        WHILE ((i > FarBack) AND NOT (Format[i - 1] IN ['#','@'])) DO
+          BEGIN
+            BackSpace;
+            Dec(InputStr[0]);
+            Dec(i);
+          END;
+        IF (i > FarBack) THEN
+          BEGIN
+            BackSpace;
+            Dec(InputStr[0]);
+            Dec(i);
+          END;
+      END;
   UNTIL (HangUp) OR ((i > Length(Format)) OR (Abortable)) AND (c = #13);
   UserColor(0);
   NL;
