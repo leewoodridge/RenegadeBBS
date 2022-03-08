@@ -2,7 +2,8 @@ After version 1.25, all strings have been combined in to 1 file (RGLNG.TXT) you 
 
 THEN ...
 
-[rename identifiers info here]
+First instance of '$NewScan_All' rename to '$NewScan_Global_Begin'
+Second instance of '$NewScan_Done' rename to '$NewScan_Global_Complete'
 
 THEN ...
 
@@ -392,4 +393,99 @@ $
 
 $Quote_Header
 %CL^4And now... A quote for you!
+$
+
+$Timeout
+^0%LF%LFYou've been logged off due to inactivity. Call back when you've got the time!
+$
+
+###
+
+$Top_Users_Time
+Most Minutes Online;^5ó^4Minutes^5ò
+$
+
+$Top_Users_KB_Uploaded
+Most KB Uploaded;^5ó^4KB Uploaded^5ò
+$
+
+$Top_Users_KB_Downloaded
+Most KB Downloaded;^5ó^4KB Downloaded^5ò
+$
+
+$Top_Users_Prv_Msg
+Most Private Messages Sent;^5ó^4Messages^5ò
+$
+
+$Top_Users_Pub_Msg
+Most Public Message Posts;^5ó^4Posts^5ò
+$
+
+$Top_Users_Feedback
+Most SysOp Feedback Sent;^5ó^4Feedback^5ò
+$
+
+$Top_Users_Calls
+Most Calls;^5ó^4Calls^5ò
+$
+
+$Top_Users_Uploads
+Most Files Uploaded;^5ó^4Uploads^5ò
+$
+
+$Top_Users_Downloads
+Most Files Downloaded;^5ó^4Downloads^5ò
+$
+
+$Top_Users_File_Points
+Most File Points;^5ó^4File Points^5ò
+$
+
+$Top_Users_File_Ratio
+Best Upload/Download Ratios;^5ó^4Ratio^5ò
+$
+
+$Top_Users_Post_Call_Ratio
+Best Post/Call Ratios;^5ó^4Ratio^5ò
+$
+
+$Top_Files
+Most Downloaded Files;^5ó^4Downloads^5ò
+$
+
+$Conference_Current
+%LF^0You are currently in conference "^1%CN^0" (%CT)
+$
+
+$Conference_Change_Prompt
+^0Join which conference? [^1K^0,(^1?^0)List,<^1CR^0>Quit]: 
+$
+
+$Conference_Access_Denied
+%LF^8You do not have the required access level for this conference!^0
+$
+
+$Conference_Joined
+%LFJoined conference: ^1%CT - %CN%LF%PA
+$
+
+### @0 = MenuCmd, @1 = Passed Parameter
+$Invalid_Parameter
+$
+
+### @0 = Title ("Most minutes online") @1 = Header Field ("<Minutes>")
+$Top_Users_Header
+%CL                                  ^1TOP 10 USERS
+^0@0
+^5ÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄ
+^5       <^4##^5> <^4USERNAME^5>                                @1
+^5ÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄ
+$
+
+$Top_Files_Header
+%CL                                  ^1TOP 10 FILES
+^0@0
+^5ÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄ
+^5         <^4##^5> <^4FILENAME^5>                            @1
+^5ÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄ
 $
