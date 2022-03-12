@@ -21,7 +21,7 @@ TYPE
 	Decimal: Byte; {LeeW: Added}
   END;
 
-  Top20FileRec{ordArray} = RECORD
+  Top10FileRec{ordArray} = RECORD
     RecNum: Byte; {LeeW: Added}
     DirNum,
     DirRecNum: Integer;
@@ -29,17 +29,17 @@ TYPE
   END;
 
   Top10UserArray = ARRAY [1..10] OF Top10UserRec{ordArray};
-  Top20FileArray = ARRAY [1..20] OF Top20FileRec{ordArray};
+  Top10FileArray = ARRAY [1..10] OF Top10FileRec{ordArray};
   
   Top10UserPtrType = ^Top10UserRec;
-  Top20FilePtrType = ^Top20FileRec;
+  Top10FilePtrType = ^Top10FileRec;
   
   UserPtrType = ^UserRecordType;
   FilePtrType = ^FileInfoRecordType;
 
 VAR
   Top10User: Top10UserArray;
-  Top20File: Top20FileArray;
+  Top10File: Top10FileArray;
 
 PROCEDURE GetUserStats(MenuOption: Str50);
 
@@ -81,7 +81,7 @@ END;
 
 FUNCTION TopFileMCI(CONST S: ASTR; Data1,Data2: Pointer): STRING;
 VAR
-  TopPtr: Top20FilePtrType;
+  TopPtr: Top10FilePtrType;
   FilePtr: FilePtrType;
 BEGIN
   TopPtr := Data1;
@@ -115,16 +115,16 @@ BEGIN
   END;
 END;
 
-PROCEDURE InitTop20FileArray(VAR Top20User: Top20FileArray);
+PROCEDURE InitTop10FileArray(VAR Top10User: Top10FileArray);
 VAR
   Counter: Byte;
 BEGIN
-  FOR Counter := 1 TO 20 DO
+  FOR Counter := 1 TO 10 DO
   BEGIN
-    Top20File[Counter].RecNum := Counter;
-    Top20File[Counter].DirNum := -1;
-    Top20File[Counter].DirRecNum := -1;
-    Top20File[Counter].Downloaded := 0;
+    Top10File[Counter].RecNum := Counter;
+    Top10File[Counter].DirNum := -1;
+    Top10File[Counter].DirRecNum := -1;
+    Top10File[Counter].Downloaded := 0;
   END;
 END;
 
@@ -138,8 +138,11 @@ BEGIN
       IF (Info >= Top10User[Counter].Info) THEN
 		BEGIN
           FOR Counter1 := 10 DOWNTO (Counter + 1) DO
-			Top10User[Counter1] := Top10User[Counter1 - 1];
-		  Top10User[Counter].RecNum := Counter1-1; {LeeW: Added}
+		    BEGIN
+			  Top10User[Counter1] := Top10User[Counter1 - 1];
+			  Top10User[Counter1].RecNum := Counter1; {LeeW: Added}
+			END;
+		  Top10User[Counter].RecNum := Counter; {LeeW: Added}
           Top10User[Counter].UNum := UNum;
           Top10User[Counter].Info := Info;
 		  Top10User[Counter].Decimal := Decimal;
@@ -147,22 +150,25 @@ BEGIN
 		END;
 END;
 
-PROCEDURE SortFileDecending(VAR Top20File: Top20FileArray; DirNum,DirRecNum: Integer; Downloaded: LongInt);
+PROCEDURE SortFileDecending(VAR Top10File: Top10FileArray; DirNum,DirRecNum: Integer; Downloaded: LongInt);
 VAR
   Counter,
   Counter1: Byte;
 BEGIN
   IF (Downloaded > 0) THEN
-    FOR Counter := 1 to 20 DO
-      IF (Downloaded >= Top20File[Counter].Downloaded) THEN
+    FOR Counter := 1 to 10 DO
+      IF (Downloaded >= Top10File[Counter].Downloaded) THEN
 		BEGIN
-          FOR Counter1 := 20 DOWNTO (Counter + 1) DO
-			Top20File[Counter1] := Top20File[Counter1 - 1];
-		  Top20File[Counter].RecNum := Counter1-1; {LeeW: Added}
-          Top20File[Counter].DirNum := DirNum;
-          Top20File[Counter].DirRecNum := DirRecNum;
-          Top20File[Counter].Downloaded := Downloaded;
-          Counter := 20;
+          FOR Counter1 := 10 DOWNTO (Counter + 1) DO
+			BEGIN
+			  Top10File[Counter1] := Top10File[Counter1 - 1];
+			  Top10File[Counter1].RecNum := Counter1; {LeeW: Added}
+			END;
+		  Top10File[Counter].RecNum := Counter; {LeeW: Added}
+          Top10File[Counter].DirNum := DirNum;
+          Top10File[Counter].DirRecNum := DirRecNum;
+          Top10File[Counter].Downloaded := Downloaded;
+          Counter := 10;
 		END;
 END;
 
@@ -207,7 +213,7 @@ BEGIN
   Close(UserFile);
 END;
 
-PROCEDURE SearchTop20AreaFileSpec(FArea: Integer; VAR Top20File: Top20FileArray);
+PROCEDURE SearchTop10AreaFileSpec(FArea: Integer; VAR Top10File: Top10FileArray);
 VAR
   F: FileInfoRecordType;
   DirFileRecNum: Integer;
@@ -224,7 +230,7 @@ BEGIN
       Seek(FileInfoFile,DirFileRecNum);
       Read(FileInfoFile,F);
       IF (CanSee(F)) THEN
-        SortFileDecending(Top20File,FileArea,DirFileRecNum,F.Downloaded);
+        SortFileDecending(Top10File,FileArea,DirFileRecNum,F.Downloaded);
       NRecNo(F,DirFileRecNum);
     END;
     Close(FileInfoFile);
@@ -232,13 +238,13 @@ BEGIN
   END;
 END;
 
-PROCEDURE SearchTop20GlobalFileSpec(VAR Top20File: Top20FileArray);
+PROCEDURE SearchTop10GlobalFileSpec(VAR Top10File: Top10FileArray);
 VAR
   FArea,
   SaveFileArea: Integer;
   SaveConfSystem: Boolean;
 BEGIN
-  InitTop20FileArray(Top20File);
+  InitTop10FileArray(Top10File);
   SaveFileArea := FileArea;
   SaveConfSystem := ConfSystem;
   ConfSystem := FALSE;
@@ -249,7 +255,7 @@ BEGIN
   FArea := 1;
   WHILE (FArea >= 1) AND (FArea <= NumFileAreas) AND (NOT Next) AND (NOT Abort) AND (NOT HangUp) DO
   BEGIN
-    SearchTop20AreaFileSpec(FArea,Top20File);
+    SearchTop10AreaFileSpec(FArea,Top10File);
     WKey;
     IF (Next) THEN
     BEGIN
@@ -313,7 +319,7 @@ END;
 
 { --- }
 
-PROCEDURE DisplayTop20FileArray(Top20File: Top20FileArray; Title,Header: AStr);
+PROCEDURE DisplayTop10FileArray(Top10File: Top10FileArray; Title,Header: AStr);
 VAR
   F: FileInfoRecordType;
   TempStr: AStr;
@@ -348,46 +354,42 @@ BEGIN
 		Print(PadRightStr(Header,20));
 		ANSIG(SaveX,SaveY);
 	  END;
-  FOR Counter := 1 to 20 DO
+  FOR Counter := 1 TO 10 DO
     BEGIN
 
       F.FileName := '';
-      IF (Top20File[Counter].DirNum > 0) AND (Top20File[Counter].Downloaded > 0) THEN
+      IF (Top10File[Counter].DirNum > 0) AND (Top10File[Counter].Downloaded > 0) THEN
         BEGIN
-		
-		  IF Counter = 11 THEN
-			PauseScr(FALSE); { LeeW: Testing ... }
-		
-          InitFileArea(Top20File[Counter].DirNum);
+          InitFileArea(Top10File[Counter].DirNum);
           IF (BadDownloadPath) THEN
             EXIT;
-          Seek(FileInfoFile,Top20File[Counter].DirRecNum);
+          Seek(FileInfoFile,Top10File[Counter].DirRecNum);
           Read(FileInfoFile,F);
           Close(FileInfoFile);
           Close(ExtInfoFile); {???}
 		  {/}
 		  IF (NOT ReadBuffer('TOPFM')) THEN
 			EXIT;
-		  DisplayBuffer(TopFileMCI,@Top20File[Counter],@F);
+		  DisplayBuffer(TopFileMCI,@Top10File[Counter],@F);
         END;
   {
     F.FileName := '';
     IF (Counter <= 10) THEN
     BEGIN
-      IF (Top20File[Counter].DirNum > 0) THEN
+      IF (Top10File[Counter].DirNum > 0) THEN
       BEGIN
-        InitFileArea(Top20File[Counter].DirNum);
+        InitFileArea(Top10File[Counter].DirNum);
         IF (BadDownloadPath) THEN
           Exit;
-        Seek(FileInfoFile,Top20File[Counter].DirRecNum);
+        Seek(FileInfoFile,Top10File[Counter].DirRecNum);
         Read(FileInfoFile,F);
         Close(FileInfoFile);
         Close(ExtInfoFile);
       END;
       TempStr := '^5'+PadRightInt(Counter,2);
       TempStr := TempStr + '^0'+PadRightStr(F.FileName,15);
-      IF (Top20File[Counter].Downloaded > 0) THEN
-        TempStr := TempStr + '^4'+PadRightInt(Top20File[Counter].Downloaded,12)
+      IF (Top10File[Counter].Downloaded > 0) THEN
+        TempStr := TempStr + '^4'+PadRightInt(Top10File[Counter].Downloaded,12)
       ELSE
         TempStr := TempStr + '            ';
     END;
@@ -395,20 +397,20 @@ BEGIN
     F.FileName := '';
     IF ((Counter + 10) > 10) THEN
     BEGIN
-      IF (Top20File[Counter + 10].DirNum > 0) THEN
+      IF (Top10File[Counter + 10].DirNum > 0) THEN
       BEGIN
-        InitFileArea(Top20File[Counter + 10].DirNum);
+        InitFileArea(Top10File[Counter + 10].DirNum);
         IF (BadDownloadPath) THEN
           Exit;
-        Seek(FileInfoFile,Top20File[Counter + 10].DirRecNum);
+        Seek(FileInfoFile,Top10File[Counter + 10].DirRecNum);
         Read(FileInfoFile,F);
         Close(FileInfoFile);
         Close(ExtInfoFile);
       END;
       TempStr := TempStr + '^5'+PadRightInt(Counter + 10,2);
       TempStr := TempStr + '^0'+PadRightStr(F.FileName,15);
-      IF (Top20File[Counter + 10].Downloaded > 0) THEN
-        TempStr := TempStr + '^4'+PadRightInt(Top20File[Counter + 10].Downloaded,12)
+      IF (Top10File[Counter + 10].Downloaded > 0) THEN
+        TempStr := TempStr + '^4'+PadRightInt(Top10File[Counter + 10].Downloaded,12)
     END;
     PrintACR(TempStr);
   END;
@@ -418,17 +420,17 @@ BEGIN
   BEGIN
     Counter := -1;
     NL;
-    InputIntegerWOC('Download which file',Counter,1,20);
+    InputIntegerWOC('Download which file',Counter,1,10);
     IF (Counter <> -1) THEN
-      IF (Top20File[Counter].DirNum <> -1) AND (Top20File[Counter].DirRecNum <> -1) THEN
+      IF (Top10File[Counter].DirNum <> -1) AND (Top10File[Counter].DirRecNum <> -1) THEN
       BEGIN
-        InitFileArea(Top20File[Counter].DirNum);
+        InitFileArea(Top10File[Counter].DirNum);
         IF (BadDownloadPath) THEN
           Exit;
-        Seek(FileInfoFile,Top20File[Counter].DirRecNum);
+        Seek(FileInfoFile,Top10File[Counter].DirRecNum);
         Read(FileInfoFile,F);
         NL;
-        DLX(F,Top20File[Counter].DirRecNum,FALSE,Abort);
+        DLX(F,Top10File[Counter].DirRecNum,FALSE,Abort);
         Close(FileInfoFile);
         Close(ExtInfoFile);
       END;
@@ -549,8 +551,8 @@ BEGIN
 			  Decimal := 0;
 			  Width := 12;
 			  }
-    SearchTop20GlobalFileSpec(Top20File);
-    DisplayTop20FileArray(Top20File,Title,Header);
+    SearchTop10GlobalFileSpec(Top10File);
+    DisplayTop10FileArray(Top10File,Title,Header);
   END;
 END;
 

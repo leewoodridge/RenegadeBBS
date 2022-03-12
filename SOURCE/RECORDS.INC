@@ -300,7 +300,7 @@ TYPE
   END;
 
   HistoryRecordType = {$IFDEF WIN32} PACKED {$ENDIF} RECORD { HISTORY.DAT : Summary logs }
-    Date: UniXTime;
+    Date: UnixTime;
     Active,
     Callers,
     NewUsers,

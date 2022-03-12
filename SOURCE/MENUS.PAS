@@ -573,11 +573,7 @@ BEGIN
     END;
 END;
 
-PROCEDURE DoMenuCommand(VAR Done: Boolean;
-                        Cmd,
-                        MenuOption: AStr;
-                        VAR NewMenuCmd: AStr;
-                        NodeActivityDesc: AStr);
+PROCEDURE DoMenuCommand(VAR Done: Boolean; Cmd,MenuOption: AStr; VAR NewMenuCmd: AStr; NodeActivityDesc: AStr);
 VAR
   MHeader: MHeaderRec;
   TempStr: AStr;
@@ -596,9 +592,10 @@ BEGIN
   CASE Cmd[1] OF
     '^' : CASE Cmd[2] OF { Command for testing }
             '^' : BEGIN
-			{print(MemCmd^[CmdToExec].CmdKeys);
-			print(memcmdrec.options);
-			pausescr(false);}
+					Print(cmd);
+                    Print(menuoption);
+					PauseScr(FALSE);
+			
 					PrintF('xy');
 					print('%XY02;02%2');
 					print('%XY03;03%3');

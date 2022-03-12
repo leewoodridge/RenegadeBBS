@@ -509,22 +509,17 @@ VAR
   FallBackMenu,              {  }
   CurMenu,                   {  }
   CurHelpLevel: Byte;        {  }
-  
+
 {UNSORTED}
 FUNCTION Timer: LongInt;
 PROCEDURE NewCompTables;
-FUNCTION NSL: LongInt;
-FUNCTION AgeUser(CONST BirthDate: LongInt): Word; { Calculate age from birthdate }
 PROCEDURE Update_Screen;
-FUNCTION PageLength: Word; { Users PageLen if InCom, else Hi(WindMax) }
 PROCEDURE lStatus_Screen(WhichScreen: Byte; Message: AStr; OneKey: Boolean; VAR Answer: AStr);
 PROCEDURE SaveGeneral(X: Boolean);
 PROCEDURE SKey1(VAR c: Char); { SysOp control keys }
 FUNCTION VerLine(B: Byte): STRING; { Renegade BBS version information }
 PROCEDURE Toggle(VAR TheVar: Boolean); { Toggles a boolean } { LeeW: Added }
 FUNCTION PHours(CONST DisplayStr: AStr; LoTime,HiTime: Integer): AStr; {**move to timefunc}
-PROCEDURE DisplayBuffer(MCIFunction: MCIFunctionType; Data1, Data2:Pointer);
-FUNCTION ReadBuffer(FileName: AStr): Boolean;
 PROCEDURE WriteWFC(c: Char);
 FUNCTION AccountBalance: LongInt; { Users credits minus debits }
 PROCEDURE AdjustBalance(Adjustment: LongInt); { Add or subtract from users credits/debits }
@@ -534,8 +529,7 @@ FUNCTION CRC32(s: AStr): LongInt;
 FUNCTION FunctionalMCI(CONST s: AStr; FileName,InternalFileName: AStr): STRING;
 FUNCTION SearchUser(Uname: Str36; RealNameOK: Boolean): Integer;
 PROCEDURE PauseScr(IsCont: Boolean); { Pause the screen }
-FUNCTION HiMsg: Word;
-FUNCTION OnNode(UserNumber: Integer): Byte;
+PROCEDURE Wait(b: Boolean); { Pause user with a "please wait" message }
 PROCEDURE ScreenDump(CONST FileName: AStr);
 FUNCTION ValueR(S: AStr): REAL;
 PROCEDURE ShellDOS(MakeBatch: Boolean; CONST Command: AStr; VAR ResultCode: Integer);
@@ -543,18 +537,25 @@ PROCEDURE SysOpShell;
 PROCEDURE RedrawForANSI;
 FUNCTION ExtractDriveNumber(s: AStr): Byte;
 FUNCTION CTP(t,b: LongInt): STRING; { Calculate percentage }
-PROCEDURE TLeft;
+PROCEDURE TLeft; { log user off for time expiration/event }
 PROCEDURE LoadNode(NodeNumber: Byte);
 PROCEDURE Update_Node(NActivityDesc: AStr; SaveVars: Boolean);
+{}
 FUNCTION MaxChatRec: LongInt;
 FUNCTION MaxIDXRec: Integer;
 FUNCTION MaxNodes: Byte;
 FUNCTION MaxUsers: Integer;
+FUNCTION HiMsg: Word;
+FUNCTION OnNode(UserNumber: Integer): Byte;
+FUNCTION AgeUser(CONST BirthDate: LongInt): Word; { Calculate age from birthdate }
+FUNCTION PageLength: Word; { Users PageLen if InCom, else Hi(WindMax) }
+FUNCTION NSL: LongInt; { Users time left online }
+{}
 PROCEDURE SaveNode(NodeNumber: Byte);
 PROCEDURE LoadURec(VAR User: UserRecordType; UserNumber: Integer);
 PROCEDURE SaveURec(User: UserRecordType; UserNumber:Integer);
 PROCEDURE OutKey(c: Char);
-PROCEDURE Wait(b: Boolean);
+
 FUNCTION DisplayARFlags(AR: ARFlagSet; C1,C2: Char): AStr;
 PROCEDURE ToggleARFlag(Flag: Char; VAR AR: ARFlagSet; VAR Changed: Boolean);
 FUNCTION DisplayACFlags(Flags: ACFlagSet; C1,C2: Char): AStr;
@@ -687,9 +688,12 @@ FUNCTION ShowOnOff(b: Boolean): STRING; { "On" or "Off" depending on boolean sta
 FUNCTION ShowYesNo(b: Boolean): STRING; { "Yes" or "No" depending on boolean state }
 PROCEDURE PrintMain(CONST ss: STRING); { MAIN PRINT PROCEDURE }
 { Art files }
+PROCEDURE DisplayBuffer(MCIFunction: MCIFunctionType; Data1, Data2:Pointer);
+FUNCTION ReadBuffer(FileName: AStr): Boolean;
 PROCEDURE PrintF(FileName: PathStr); { Checks path formatting, and for ANSI if avail, else ASCII } {>}
 PROCEDURE PrintFile(FileName: PathStr); { Checks if random and daily art files exist } {>}
 PROCEDURE PFL(FN: PathStr); { MAIN FILE PRINTING PROCEDURE }
+
 
 IMPLEMENTATION
 
@@ -4153,7 +4157,7 @@ BEGIN
   SearchUser := 0;
   Reset(UserIDXFile);
   IF (IOResult <> 0) THEN
-  BEGIN
+	BEGIN
     SysOpLog('Error opening USERS.IDX.');
     Exit;
   END;
