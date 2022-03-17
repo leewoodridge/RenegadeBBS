@@ -7,11 +7,11 @@ $Echo_Char_For_Passwords
 $
 
 $Engage_Chat
-%LFYour SysOp, %SN, is here to chat with you!%LF%LF
+%LF^0Your SysOp, %SN, is here to chat with you!%LF%LF
 $
 
 $End_Chat
-%LFWelcome back to %BN.
+%LF^0Welcome back to %BN.
 $
 
 $SysOp_Working
@@ -93,17 +93,17 @@ Press [ENTER] to abort.%LF
 $
 
 $Download
-%LFDownload from file area %FB
-%LFFilename: @
+%LF^0Download from file area ^1%FB
+%LF^0Filename: @
 $
 
 $Upload
-%LFUpload to file area %FB
-%LFFilename: @
+%LF^0Upload to file area ^1%FB
+%LF^0Filename: @
 $
 
 $View_Interior_Files
-%LFEnter the name of the archive(s) you would like to view: 
+%LF^0Enter the name of the archive(s) you would like to view: 
 $
 
 $Insufficient_File_Credits
@@ -123,12 +123,12 @@ Press [ENTER] For ALL Files: @
 $
 
 $File_Added_To_Batch_Queue
-%LFFile added to batch download queue.
+%LF^0File added to batch download queue
 $
 
 $Batch_Download_Flagging
-%LFEnter filename(s) for addition to the batch queue
-%LFFilename: @
+%LF^0Enter filename(s) for addition to the batch queue
+%LF^0Filename: @
 $
 
 $Read_Question_Prompt
@@ -192,7 +192,7 @@ Unable to send mail to that user!
 $
 
 $Send_Email
-%CL^0Sending private message to another user...
+%CL^0Sending private message to another user ...
 $
 
 $Sending_Mass_Mail_To
@@ -222,7 +222,7 @@ $Must_Read_Message
 $
 
 $Scan_For_New_Files
-Scan For NEW Files Since MM/DD/YYYY: @
+Scan for new files since MM/DD/YYYY: @
 $
 
 $New_Scan_Char_File
@@ -317,11 +317,11 @@ $File_Message_Area_List_Help
 $
 
 $File_Area_Change_Prompt
-%LFChange file area? [#,?=Help,Q=Quit]: @
+%LF^2Select File Area [^1#^2,(^1?^2)Help,(^1Q^2)uit]: @
 $
 
 $Message_Area_Change_Prompt
-%LFChange message area? [#,?=Help,Q=Quit]: @
+%LF^2Select Message Area [^1#^2,(^1?^2)Help,(^1Q^2)uit]: @
 $
 
 $File_Area_New_Scan_Toggle_Prompt
@@ -329,24 +329,24 @@ $File_Area_New_Scan_Toggle_Prompt
 $
 
 $Message_Area_New_Scan_Toggle_Prompt
-%LFToggle new scan? [#,#-#,F=Flag or U=Unflag All,?=Help,Q=Quit]: @
+%LF^2Toggle New Scan [^1#^2,^1#^2-^1#^2,(^1F^2)lag or (^1U^2)nflag All,(^1?^2)Help,(^1Q^2)uit]: @
 $
 
 $File_Area_Move_File_Prompt
-%LFMove to which file area? (%A1-%A2) [#,?=Help,Q=Quit]: @
+%LF^2Move To File Area (^11^2-^1%BF^2) [^1#^2,(^1?^2)Help,(^1Q^2)uit]: @
 $
 
 $Message_Area_Move_Message_Prompt
-%LFMove to which area? (0=Private,%A3-%A3) [#,?=Help,Q=Quit]: @
+%LF^2Move To Message Area (^10^2-^1%BM^2) [^1#^2,(^1?^2)Help,(^1Q^2)uit]: @
 $
 
 $File_Area_Change_Min_Max_Error
-%LFThe range must be from %A1 to %A2!
+%LF^8The range must be from 1 to %BF!^0
 %PA
 $
 
 $Message_Area_Change_Min_Max_Error
-%LFThe range must be from %A3 to %A4!
+%LF^8The range must be from 1 to %BM!^0
 %PA
 $
 
@@ -401,12 +401,12 @@ $Message_Area_New_Scan_Not_Scanning_All_Areas
 $
 
 $File_Area_New_Scan_Min_Max_Error
-%LFThe range must be from %A1 to %A2!
+%LF^8The range must be from 1 to %BF!^0
 %PA
 $
 
 $Message_Area_New_Scan_Min_Max_Error
-%LFThe range must be from %A3 to %A4!
+%LF^8The range must be from 1 to %BM!^0
 %PA
 $
 
@@ -426,7 +426,7 @@ $Message_Area_New_Scan_Area_Not_Removed
 $
 
 $New_File_Scanning
-%CLScanning ... [%FB - %HM]@
+Scanning ... [%FB]@
 $
 
 ### END OF LNG, START OF NOTE ###
@@ -1048,4 +1048,95 @@ $
 
 $Timeout
 ^0%LF%LFYou've been logged off due to inactivity. Call back when you've got the time!
+$
+
+### Format for the following are Title;Header Field
+
+$Top_Users_Time
+Most Minutes Online;^5ó^4Minutes^5ò
+$
+
+$Top_Users_KB_Uploaded
+Most KB Uploaded;^5ó^4KB Uploaded^5ò
+$
+
+$Top_Users_KB_Downloaded
+Most KB Downloaded;^5ó^4KB Downloaded^5ò
+$
+
+$Top_Users_Prv_Msg
+Most Private Messages Sent;^5ó^4Messages^5ò
+$
+
+$Top_Users_Pub_Msg
+Most Public Message Posts;^5ó^4Posts^5ò
+$
+
+$Top_Users_Feedback
+Most SysOp Feedback Sent;^5ó^4Feedback^5ò
+$
+
+$Top_Users_Calls
+Most Calls;^5ó^4Calls^5ò
+$
+
+$Top_Users_Uploads
+Most Files Uploaded;^5ó^4Uploads^5ò
+$
+
+$Top_Users_Downloads
+Most Files Downloaded;^5ó^4Downloads^5ò
+$
+
+$Top_Users_File_Points
+Most File Points;^5ó^4File Points^5ò
+$
+
+$Top_Users_File_Ratio
+Best Upload/Download Ratios;^5ó^4Ratio^5ò
+$
+
+$Top_Users_Post_Call_Ratio
+Best Post/Call Ratios;^5ó^4Ratio^5ò
+$
+
+$Top_Files
+Most Downloaded Files;^5ó^4Downloads^5ò
+$
+
+$Conference_Current
+%LF^0You are currently in conference "^1%CN^0" (%CT)
+$
+
+$Conference_Change_Prompt
+^0Join which conference? [^1K^0,(^1?^0)List,<^1CR^0>Quit]: 
+$
+
+$Conference_Access_Denied
+%LF^8You do not have the required access level for this conference!^0
+$
+
+$Conference_Joined
+%LFJoined conference: ^1%CT - %CN%LF%PA
+$
+
+### @0 = MenuCmd, @1 = Passed Parameter --- NOT IMPLEMENTED YET
+$Invalid_Parameter
+$
+
+### @0 = Title ("Most minutes online") @1 = Header Field ("<Minutes>")
+$Top_Users_Header
+%CL                                  ^1TOP 10 USERS
+^0@0
+^5ÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄ
+^5       <^4##^5> <^4USERNAME^5>                                @1
+^5ÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄ
+$
+
+$Top_Files_Header
+%CL                                  ^1TOP 10 FILES
+^0@0
+^5ÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄ
+^5         <^4##^5> <^4FILENAME^5>                            @1
+^5ÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄ
 $
