@@ -58,10 +58,11 @@ BEGIN
                  PadLeftStr('^0(^1U^0) Time limits are per call  : ^1'+ShowOnOff(PerCall),39));
         PrintACR(PadLeftStr('^0(^1V^0) SysOp Password checking   : ^1'+ShowOnOff(SysOpPWord),39)+
                  PadLeftStr('^0(^1W^0) Random quote in logon     : ^1'+ShowOnOff(LogonQuote),39));
-        PrintACR(PadLeftStr('^0(^1X^0) User add quote in logon   : ^1'+ShowOnOff(UserAddQuote),39)+
+        PrintACR(PadLeftStr('^0(^1X^0) User add random quote     : ^1'+ShowOnOff(UserAddQuote),39)+
                  PadLeftStr('^0(^1Y^0) Use LightBars             : ^1'+ShowOnOff(UseLightBars),39));
         PrintACR(PadLeftStr('^0(^1Z^0) Inactivity Warn/TimeOut   : ^1'+AOnOff((TimeOutBell = -1) AND (TimeOut = -1),'Off',
-			AOnOff((TimeOutBell = -1),'Off',IntToStr(TimeOutBell))+'^0/^1'+AOnOff((TimeOut = -1),'Off',IntToStr(TimeOut))),39));
+                            AOnOff((TimeOutBell = -1),'Off',IntToStr(TimeOutBell))+'^0/^1'+AOnOff((TimeOut = -1),'Off',
+                            IntToStr(TimeOut))),39));
         NL;
         InputChar('Enter selection [^1A^2-^1P^2,^1R^2-^1Z^2,^1Q^2=^1Quit^2]: ',Cmd,
                   'QABCDEFGHIJKLMNOPRSTUVWXYZ'^M,[CapAll]);

@@ -940,9 +940,9 @@ BEGIN
             BEGIN
               LIL := 0;
               {BackErase(15 + LennMCI(MemFileArea.AreaName) + Length(IntToStr(CompFileArea(FArea,0))));}
-			  FOR Counter := 1 TO LennMCI(lRGLngStr(95,TRUE)) DO
-				BackSpace;
-				{LeeW: fixed that ^^ should we check to make sure the lang isn't %DF???}
+              FOR Counter := 1 TO LennMCI(lRGLngStr(95,TRUE)) DO
+                BackSpace;
+                {LeeW: fixed that ^^ should we check to make sure the lang isn't %DF???}
             END;
         END;
       Close(FileInfoFile);

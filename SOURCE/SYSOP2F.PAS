@@ -23,7 +23,7 @@ BEGIN
       BEGIN
         Abort := FALSE;
         Next := FALSE;
-		ConfigHeader('File System Configuration');
+        ConfigHeader('File System Configuration');
       { Print('%CL^1File Area Configuration:');
         NL; }
         PrintACR('^0(^1A^0) Upload/download ratio system    : ^1'+ShowOnOff(ULDLRatio));
@@ -59,22 +59,22 @@ BEGIN
           'H' : InputInteger('%LFNew percentage of file credits to reward',RewardRatio,[InteractiveEdit,
                              NumbersOnly],0,100,Changed);
           'I' : InputByte('%LFNew file point compensation ratio',FileCreditComp,[InteractiveEdit,
-						  NumbersOnly],0,100,Changed);
+                          NumbersOnly],0,100,Changed);
           'J' : InputByte('%LFNew area file size per 1 file Point',FileCreditCompBaseSize,[InteractiveEdit,
-						  NumbersOnly],0,255,Changed);
+                          NumbersOnly],0,255,Changed);
           'K' : InputByte('%LFNew upload time refund percent',ULRefund,[InteractiveEdit,
-						  NumbersOnly],0,100,Changed);
+                          NumbersOnly],0,100,Changed);
           'L' : InputInteger('%LFNew "To-SysOp" file area (0=None)',ToSysOpDir,[InteractiveEdit,
-							 NumbersOnly],0,NumFileAreas,Changed);
+                             NumbersOnly],0,NumFileAreas,Changed);
           'M' : ValidateAllFiles := NOT ValidateAllFiles;
           'N' : InputLongInt('%LFNew max k-bytes',MaxInTemp,[InteractiveEdit,
-							 NumbersOnly],0,2097151,Changed);
+                             NumbersOnly],0,2097151,Changed);
           'O' : InputLongInt('%LFNew min resume k-bytes',MinResume,[InteractiveEdit,
-							 NumbersOnly],0,2097151,Changed);
+                             NumbersOnly],0,2097151,Changed);
           'P' : InputByte('%LFNew max batch download files',MaxBatchDLFiles,[InteractiveEdit,
-						  NumbersOnly],1,255,Changed);
+                          NumbersOnly],1,255,Changed);
           'R' : InputByte('%LFNew max batch upload files',MaxBatchULFiles,[InteractiveEdit,
-						  NumbersOnly],1,255,Changed);
+                          NumbersOnly],1,255,Changed);
           'S' : SearchDup := NOT SearchDup;
           'T' : ForceBatchDL := NOT ForceBatchDL;
           'U' : ForceBatchUL := NOT ForceBatchUL;

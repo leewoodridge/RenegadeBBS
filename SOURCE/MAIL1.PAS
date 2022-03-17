@@ -1,5 +1,8 @@
 {$A+,B-,D+,E-,F+,I-,L+,N-,O+,R-,S+,V-}
-{12/13/2021 incorporated add quote help into prompt}
+{
+12/13/2021 Incorporated add quote help into prompt
+03/15/2022 Text in select quote menu now displays using message base quoted text color configuration
+}
 
 UNIT Mail1;
 
@@ -1030,7 +1033,7 @@ VAR
     BEGIN
       IF (x) THEN
         Close(QuoteFile);
-      IF (InvisEdit) AND (RedrawScreen) THEN
+      IF (InVisEdit) AND (RedrawScreen) THEN
         Prepare_Screen;
       MCIAllowed := TRUE;
     END;
@@ -1041,19 +1044,17 @@ VAR
     IF (IOResult <> 0) THEN
       Exit;
     IF (MaxQuoteLines = 0) THEN
-    BEGIN
-      WHILE NOT EOF(QuoteFile) DO
       BEGIN
-        ReadLn(QuoteFile,TempStr1);
-        Inc(MaxQuoteLines);
+        WHILE NOT EOF(QuoteFile) DO
+          BEGIN
+            ReadLn(QuoteFile,TempStr1);
+            Inc(MaxQuoteLines);
+          END;
+        Close(QuoteFile);
+        Reset(QuoteFile);
       END;
-      Close(QuoteFile);
-      Reset(QuoteFile);
-    END;
-
     MCIAllowed := FALSE;
     Done := FALSE;
-
     REPEAT
       Abort := FALSE;
       Next := FALSE;
@@ -1061,52 +1062,48 @@ VAR
       QuoteLi := 0;
       IF (LastQuoteLine > 0) THEN
         WHILE NOT EOF(QuoteFile) AND (QuoteLi < LastQuoteLine) DO
+          BEGIN
+            ReadLn(QuoteFile,TempStr1);
+            Inc(QuoteLi);
+          END;
+      IF EOF(QuoteFile) THEN
+        BEGIN
+          LastQuoteLine := 0;
+          QuoteLi := 0;
+          Reset(QuoteFile);
+        END;
+      WHILE (NOT EOF(QuoteFile)) AND ((QuoteLi - LastQuoteLine) < (PageLength - 4)) DO
         BEGIN
           ReadLn(QuoteFile,TempStr1);
           Inc(QuoteLi);
+          TempStr1 := '^1'+Copy(PadRightInt(QuoteLi,Length(IntToStr(MaxQuoteLines)))+':'+'|'+
+                      ZeroPad(IntToStr(MemMsgArea.Quote_Color))+TempStr1,1,MaxLineLen);
+          PrintACR(TempStr1);
         END;
-      IF EOF(QuoteFile) THEN
-      BEGIN
-        LastQuoteLine := 0;
-        QuoteLi := 0;
-        Reset(QuoteFile);
-      END;
-      WHILE (NOT EOF(QuoteFile)) AND ((QuoteLi - LastQuoteLine) < (PageLength - 4)) DO
-      BEGIN
-        ReadLn(QuoteFile,TempStr1);
-        Inc(QuoteLi);
-        TempStr1 := Copy(PadRightInt(QuoteLi,Length(IntToStr(MaxQuoteLines)))+':'+TempStr1,1,MaxLineLen);
-        PrintACR('^1'+TempStr1);
-      END;
       Close(QuoteFile);
       Reset(QuoteFile);
       REPEAT
         NL;
         Prt('^2Enter first line to quote [(^1H^2)eader,(^1Q^2)uit]: ^3');
         Scaninput(TempStr1,'HQ?'^M);
-        {IF (TempStr1 = '?') THEN
-        BEGIN
-          NL;
-          Print('^0<^1Q^0>uit, <^1H^0>eader, <^1?^0>Help, or first line to quote.');
-        END
-        ELSE} IF (TempStr1 = 'H') THEN
-        BEGIN
-          WHILE (TempStr1 > '') AND (NOT EOF(QuoteFile)) AND (CurrentLine <= MaxLines) DO
+        IF (TempStr1 = 'H') THEN
           BEGIN
-            ReadLn(QuoteFile,TempStr1);
-            IF (InvisEdit) THEN
-              Insert_Line(TempStr1)
-            ELSE
-            BEGIN
-              LinePtr^[TotalLines] := TempStr1;
-              Inc(TotalLines);
-            END;
-            Inc(CurrentLine);
+            WHILE (TempStr1 > '') AND (NOT EOF(QuoteFile)) AND (CurrentLine <= MaxLines) DO
+              BEGIN
+                ReadLn(QuoteFile,TempStr1);
+                IF (InvisEdit) THEN
+                  Insert_Line(TempStr1)
+                ELSE
+                  BEGIN
+                    LinePtr^[TotalLines] := TempStr1;
+                    Inc(TotalLines);
+                  END;
+                Inc(CurrentLine);
+              END;
+            Close(QuoteFile);
+            Reset(QuoteFile);
+            TempStr1 := 'H';
           END;
-          Close(QuoteFile);
-          Reset(QuoteFile);
-          TempStr1 := 'H';
-        END;
       UNTIL ((TempStr1 <> '?') AND (TempStr1 <> 'H')) OR (HangUp);
       Fline := StrToInt(TempStr1);
       IF (Fline <= 0) THEN

@@ -1,5 +1,8 @@
 {$A+,B-,D+,E-,F+,I-,L+,N-,O+,R-,S+,V-}
-
+{
+leew: searchrec var in uploadall probably needs uncommented -- test
+enter blank desc WAS = jibberish, no longer... 
+}
 UNIT File5;
 
 INTERFACE
@@ -10,9 +13,9 @@ PROCEDURE UploadAll;
 IMPLEMENTATION
 
 USES
-  Dos,
+  DOS,
   Common,
-  Arcview,
+  ArcView,
   Archive1,
   ExecBat,
   File0,
@@ -22,7 +25,7 @@ USES
   File9,
   File11,
   MultNode,
-  Sysop4;
+  SysOp4;
 
 PROCEDURE MiniDOS;
 VAR
@@ -610,9 +613,7 @@ VAR
 
   PROCEDURE UploadFiles(FArea: Integer; FileName1: Str12; VAR FArrayRecNum1: Byte);
   VAR
-    (*
-    DirInfo: SearchRec;
-    *)
+    (*DirInfo: SearchRec;*)
     Cmd: Char;
     NumExtDesc: Byte;
     DirFileRecNum,
@@ -631,125 +632,124 @@ VAR
     IF (FileArea <> FArea) THEN
       ChangeFileArea(FArea);
     IF (FileArea = FArea) THEN
-    BEGIN
-      LoadFileArea(FileArea);
-
-      LIL := 0;
-      CLS;
-      Found := FALSE;
-      Prompt('^0Scanning ^1'+MemFileArea.AreaName+' #'+IntToStr(CompFileArea(FArea,0))+'^0 ...');
-
-      FindFirst(MemFileArea.DLPath+FileName1,AnyFile - VolumeID - Directory - DOS.Hidden,DirInfo);
-      WHILE (DOSError = 0) AND (NOT Abort) AND (NOT HangUp) DO
       BEGIN
-        DirInfo.Name := Align(DirInfo.Name);
-        RecNo(FileInfo,DirInfo.Name,DirFileRecNum);
-        IF (BadDownloadPath) THEN
-          Exit;
+        LoadFileArea(FileArea);
 
-        IF (DirFileRecNum = -1) THEN
-        BEGIN
-
-          FSize := GetFileSize(MemFileArea.DLPath+DirInfo.Name);
-          IF (FSize = 0) THEN
-          BEGIN
-            FileInfo.FileSize := 0;
-            Include(FileInfo.FIFlags,FIIsRequest);
-          END
-          ELSE
-          BEGIN
-            FileInfo.FileSize := FSize;
-            Exclude(FileInfo.FIFlags,FIIsRequest);
-          END;
-
-          UpdateFileInfo(FileInfo,DirInfo.Name,GotPts);
-
-          IF (FirstOne) THEN
-          BEGIN
-            DisplayFileAreaHeader;
-            FirstOne := FALSE;
-          END;
-
-          GotDesc := FALSE;
-
-          IF (General.FileDiz) AND (DizExists(MemFileArea.DLPath+DirInfo.Name)) THEN
-          BEGIN
-            GetDiz(FileInfo,ExtendedArray,NumExtDesc);
-            Star('Complete.');
-            Prompt(' ^9'+PadRightInt(FArrayRecNum1,2)+' ^1'+DirInfo.Name+' ^2'+GetFileStats(FileInfo)+' ');
-            IF (FlagAll) THEN
-              Ok := TRUE
-            ELSE
-            BEGIN
-              InputChar('Upload? (Yes,No,All,Quit): ',Cmd,'QYNA',[CapAll]);
-              Ok := (Cmd = 'Y') OR (Cmd = 'A');
-              FlagAll := (Cmd = 'A');
-              Abort := (Cmd = 'Q');
-            END;
-            GotDesc := TRUE;
-          END
-          ELSE
-          BEGIN
-            Prompt(' ^9'+PadRightInt(FArrayRecNum1,2)+' ^1'+DirInfo.Name+' ^2'+GetFileStats(FileInfo)+' ');
-            InputMain(FileInfo.Description,SizeOf(FileInfo.Description)-1,[]);
-            Ok := TRUE;
-            IF (FileInfo.Description <> '') AND (FileInfo.Description[1] = '.') THEN
-            BEGIN
-              IF (Length(FileInfo.Description) = 1) THEN
-              BEGIN
-                Abort := TRUE;
-                Exit;
-              END;
-              Cmd := UpCase(FileInfo.Description[2]);
-              CASE Cmd OF
-                'D' : BEGIN
-                        Kill(MemFileArea.DLPath+DirInfo.Name);
-                        Ok := FALSE;
-                      END;
-                'N' : BEGIN
-                        Next := TRUE;
-                        Exit;
-                      END;
-                'S' : Ok := FALSE;
-              END;
-            END;
-          END;
-
-          Inc(FArrayRecNum1);
-          IF (FArrayRecNum1 = 100) THEN
-            FArrayRecNum1 := 0;
-
-          IF (Ok) THEN
-          BEGIN
-            IF (NOT GotDesc) THEN
-            BEGIN
-              FillChar(ExtendedArray,SizeOf(ExtendedArray),0);
-              Counter := 0;
-              REPEAT
-                Inc(Counter);
-                Prt(PadLeftStr('',28));
-                InputMain(ExtendedArray[Counter],SizeOf(ExtendedArray[Counter])-1,[]);
-                IF (ExtendedArray[Counter] = '') THEN
-                  Counter := MaxExtDesc;
-              UNTIL (Counter = MaxExtDesc) OR (HangUp);
-              NL;
-            END;
-            WriteFV(FileInfo,FileSize(FileInfoFile),ExtendedArray);
-            SysOpLog('^1Uploaded "^1'+SQOutSp(DirInfo.Name)+'^1" to ^1'+MemFileArea.AreaName);
-            Found := TRUE;
-          END;
-        END;
-        Close(FileInfoFile);
-        Close(ExtInfoFile);
-        WKey;
-        FindNext(DirInfo);
-      END;
-      IF (NOT Found) THEN
-      BEGIN
         LIL := 0;
-        BackErase(15 + LennMCI(MemFileArea.AreaName) + Length(IntToStr(CompFileArea(FArea,0))));
+        CLS;
+        Found := FALSE;
+        Prompt('^0Scanning ^1'+MemFileArea.AreaName+' #'+IntToStr(CompFileArea(FArea,0))+'^0 ...');
+
+        FindFirst(MemFileArea.DLPath+FileName1,AnyFile - VolumeID - Directory - DOS.Hidden,DirInfo);
+        WHILE (DOSError = 0) AND (NOT Abort) AND (NOT HangUp) DO
+          BEGIN
+            DirInfo.Name := Align(DirInfo.Name);
+            RecNo(FileInfo,DirInfo.Name,DirFileRecNum);
+            IF (BadDownloadPath) THEN
+              Exit;
+
+            IF (DirFileRecNum = -1) THEN
+              BEGIN
+                FSize := GetFileSize(MemFileArea.DLPath+DirInfo.Name);
+                IF (FSize = 0) THEN
+                  BEGIN
+                    FileInfo.FileSize := 0;
+                    Include(FileInfo.FIFlags,FIIsRequest);
+                  END
+                ELSE
+                  BEGIN
+                    FileInfo.FileSize := FSize;
+                    Exclude(FileInfo.FIFlags,FIIsRequest);
+                  END;
+
+                UpdateFileInfo(FileInfo,DirInfo.Name,GotPts);
+
+                IF (FirstOne) THEN
+                  BEGIN
+                    DisplayFileAreaHeader;
+                    FirstOne := FALSE;
+                  END;
+
+                GotDesc := FALSE;
+
+                IF (General.FileDiz) AND (DizExists(MemFileArea.DLPath+DirInfo.Name)) THEN
+                  BEGIN
+                    GetDiz(FileInfo,ExtendedArray,NumExtDesc);
+                    Star('Complete.');
+                    Prompt(' ^9'+PadRightInt(FArrayRecNum1,2)+' ^1'+DirInfo.Name+' ^2'+GetFileStats(FileInfo)+' ');
+                    IF (FlagAll) THEN
+                      Ok := TRUE
+                    ELSE
+                      BEGIN
+                        InputChar('Upload? (Yes,No,All,Quit): ',Cmd,'QYNA',[CapAll]);
+                        Ok := (Cmd = 'Y') OR (Cmd = 'A');
+                        FlagAll := (Cmd = 'A');
+                        Abort := (Cmd = 'Q');
+                      END;
+                    GotDesc := TRUE;
+                  END
+                ELSE
+                  BEGIN {diz not found}
+                    Prompt(' ^9'+PadRightInt(FArrayRecNum1,2)+' ^1'+DirInfo.Name+' ^2'+GetFileStats(FileInfo)+' ');
+                    InputMain(FileInfo.Description,SizeOf(FileInfo.Description)-1,[]);
+                    Ok := TRUE;
+                    IF (FileInfo.Description <> '') AND (FileInfo.Description[1] = '.') THEN
+                      BEGIN
+                        IF (Length(FileInfo.Description) = 1) THEN
+                          BEGIN
+                            Abort := TRUE;
+                            Exit;
+                          END;
+                        Cmd := UpCase(FileInfo.Description[2]);
+                        CASE Cmd OF
+                          'D' : BEGIN
+                                  Kill(MemFileArea.DLPath+DirInfo.Name);
+                                  Ok := FALSE;
+                                END;
+                          'N' : BEGIN
+                                  Next := TRUE;
+                                  Exit;
+                                END;
+                          'S' : Ok := FALSE;
+                        END;
+                      END;
+                  END;
+
+                Inc(FArrayRecNum1);
+                IF (FArrayRecNum1 = 100) THEN
+                  FArrayRecNum1 := 0;
+
+                IF (Ok) THEN
+                  BEGIN
+                    IF (NOT GotDesc) THEN
+                      BEGIN
+                        FillChar(ExtendedArray,SizeOf(ExtendedArray),0);
+                        Counter := 0;
+                        REPEAT
+                          Inc(Counter);
+                          Prt(PadLeftStr('',28));
+                          InputMain(ExtendedArray[Counter],SizeOf(ExtendedArray[Counter])-1,[]);
+                          IF (ExtendedArray[Counter] = '') THEN
+                            Counter := MaxExtDesc;
+                        UNTIL (Counter = MaxExtDesc) OR (HangUp);
+                        NL;
+                      END;
+                    WriteFV(FileInfo,FileSize(FileInfoFile),ExtendedArray);
+                    SysOpLog('^1Uploaded "^1'+SQOutSp(DirInfo.Name)+'^1" to ^1'+MemFileArea.AreaName);
+                    Found := TRUE;
+                  END;
+              END;
+            Close(FileInfoFile);
+            Close(ExtInfoFile);
+            WKey;
+            FindNext(DirInfo);
+          END;
+        IF (NOT Found) THEN
+          BEGIN
+            LIL := 0;
+            BackErase(15 + LennMCI(MemFileArea.AreaName) + Length(IntToStr(CompFileArea(FArea,0))));
+          END;
       END;
-    END;
   END;
 
 BEGIN
@@ -761,12 +761,11 @@ BEGIN
   IF NOT PYNQ('Search by file spec? ',0,FALSE) THEN
     FileName := '*.*'
   ELSE
-  BEGIN
-
-NL;
-    Prompt('File name (^1<CR>^0=^1All^0): ');
-    GetFileName(FileName);
-  END;
+    BEGIN
+      NL;
+      Prompt('File name (^1<CR>^0=^1All^0): ');
+      GetFileName(FileName);
+    END;
   NL;
   Print('^0Enter . to end processing, .S to skip the file, .N to skip to');
   Print('^0the next directory, and .D to delete the file.');
@@ -779,20 +778,17 @@ NL;
   IF (NOT SearchAllFileAreas) THEN
     UploadFiles(FileArea,FileName,FArrayRecNum)
   ELSE
-  BEGIN
-    SaveFileArea := FileArea;
-    FArea := 1;
-    WHILE (FArea >= 1) AND (FArea <= NumFileAreas) AND (NOT Abort) AND (NOT HangUp) DO
     BEGIN
-      UploadFiles(FArea,FileName,FArrayRecNum);
-        Inc(FArea);       
-    WKey;
+      SaveFileArea := FileArea;
+      FArea := 1;
+      WHILE (FArea >= 1) AND (FArea <= NumFileAreas) AND (NOT Abort) AND (NOT HangUp) DO
+        BEGIN
+          UploadFiles(FArea,FileName,FArrayRecNum);
+          Inc(FArea);       
+          WKey;
+        END;
+      FileArea := SaveFileArea;
+      LoadFileArea(FileArea);
     END;
-    FileArea := SaveFileArea;
-    LoadFileArea(FileArea);
 END;
-   END;
-
-
 END.
-

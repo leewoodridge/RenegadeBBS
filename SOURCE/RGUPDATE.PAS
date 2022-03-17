@@ -229,9 +229,9 @@ TYPE
       Point: Word;
     END;
     NewUserToggles:
-	  ARRAY [1..20] OF Byte;
+      ARRAY [1..20] OF Byte;
     Macro:                             { sysop macros }
-	  ARRAY [0..9] OF STRING[100]; 
+      ARRAY [0..9] OF STRING[100]; 
     Netattribute: NetAttribs;          { default netmail attribute }
     TimeAllow,                         { time allowance }
     CallAllow,                         { call allowance }
@@ -303,8 +303,8 @@ TYPE
     OldRIP,                          { if RIP graphics can be used }
     OldFSEditor,                     { if Full Screen Editor }
     OldAutoDetect,                   { Use auto-detected emulation }
-    OldFileAreaLightBar,
-    OldMsgAreaLightBar,
+    OldLightBars,
+    OldUnUsedStatusFlag0,
     OldUnUsedStatusFlag1,
     OldUnUsedStatusFlag2,
     OldUnUsedStatusFlag3
@@ -396,7 +396,7 @@ TYPE
 FUNCTION SqOutSp(s:STRING):STRING;
 BEGIN
   WHILE (Pos(' ',s)>0) DO
-	Delete(s,Pos(' ',s),1);
+    Delete(s,Pos(' ',s),1);
   SqOutSp:=s;
 END;
 
@@ -447,31 +447,31 @@ VAR
   Counter: Byte;
 BEGIN
   IF (Length(S) <= 60) THEN
-	BEGIN
+    BEGIN
       S1 := S;
       S2 := '';
-	END
+    END
   ELSE
-	BEGIN
+    BEGIN
       TempStr := Copy(S,1,65);
       IF (TempStr[65] <> ' ') THEN
-		BEGIN
+        BEGIN
           Counter := 65;
-		  WHILE (TempStr[Counter] <> ' ') DO
-			BEGIN
-			  Dec(TempStr[0]);
-			  Dec(Counter);
-			END;
-		  Dec(TempStr[0]);
-		  S1 := TempStr;
-		  S2 := Copy(S,(Counter + 1),Length(S));
-		END
+          WHILE (TempStr[Counter] <> ' ') DO
+            BEGIN
+              Dec(TempStr[0]);
+              Dec(Counter);
+            END;
+          Dec(TempStr[0]);
+          S1 := TempStr;
+          S2 := Copy(S,(Counter + 1),Length(S));
+        END
       ELSE
-		BEGIN
-		  S1 := Copy(S,1,64);
-		  S2 := Copy(S,66,Length(S));
-		END;
-	END;
+        BEGIN
+          S1 := Copy(S,1,64);
+          S2 := Copy(S,66,Length(S));
+        END;
+    END;
 END;
 
 PROCEDURE Kill(CONST FileName: AStr);
@@ -910,10 +910,10 @@ BEGIN
             Include(SFlags,FSEditor);
           IF (OldAutoDetect IN OldUser.OldSFlags) THEN
             Include(SFlags,AutoDetect);
-          IF (OldFileAreaLightBar IN OldUser.OldSFlags) THEN
-            Include(SFlags,FileAreaLightBar);
-          IF (OldMsgAreaLightBar IN OldUser.OldSFlags) THEN
-            Include(SFlags,MsgAreaLightBar);
+          IF (OldLightBars IN OldUser.OldSFlags) THEN
+            Include(SFlags,LightBars);
+          IF (OldLightBars IN OldUser.OldSFlags) THEN
+            Include(SFlags,LightBars);
         END;
     Write(UserFile,User);
     Inc(Counter);

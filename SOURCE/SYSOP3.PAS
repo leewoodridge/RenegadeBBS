@@ -1,6 +1,8 @@
 {$A+,B-,D+,E-,F+,I-,L+,N-,O+,R-,S+,V-}
 {
 changing clear field data
+if no seperate sysop log, prompt to view normal sysop log
+
 }
 UNIT SysOp3;
 
@@ -1007,12 +1009,13 @@ BEGIN
                       END;
                 ':' : AutoList := NOT AutoList;
                 '\' : BEGIN
-						PrintF(General.LogsPath+'SLOG'+IntToStr(UNum)+'.LOG');
-						IF NOT (NoFile) THEN
-						  PauseScr(FALSE)
-						ELSE
-						  IF PYNQ('SLOG'+IntToStr(UNum)+'.LOG not found '#196' View the normal SysOp log instead?',0,FALSE) THEN
-							ShowLogs;
+                        PrintF(General.LogsPath+'SLOG'+IntToStr(UNum)+'.LOG');
+                        IF NOT (NoFile) THEN
+                          PauseScr(FALSE)
+                        ELSE
+                          IF PYNQ('SLOG'+IntToStr(UNum)+'.LOG not found '#196' View the normal SysOp log instead?',
+                                  0,FALSE) THEN
+                            ShowLogs;
                       END;
               END;
             END;
@@ -1036,19 +1039,19 @@ BEGIN
                           REPEAT
                             NL;
                             InputChar('^2Clear Fields [^1A^2-^1M^2,(^1*^2)All,(^1?^2)Help,(^1Q^2)uit]: ',Cmd,
-									  'Q?*ABCDEFGHIJKL',[CapAll]);
+                                      'Q?*ABCDEFGHIJKL',[CapAll]);
                             CASE Cmd OF
-							  '*' : BEGIN
-									  IF PYNQ('Are you SURE you want to clear all personal information?',0,FALSE) THEN
-										BEGIN
-										END;
-									  IF PYNQ('Are you SURE you want to clear all user preferences?',0,FALSE) THEN
-										BEGIN
-										END;
-									  IF PYNQ('Are you SURE you want to clear all user statistics?',0,FALSE) THEN
-										BEGIN
-										END;
-									END;
+                              '*' : BEGIN
+                                      IF PYNQ('Are you SURE you want to clear all personal information?',0,FALSE) THEN
+                                        BEGIN
+                                        END;
+                                      IF PYNQ('Are you SURE you want to clear all user preferences?',0,FALSE) THEN
+                                        BEGIN
+                                        END;
+                                      IF PYNQ('Are you SURE you want to clear all user statistics?',0,FALSE) THEN
+                                        BEGIN
+                                        END;
+                                    END;
                               'A' : User.RealName := '';
                             { ' ' : User.Country := ''; }
                               'B' : User.Street := '';
@@ -1064,24 +1067,24 @@ BEGIN
                               'L' : User.Sex := #0;
                               '?' : BEGIN
                                       NL;
-									  Print('^5'#196#196' ^4PERSONAL INFO ^5'#196#196);
+                                      Print('^5'#196#196' ^4PERSONAL INFO ^5'#196#196);
                                       LCmds3(19,1,'A Real Name',        'B Address',   'C City, State');
                                       LCmds3(19,1,'D Zip Code',         'E Birthdate', 'F Phone Number');
                                       LCmds3(19,1,'G '+PadLeftStr(lRGLngStr(41,TRUE),16),
                                                   'H '+PadLeftStr(lRGLngStr(42,TRUE),16),
                                                   'I '+PadLeftStr(lRGLngStr(43,TRUE),16));
                                       LCmds3(19,1,'J Forgot PW Answer', 'K Note',      'L Gender');
-									  Print('^5'#196#196' ^4USER PREFERENCES ^5'#196#196);
-									  {
-									  
-									  }
-									  LCmds3(19,1,'','','');
-									  Print('^5'#196#196' ^4USER STATISTICS ^5'#196#196);
-									  {
-									  
-									  }
-									  LCmds3(19,1,'','','');
-									END;
+                                      Print('^5'#196#196' ^4USER PREFERENCES ^5'#196#196);
+                                      {
+                                      
+                                      }
+                                      LCmds3(19,1,'','','');
+                                      Print('^5'#196#196' ^4USER STATISTICS ^5'#196#196);
+                                      {
+                                      
+                                      }
+                                      LCmds3(19,1,'','','');
+                                    END;
                             END;
                           UNTIL (Cmd = 'Q') OR (HangUp);
                           Cmd := #0;

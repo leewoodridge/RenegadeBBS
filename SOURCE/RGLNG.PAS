@@ -90,7 +90,7 @@ BEGIN
     END
   ELSE
     BEGIN
-	i := 0; {leew: added}
+    i := 0; {leew: added}
       WriteLn;
       Write('Compiling language strings ... ');
       Found := TRUE;
@@ -105,7 +105,7 @@ BEGIN
           ReadLn(F,S);
           IF (S <> '') AND (S[1] = '$') THEN
             BEGIN
-			inc(i); {leew: added}
+            inc(i); {leew: added}
               Delete(S,1,1);
               S := AllCaps(S);
               RGStrNum := -1;
@@ -637,15 +637,15 @@ BEGIN
                 RgStrNum := 261
               ELSE IF (S = 'TOP_FILES_HEADER') THEN
                 RgStrNum := 262
-				{// END OF COMB }
+                {// END OF COMB }
                 (*
               ELSE IF (S = '') THEN
                 RgStrNum := 
                 *)
                 ;
-				
-			  {/}
-				
+                
+              {/}
+                
               IF (RGStrNum = -1) THEN
                 BEGIN
                   WriteLn('Error!');

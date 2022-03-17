@@ -80,8 +80,8 @@ BEGIN
       Seek(ValidationFile,(RecNumToList1 - 1));
       Read(ValidationFile,Validation);
       TempStr := TempStr + PadLeftStr(' ^1'+PadLeftInt(RecNumToList1,4)+
-                                      ' ^1'+PadLeftStr(Validation.Key,1)+
-                                      ' ^1'+Validation.Description,39);
+                                      ' ^0'+PadLeftStr(Validation.Key,1)+
+                                      ' ^0'+Validation.Description,39);
       Inc(NumOnLine);
       IF (NumOnLine = 2) THEN
         BEGIN

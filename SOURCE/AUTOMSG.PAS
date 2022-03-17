@@ -56,14 +56,14 @@ BEGIN
       ReadLn(AutoMsgFile,TempStr);
       PrintF('AUTOH');
       IF (NoFile) THEN
-		BEGIN
-		  lRGLngStr(104,FALSE); { Auto-Message header }
-		  UserColor(5);
-		  WHILE WhereX < ThisUser.LineLen DO
-			Prompt(lRGLngStr(11,TRUE)); {"-"}
-		  NL;
-		  UserColor(0);
-		END;
+        BEGIN
+          lRGLngStr(104,FALSE); { Auto-Message header }
+          UserColor(5);
+          WHILE WhereX < ThisUser.LineLen DO
+            Prompt(lRGLngStr(11,TRUE)); {"-"}
+          NL;
+          UserColor(0);
+        END;
       REPEAT
         ReadLn(AutoMsgFile,TempStr);
         PrintACR('^1'+TempStr);
@@ -78,13 +78,13 @@ BEGIN
       Print(TempStr); {" ─ Posted by [USERNAME] on [DATE]"}
       PrintF('AUTOT');
       IF (NoFile) THEN
-		BEGIN
-		  UserColor(5);
-		  WHILE WhereX < ThisUser.LineLen DO
-			Prompt(lRGLngStr(11,TRUE)); {"-"}
-		  NL;
-		  UserColor(0);
-		END;
+        BEGIN
+          UserColor(5);
+          WHILE WhereX < ThisUser.LineLen DO
+            Prompt(lRGLngStr(11,TRUE)); {"-"}
+          NL;
+          UserColor(0);
+        END;
     END;
   SysOpLog('Read Auto-Message');
   PauseScr(FALSE);

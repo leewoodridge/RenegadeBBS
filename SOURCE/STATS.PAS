@@ -18,7 +18,7 @@ TYPE
     RecNum: Byte; {LeeW: Added}
     UNum: Integer;
     Info: Real;
-	Decimal: Byte; {LeeW: Added}
+    Decimal: Byte; {LeeW: Added}
   END;
 
   Top10FileRec{ordArray} = RECORD
@@ -111,7 +111,7 @@ BEGIN
     Top10User[Counter].RecNum := Counter;
     Top10User[Counter].UNum := -1;
     Top10User[Counter].Info := 0.0;
-	Top10User[Counter].Decimal := 0;
+    Top10User[Counter].Decimal := 0;
   END;
 END;
 
@@ -136,18 +136,18 @@ BEGIN
   IF (Info > 0.0) THEN
     FOR Counter := 1 TO 10 DO
       IF (Info >= Top10User[Counter].Info) THEN
-		BEGIN
+        BEGIN
           FOR Counter1 := 10 DOWNTO (Counter + 1) DO
-		    BEGIN
-			  Top10User[Counter1] := Top10User[Counter1 - 1];
-			  Top10User[Counter1].RecNum := Counter1; {LeeW: Added}
-			END;
-		  Top10User[Counter].RecNum := Counter; {LeeW: Added}
+            BEGIN
+              Top10User[Counter1] := Top10User[Counter1 - 1];
+              Top10User[Counter1].RecNum := Counter1; {LeeW: Added}
+            END;
+          Top10User[Counter].RecNum := Counter; {LeeW: Added}
           Top10User[Counter].UNum := UNum;
           Top10User[Counter].Info := Info;
-		  Top10User[Counter].Decimal := Decimal;
+          Top10User[Counter].Decimal := Decimal;
           Counter := 10;
-		END;
+        END;
 END;
 
 PROCEDURE SortFileDecending(VAR Top10File: Top10FileArray; DirNum,DirRecNum: Integer; Downloaded: LongInt);
@@ -158,18 +158,18 @@ BEGIN
   IF (Downloaded > 0) THEN
     FOR Counter := 1 to 10 DO
       IF (Downloaded >= Top10File[Counter].Downloaded) THEN
-		BEGIN
+        BEGIN
           FOR Counter1 := 10 DOWNTO (Counter + 1) DO
-			BEGIN
-			  Top10File[Counter1] := Top10File[Counter1 - 1];
-			  Top10File[Counter1].RecNum := Counter1; {LeeW: Added}
-			END;
-		  Top10File[Counter].RecNum := Counter; {LeeW: Added}
+            BEGIN
+              Top10File[Counter1] := Top10File[Counter1 - 1];
+              Top10File[Counter1].RecNum := Counter1; {LeeW: Added}
+            END;
+          Top10File[Counter].RecNum := Counter; {LeeW: Added}
           Top10File[Counter].DirNum := DirNum;
           Top10File[Counter].DirRecNum := DirRecNum;
           Top10File[Counter].Downloaded := Downloaded;
           Counter := 10;
-		END;
+        END;
 END;
 
 PROCEDURE SearchTop10User(VAR Top10User: Top10UserArray; Cmd: Char; ExcludeUserNum: Integer; Decimal: Byte);
@@ -287,21 +287,21 @@ BEGIN
   PrintF('TOPUH');
   IF (NoFile) THEN
     BEGIN
-	  LangStringArray[0] := Centre(Title);
-	  LangStringArray[1] := PadRightStr(Header,20);
-	  lRGLngStr(261,FALSE) { $TOP_USERS_HEADER }
-	END
+      LangStringArray[0] := Centre(Title);
+      LangStringArray[1] := PadRightStr(Header,20);
+      lRGLngStr(261,FALSE) { $TOP_USERS_HEADER }
+    END
   ELSE
-	IF NOT (MCIPosRecArray[0].X = 0) AND NOT (MCIPosRecArray[1].X = 0) THEN
-	  BEGIN
-		SaveX := WhereX;
-		SaveY := WhereY;
-		ANSIG(MCIPosRecArray[0].X,MCIPosRecArray[0].Y);
-		Print(Centre(Title));
-		ANSIG(MCIPosRecArray[1].X,MCIPosRecArray[1].Y);
-		Print(PadRightStr(Header,20));
-		ANSIG(SaveX,SaveY);
-	  END;
+    IF NOT (MCIPosRecArray[0].X = 0) AND NOT (MCIPosRecArray[1].X = 0) THEN
+      BEGIN
+        SaveX := WhereX;
+        SaveY := WhereY;
+        ANSIG(MCIPosRecArray[0].X,MCIPosRecArray[0].Y);
+        Print(Centre(Title));
+        ANSIG(MCIPosRecArray[1].X,MCIPosRecArray[1].Y);
+        Print(PadRightStr(Header,20));
+        ANSIG(SaveX,SaveY);
+      END;
   Counter := 1;
   WHILE (Counter <= 10) AND (Top10User[Counter].UNum >= 1) AND (NOT Abort) AND (NOT HangUp) DO
     BEGIN
@@ -339,21 +339,21 @@ BEGIN
   PrintF('TOPFH');
   IF (NoFile) THEN
     BEGIN
-	  LangStringArray[0] := Centre(Title);
-	  LangStringArray[1] := PadRightStr(Header,20);
-	  lRGLngStr(262,FALSE) { $TOP_FILES_HEADER }
-	END
+      LangStringArray[0] := Centre(Title);
+      LangStringArray[1] := PadRightStr(Header,20);
+      lRGLngStr(262,FALSE) { $TOP_FILES_HEADER }
+    END
   ELSE
-	IF NOT (MCIPosRecArray[0].X = 0) AND NOT (MCIPosRecArray[1].X = 0) THEN
-	  BEGIN
-		SaveX := WhereX;
-		SaveY := WhereY;
-		ANSIG(MCIPosRecArray[0].X,MCIPosRecArray[0].Y);
-		Print(Centre(Title));
-		ANSIG(MCIPosRecArray[1].X,MCIPosRecArray[1].Y);
-		Print(PadRightStr(Header,20));
-		ANSIG(SaveX,SaveY);
-	  END;
+    IF NOT (MCIPosRecArray[0].X = 0) AND NOT (MCIPosRecArray[1].X = 0) THEN
+      BEGIN
+        SaveX := WhereX;
+        SaveY := WhereY;
+        ANSIG(MCIPosRecArray[0].X,MCIPosRecArray[0].Y);
+        Print(Centre(Title));
+        ANSIG(MCIPosRecArray[1].X,MCIPosRecArray[1].Y);
+        Print(PadRightStr(Header,20));
+        ANSIG(SaveX,SaveY);
+      END;
   FOR Counter := 1 TO 10 DO
     BEGIN
 
@@ -367,10 +367,10 @@ BEGIN
           Read(FileInfoFile,F);
           Close(FileInfoFile);
           Close(ExtInfoFile); {???}
-		  {/}
-		  IF (NOT ReadBuffer('TOPFM')) THEN
-			EXIT;
-		  DisplayBuffer(TopFileMCI,@Top10File[Counter],@F);
+          {/}
+          IF (NOT ReadBuffer('TOPFM')) THEN
+            EXIT;
+          DisplayBuffer(TopFileMCI,@Top10File[Counter],@F);
         END;
   {
     F.FileName := '';
@@ -540,17 +540,17 @@ BEGIN
               Width := 12;
             END;
     END;
-	SearchTop10User(Top10User,MenuOption[1],ExcludeUserNum,Decimal);
+    SearchTop10User(Top10User,MenuOption[1],ExcludeUserNum,Decimal);
     DisplayTop10UserArray(Top10User,Title,Header,Decimal,Width);
   END
   ELSE IF (MenuOption[1] = 'M') THEN
   BEGIN
               Title := SemiCmd(lRGLngStr(255,TRUE),1);
               Header := SemiCmd(lRGLngStr(255,TRUE),2);
-			  { 
-			  Decimal := 0;
-			  Width := 12;
-			  }
+              { 
+              Decimal := 0;
+              Width := 12;
+              }
     SearchTop10GlobalFileSpec(Top10File);
     DisplayTop10FileArray(Top10File,Title,Header);
   END;

@@ -227,10 +227,10 @@ VAR
   ChatOk: Boolean;
 BEGIN
   IF InTime(Timer,General.lLowTime,General.HiTime) THEN
-	ChatOk := TRUE
+    ChatOk := TRUE
   ELSE
-	ChatOk := FALSE;
-	
+    ChatOk := FALSE;
+    
   IF (RChat IN ThisUser.ACFlags) THEN
     ChatOk := FALSE;
 
@@ -238,9 +238,9 @@ BEGIN
     WITH MemEventArray[EventNum]^ DO
       IF (EventIsActive IN EFlags) AND (EventIsChat IN EFlags) AND (CheckEventTime(EventNum,0)) THEN
         ChatOk := TRUE;
-		
+        
   IF ((A AND 16) = 0) THEN
-	ChatOk := TRUE;
+    ChatOk := TRUE;
 
   SysOpAvailable := ChatOk;
 END;

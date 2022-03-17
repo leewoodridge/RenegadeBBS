@@ -1,6 +1,8 @@
 {$A+,B+,D+,E+,F+,I+,L+,N-,O+,R-,S+,V-}
 {
 12/17/2021 aesthetic changes
+
+menu titles not saving if last line blank
 }
 UNIT SysOp7;
 
@@ -29,30 +31,30 @@ BEGIN
   AllowContinue := TRUE;
   MCIAllowed := FALSE;
   IF (DisplayListNum) THEN
-	PrintACR('^5<^4I#^5> <^4M#^5> <^4Menu Name^5>')
+    PrintACR('^5<^4I#^5> <^4M#^5> <^4Menu Name^5>')
   ELSE
-	PrintACR('^5<^4##^5> <^4Menu Name^5>');
+    PrintACR('^5<^4##^5> <^4Menu Name^5>');
   HL;
   Reset(MenuFile);
   NumDone := 0;
   WHILE (NumDone < (PageLength - 7)) AND (RecNumToList1 >= 1) AND (RecNumToList1 <= NumMenus)
         AND (NOT Abort) AND (NOT HangUp) DO
-	BEGIN
+    BEGIN
       Seek(MenuFile,MenuRecNumArray[RecNumToList1]);
       Read(MenuFile,MenuR);
       WITH MenuR DO
-		BEGIN
-		  IF (DisplayListNum) THEN
+        BEGIN
+          IF (DisplayListNum) THEN
             PrintACR(' ^1'+PadLeftInt(RecNumToList1,4)+
-					 ' ^1'+PadLeftInt(MenuNum,4)+
-					 ' ^0'+PadLeftStr(LDesc[1],68))
-		  ELSE
-			PrintACR(' ^1'+PadLeftInt(MenuNum,4)+
-					 ' ^0'+PadLeftStr(LDesc[1],73));
-		END;
+                     ' ^1'+PadLeftInt(MenuNum,4)+
+                     ' ^0'+PadLeftStr(LDesc[1],68))
+          ELSE
+            PrintACR(' ^1'+PadLeftInt(MenuNum,4)+
+                     ' ^0'+PadLeftStr(LDesc[1],73));
+        END;
       Inc(RecNumToList1);
       Inc(NumDone);
-	END;
+    END;
   Close(MenuFile);
   LastError := IOResult;
   MCIAllowed := TRUE;
@@ -88,49 +90,49 @@ BEGIN
     IF (InputStr = '-') THEN
       InputStr := 'Q';
     IF (InputStr <> 'Q') THEN
-	  BEGIN
-		IF (InputStr = ^M) THEN
-		  BEGIN
-			InputStr := '?';
-			IF (RecNumToList < 1) OR (RecNumToList > NumMenus) THEN
-			  RecNumToList := 1
-		  END
-		ELSE IF (InputStr = '?') THEN
+      BEGIN
+        IF (InputStr = ^M) THEN
+          BEGIN
+            InputStr := '?';
+            IF (RecNumToList < 1) OR (RecNumToList > NumMenus) THEN
+              RecNumToList := 1
+          END
+        ELSE IF (InputStr = '?') THEN
           RecNumToList := 1
-		ELSE IF (StrToInt(InputStr) < LowMenuNum) OR (StrToInt(InputStr) > HighMenuNum) THEN
+        ELSE IF (StrToInt(InputStr) < LowMenuNum) OR (StrToInt(InputStr) > HighMenuNum) THEN
           Print('%LF^8The range must be from '+IntToStr(LowMenuNum)+' to '+IntToStr(HighMenuNum)+'!^0')
-		ELSE IF (InputStr = '0') AND (LowMenuNum = 0) THEN
-		  BEGIN
-			MenuNum := StrToInt(InputStr);
-			InputStr := 'Q';
-			Changed := TRUE;
-		  END
-		ELSE
-		  BEGIN
-			RecNum1 := -1;
-			RecNum := 1;
-			Reset(MenuFile);
-			WHILE (RecNum <= NumMenus) AND (RecNum1 = -1) DO
-			  BEGIN
-				Seek(MenuFile,MenuRecNumArray[RecNum]);
-				Read(MenuFile,TempMenuR);
-				IF (StrToInt(InputStr) = TempMenuR.MenuNum) THEN
-				  RecNum1 := TempMenuR.MenuNum;
-				Inc(RecNum);
-			  END;
-			Close(MenuFile);
-			IF (RecNum1 = -1) THEN
-			  BEGIN
-				lRGLngStr(112,FALSE);
-				MenuNum := SaveMenuNum;
-			  END
-			ELSE
-			  BEGIN
-				MenuNum := StrToInt(InputStr);
-				InputStr := 'Q';
-				Changed := TRUE;
-			  END;
-		  END;
+        ELSE IF (InputStr = '0') AND (LowMenuNum = 0) THEN
+          BEGIN
+            MenuNum := StrToInt(InputStr);
+            InputStr := 'Q';
+            Changed := TRUE;
+          END
+        ELSE
+          BEGIN
+            RecNum1 := -1;
+            RecNum := 1;
+            Reset(MenuFile);
+            WHILE (RecNum <= NumMenus) AND (RecNum1 = -1) DO
+              BEGIN
+                Seek(MenuFile,MenuRecNumArray[RecNum]);
+                Read(MenuFile,TempMenuR);
+                IF (StrToInt(InputStr) = TempMenuR.MenuNum) THEN
+                  RecNum1 := TempMenuR.MenuNum;
+                Inc(RecNum);
+              END;
+            Close(MenuFile);
+            IF (RecNum1 = -1) THEN
+              BEGIN
+                lRGLngStr(112,FALSE);
+                MenuNum := SaveMenuNum;
+              END
+            ELSE
+              BEGIN
+                MenuNum := StrToInt(InputStr);
+                InputStr := 'Q';
+                Changed := TRUE;
+              END;
+          END;
       END;
   UNTIL (InputStr = 'Q') OR (HangUp);
 END;
@@ -358,201 +360,204 @@ VAR
     IF (NumMenus = 0) THEN
       Messages(4,0,'menus')
     ELSE
-	  BEGIN
-		RecNumToModify := -1;
-		InputInteger('%LFMenu number to modify?',RecNumToModify,[NumbersOnly],1,NumMenus,Changed);
-		IF (RecNumToModify >= 1) AND (RecNumToModify <= NumMenus) THEN
-		  BEGIN
-			SaveRecNumToModify := -1;
-			Cmd1 := #0;
-			Reset(MenuFile);
-			WHILE (Cmd1 <> 'Q') AND (NOT HangUp) DO
-			  BEGIN
-				IF (SaveRecNumToModify <> RecNumToModify) THEN
-				  BEGIN
-					Seek(MenuFile,MenuRecNumArray[RecNumToModify]);
-					Read(MenuFile,MenuR);
-					SaveRecNumToModify := RecNumToModify;
-					Changed := FALSE;
-				  END;
-				WITH MenuR DO
-				  REPEAT
-					IF (Cmd1 <> '?') THEN
-					  BEGIN
-						Abort := FALSE;
-						Next := FALSE;
-						MCIAllowed := FALSE;
-						ConfigHeader('Editing Menu #'+IntToStr(RecNumToModify)+' Of '+IntToStr(NumMenus));
-						PrintACR('^0(^11^0) Menu Number    : ^1'+IntToStr(MenuNum));
-						PrintACR('^0(^12^0) Menu Title     : ^1'+LDesc[1]);
-						IF (LDesc[2] <> '') THEN
-						  PrintACR('^0    Menu Title #2  : ^1'+LDesc[2]);
-						IF (LDesc[3] <> '') THEN
-						  PrintACR('^0    Menu Title #3  : ^1'+LDesc[3]);
-						PrintACR('^0(^13^0) Help Files     : ^1'+AOnOff((Directive = ''),'*Generic*',Directive)+'^0 / ^1'+
-														   AOnOff((LongMenu = ''),'*Generic*',LongMenu));
-						PrintACR('^0(^14^0) Menu Prompt    : ^1'+MenuPrompt);
-						PrintACR('^0(^15^0) ACS Required   : ^1'+AOnOff((ACS = ''),'*None*','^0"^1'+ACS+'^0"'));
-						PrintACR('^0(^16^0) Password       : ^1'+AOnOff((Password = ''),'*None*',Password));
-						PrintACR('^0(^17^0) Fallback Menu  : ^1'+IntToStr(FallBack));
-						PrintACR('^0(^18^0) Forced ? Level : ^1'+AOnOff((ForceHelpLevel=0),'*None*',IntToStr(ForceHelpLevel)));
-						PrintACR('^0(^19^0) Generic Config : Columns: ^1'+IntToStr(GenCols)+'^0 Colors: ^1'+IntToStr(GCol[1])+
-							     '^0 / ^1'+IntToStr(GCol[2])+'^0 / ^1'+IntToStr(GCol[3]));
-						IF (General.MultiNode) THEN
-						  PrintACR('^0(^1N^0) Node Activity  : ^1'+NodeActivityDesc);
-						PrintACR('^0(^1T^0) Flags          : ^1'+DisplayMenuFlags(MenuFlags,'1','0'));
-						MCIAllowed := TRUE;
-						NL;
-						PrintACR('^0 '#196' This menu contains ^1'+IntToStr(CmdNumArray[RecNumToModify])+'^0 '
-								 +Plural('command',CmdNumArray[RecNumToModify]));
-						IF (NumMenus = 0) THEN
-						  Print('*** No menus defined ***'); {LeeW: Messages!}
-					  END;
-					NL;
-					IF (General.MultiNode) THEN
-					  InputChar('^2Menu Editor [^11^2-^19^2,^1NT^2,(^1?^2)Help,(^1C^2)ommand Editor,(^1Q^2)uit]: ',Cmd1,
-								'Q123456789CNT[]FJL?'^M,[CapAll])
-					ELSE
-					  InputChar('^2Menu Editor [^11^2-^19^2,^1T^2,(^1?^2)Help,(^1C^2)ommand Editor,(^1Q^2)uit]: ',Cmd1,
-								'Q123456789CT[]FJL?'^M,[CapAll]);
-					CASE Cmd1 OF
-					  '1' : BEGIN
-							  REPEAT
-								SaveMenuNum := MenuNum;
-								RecNum1 := -1;
-								InputByte('%LFNew menu number',MenuNum,[InteractiveEdit,NumbersOnly],1,(NumMenus + 1),Changed);
-								IF (MenuNum <> SaveMenuNum) AND (MenuNum >= 1) AND (MenuNum <= (NumMenus + 1)) THEN
-								  BEGIN
-									RecNum := 1;
-									WHILE (Recnum <= NumMenus) AND (RecNum1 = -1) DO
-									  BEGIN
-										Seek(MenuFile,MenuRecNumArray[RecNum]);
-										Read(MenuFile,TempMenuR);
-										IF (MenuNum = TempMenuR.MenuNum) THEN
-										  RecNum1 := TempMenuR.MenuNum;
-										Inc(RecNum);
-									  END;
-									IF (RecNum1 <> -1) THEN
-									  BEGIN
-										NL;
-										Print('^8Duplicate menu number!^0');
-										MenuNum := SaveMenuNum;
-									  END;
-								  END;
-							  UNTIL (RecNum1 = -1) OR (HangUp);
-							  Changed := TRUE;
-							END;
-					  '2' : BEGIN
-							  InputString('%LFNew menu title #1: %LF',LDesc[1],
-										  (SizeOf(LDesc[1]) - 1),[InteractiveEdit,NoInputField],Changed);
-							  {IF (LDesc[1] <> '') THEN}
-							  InputString('New menu title #2: %LF',LDesc[2],
-										  (SizeOf(LDesc[2]) - 1),[InteractiveEdit,NoInputField],Changed);
-							  {IF (LDesc[2] <> '') THEN}
-							  InputString('New menu title #3: %LF',LDesc[3],
-										  (SizeOf(LDesc[3]) - 1),[InteractiveEdit,NoInputField],Changed);
-							END;
-					  '3' : BEGIN
-							  InputString('%LFNew file displayed for help: ',Directive,(SizeOf(Directive) - 1),
-										  [InterActiveEdit,CapAll],Changed);
-							  InputString('%LFNew file displayed for extended help: ',LongMenu,(SizeOf(LongMenu) - 1),
-										  [InterActiveEdit,CapAll],Changed);
-							END;
-					  '4' : InputString('%LFNew menu prompt: %LF',MenuPrompt,(SizeOf(MenuPrompt) - 1),[InteractiveEdit,NoInputField],
-										Changed);
-					  '5' : InputString('%LFNew menu ACS: ',ACS,(SizeOf(ACS) - 1),[InterActiveEdit],Changed);
-					  '6' : InputString('%LFNew password: ',Password,(SizeOf(Password) - 1),[InterActiveEdit,CapAll],Changed);
-					  '7' : BEGIN
-							  SaveMenuNum := FallBack;
-							  IF (Changed) THEN
-								BEGIN
-								  Seek(MenuFile,MenuRecNumArray[SaveRecNumToModify]);
-								  Write(MenuFile,MenuR);
-								  Changed := FALSE;
-								END;
-							  Close(MenuFile);
-							  FindMenu('%LF^2New fallback menu (^10^2=^1None^2)',SaveMenuNum,0,NumMenus,Changed);
-							  Reset(MenuFile);
-							  Seek(MenuFile,MenuRecNumArray[SaveRecNumToModify]);
-							  Read(MenuFile,MenuR);
-							  IF (Changed) THEN
-								FallBack := SaveMenuNum;
-							END;
-					  '8' : InputByte('%LFNew forced menu help-level (0=None)',ForceHelpLevel,
-									  [InteractiveEdit{,DisplayValue},NumbersOnly],0,3,Changed);
-					  '9' : BEGIN
-							  REPEAT
-								ConfigHeader('Generic Menu Configuration');
-								PrintACR('^0(^1C^0) Number Of Columns : ^1'+IntToStr(GenCols));
-								PrintACR('^0(^11^0) Bracket Color     : ^1'+IntToStr(GCol[1]));
-								PrintACR('^0(^12^0) Command Color     : ^1'+IntToStr(GCol[2]));
-								PrintACR('^0(^13^0) Description Color : ^1'+IntToStr(GCol[3]));
-								NL;
-								PrintACR('^0(^1S^0) Show Menu');
-								NL;
-								InputChar('^2Generic Menu Configuration [^1C123S^2,(^1Q^2)uit]: ',Cmd1,'QCS123'^M,[CapAll]);
-								CASE Cmd1 OF
-								  'S' : BEGIN
-										  IF (Changed) THEN
-											BEGIN
-											  Seek(MenuFile,MenuRecNumArray[SaveRecNumToModify]);
-											  Write(MenuFile,MenuR);
-											  Changed := FALSE;
-											END;
-										  Seek(MenuFile,MenuRecNumArray[SaveRecNumToModify]);
-										  Read(MenuFile,MenuR);
-										  CurMenu := MenuR.MenuNum;
-										  LoadMenu;
-										  Reset(MenuFile);
-										  GenericMenu(2);
-										  NL;
-										  PauseScr(FALSE);
-										  Seek(MenuFile,MenuRecNumArray[SaveRecNumToModify]);
-										  Read(MenuFile,MenuR);
-										END;
-								  'C' : InputByte('%LFNew number of generic columns',GenCols,
-												  [InteractiveEdit,NumbersOnly],0,7,Changed);
-								  '1' : InputByte('%LFNew bracket color',GCol[1],
-												  [InteractiveEdit,NumbersOnly],0,9,Changed);
-								  '2' : InputByte('%LFNew command color',GCol[2],
-												  [InteractiveEdit,NumbersOnly],0,9,Changed);
-								  '3' : InputByte('%LFNew description color',GCol[3],
-												  [InteractiveEdit,NumbersOnly],0,9,Changed);
-								END;
-							  UNTIL (Cmd1 IN ['Q',^M]) OR (HangUp);
-							  Cmd1 := #0;
-							END;
-					  'C' : BEGIN
-							  IF (Changed) THEN
-								BEGIN
-								  Seek(MenuFile,MenuRecNumArray[SaveRecNumToModify]);
-								  Write(MenuFile,MenuR);
-								  Changed := FALSE;
-								END;
-							  CommandEditor(RecNumToModify,MenuNum,LDesc[1]);
-							  SaveRecNumToModify := -1;
-							END;
-					  'N' : IF (General.MultiNode) THEN
-							  InputString('%LF^0New node activity description:%LF^2: ',NodeActivityDesc,
+      BEGIN
+        RecNumToModify := -1;
+        InputInteger('%LFMenu number to modify?',RecNumToModify,[NumbersOnly],1,NumMenus,Changed);
+        IF (RecNumToModify >= 1) AND (RecNumToModify <= NumMenus) THEN
+          BEGIN
+            SaveRecNumToModify := -1;
+            Cmd1 := #0;
+            Reset(MenuFile);
+            WHILE (Cmd1 <> 'Q') AND (NOT HangUp) DO
+              BEGIN
+                IF (SaveRecNumToModify <> RecNumToModify) THEN
+                  BEGIN
+                    Seek(MenuFile,MenuRecNumArray[RecNumToModify]);
+                    Read(MenuFile,MenuR);
+                    SaveRecNumToModify := RecNumToModify;
+                    Changed := FALSE;
+                  END;
+                WITH MenuR DO
+                  REPEAT
+                    IF (Cmd1 <> '?') THEN
+                      BEGIN
+                        Abort := FALSE;
+                        Next := FALSE;
+                        MCIAllowed := FALSE;
+                        ConfigHeader('Editing Menu #'+IntToStr(RecNumToModify)+' Of '+IntToStr(NumMenus));
+                        PrintACR('^0(^11^0) Menu Number    : ^1'+IntToStr(MenuNum));
+                        PrintACR('^0(^12^0) Menu Title     : ^1'+LDesc[1]);
+                        IF (LDesc[2] <> '') THEN
+                          PrintACR('^0    Menu Title #2  : ^1'+LDesc[2]);
+                        IF (LDesc[3] <> '') THEN
+                          PrintACR('^0    Menu Title #3  : ^1'+LDesc[3]);
+                        PrintACR('^0(^13^0) Help Files     : ^1'+AOnOff((Directive = ''),'*Generic*',Directive)+'^0 / ^1'+
+                                                           AOnOff((LongMenu = ''),'*Generic*',LongMenu));
+                        PrintACR('^0(^14^0) Menu Prompt    : ^1'+MenuPrompt);
+                        PrintACR('^0(^15^0) ACS Required   : ^1'+AOnOff((ACS = ''),'*None*','^0"^1'+ACS+'^0"'));
+                        PrintACR('^0(^16^0) Password       : ^1'+AOnOff((Password = ''),'*None*',Password));
+                        PrintACR('^0(^17^0) Fallback Menu  : ^1'+IntToStr(FallBack));
+                        PrintACR('^0(^18^0) Forced ? Level : ^1'+AOnOff((ForceHelpLevel=0),'*None*',IntToStr(ForceHelpLevel)));
+                        PrintACR('^0(^19^0) Generic Config : Columns: ^1'+IntToStr(GenCols)+'^0 Colors: ^1'+IntToStr(GCol[1])+
+                                 '^0 / ^1'+IntToStr(GCol[2])+'^0 / ^1'+IntToStr(GCol[3]));
+                        IF (General.MultiNode) THEN
+                          PrintACR('^0(^1N^0) Node Activity  : ^1'+NodeActivityDesc);
+                        PrintACR('^0(^1T^0) Flags          : ^1'+DisplayMenuFlags(MenuFlags,'1','0'));
+                        MCIAllowed := TRUE;
+                        NL;
+                        PrintACR('^0 '#196' This menu contains ^1'+IntToStr(CmdNumArray[RecNumToModify])+'^0 '
+                                 +Plural('command',CmdNumArray[RecNumToModify]));
+                        IF (NumMenus = 0) THEN
+                          Print('*** No menus defined ***'); {LeeW: Messages!}
+                      END;
+                    NL;
+                    IF (General.MultiNode) THEN
+                      InputChar('^2Menu Editor [^11^2-^19^2,^1NT^2,(^1?^2)Help,(^1C^2)ommand Editor,(^1Q^2)uit]: ',Cmd1,
+                                'Q123456789CNT[]FJL?'^M,[CapAll])
+                    ELSE
+                      InputChar('^2Menu Editor [^11^2-^19^2,^1T^2,(^1?^2)Help,(^1C^2)ommand Editor,(^1Q^2)uit]: ',Cmd1,
+                                'Q123456789CT[]FJL?'^M,[CapAll]);
+                    CASE Cmd1 OF
+                      '1' : BEGIN
+                              REPEAT
+                                SaveMenuNum := MenuNum;
+                                RecNum1 := -1;
+                                InputByte('%LFNew menu number',MenuNum,[InteractiveEdit,NumbersOnly],1,(NumMenus + 1),Changed);
+                                IF (MenuNum <> SaveMenuNum) AND (MenuNum >= 1) AND (MenuNum <= (NumMenus + 1)) THEN
+                                  BEGIN
+                                    RecNum := 1;
+                                    WHILE (Recnum <= NumMenus) AND (RecNum1 = -1) DO
+                                      BEGIN
+                                        Seek(MenuFile,MenuRecNumArray[RecNum]);
+                                        Read(MenuFile,TempMenuR);
+                                        IF (MenuNum = TempMenuR.MenuNum) THEN
+                                          RecNum1 := TempMenuR.MenuNum;
+                                        Inc(RecNum);
+                                      END;
+                                    IF (RecNum1 <> -1) THEN
+                                      BEGIN
+                                        NL;
+                                        Print('^8Duplicate menu number!^0');
+                                        MenuNum := SaveMenuNum;
+                                      END;
+                                  END;
+                              UNTIL (RecNum1 = -1) OR (HangUp);
+                              Changed := TRUE;
+                            END;
+                      '2' : BEGIN
+                              NL;
+                              InputString('New menu title #1: %LF',LDesc[1],
+                                          (SizeOf(LDesc[1]) - 1),[InteractiveEdit,NoInputField],Changed);
+                              {IF (LDesc[1] <> '') THEN}
+                              InputString('New menu title #2: %LF',LDesc[2],
+                                          (SizeOf(LDesc[2]) - 1),[InteractiveEdit,NoInputField],Changed);
+                              {IF (LDesc[2] <> '') THEN}
+                              InputString('New menu title #3: %LF',LDesc[3],
+                                          (SizeOf(LDesc[3]) - 1),[InteractiveEdit,NoInputField],Changed);
+                              Changed := TRUE; {LeeW: Cheating here}
+                            END;
+                      '3' : BEGIN
+                              InputString('%LFNew file displayed for help: ',Directive,(SizeOf(Directive) - 1),
+                                          [InterActiveEdit,CapAll],Changed);
+                              InputString('%LFNew file displayed for extended help: ',LongMenu,(SizeOf(LongMenu) - 1),
+                                          [InterActiveEdit,CapAll],Changed);
+                              Changed := TRUE; {LeeW: Cheating here}
+                            END;
+                      '4' : InputString('%LFNew menu prompt: %LF',MenuPrompt,(SizeOf(MenuPrompt) - 1),
+                                        [InteractiveEdit,NoInputField],Changed);
+                      '5' : InputString('%LFNew menu ACS: ',ACS,(SizeOf(ACS) - 1),[InterActiveEdit],Changed);
+                      '6' : InputString('%LFNew password: ',Password,(SizeOf(Password) - 1),[InterActiveEdit,CapAll],Changed);
+                      '7' : BEGIN
+                              SaveMenuNum := FallBack;
+                              IF (Changed) THEN
+                                BEGIN
+                                  Seek(MenuFile,MenuRecNumArray[SaveRecNumToModify]);
+                                  Write(MenuFile,MenuR);
+                                  Changed := FALSE;
+                                END;
+                              Close(MenuFile);
+                              FindMenu('%LF^2New fallback menu (^10^2=^1None^2)',SaveMenuNum,0,NumMenus,Changed);
+                              Reset(MenuFile);
+                              Seek(MenuFile,MenuRecNumArray[SaveRecNumToModify]);
+                              Read(MenuFile,MenuR);
+                              IF (Changed) THEN
+                                FallBack := SaveMenuNum;
+                            END;
+                      '8' : InputByte('%LFNew forced menu help-level (0=None)',ForceHelpLevel,
+                                      [InteractiveEdit,NumbersOnly],0,3,Changed);
+                      '9' : BEGIN
+                              REPEAT
+                                ConfigHeader('Generic Menu Configuration');
+                                PrintACR('^0(^1C^0) Number Of Columns : ^1'+IntToStr(GenCols));
+                                PrintACR('^0(^11^0) Bracket Color     : ^1'+IntToStr(GCol[1]));
+                                PrintACR('^0(^12^0) Command Color     : ^1'+IntToStr(GCol[2]));
+                                PrintACR('^0(^13^0) Description Color : ^1'+IntToStr(GCol[3]));
+                                NL;
+                                PrintACR('^0(^1S^0) Show Menu');
+                                NL;
+                                InputChar('^2Generic Menu Configuration [^1C123S^2,(^1Q^2)uit]: ',Cmd1,'QCS123'^M,[CapAll]);
+                                CASE Cmd1 OF
+                                  'S' : BEGIN
+                                          IF (Changed) THEN
+                                            BEGIN
+                                              Seek(MenuFile,MenuRecNumArray[SaveRecNumToModify]);
+                                              Write(MenuFile,MenuR);
+                                              Changed := FALSE;
+                                            END;
+                                          Seek(MenuFile,MenuRecNumArray[SaveRecNumToModify]);
+                                          Read(MenuFile,MenuR);
+                                          CurMenu := MenuR.MenuNum;
+                                          LoadMenu;
+                                          Reset(MenuFile);
+                                          GenericMenu(2);
+                                          NL;
+                                          PauseScr(FALSE);
+                                          Seek(MenuFile,MenuRecNumArray[SaveRecNumToModify]);
+                                          Read(MenuFile,MenuR);
+                                        END;
+                                  'C' : InputByte('%LFNew number of generic columns',GenCols,
+                                                  [InteractiveEdit,NumbersOnly],0,7,Changed);
+                                  '1' : InputByte('%LFNew bracket color',GCol[1],
+                                                  [InteractiveEdit,NumbersOnly],0,9,Changed);
+                                  '2' : InputByte('%LFNew command color',GCol[2],
+                                                  [InteractiveEdit,NumbersOnly],0,9,Changed);
+                                  '3' : InputByte('%LFNew description color',GCol[3],
+                                                  [InteractiveEdit,NumbersOnly],0,9,Changed);
+                                END;
+                              UNTIL (Cmd1 IN ['Q',^M]) OR (HangUp);
+                              Cmd1 := #0;
+                            END;
+                      'C' : BEGIN
+                              IF (Changed) THEN
+                                BEGIN
+                                  Seek(MenuFile,MenuRecNumArray[SaveRecNumToModify]);
+                                  Write(MenuFile,MenuR);
+                                  Changed := FALSE;
+                                END;
+                              CommandEditor(RecNumToModify,MenuNum,LDesc[1]);
+                              SaveRecNumToModify := -1;
+                            END;
+                      'N' : IF (General.MultiNode) THEN
+                              InputString('%LF^0New node activity description:%LF^2: ',NodeActivityDesc,
                                   (SizeOf(NodeActivityDesc) - 1),[InteractiveEdit],Changed);
-					  'T' : BEGIN
-							  REPEAT
-								InputChar('%LF^2Toggle which menu flag? ('+DisplayMenuFlags(MenuFlags,'1','2')+'^2)'+
+                      'T' : BEGIN
+                              REPEAT
+                                InputChar('%LF^2Toggle which menu flag? ('+DisplayMenuFlags(MenuFlags,'1','2')+'^2)'+
                                 ' [(^1?^2)Help,<^1CR^2>Quit]: ',Cmd1,^M'CDTNPAF12345?',[CapAll]);
-										  
+                                          
 { -- LeeW: indented to here! --}
-										  
-								CASE Cmd1 OF
+                                          
+                                CASE Cmd1 OF
                             'C','D','T','N','P','A','F','1'..'5' :
                                     ToggleMenuFlags(Cmd1,MenuFlags,Changed);
                             '?' : BEGIN
                                     NL;
-                                    LCmds(21,1,'Clear screen',		   'Don''t center titles');
-                                    LCmds(21,1,'No menu prompt',	   'Pause before display');
+                                    LCmds(21,1,'Clear screen',         'Don''t center titles');
+                                    LCmds(21,1,'No menu prompt',       'Pause before display');
                                     LCmds(21,1,'Auto Time display',    'Force line input');
                                     LCmds(21,1,'Titles not displayed', '1 No ANS prompt');
-                                    LCmds(21,1,'2 No AVT prompt',	   '3 No RIP prompt');
-                                    LCmds(21,1,'4 No Global disp',	   '5 No global use');
+                                    LCmds(21,1,'2 No AVT prompt',      '3 No RIP prompt');
+                                    LCmds(21,1,'4 No Global disp',     '5 No global use');
                                   END;
                           END;
                         UNTIL (Cmd1 = ^M) OR (HangUp);
@@ -623,10 +628,10 @@ BEGIN
   Cmd := #0;
   REPEAT
     IF (Cmd <> '?') THEN
-	begin
-	configheader('Menu Editor');
+    begin
+    configheader('Menu Editor');
       DisplayMenus(RecNumToList,TRUE);
-	  end;
+      end;
     InputChar('%LF^2Menu Editor [^1DIM^2,(^1?^2)Help,(^1Q^2)uit]: ',Cmd,'QDIM?'^M,[CapAll]);
     CASE Cmd OF
       ^M  : IF (RecNumToList < 1) OR (RecNumToList > NumMenus) THEN
@@ -635,7 +640,7 @@ BEGIN
       'I' : InsertMenu;
       'M' : ModifyMenu;
       '?' : BEGIN
-			  NL;
+              NL;
               Print('^0<^1CR^0>Refresh/Next Page');
               LCmds(12,1,'Delete Menu','Insert Menu');
               LCmds(12,1,'Modify Menu','');

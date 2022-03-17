@@ -49,7 +49,7 @@ BEGIN
     LightBarCmd := 1
   ELSE
     LightBarCmd := LightBarCounter;
-  IF (General.UseLightBars) AND (FileAreaLightBar IN ThisUser.SFlags) THEN
+  IF (General.UseLightBars) AND (LightBars IN ThisUser.SFlags) THEN
     BEGIN
       SaveX := WhereX;
       SaveY := WhereY;
@@ -63,7 +63,7 @@ BEGIN
   s := '';
   REPEAT
     W := GetKey;
-    IF (General.UseLightBars) AND (FileAreaLightBar IN ThisUser.SFlags) THEN
+    IF (General.UseLightBars) AND (LightBars IN ThisUser.SFlags) THEN
       BEGIN
         IF (W = 13) AND (S = '') THEN
           BEGIN
@@ -250,7 +250,7 @@ BEGIN
     IF (Length(s) > Length(SaveS)) THEN
       Prompt(s[Length(s)]);
   UNTIL (GotCmd) OR (HangUp);
-  IF (General.UseLightBars) AND (FileAreaLightBar IN ThisUser.SFlags) THEN
+  IF (General.UseLightBars) AND (LightBars IN ThisUser.SFlags) THEN
     BEGIN
       SaveX := WhereX;
       SaveY := WhereY;
@@ -281,7 +281,7 @@ BEGIN
   ELSE
     LightBarCmd := LightBarCounter;
 
-  IF (General.UseLightBars) AND (MsgAreaLightBar IN ThisUser.SFlags) THEN
+  IF (General.UseLightBars) AND (LightBars IN ThisUser.SFlags) THEN
   BEGIN
     SaveX := WhereX;
     SaveY := WhereY;
@@ -300,7 +300,7 @@ BEGIN
 
     W := GetKey;
 
-    IF (General.UseLightBars) AND (MsgAreaLightBar IN ThisUser.SFlags) THEN
+    IF (General.UseLightBars) AND (LightBars IN ThisUser.SFlags) THEN
     BEGIN
       IF (W = 13) AND (S = '') THEN
       BEGIN
@@ -491,7 +491,7 @@ BEGIN
       Prompt(s[Length(s)]);
   UNTIL (GotCmd) OR (HangUp);
 
-  IF (General.UseLightBars) AND (MsgAreaLightBar IN ThisUser.SFlags) THEN
+  IF (General.UseLightBars) AND (LightBars IN ThisUser.SFlags) THEN
   BEGIN
     SaveX := WhereX;
     SaveY := WhereY;

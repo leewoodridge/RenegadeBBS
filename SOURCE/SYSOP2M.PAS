@@ -15,7 +15,7 @@
      - new user message user config now users lfinduserws
     [TO DO]
      - Allow toggle of new user application message to be mandatory or optional
-	 ''+PadRightStr('',23)+AOnOff((NewAppMsgMandatory),'Mandatory','Optional')
+     ''+PadRightStr('',23)+AOnOff((NewAppMsgMandatory),'Mandatory','Optional')
      - birthdate/ph# validation at logon bypass if set to '' but require to update -- is this fixed???
      
 }
@@ -81,7 +81,7 @@ BEGIN
         PrintACR(PadLeftStr('^0(^1M^0) Forgot PW Answer : ^1'+ShowYesNo(NewUserQToggles[14] = TRUE),39)+
                  PadLeftStr('^0(^11^0) New User Message : ^1'+AOnOff((NewApp = -1),'No','Yes ^0'+#196+' #^1'
                                                              +PadLeftInt(NewApp,5)),39));
-		PrintACR(PadLeftStr('^0 - "^1'+General.ForgotPWQuestion+'^0"',79));
+        PrintACR(PadLeftStr('^0 - "^1'+General.ForgotPWQuestion+'^0"',79));
       END;
     {MCIAllowed := TRUE;}
     NL;
@@ -143,11 +143,11 @@ BEGIN
         'L' : NewUserQToggles[12] := NOT NewUserQToggles[12];
               { 13 = Password }
         'M' : BEGIN
-				IF PYNQ('%LFDo you want to change the forgot password question?',0,FALSE) THEN
-				  InputString('%LFEnter new question :',General.ForgotPWQuestion,SizeOf(General.ForgotPWQuestion)-1,
-				  [InteractiveEdit],Changed);
-				NewUserQToggles[14] := NOT NewUserQToggles[14];
-			  END;
+                IF PYNQ('%LFDo you want to change the forgot password question?',0,FALSE) THEN
+                  InputString('%LFEnter new question :',General.ForgotPWQuestion,SizeOf(General.ForgotPWQuestion)-1,
+                  [InteractiveEdit],Changed);
+                NewUserQToggles[14] := NOT NewUserQToggles[14];
+              END;
         'N' : NewUserQToggles[15] := NOT NewUserQToggles[15];
         'O' : NewUserQToggles[16] := NOT NewUserQToggles[16];
         'P' : NewUserQToggles[17] := NOT NewUserQToggles[17];
@@ -170,14 +170,14 @@ BEGIN
                     'E' : BEGIN
                             NL;
                             {new user application letter -- mandatory or optional?}
-							Print('^0Send new user message to which user?');
-							lFindUserWS(TempInt);
+                            Print('^0Send new user message to which user?');
+                            lFindUserWS(TempInt);
                             {NewAppMsgMandatory := YNQ('Should the new user letter be mandatory?',TRUE);}
                           END;
                     'D' : TempInt := -1;
                   END;
-				  IF (TempInt <> 0) THEN
-					NewApp := TempInt;
+                  IF (TempInt <> 0) THEN
+                    NewApp := TempInt;
                   {Cmd := #0;}
                 END;
               END;

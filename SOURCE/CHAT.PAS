@@ -74,11 +74,11 @@ BEGIN
     IF (Reason <> '') THEN
     BEGIN
       Inc(ChatAttempts);
-	  SysOpLog('Paged SysOp '#196' Reason: "'+Reason+'"');
-	  {
+      SysOpLog('Paged SysOp '#196' Reason: "'+Reason+'"');
+      {
       SysOpLog('^4Chat attempt:');
       SL1(Reason);
-	  }
+      }
       IF (NOT SysOpAvailable) AND AACS(General.OverRideChat) THEN
         PrintF('CHATOVR');
       IF (SysOpAvailable) OR (AACS(General.OverRideChat) AND PYNQ(^M^J'SysOp is not available. Override? ',0,FALSE)) THEN

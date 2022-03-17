@@ -1430,7 +1430,7 @@ BEGIN
         LoadNewScanFile(NewScanFileArea);
       IF AACS(MemFileArea.ACS) OR (FAUnHidden IN MemFileArea.FAFlags) THEN
         BEGIN
-          IF (General.UseLightBars) AND (FileAreaLightBar IN ThisUser.SFlags) THEN
+          IF (General.UseLightBars) AND (LightBars IN ThisUser.SFlags) THEN
             BEGIN
               Inc(LightBarCounter);
               LightBarArray[LightBarCounter].CmdToExec := CompFileArea(FArea,0);

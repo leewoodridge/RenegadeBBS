@@ -32,7 +32,7 @@ USES
   SysOp2L, { Credit System }
   SysOp2M, { New User Toggles }
   SysOp2N, { SysOp Macros }
-  SysOp2O; { GetSecRange() }
+  SysOp2O; { GetSecRange }
   
   
   PROCEDURE ConfigHeader(s: STRING);
@@ -75,7 +75,7 @@ BEGIN
         PrintACR(PadLeftStr('^0(^1E^0) System Toggles',39)+
                  PadLeftStr('^0(^1F^0) File System Configuration',39));
         PrintACR(PadLeftStr('^0(^1G^0) Subscription/Validation System',39)+
-                 PadLeftStr('^0(^1H^0) Network Configuration',39));
+                 PadLeftStr('^0(^1H^0) Network Mail Configuration',39));
         PrintACR(PadLeftStr('^0(^1I^0) Offline Mail Configuration',39)+
                  PadLeftStr('^0(^1J^0) Color Configuration',39));
         PrintACR(PadLeftStr('^0(^1K^0) Archive Configuration',39)+

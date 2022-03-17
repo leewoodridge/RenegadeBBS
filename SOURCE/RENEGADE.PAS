@@ -29,7 +29,7 @@
 {$X+} { Allow extended syntax }
 
 {
- 02/24/2022	- Exodus added command line parameter help
+ 02/24/2022 - Exodus added command line parameter help
 }
 
 PROGRAM Renegade;
@@ -161,30 +161,30 @@ BEGIN
     IF ((SC(ParamStr(Counter),1) = '-') OR (SC(ParamStr(Counter),1) = '/')) THEN
       CASE SC(ParamStr(Counter),2) OF
           '?' : BEGIN { Command line parameters help }
-				  ClrScr;
+                  ClrScr;
                   TextColor(LightGray);
                   TextBackground(Black);
-				  WriteLn('ษอออออออออออออออออออออออออออออออออออออออออออออออออออออออออออออออออออออออออออออป');
-				  WriteLn('บ         Renegade BBS Supports the Following Command-Line Parameters         บ');
-				  WriteLn('บอออออออออออออออออออออออออออออออออออออออออออออออออออออออออออออออออออออออออออออบ');
-				  WriteLn('บ            ๚ LOADING ๚               บ               ๚ EXIT ๚               บ');
-				  WriteLn('บอออออออออออออออออออออออออออออออออออออออออออออออออออออออออออออออออออออออออออออบ');
-				  WriteLn('บ  -L  : Logon Locally to Renegade     บ  -Q  : Exit to DOS After Hangup      บ');
-				  WriteLn('บ                                      บ  -X# : Log User Off in # Minutes     บ');
-				  WriteLn('บ  -N# : Specify Which Node # to Load  บ -EE# : Critical Errorlevel           บ');
-				  WriteLn('บ  -T  : If Using Net2BBS              บ -EN# : Normal Errorlevel             บ');
-				  WriteLn('บ  -TC : If Using NetSerial or COM/IP  บออออออออออออออออออออออออออออออออออออออบ');
-				  WriteLn('บ  -B# : Force Baudrate #####          บ               ๚ QWK ๚                บ');
-				  WriteLn('บ  -D  : Load Overlay File to DISK     บออออออออออออออออออออออออออออออออออออออบ');
-				  WriteLn('บ                                      บ  -M# : Create QWK Packet For User #  บ');
-				  WriteLn('บออออออออออออออออออออออออออออออออออออออบ  -U# : Upload REP Packet For User #  บ');
-				  WriteLn('บ  ๚ OPTIONAL CONNECTION PARAMETERS ๚  บออออออออออออออออออออออออออออออออออออออบ');
-				  WriteLn('บออออออออออออออออออออออออออออออออออออออบ           ๚ MAINTENANCE ๚            บ');
-				  WriteLn('บ  -H# : Specify Socket Handle         บออออออออออออออออออออออออออออออออออออออบ');
-				  WriteLn('บ  -C  : Reliable Connection Flag      บ  -F  : Import FILES.BBS              บ');
-				  WriteLn('บ  -ID#: Pass Caller-ID Info           บ  -P  : Pack Message Bases            บ');
-				  WriteLn('บ  -IP#: Pass Caller-IP Info           บ  -S  : Sort File Areas               บ');
-				  WriteLn('ศอออออออออออออออออออออออออออออออออออออออออออออออออออออออออออออออออออออออออออออผ');
+                  WriteLn('ษอออออออออออออออออออออออออออออออออออออออออออออออออออออออออออออออออออออออออออออป');
+                  WriteLn('บ         Renegade BBS Supports the Following Command-Line Parameters         บ');
+                  WriteLn('บอออออออออออออออออออออออออออออออออออออออออออออออออออออออออออออออออออออออออออออบ');
+                  WriteLn('บ            ๚ LOADING ๚               บ               ๚ EXIT ๚               บ');
+                  WriteLn('บอออออออออออออออออออออออออออออออออออออออออออออออออออออออออออออออออออออออออออออบ');
+                  WriteLn('บ  -L  : Logon Locally to Renegade     บ  -Q  : Exit to DOS After Hangup      บ');
+                  WriteLn('บ                                      บ  -X# : Log User Off in # Minutes     บ');
+                  WriteLn('บ  -N# : Specify Which Node # to Load  บ -EE# : Critical Errorlevel           บ');
+                  WriteLn('บ  -T  : If Using Net2BBS              บ -EN# : Normal Errorlevel             บ');
+                  WriteLn('บ  -TC : If Using NetSerial or COM/IP  บออออออออออออออออออออออออออออออออออออออบ');
+                  WriteLn('บ  -B# : Force Baudrate #####          บ               ๚ QWK ๚                บ');
+                  WriteLn('บ  -D  : Load Overlay File to DISK     บออออออออออออออออออออออออออออออออออออออบ');
+                  WriteLn('บ                                      บ  -M# : Create QWK Packet For User #  บ');
+                  WriteLn('บออออออออออออออออออออออออออออออออออออออบ  -U# : Upload REP Packet For User #  บ');
+                  WriteLn('บ  ๚ OPTIONAL CONNECTION PARAMETERS ๚  บออออออออออออออออออออออออออออออออออออออบ');
+                  WriteLn('บออออออออออออออออออออออออออออออออออออออบ           ๚ MAINTENANCE ๚            บ');
+                  WriteLn('บ  -H# : Specify Socket Handle         บออออออออออออออออออออออออออออออออออออออบ');
+                  WriteLn('บ  -C  : Reliable Connection Flag      บ  -F  : Import FILES.BBS              บ');
+                  WriteLn('บ  -ID#: Pass Caller-ID Info           บ  -P  : Pack Message Bases            บ');
+                  WriteLn('บ  -IP#: Pass Caller-IP Info           บ  -S  : Sort File Areas               บ');
+                  WriteLn('ศอออออออออออออออออออออออออออออออออออออออออออออออออออออออออออออออออออออออออออออผ');
                           {---------------------------------------|----------------------------------------} {80 CHARS}
                   Halt;
                 END;

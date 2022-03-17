@@ -2,7 +2,8 @@
 LeeW: search for ** to find proposed changes to data files
 TODO: add user flag to force password change next logon 
 10/07/2021 - Updated names of user flags so they're intuitive; ARFlags, ACFlags, StatusFlags
-12/2/2021 - Combined GeneralRec lightbar booleans, all lightbars either on or off now
+12/02/2021 - Combined GeneralRec lightbar booleans, all lightbars either on or off now
+03/13/2022 - Combined user statusflags msg & file lightbars into 1 - lightbars
 }
 CONST
   Build = '1.25';
@@ -115,13 +116,14 @@ TYPE
     RIP,                          { if RIP graphics can be used }
     FSEditor,                     { Is user using full-screen editor }
     AutoDetect,                   { Is user having emulation auto-detected }
-    FileAreaLightBar,
-    MsgAreaLightBar,
+    LightBars, { LeeW: Was FileAreaLightBar -- they're all combined into 1 now }
+    
 {
  ** ONLY FLAGS RELATED TO USER ACCOUNT STATUS SHOULD BE HERE -- MOVE CLSMSG,RIP,FSEditor,
- AutoDetect,FileAreaLightBar,MsgAreaLightBar OUT!!!
+ AutoDetect,lightbars OUT!!!
  ALSO alert SHOULD BE HERE
 }
+    UnUsedStatusFlag0, { LeeW: Was MsgAreaLightBar }
     UnUsedStatusFlag1,
     UnUsedStatusFlag2,
     UnUsedStatusFlag3
@@ -457,9 +459,9 @@ TYPE
     Quote_Color,                    { Color of quoted text } {^}
     Tear_Color,                     { Color of tear line } {^}
     Origin_Color,                   { Color of origin line } {^}
-    BackSysOpLogs,                  { days to keep SYSOP##.LOG }
-    EventWarningTime,               { minutes before event to warn user }
-    WFCBlankTime,                   { minutes before blanking WFC menu }
+    BackSysOpLogs,                  { Number of days to keep SysOp logs }
+    EventWarningTime,               { Minutes before warning user of upcoming event }
+    WFCBlankTime,                   { Minutes before blanking out WFC menu }
     AlertBeep,                      { time between alert beeps - Was Integer }
     FileCreditComp,                 { file credit compensation ratio }
     FileCreditCompBaseSize,         { file credit area compensation size }
@@ -495,7 +497,7 @@ TYPE
     PasswordChange,                 { Mandatory password change every X days }
     RewardRatio,                    { Percentage of file points to reward back }
     CreditInternetMail,             { Credits per internet e-mail }
-    BirthDateCheck,                 { Check users birthdate every X logons }
+    BirthDateCheck,                 { Check users birthdate every # logons }
     UnUsedInteger1,                 { / }
     UnUsedInteger2: Integer;        { / }
     
@@ -569,16 +571,16 @@ TYPE
     MultiNode,                      { MultiNode mode }
     PerCall,                        { time limits are per call or per day?}
     TestUploads,                    { perform integrity tests on uploads? }
-    UseLightBars,            		{ use LightBars? }
-    UnUsedBoolean0,           		{ / } {was msgarealightbar}
+    UseLightBars,                   { use LightBars? }
+    UnUsedBoolean0,                 { / }
     UnUsedBoolean1,                 { / }
     UnUsedBoolean2: Boolean;        { / }
 
     FileArcInfo:                    { archive specs }
       ARRAY [1..MaxArcs] OF FileArcInfoRecordType;
 
-    FileArcComment:
-      ARRAY [1..3] OF STRING[40];   { BBS comment files for archives }
+    FileArcComment:                 { BBS comment files for archives }
+      ARRAY [1..3] OF STRING[40];
 
     Aka:                            { 20 Addresses + 21st for UUCP address }
       ARRAY [0..20] OF {$IFDEF WIN32} PACKED {$ENDIF} RECORD 
@@ -608,7 +610,30 @@ TYPE
     
     NewUserQToggles:                { Toggles for new user application questions }
       ARRAY [1..30] OF Boolean;
-	(*AskTagLine: Boolean;			{ Prompt user to add random tagline to messages? }*)
+    
+    (*
+    { ** THINGS I INTEND TO IMPLEMENT ** }
+    
+    AskTagLine: Boolean;            { Prompt user to add random tagline to messages? }
+    
+    Logon_OneLiners,                { OneLiners during logon? }
+    Logon_OneLiners_Add,            { Prompt user to add a OneLiner during logon? }
+    Logon_Quote_Add,                { Prompt user to add a Quote during logon? }
+    Logon_Voting: Boolean;          { Prompt user to vote on unvoted topics during logon? (or force if mandatory) }
+    Logon_LastCallers: Boolean;     { Display Last Callers Information During Logon }
+    
+    AddQuoteACS,                    { Add A Quote ACS }
+    AddOneLinerACS: ACString;       { Add A OneLiner ACS }
+    
+    DefNumOneLiners: SmallInt;      { Default Number Of OneLiners To Display If MenuOption = 0 }
+    DefNumLastCallers: SmallInt;    { Default Number Of LastCallers To Display If MenuOption = 0}
+    
+    TimeStampLogs: Boolean;         { Apply TimeStamp To Log Files? }
+    DefSplitChat: Boolean;          { Use split chat as default? }
+    
+    NewAppMsgMandatory: Boolean;    { Are we forcing new user to send message to SysOp or just prompting? }
+    MaxAnswerAttempts: Byte;        { Max answer attempts for questions before giving up }
+    *)
     
   END; { END OF GENERALREC }
 

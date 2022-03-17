@@ -3,7 +3,7 @@
 Lee Woodridge
  10/20/2021 - Color config now uses pipe codes instead of caret codes
  11/10/2021 - changed default new base options -- sysop acs and colors
-			- add submenu for changing color options
+            - add submenu for changing color options
 }
 UNIT SysOp8;
 
@@ -177,12 +177,12 @@ VAR
     ELSE
       BEGIN
         IF PYNQ('%LFAre you sure you want to reset all message area colors?',0,FALSE) THEN
-		  BEGIN
+          BEGIN
             BEGIN { Public message areas }
               Prompt('%LFRestoring default message area colors ... ');
               Reset(MsgAreaFile);
               FOR RecNum := 1{FirstRecNum} TO NumMsgAreas{LastRecNum} DO
-				BEGIN
+                BEGIN
                   Seek(MsgAreaFile,(RecNum - 1));
                   Read(MsgAreaFile,MemMsgArea);
                 
@@ -193,29 +193,29 @@ VAR
                 
                   Seek(MsgAreaFile,(RecNum - 1));
                   Write(MsgAreaFile,MemMsgArea);
-				END;
+                END;
               Close(MsgAreaFile);
             END;
-			BEGIN { Private messages }
-			  Assign(EMailFile,General.DataPath+'MEMAIL.DAT');
-			  Reset(EMailFile);
+            BEGIN { Private messages }
+              Assign(EMailFile,General.DataPath+'MEMAIL.DAT');
+              Reset(EMailFile);
               Seek(EMailFile,0);
               Read(EMailFile,MemMsgArea);
-			  
-			  MemMsgArea.Text_Color := General.Text_Color;
+              
+              MemMsgArea.Text_Color := General.Text_Color;
               MemMsgArea.Quote_Color := General.Quote_Color;
               MemMsgArea.Tear_Color := General.Tear_Color;
               MemMsgArea.Origin_Color := General.Origin_Color;
-			  
-			  Seek(EMailFile,0);
-			  Write(EMailFile,MemMsgArea);
-			  Close(EMailFile);
-			END;
-			{LastError := IOResult;}
+              
+              Seek(EMailFile,0);
+              Write(EMailFile,MemMsgArea);
+              Close(EMailFile);
+            END;
+            {LastError := IOResult;}
             Print('Done');
             SysOpLog('* Reset all message area colors to defaults');
           END;
-	  END;
+      END;
   END;
   
   PROCEDURE ChangeMsgAreaDrive(Drive: Char; FirstRecNum: Integer);
@@ -1104,10 +1104,10 @@ VAR
     {CLS;} ConfigHeader('Message Area Editor');
     CASE DisplayType OF
       1 : PrintACR('^5<^4##^5> <^4Message Area Name^5>      <^4Flag^5>  <^4Read    ^5/ ^4Post    ^5/ ^4MCI ACS^5> '
-					+'<^4Max^5>  <^4A^5>');
+                    +'<^4Max^5>  <^4A^5>');
       2 : PrintACR('^5<^4##^5> <^4Message Area Name^5>         <^4Address^5>   <^4Path^5>                            ');
     END;
-	HL;
+    HL;
     IF (RecNumToList1 = 0) THEN
     BEGIN
       NumDone := 0;

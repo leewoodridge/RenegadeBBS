@@ -797,7 +797,7 @@ VAR
       1 : PrintACR('^5<^4##^5> <^4File Area Name^5>                  <^4##^5> <^4File Area Name^5>                  ');
       2 : PrintACR('^5<^4##^5> <^4File Area Name^5>      <^4Dat^5>    <^4DL Path^5>            <^4UL Path^5>            ');
     END;
-	HL;
+    HL;
     Reset(FileAreaFile);
     NumDone := 0;
     NumOnLine := 0; { LeeW: Added }
@@ -857,10 +857,10 @@ BEGIN
       'T' : DisplayType := ((DisplayType MOD 2) + 1);
       '?' : BEGIN
               Print('%LF<CR>Next screen or redisplay current screen');
-              LCmds(23,1,'D Delete File Area',  	'I Insert File Area');
-              LCmds(23,1,'M Modify File Area',  	'P Position File Area');
-              LCmds(23,1,'C Change Storage Drive',	'T Toggle Display Format');
-              LCmds(23,1,'Q Quit','');
+              LCmds(23,1,'D Delete File Area',     'I Insert File Area');
+              LCmds(23,1,'M Modify File Area',     'P Position File Area');
+              LCmds(23,1,'C Change Storage Drive', 'T Toggle Display Format');
+              LCmds(23,1,'Q Quit',                 '');
             END;
     END;
     IF (Cmd <> ^M) THEN

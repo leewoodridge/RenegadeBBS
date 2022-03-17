@@ -718,11 +718,10 @@ BEGIN
   IF (LocalIOOnly) THEN
     Exit;
   IF (DriverInstalled <> $1954) THEN
-  BEGIN
-    ClrScr;
-    WriteLn('Renegade requires a FOSSIL driver.');
-    Halt;
-  END
+    BEGIN
+      WriteLn('[ERROR] A fossil driver is required for operation '#196#196' Use "/L" for local I/O');
+      Halt;
+    END
   ELSE
     ASM
       Xor AL,AL

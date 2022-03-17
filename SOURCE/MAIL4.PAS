@@ -60,7 +60,7 @@ BEGIN
     IF (AACS(MemMsgArea.ACS)) OR (MAUnHidden IN MemMsgArea.MAFlags) THEN
     BEGIN
 
-      IF (General.UseLightBars) AND (MsgAreaLightBar IN ThisUser.SFlags) THEN
+      IF (General.UseLightBars) AND (LightBars IN ThisUser.SFlags) THEN
       BEGIN
         Inc(LightBarCounter);
         LightBarArray[LightBarCounter].CmdToExec := CompMsgArea(MArea,0);

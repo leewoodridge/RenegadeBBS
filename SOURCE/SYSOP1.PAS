@@ -257,9 +257,9 @@ VAR
           Next := FALSE;
           CLS;
           IF (Editing) THEN
-			ConfigHeader('Editing Protocol #'+IntToStr(RecNumToEdit)+' Of '+IntToStr(NumProtocols))
+            ConfigHeader('Editing Protocol #'+IntToStr(RecNumToEdit)+' Of '+IntToStr(NumProtocols))
           ELSE
-			ConfigHeader('Inserting Protocol #'+IntToStr(RecNumToEdit)+' Of '+IntToStr(NumProtocols + 1));
+            ConfigHeader('Inserting Protocol #'+IntToStr(RecNumToEdit)+' Of '+IntToStr(NumProtocols + 1));
           PrintACR('^0(^1!^0) Type/protocl: ^1'+
                    AOnOff(ProtActive IN PRFlags,'Active','INACTIVE')+' - '+
                    AOnOff(ProtIsBatch IN PRFlags,'Batch','Single')+
@@ -773,13 +773,13 @@ VAR
     Abort := FALSE;
     Next := FALSE;
     {CLS;}
-	ConfigHeader('Protocol Editor');
-	{
+    ConfigHeader('Protocol Editor');
+    {
     PrintACR('^1 ###^2:^1ACS       ^2:^1Description');
     PrintACR('^2 ===:==========:=============================================================');
-	}
-	PrintACR('^5<^4A^5> <^4##^5> <^4Description^5>');
-	HL;
+    }
+    PrintACR('^5<^4A^5> <^4##^5> <^4Description^5>');
+    HL;
     Reset(ProtocolFile);
     NumDone := 0;
     WHILE (NumDone < (PageLength - 5)) AND (RecNumToList1 >= 1) AND (RecNumToList1 <= NumProtocols)
@@ -791,7 +791,7 @@ VAR
         PrintACR(' '+PadLeftStr(AOnOff((ProtActive IN PRFlags),'^9'#251,'^8-'),3)+
                  ' ^1'+PadLeftInt(RecNumToList1,4)+
                  {' ^9'+PadLeftStr(ACS,10)+}
-                 ' ^1'+Description);
+                 ' ^0'+Description);
       Inc(RecNumToList1);
       Inc(Numdone);
     END;
@@ -818,7 +818,7 @@ BEGIN
       'M' : ModifyProtocol(TempProtocol,Cmd,RecNumToList);
       'P' : PositionProtocol(TempProtocol,RecNumToList);
       '?' : BEGIN
-			  NL;
+              NL;
               Print('^0<^1CR^0>Next Screen / Refresh');
               LCmds(16,1,'Delete Protocol','Insert Protocol');
               LCmds(16,1,'Modify Protocol','Position Protocol');

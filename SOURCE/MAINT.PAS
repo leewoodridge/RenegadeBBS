@@ -300,7 +300,7 @@ BEGIN
 
   TempStr := '^0Call # ^1'+IntToStr(General.CallerNum)+'^5 | ^0User: ^1'+Caps(ThisUser.Name)+'^5 | '+
              '^0User Call # ^1'+IntToStr(ThisUser.OnToday)+'^0 (Today) ^1'+IntToStr(ThisUser.LoggedOn)+'^0 (Total) ';
-			 {add last call?}
+             {add last call?}
   SL1(TempStr);
   
     BEGIN { LOGGING INFO }

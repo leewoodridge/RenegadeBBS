@@ -766,7 +766,7 @@ BEGIN
         IF (Cmd = 'L') THEN
           ListYourEmail(SNum,MNum,MessageArray);
         NL;
-        Prt('Select message (^51^4-^5'+IntToStr(MNum)+'^4) [^5?^4=^5First^4,^5<CR>^4=^5Next^4,^5Q^4=^5Quit^4)]: ');
+        Prt('^2Select Message (^11^2-^1'+IntToStr(MNum)+'^2) [(^1?^2)First,<^1CR^2>Next,(^1Q^2)uit]: ');
         MPL(Length(IntToStr(MNum)));
         ScanInput(InputStr,'Q?'^M);
         Cmd := InputStr[1];
@@ -789,7 +789,7 @@ BEGIN
             ELSE
             BEGIN
               NL;
-              Print('^7The range must be from 1 to '+IntToStr(MNum)+'^1');
+              Print('^8The range must be from 1 to '+IntToStr(MNum)+'^1');
               PauseScr(FALSE);
               SNum := 1;
               Cmd := 'L';

@@ -44,7 +44,7 @@ BEGIN
       BEGIN
         Abort := FALSE;
         Next := FALSE;
-		ConfigHeader('System Variables');
+        ConfigHeader('System Variables');
         PrintACR(PadLeftStr('^0(^1A^0) Max private sent per call : ^1'+IntToStr(MaxPrivPost),39)+
                  PadLeftStr('^0(^1B^0) Max feedback sent per call : ^1'+IntToStr(MaxFBack),39));
         PrintACR(PadLeftStr('^0(^1C^0) Max public posts per call : ^1'+IntToStr(MaxPubPost),39)+

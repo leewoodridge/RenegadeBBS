@@ -118,14 +118,14 @@ BEGIN
                            [InteractiveEdit],Changed);
                 END;
           'C' : BEGIN
-				  LFindUserWS(UserNum);
-				  LoadURec(UserRec,UserNum);
-				  IF (UserNum <> 0) THEN
-					SysOpName := UserRec.Name
-				  ELSE
-					IF PYNQ('Do you want to enter a custom name?',0,TRUE) THEN
-					  InputString('%LFNew SysOp name: ',SysOpName,(SizeOf(SysOpName) - 1),[InterActiveEdit],Changed);
-				END;
+                  LFindUserWS(UserNum);
+                  LoadURec(UserRec,UserNum);
+                  IF (UserNum <> 0) THEN
+                    SysOpName := UserRec.Name
+                  ELSE
+                    IF PYNQ('Do you want to enter a custom name?',0,TRUE) THEN
+                      InputString('%LFNew SysOp name: ',SysOpName,(SizeOf(SysOpName) - 1),[InterActiveEdit],Changed);
+                END;
           'D' : lRGLngStr(110,FALSE);
           'E' : IF (InCom) THEN
                   lRGLngStr(111,FALSE)

@@ -924,11 +924,11 @@ VAR
         WITH Event DO
           PrintACR(' '+PadLeftStr(AOnOff(EventIsActive IN EFlags,'^9'+#251,'^8-'),3)+
                    ' ^1'+PadLeftInt(RecNumToList1,4)+
-                   ' ^1'+PadLeftStr(EventDescription,30)+               
-                   ' ^5D: ^1'+PadLeftStr(AOnOff(EventDayOfMonth <> 0,
+                   ' ^0'+PadLeftStr(EventDescription,30)+               
+                   ' ^5D: ^0'+PadLeftStr(AOnOff(EventDayOfMonth <> 0,
                                     IntToStr(EventDayOfMonth)+AllCaps(DateSuffix(EventDayOfMonth)), {Day of month}
                                     DaysEventActive(EventDays,'1','5'))+ {Days of week}
-                   ' ^5T: ^1'+Copy(CTim(EventStartTime),4,5),20)); {Time}
+                   ' ^5T: ^0'+Copy(CTim(EventStartTime),4,5),20)); {Time}
         Inc(RecNumToList1);
         Inc(NumDone);
       END;

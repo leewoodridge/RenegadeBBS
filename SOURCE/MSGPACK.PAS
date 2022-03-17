@@ -219,9 +219,9 @@ BEGIN
   END;
   Close(MsgAreaFile);
   
-	NL;
-	Print('^1Message areas packed.');
-	lil := 0;
+    NL;
+    Print('^1Message areas packed.');
+    lil := 0;
 END;
 
 PROCEDURE PackMessageAreas;

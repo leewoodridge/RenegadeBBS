@@ -11,8 +11,8 @@ PROCEDURE ArchiveConfiguration;
 IMPLEMENTATION
 
 USES
-  Common;
-
+  Common,
+  SysOp2; {ConfigHeader/HL}
 
 PROCEDURE DisplayArcs;
 VAR
@@ -20,20 +20,21 @@ VAR
 BEGIN
   Abort := FALSE;
   Next := FALSE;
-  PrintACR('^1 ##^2:^1Ext^2:^1Compression cmdline      ^2:^1Decompression cmdline    ^2:^1Success Code');
-  PrintACR('^2 ==:===:=========================:=========================:============');
+  ConfigHeader('Archiver Editor');
+  PrintACR('^5<^4A^5> <^4##^5> <^4Ext^5> <^4Compression CmdLine^5>    <^4Decompression CmdLine^5>  <^4Success Code^5>');
+  HL;
   RecNumToList := 1;
   WHILE (RecNumToList <= NumArcs) AND (NOT Abort) AND (NOT HangUp) DO
-  BEGIN
-    WITH General.FileArcInfo[RecNumToList] DO
-      PrintACR(AOnOff(Active,'^1+','^0-')+
-               '^1'+PadRightInt(RecNumToList,2)+
-               ' ^1'+PadLeftStr(Ext,3)+
-               ' ^1'+PadLeftStr(ArcLine,25)+
-               ' '+PadLeftStr(UnArcLine,25)+
-               ' '+AOnOff(SuccLevel <> - 1,IntToStr(SuccLevel),'-1 (ignores)'));
-    Inc(RecNumToList);
-  END;
+    BEGIN
+      WITH General.FileArcInfo[RecNumToList] DO
+        PrintACR(PadLeftStr(AOnOff(Active,'^9 '#251,'^8 -'),4)+
+                 '^1 '+PadLeftInt(RecNumToList,4)+
+                 '^0 '+PadLeftStr(Ext,5)+
+                 '^0 '+PadLeftStr(ArcLine,24)+
+                 '^0 '+PadLeftStr(UnArcLine,24)+
+                 '^0 '+PadLeftStr(AOnOff(SuccLevel <> - 1,IntToStr(SuccLevel),'-1 (Ignore)'),13));
+      Inc(RecNumToList);
+    END;
 END;
 
 PROCEDURE DisplayCmt;
@@ -41,9 +42,9 @@ VAR
   RecNumToList: Byte;
 BEGIN
   FOR RecNumToList := 1 TO 3 DO
-    PrintACR('^0'+IntToStr(RecNumToList)+'. Archive comment file: ^1'+
+    PrintACR('^0(^1'+IntToStr(RecNumToList)+'^0) Archive Comment File #'+IntToStr(RecNumToList)+' : ^1'+
              AOnOff(General.FileArcComment[RecNumToList] <> '',
-                    General.FileArcComment[RecNumToList],'*None*'));
+                    AllCaps(General.FileArcComment[RecNumToList]),'*None*'));
 END;
 
 PROCEDURE ArchiveConfiguration;
@@ -138,25 +139,23 @@ VAR
     WITH Archive DO
       REPEAT
         IF (Cmd1 <> '?') THEN
-        BEGIN
-          Abort := FALSE;
-          Next := FALSE;
-          CLS;
-          IF (Editing) THEN
-            PrintACR('^1Editing archive #'+IntToStr(RecNumToEdit)+
-                     ' of '+IntToStr(NumArcs))
-          ELSE
-            PrintACR('^1Inserting archive #'+IntToStr(RecNumToEdit)+' of '+IntToStr(NumArcs + 1));
-          NL;
-          PrintACR('^01. Active                 : ^1'+ShowYesNo(Active));
-          PrintACR('^02. Extension name         : ^1'+Ext);
-          PrintACR('^03. Interior list method   : ^1'+DisplayArcStr(ListLine));
-          PrintACR('^04. Compression cmdline    : ^1'+DisplayArcStr(ArcLine));
-          PrintACR('^05. Decompression cmdline  : ^1'+DisplayArcStr(UnArcLine));
-          PrintACR('^06. File testing cmdline   : ^1'+DisplayArcStr(TestLine));
-          PrintACR('^07. Add comment cmdline    : ^1'+DisplayArcStr(CmtLine));
-          PrintACR('^08. Errorlevel for success : ^1'++AOnOff(SuccLevel <> - 1,IntToStr(SuccLevel),'-1 (ignores)'));
-        END;
+          BEGIN
+            Abort := FALSE;
+            Next := FALSE;
+            {CLS;}
+            IF (Editing) THEN
+              ConfigHeader('Editing Archiver #'+IntToStr(RecNumToEdit)+' Of '+IntToStr(NumArcs))
+            ELSE
+              ConfigHeader('Inserting Archiver #'+IntToStr(RecNumToEdit)+' Of '+IntToStr(NumArcs + 1));
+            PrintACR('^0(^11^0) Active                : ^1'+ShowYesNo(Active));
+            PrintACR('^0(^12^0) File Extension        : ^1'+Ext);
+            PrintACR('^0(^13^0) Interior List Method  : ^1'+DisplayArcStr(ListLine));
+            PrintACR('^0(^14^0) Compression CmdLine   : ^1'+DisplayArcStr(ArcLine));
+            PrintACR('^0(^15^0) Decompression CmdLine : ^1'+DisplayArcStr(UnArcLine));
+            PrintACR('^0(^16^0) File Testing CmdLine  : ^1'+DisplayArcStr(TestLine));
+            PrintACR('^0(^17^0) Add Comment CmdLine   : ^1'+DisplayArcStr(CmtLine));
+            PrintACR('^0(^18^0) Success ErrorLevel    : ^1'++AOnOff(SuccLevel <> - 1,IntToStr(SuccLevel),'-1 (Ignore)'));
+          END;
         IF (NOT Editing) THEN
           CmdStr := '12345678'
         ELSE
@@ -333,7 +332,8 @@ BEGIN
       NL;
       DisplayCmt;
     END;
-    InputChar('%LFArchive editor [^1?^2=^1Help^2]: ',Cmd,'QDIM123?'^M,[CapAll]);
+    NL;
+    InputChar('^2Archiver Editor [^1DIM^2,(^1?^2)Help,(^1Q^2)uit]: ',Cmd,'QDIM123?'^M,[CapAll]);
     CASE Cmd OF
       'D' : DeleteArchive(TempArchive,RecNumToList);
       'I' : InsertArchive(TempArchive,Cmd,RecNumToList);

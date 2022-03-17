@@ -311,7 +311,7 @@ BEGIN
             (*
           IF NOT (NodeR.GroupChat) THEN
                 LowLevelSend({^M^J}'^0Message from ^1'+Caps(ThisUser.Name)+
-				'^0 on node ^1'+IntToStr(ThisNode)+'^0:'{^M^J},NodeNum);
+                '^0 on node ^1'+IntToStr(ThisNode)+'^0:'{^M^J},NodeNum);
                 *)
                 (*
           LoadNode(NodeNum);
@@ -319,7 +319,7 @@ BEGIN
             BEGIN
               IF NOT (NodeR.GroupChat) THEN
                 LowLevelSend({^M^J}'^0Message from ^1'+Caps(ThisUser.Name)+
-				'^0 on node ^1'+IntToStr(ThisNode)+'^0:'{^M^J},NodeNum);
+                '^0 on node ^1'+IntToStr(ThisNode)+'^0:'{^M^J},NodeNum);
             END
           ELSE
             *)

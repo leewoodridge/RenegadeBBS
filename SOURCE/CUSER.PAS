@@ -740,7 +740,7 @@ VAR
 
   PROCEDURE ToggleLightbars;
   BEGIN
-    IF (NOT General.UseLightBars){ OR (NOT General.UseMsgAreaLightBar)} THEN
+    IF (NOT General.UseLightBars){ OR (NOT General.UseLightBars)} THEN
       BEGIN
         lRGLngStr(170,FALSE); {"Lightbars not available"}
         Done1 := TRUE;
@@ -751,28 +751,28 @@ VAR
       BEGIN
         IF PYNQ(lRGLngStr(223,TRUE),0,TRUE) THEN {"Enable lightbars?"}
           BEGIN
-            Include(User.SFlags,FileAreaLightbar);
-            Include(User.SFlags,MsgAreaLightbar);
+            Include(User.SFlags,LightBars);
+            {Include(User.SFlags,LightBars);}
           END
         ELSE
           BEGIN
-            Exclude(User.SFlags,FileAreaLightbar);
-            Exclude(User.SFlags,MsgAreaLightbar);
+            Exclude(User.SFlags,LightBars);
+            {Exclude(User.SFlags,LightBars);}
           END;
         Done1 := TRUE;
       END
     ELSE
       BEGIN
-        IF (FileAreaLightbar IN User.SFlags) OR (MsgAreaLightbar IN User.SFlags) THEN
+        IF (LightBars IN User.SFlags) OR (LightBars IN User.SFlags) THEN
           BEGIN
-            Exclude(User.SFlags,FileAreaLightbar);
-            Exclude(User.SFlags,MsgAreaLightbar);
+            Exclude(User.SFlags,LightBars);
+            {Exclude(User.SFlags,LightBars);}
             Print('Lightbars disabled');
           END
         ELSE
           BEGIN
-            Include(User.SFlags,FileAreaLightbar);
-            Include(User.SFlags,MsgAreaLightbar);
+            Include(User.SFlags,LightBars);
+            {Include(User.SFlags,LightBars);}
             Print('Lightbars enabled');
           END;
         Done1 := TRUE;
@@ -967,7 +967,7 @@ BEGIN
           BEGIN { 2 = "OP" Menu command, 3 = User editor }
             WW(Which);
             IF (NOT Done1) THEN
-			  lRGLngStr(154,FALSE); {"Aborted!"} (*Print('^8Function aborted!^0');*)
+              lRGLngStr(154,FALSE); {"Aborted!"} (*Print('^8Function aborted!^0');*)
             IF (How=2) THEN
               PauseScr(FALSE);
           END;

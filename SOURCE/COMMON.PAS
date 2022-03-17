@@ -212,7 +212,7 @@ TYPE
 
   InputFlagSet = SET OF InputFlagType;    {  }
   ValidationKeyType = SET OF '!'..'~';    (* Remove q and Q *)
-  ConferenceKeyType = SET OF '@'..'Z'; 	  {  }
+  ConferenceKeyType = SET OF '@'..'Z';    {  }
   CompArrayType = ARRAY[0..1] OF Integer; {  }
 
 CONST
@@ -315,7 +315,7 @@ CONST
   AnswerBaud: LongInt = 0;                { Baud rate to answer phone at }
   ExtEventTime: Word = 0;                 { Number of minutes before external event }
   IsInvisible: Boolean = FALSE;           { Run IN invisible Mode? }
-  SaveNAvail: Boolean = FALSE;         	  {  }
+  SaveNAvail: Boolean = FALSE;            {  }
   LastWFCX: Byte = 1;                     {  }
   LastWFCY: Byte = 1;                     {  }
   ANSIDetected: Boolean = FALSE;          {  }
@@ -1146,7 +1146,7 @@ BEGIN
               IF (LangStringArray[b] <> '') THEN
                 S := Substitute(S,'@'+IntToStr(b),LangStringArray[b]);
       261,
-	  262 : FOR b := 0 TO 1 DO { $TOP_USERS_HEADER, $TOP_FILES_HEADER }
+      262 : FOR b := 0 TO 1 DO { $TOP_USERS_HEADER, $TOP_FILES_HEADER }
               IF (LangStringArray[b] <> '') THEN
                 S := Substitute(S,'@'+IntToStr(b),LangStringArray[b]);
     END;
@@ -3118,14 +3118,14 @@ BEGIN
     WHILE (i <= Length(s)) DO
       BEGIN
         CASE s[i] OF
-		  '%' : IF MCIAllowed AND (i + 1 < Length(s)) THEN
-				  BEGIN
-					IF (UpCase(s[i + 1]) = 'P') AND (UpCase(s[i + 2]) = 'A') THEN
-					  BEGIN
-						Inc(i,2);
-						PauseScr(FALSE)
-					  END
-					(* LeeW: Added ANSI store position MCI %00 - %09 *)
+          '%' : IF MCIAllowed AND (i + 1 < Length(s)) THEN
+                  BEGIN
+                    IF (UpCase(s[i + 1]) = 'P') AND (UpCase(s[i + 2]) = 'A') THEN
+                      BEGIN
+                        Inc(i,2);
+                        PauseScr(FALSE)
+                      END
+                    (* LeeW: Added ANSI store position MCI %00 - %09 *)
                     ELSE IF (s[i + 1] IN ['0'{..'9'}]) AND (s[i + 2] IN ['0'..'9']) THEN
                       BEGIN
                         MCIPosRecArray[StrToInt(s[i+1]+s[i+2])].X := WhereX;
@@ -4123,16 +4123,16 @@ BEGIN
     lRGLngStr(5,FALSE); { Prompt({FString.lPause); }
   LIL := 1;
   IF (IsCont) THEN
-	BEGIN
+    BEGIN
       REPEAT
         Cmd := UpCase(Char(GetKey));
         CASE Cmd OF
-		  'C' : IF (IsCont) THEN
-				  TempPause := FALSE;
+          'C' : IF (IsCont) THEN
+                  TempPause := FALSE;
           'N' : Abort := TRUE;
         END;
       UNTIL (Cmd IN ['Y','N','Q','C',^M]) OR (HangUp);
-	END
+    END
   ELSE
     Cmd := Char(GetKey);
   IF (IsCont) THEN
@@ -4157,7 +4157,7 @@ BEGIN
   SearchUser := 0;
   Reset(UserIDXFile);
   IF (IOResult <> 0) THEN
-	BEGIN
+    BEGIN
     SysOpLog('Error opening USERS.IDX.');
     Exit;
   END;
@@ -4454,7 +4454,7 @@ BEGIN
                 { 'N' : Add := ShowOnOff(General.MultiNode); }
                   'O' : Add := IntToStr((GetPackDateTime - TimeOn) DIV 60);
                   'R' : Add := IntToStr(HiMsg - Msg_On);
-                { 'S' : Add := AOnOff(LastReadRecord.NewScan,'','not '); }
+                  'S' : Add := AOnOff(LastReadRecord.NewScan,'','not ');
                 END;
           'N' : CASE UpCase(S[Index + 2]) OF
                   'D' : Add := IntToStr(ThisNode);
@@ -4488,11 +4488,11 @@ BEGIN
                         ELSE
                           Add := 'Open';
                   '9' : Add := ShowOnOff(Color IN ACFlags);
-                  {
-                  'F' : Add := ShowOnOff(FileAreaLightBar in ThisUser.SFlags); 
-                  'M' : Add := ShowOnOff(MsgAreaLightBar in ThisUser.SFlags); {LeeW - Add lightbars %OL}
-                  
+                  'L' : Add := ShowOnOff(LightBars in ThisUser.SFlags);  {LeeW: Added -- all lightbars combined to 1 now }
                   'N' : Add := ShowOnOff(NAvail IN NodeR.Status); {LeeW: Can we make this say 'Available'/'Not Available'?}
+                  {
+                  AOnOff((NAvail IN NodeR.Status), 'available','unavailable' );
+                  }
                   'Z' : Add := General.FileArcInfo[ThisUser.DefArcType].EXT;
                   
                    END;

@@ -23,10 +23,10 @@ VAR
   Spawno_Error: Integer; (* error code when Spawn returns -1 *)
 
 PROCEDURE Init_Spawno(Swap_Dirs: STRING; Swap_Types: Integer; Min_Res: Integer; Res_Stack: Integer);
-	(* Min_Res = minimum number of paragraphs to keep resident
-	   Res_Stack = minimum paragraphs of stack to keep resident
-		       (0 = no change)
-	 *)
+    (* Min_Res = minimum number of paragraphs to keep resident
+       Res_Stack = minimum paragraphs of stack to keep resident
+               (0 = no change)
+     *)
 
 FUNCTION Spawn(ProgName: STRING; Arguments: STRING; EnvSeg: Integer): Integer;
 
