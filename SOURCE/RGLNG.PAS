@@ -16,6 +16,7 @@ Lee Woodridge
  11/25/2021 - Added timeout message (#242)
  ... top users/files in here somewhere
  02/24/2022 - Added change conference strings (#256-259)
+ 03/20/2022 - added email cant send msgs 263-270
  -
 bug where if a string is empty, like:
 $TEST_STRING
@@ -637,6 +638,22 @@ BEGIN
                 RgStrNum := 261
               ELSE IF (S = 'TOP_FILES_HEADER') THEN
                 RgStrNum := 262
+              ELSE IF (S = 'NO_EMAIL_ACCESS') THEN
+                RgStrNum := 263
+              ELSE IF (S = 'NO_EMAIL_BALANCE') THEN
+                RgStrNum := 264
+              ELSE IF (S = 'NO_EMAIL_MAX_MSG') THEN
+                RgStrNum := 265
+              ELSE IF (S = 'NO_EMAIL_MAX_FEEDBACK') THEN
+                RgStrNum := 266
+              ELSE IF (S = 'NO_EMAIL_FULL') THEN
+                RgStrNum := 267
+              ELSE IF (S = 'NO_EMAIL_CLOSED') THEN
+                RgStrNum := 268
+              ELSE IF (S = 'NO_EMAIL_DELETED') THEN
+                RgStrNum := 269
+              ELSE IF (S = 'EMAIL_DELETED_PROMPT') THEN
+                RgStrNum := 270
                 {// END OF COMB }
                 (*
               ELSE IF (S = '') THEN

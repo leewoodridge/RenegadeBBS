@@ -10,7 +10,7 @@ USES
   Common;
 
 PROCEDURE SSMail(MenuOption: Str50);
-PROCEDURE SMail(MassMail: Boolean);
+PROCEDURE SMail(MassMail: Boolean); {mass mail}
 PROCEDURE SEMail(UNum: Integer; ReplyHeader: MHeaderRec);
 PROCEDURE AutoReply(ReplyHeader: MHeaderRec);
 PROCEDURE ReadMail;
@@ -85,10 +85,12 @@ VAR
     IF ((NOT AACS1(User,UNum,General.CSOP)) AND (User.Waiting >= General.MaxWaiting)) OR
        ((AACS1(User,UNum1,General.CSOP)) AND (User.Waiting >= General.CSMaxWaiting)) OR
        (NoMail IN User.ACFlags) AND (NOT CoSysOp) THEN { LeeW: Added CoSysOp max waiting check }
+	   
+	   { LeeW: this checks for deleted and locked out users later in proc }
+	   
     BEGIN
       UNum1 := 0;
-      { Print(FString.CantEmail); }
-      lRGLngStr(46,FALSE);
+      lRGLngStr(46,FALSE); {"Unable to send mail to that user!"}
       Exit;
     END;
     ForUsrUNum := User.ForUsr;
@@ -390,6 +392,8 @@ BEGIN
   SaveURec(ThisUser,UserNum);
 END;
 
+{ -- end of smail (mass mail) -- }
+
 PROCEDURE SEMail(UNum: Integer; ReplyHeader: MHeaderRec);
 VAR
   User: UserRecordType;
@@ -399,198 +403,212 @@ VAR
   SaveReadMsgArea: Integer;
   EmailOk: Boolean;
 BEGIN
-
   IF (NOT (NetMail IN ReplyHeader.Status)) THEN
-  BEGIN
-
-    IF (UNum < 1) OR (UNum > (MaxUsers - 1)) THEN
-      Exit;
-
-    LoadURec(User,UNum);
-
-    MHeader.Status := [];
-
-    EmailOk := TRUE;
-
-    IF ((REmail IN ThisUser.ACFlags) OR (NOT AACS(General.NormPrivPost))) AND (NOT CoSysOp) THEN
     BEGIN
-      NL;
-      Print('^7Your access privledges do not include sending private messages!^1');
-      EmailOk := FALSE;
-    END
-    ELSE IF (AccountBalance < General.CreditEmail) AND (General.CreditEmail > 0) AND 
-            (NOT (FNoCredits IN ThisUser.ACFlags)) THEN
-    BEGIN
-      NL;
-      Print('^7Insufficient account balance to send private messages!^1');
-      EmailOk := FALSE;
-    END
-    ELSE IF (PrivatePostsToday >= General.MaxPrivPost) AND (NOT CoSysOp) THEN
-    BEGIN
-      NL;
-      Print('^7You have already sent the maximum private messages allowed per day!^1');
-      EmailOk := FALSE;
-    END
-    ELSE IF ((UNum = 1) AND (FeedbackPostsToday >= General.MaxFBack) AND (NOT CoSysOp)) THEN
-    BEGIN
-      NL;
-      Print('^7You have already sent the maximum allowed feedback per day!^1');
-      EmailOk := FALSE;
-    END
-    ELSE IF ((NOT AACS1(User,UNum,General.CSOP)) AND (User.Waiting >= General.MaxWaiting)) OR
-            ((AACS1(User,UNum,General.CSOP)) AND (User.Waiting >= General.CSMaxWaiting))
-            AND (NOT CoSysOp) THEN { LeeW: Added CoSysOp max waiting check }
-    BEGIN
-      NL;
-      Print('^7The mailbox for this user is full!^1%pa');
-      EmailOk := FALSE;
-    END
-    ELSE IF (NoMail IN User.ACFlags) AND (NOT CoSysOp) THEN
-    BEGIN
-      NL;
-      Print('^7The mailbox for this user is closed!^1');
-      EmailOk := FALSE;
-    END;
-
-    IF (NOT EmailOk) THEN
-    BEGIN
-      IF (INWFCMenu) THEN
-        PauseScr(FALSE);
-      Exit;
-    END;
-
-    IF ((User.ForUsr < 1) OR (User.ForUsr > (MaxUsers - 1))) THEN
-      User.ForUsr := 0;
-
-    IF (User.ForUsr > 0) THEN
-    BEGIN
-      UNum := User.ForUsr;
+      IF (UNum < 1) OR (UNum > (MaxUsers - 1)) THEN
+        Exit;
       LoadURec(User,UNum);
-      IF (CoSysOp) THEN
-      BEGIN
-        NL;
-        IF (NOT PYNQ('Send private message to '+Caps(User.Name)+'? ',0,FALSE)) THEN
+      MHeader.Status := [];
+      EmailOk := TRUE;
+      IF ((REmail IN ThisUser.ACFlags) OR (NOT AACS(General.NormPrivPost))) AND (NOT CoSysOp) THEN
+        BEGIN
+          {NL;
+          Print('^7Your access privledges do not include sending private messages!^1');}
+          lRGLngStr(263,FALSE);
+          EmailOk := FALSE;
+        END
+        
+      ELSE IF (AccountBalance < General.CreditEmail) AND (General.CreditEmail > 0) AND 
+              (NOT (FNoCredits IN ThisUser.ACFlags)) THEN
+        BEGIN
+          {NL;
+          Print('^7Insufficient account balance to send private messages!^1');}
+          lRGLngStr(264,FALSE);
+          EmailOk := FALSE;
+        END
+        
+      ELSE IF (PrivatePostsToday >= General.MaxPrivPost) AND (NOT CoSysOp) THEN
+        BEGIN
+          {NL;
+          Print('^7You have already sent the maximum private messages allowed per day!^1');}
+          lRGLngStr(265,FALSE);
+          EmailOk := FALSE;
+        END
+        
+      ELSE IF ((UNum = 1) AND (FeedbackPostsToday >= General.MaxFBack) AND (NOT CoSysOp)) THEN
+        BEGIN
+          {NL;
+          Print('^7You have already sent the maximum allowed feedback per day!^1');}
+          lRGLngStr(266,FALSE);
+          EmailOk := FALSE;
+        END
+
+      ELSE IF (Deleted IN User.SFlags) THEN { LeeW: Added deleted user check }
+        BEGIN
+          IF (CoSysOp) THEN
+            BEGIN
+              IF PYNQ(lRGLngStr(270,TRUE),0,FALSE) then
+                EmailOk := TRUE
+              ELSE
+                EmailOk := FALSE;
+            END
+          ELSE
+            BEGIN
+              {NL;
+              Print('^7You can''t email deleted users!^1%PA');}
+              lRGLngStr(269,FALSE);
+              EmailOk := FALSE;
+            END;
+        END
+        
+      ELSE IF (NoMail IN User.ACFlags) AND (NOT CoSysOp) THEN
+        BEGIN
+          {NL;
+          Print('^7The mailbox for this user is closed!^1');}
+          lRGLngStr(268,FALSE);
+          EmailOk := FALSE;
+        END
+        
+      ELSE IF ((NOT AACS1(User,UNum,General.CSOP)) AND (User.Waiting >= General.MaxWaiting)) OR
+              ((AACS1(User,UNum,General.CSOP)) AND (User.Waiting >= General.CSMaxWaiting))
+              AND (NOT CoSysOp) THEN { LeeW: Added CoSysOp max waiting check }
+        BEGIN
+          {NL;
+          Print('^7The mailbox for this user is full!^1%pa');}
+          lRGLngStr(267,FALSE);
+          EmailOk := FALSE;
+        END;
+        
+      IF (NOT EmailOk) THEN
+        BEGIN
+          {IF (InWFCMenu) THEN
+            PauseScr(FALSE);}
           Exit;
-      END;
-    END;
-  END
+        END;
+
+      IF ((User.ForUsr < 1) OR (User.ForUsr > (MaxUsers - 1))) THEN
+        User.ForUsr := 0;
+
+      IF (User.ForUsr > 0) THEN
+        BEGIN
+          UNum := User.ForUsr;
+          LoadURec(User,UNum);
+          IF (CoSysOp) THEN
+            BEGIN
+              NL;
+              IF (NOT PYNQ('Send private message to '+Caps(User.Name)+'? ',0,FALSE)) THEN
+                Exit;
+            END;
+        END;
+    END
   ELSE
-  BEGIN
-
-    IF (NOT AACS(General.NetMailACS)) THEN
     BEGIN
-      { Print(FString.NoNetMail); }
-      lRGLngStr(50,FALSE);
-      PauseScr(FALSE);
-      Exit;
+      IF (NOT AACS(General.NetMailACS)) THEN
+        BEGIN
+          lRGLngStr(50,FALSE); { Print(FString.NoNetMail); }
+          PauseScr(FALSE);
+          Exit;
+        END;
+      User.Name := ReplyHeader.From.Name;
+      User.RealName := ReplyHeader.From.Name;
+      UNum := 0;
+      MHeader.Status := [NetMail];
     END;
-
-    User.Name := ReplyHeader.From.Name;
-    User.RealName := ReplyHeader.From.Name;
-    UNum := 0;
-    MHeader.Status := [NetMail];
-
-  END;
 
   SaveReadMsgArea := ReadMsgArea;
 
   InitMsgArea(-1);
 
   WITH MHeader.MTO DO
-  BEGIN
-    UserNum := UNum;
-    A1S := AllCaps(User.Name);
-    Real := AllCaps(User.RealName);
-    Name := AllCaps(User.Name);
-  END;
+    BEGIN
+      UserNum := UNum;
+      A1S := AllCaps(User.Name);
+      Real := AllCaps(User.RealName);
+      Name := AllCaps(User.Name);
+    END;
 
   IF (InputMessage(FALSE,TRUE,'',MHeader,'',78,500)) THEN
-  BEGIN
-
-    IF (NetMail IN ReplyHeader.Status) THEN
     BEGIN
-      Include(MHeader.Status,NetMail);
+      IF (NetMail IN ReplyHeader.Status) THEN
+        BEGIN
+          Include(MHeader.Status,NetMail);
+          MHeader.NetAttribute := General.NetAttribute * [Intransit,Private,Crash,KillSent,Hold,Local];
+          ChangeFlags(MHeader);
+          
+          Counter1 := 0;
+          Counter := 0;
+          WHILE (Counter <= 19) AND (Counter1 = 0) DO
+            BEGIN
+              IF (General.AKA[Counter].Zone = ReplyHeader.From.Zone) AND (General.AKA[Counter].Zone <> 0) THEN
+                Counter1 := Counter;
+              Inc(Counter);
+            END;
 
-      MHeader.NetAttribute := General.NetAttribute * [Intransit,Private,Crash,KillSent,Hold,Local];
+          IF (CoSysop) AND (General.AKA[Counter1].Zone <> ReplyHeader.From.Zone) THEN
+            BEGIN
+              FOR Counter := 0 TO 19 DO
+                IF (General.AKA[Counter].Net > 0) THEN
+                  BEGIN
+                    PrintACR(PadLeftInt((Counter + 1),2)+'. '+
+                             IntToStr(General.AKA[Counter].Zone)+':'+
+                             IntToStr(General.AKA[Counter].Net)+'/'+
+                             IntToStr(General.AKA[Counter].Node)+
+                             AOnOff((General.AKA[Counter].Point > 0),'.'+IntToStr(General.AKA[Counter].Point),''));
+                  END;
+              InputByte('%LFUse which AKA',Counter,[NumbersOnly],1,20,Changed);
+              IF (Counter >= 1) OR (Counter <= 20) THEN
+                Counter1 := (Counter - 1);
+            END;
+            
+          WITH MHeader.From DO
+            BEGIN
+              Zone := General.AKA[Counter1].Zone;
+              Net := General.AKA[Counter1].Net;
+              Node := General.AKA[Counter1].Node;
+              Point := General.AKA[Counter1].Point;
+            END;
 
-      ChangeFlags(MHeader);
+          WITH MHeader.MTO DO
+            BEGIN
+              Zone := ReplyHeader.From.Zone;
+              Net := ReplyHeader.From.Net;
+              Node := ReplyHeader.From.Node;
+              Point := ReplyHeader.From.Point;
+            END;
 
-      Counter1 := 0;
-      Counter := 0;
-      WHILE (Counter <= 19) AND (Counter1 = 0) DO
-      BEGIN
-        IF (General.AKA[Counter].Zone = ReplyHeader.From.Zone) AND (General.AKA[Counter].Zone <> 0) THEN
-          Counter1 := Counter;
-        Inc(Counter);
-      END;
+        END;
 
-      IF (CoSysop) AND (General.AKA[Counter1].Zone <> ReplyHeader.From.Zone) THEN
-      BEGIN
-        FOR Counter := 0 TO 19 DO
-          IF (General.AKA[Counter].Net > 0) THEN
-          BEGIN
-            PrintACR(PadLeftInt((Counter + 1),2)+'. '+
-                     IntToStr(General.AKA[Counter].Zone)+':'+
-                     IntToStr(General.AKA[Counter].Net)+'/'+
-                     IntToStr(General.AKA[Counter].Node)+
-                     AOnOff((General.AKA[Counter].Point > 0),'.'+IntToStr(General.AKA[Counter].Point),''));
-          END;
-        InputByte('%LFUse which AKA',Counter,[NumbersOnly],1,20,Changed);
-        IF (Counter >= 1) OR (Counter <= 20) THEN
-          Counter1 := (Counter - 1);
-      END;
+      IF (UNum = 1) THEN
+        BEGIN
+          Inc(ThisUser.FeedBack);
 
-      WITH MHeader.From DO
-      BEGIN
-        Zone := General.AKA[Counter1].Zone;
-        Net := General.AKA[Counter1].Net;
-        Node := General.AKA[Counter1].Node;
-        Point := General.AKA[Counter1].Point;
-      END;
+          IF (FeedBackPostsToday < 255) THEN
+            Inc(FeedbackPostsToday);
+        END
+      ELSE
+        BEGIN
+          Inc(ThisUser.EmailSent);
+          AdjustBalance(General.CreditEmail);
+          IF (PrivatePostsToday < 255) THEN
+            Inc(PrivatePostsToday);
+        END;
 
-      WITH MHeader.MTO DO
-      BEGIN
-        Zone := ReplyHeader.From.Zone;
-        Net := ReplyHeader.From.Net;
-        Node := ReplyHeader.From.Node;
-        Point := ReplyHeader.From.Point;
-      END;
+      IF (UNum >= 1) AND (UNum <= (MaxUsers - 1)) THEN
+        BEGIN
+          LoadURec(User,UNum);
+          Inc(User.Waiting);
+          SaveURec(User,UNum);
+        END;
 
+      SaveHeader((HiMsg + 1),MHeader);
+
+      IF (UserOn) THEN
+        SysOpLog(AOnOff((NetMail IN MHeader.Status),'Netmail','Private message')+' sent to ^5'+Caps(User.Name)+'.');
+
+      Print('^1'+AOnOff((NetMail IN MHeader.Status),'Netmail','Private message')+' sent to ^5'+Caps(User.Name)+'^1.');
+
+      Update_Screen;
     END;
-
-    IF (UNum = 1) THEN
-    BEGIN
-      Inc(ThisUser.FeedBack);
-
-      IF (FeedBackPostsToday < 255) THEN
-        Inc(FeedbackPostsToday);
-
-    END
-    ELSE
-    BEGIN
-      Inc(ThisUser.EmailSent);
-      AdjustBalance(General.CreditEmail);
-
-      IF (PrivatePostsToday < 255) THEN
-        Inc(PrivatePostsToday);
-    END;
-
-    IF (UNum >= 1) AND (UNum <= (MaxUsers - 1)) THEN
-    BEGIN
-      LoadURec(User,UNum);
-      Inc(User.Waiting);
-      SaveURec(User,UNum);
-    END;
-
-    SaveHeader((HiMsg + 1),MHeader);
-
-    IF (UserOn) THEN
-      SysOpLog(AOnOff((NetMail IN MHeader.Status),'Netmail','Private message')+' sent to ^5'+Caps(User.Name)+'.');
-
-    Print('^1'+AOnOff((NetMail IN MHeader.Status),'Netmail','Private message')+' sent to ^5'+Caps(User.Name)+'^1.');
-
-    Update_Screen;
-  END;
 
   InitMsgArea(SaveReadMsgArea);
 
