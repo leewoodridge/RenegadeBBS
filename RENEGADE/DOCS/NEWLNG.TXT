@@ -489,3 +489,35 @@ $Top_Files_Header
 ^5         <^4##^5> <^4FILENAME^5>                            @1
 ^5컴컴컴컴컴컴컴컴컴컴컴컴컴컴컴컴컴컴컴컴컴컴컴컴컴컴컴컴컴컴컴컴컴컴컴컴컴컴컴�
 $
+
+$No_EMail_Access
+^0Your access privileges do not include sending private messages!%LF%PA
+$
+
+$No_EMail_Balance
+^0Insufficient account balance to send private messages!%LF%PA
+$
+
+$No_EMail_Max_Msg
+^0You have already sent the maximum private messages allowed per day!%LF%PA
+$
+
+$No_Email_Max_Feedback
+^0You have already sent the maximum allowed feedback per day!%LF%PA
+$
+
+$No_EMail_Full
+^0The mailbox for this user is full!%LF%PA
+$
+
+$No_EMail_Closed
+^0The mailbox for this user is closed!%LF%PA
+$
+
+$No_EMail_Deleted
+^0You can't E-Mail deleted users!%LF%PA
+$
+
+$EMail_Deleted_Prompt
+^0This user is deleted - Send E-Mail anyway?
+$
