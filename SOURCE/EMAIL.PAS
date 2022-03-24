@@ -1,6 +1,10 @@
 {$A+,B-,D+,E-,F+,I-,L+,N-,O+,R-,S+,V-}
 { Lee Woodridge
  10/18/2021 - Added CoSysOp max mail waiting check
+ 03/20/2022 - added deleted user check to semail proc
+			- if cosysop+ tries to email deleted user it will prompt them to proceed
+ 
+ smail proc seems like a disaster -- why massmail boolean-- isn't it always true???
 }
 UNIT EMail;
 

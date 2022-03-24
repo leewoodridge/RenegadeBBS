@@ -654,6 +654,10 @@ BEGIN
                 RgStrNum := 269
               ELSE IF (S = 'EMAIL_DELETED_PROMPT') THEN
                 RgStrNum := 270
+              ELSE IF (S = 'TOP_FILES_DOWNLOAD_PROMPT') THEN
+                RgStrNum := 271
+              ELSE IF (S = 'TOP_FILES_DOWNLOAD_INPUT') THEN
+                RgStrNum := 272
                 {// END OF COMB }
                 (*
               ELSE IF (S = '') THEN

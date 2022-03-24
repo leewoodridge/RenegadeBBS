@@ -1,29 +1,25 @@
 {$A+,B-,D+,E-,F+,I-,L+,N-,O+,R-,S+,V-}
-
+{
+ 03/22/2022 fixed downloads not modifying user stats -- do testing to make sure all ok
+ what about uploads???
+}
 UNIT File8;
 
 INTERFACE
 
 USES
-  Dos,
+  DOS,
   Common;
 
-PROCEDURE Send(FileInfo: FileInfoRecordType;
-               DirFileRecNum: Integer;
-               DownloadPath: PathStr;
-               VAR TransferFlags: TransferFlagSet);
-PROCEDURE Receive(FileName: Str12;
-                  UploadPath: PathStr;
-                  ResumeFile: Boolean;
-                  VAR UploadOk,
-                  KeyboardAbort,
-                  AddULBatch: Boolean;
-                  VAR TransferTime: LongInt);
+PROCEDURE Send(FileInfo: FileInfoRecordType; DirFileRecNum: Integer; DownloadPath: PathStr;
+			   VAR TransferFlags: TransferFlagSet);
+PROCEDURE Receive(FileName: Str12; UploadPath: PathStr; ResumeFile: Boolean; VAR UploadOk,KeyboardAbort,AddULBatch: Boolean;
+				  VAR TransferTime: LongInt);
 
 IMPLEMENTATION
 
 USES
-  Crt,
+  CRT,
   ExecBat,
   File0,
   File1,
@@ -50,24 +46,23 @@ VAR
   DailyLimits: Boolean;
 BEGIN
   FileKbSize := (FileInfo.FileSize DIV 1024);
-
   IF (NumBatchDLFiles > 0) THEN
-  BEGIN
-    Assign(BatchDLFile,General.DataPath+'BATCHDL.DAT');
-    Reset(BatchDLFile);
-    RecNum := 1;
-    WHILE (RecNum <= FileSize(BatchDLFile)) DO
-    BEGIN
-      Seek(BatchDLFile,(RecNum - 1));
-      Read(BatchDLFile,BatchDL);
-      IF (BatchDL.BDLUserNum = UserNum) AND (BatchDL.BDLFileName = FileInfo.FileName) THEN
-        IF (NOT (IsNoRatio IN BatchDL.BDLFlags)) THEN
-          Inc(FileKBSize,(BatchDL.BDLFSize DIV 1024));
-      Inc(RecNum);
-    END;
-    Close(BatchDLFile);
-    LastError := IOResult;
-  END;
+	BEGIN
+      Assign(BatchDLFile,General.DataPath+'BATCHDL.DAT');
+      Reset(BatchDLFile);
+      RecNum := 1;
+      WHILE (RecNum <= FileSize(BatchDLFile)) DO
+		BEGIN
+		  Seek(BatchDLFile,(RecNum - 1));
+		  Read(BatchDLFile,BatchDL);
+		  IF (BatchDL.BDLUserNum = UserNum) AND (BatchDL.BDLFileName = FileInfo.FileName) THEN
+			IF (NOT (IsNoRatio IN BatchDL.BDLFlags)) THEN
+			  Inc(FileKBSize,(BatchDL.BDLFSize DIV 1024));
+		  Inc(RecNum);
+		END;
+      Close(BatchDLFile);
+      LastError := IOResult;
+	END;
 
   BadRatio := FALSE;
 
@@ -314,10 +309,9 @@ BEGIN
   END;
 END;
 
-PROCEDURE Send(FileInfo: FileInfoRecordType;
-               DirFileRecNum: Integer;
-               DownloadPath: PathStr;
-               VAR TransferFlags: TransferFlagSet);
+PROCEDURE Send(FileInfo: FileInfoRecordType; DirFileRecNum: Integer; DownloadPath: PathStr; 
+			   VAR TransferFlags: TransferFlagSet);
+(*
 TYPE
   TotalsRecordType = RECORD
     FilesDL,
@@ -327,14 +321,14 @@ TYPE
     PointsDL,
     PointsDLRatio: LongInt;
   END;
+*)
 VAR
-  Totals: TotalsRecordType;
+  {Totals: TotalsRecordType;}
   ReturnCode,
   ProtocolNumber: Integer;
   TransferTime: LongInt;
 BEGIN
   Exclude(TransferFlags,IsKeyboardAbort);
-
   Exclude(TransferFlags,IsTransferOk);
 
   IF (lIsAddDLBatch IN TransferFlags) THEN
@@ -347,257 +341,231 @@ BEGIN
       CheckFileRatio(FileInfo,ProtocolNumber);
 
   CASE ProtocolNumber OF
-   -2 : BEGIN
+	-2: BEGIN
           NL;
           Print('^0Aborted!');
           Include(TransferFlags,IsKeyboardAbort);
         END;
-   -3 : BEGIN
+	-3: BEGIN
           NL;
           Print('^0Skipped!');
         END;
-   -4 : BatchDLAdd(FileInfo,DownloadPath,TransferFlags);
-   -5 : ;
-  ELSE
-    IF (InCom) OR (ProtocolNumber = -1) THEN
-    BEGIN
-      IF (ProtocolNumber = -1) THEN
-      BEGIN
-        NL;
-        Print('^1Caution: ^0No check is made to ensure the file you selected for viewing^0');
-        Print('^0         is an ascii text file!');
-        NL;
-        IF (NOT PYNQ('Continue to view selected file? ',0,FALSE)) THEN
-        BEGIN
-          Include(TransferFlags,IsKeyboardAbort);
-          Exit;
-        END;
-      END;
+	-4: BatchDLAdd(FileInfo,DownloadPath,TransferFlags);
+	-5: ;
+	ELSE
+	  IF (InCom) OR (ProtocolNumber = -1) THEN
+		BEGIN
+		  IF (ProtocolNumber = -1) THEN
+			BEGIN
+			  NL;
+			  Print('^1Caution: ^0No check is made to ensure the file you selected for viewing^0');
+			  Print('^0         is an ascii text file!');
+			  NL;
+			  IF (NOT PYNQ('Continue to view selected file? ',0,FALSE)) THEN
+				BEGIN
+				  Include(TransferFlags,IsKeyboardAbort);
+				  Exit;
+				END;
+			END;
+		  IF (IsCDRom IN TransferFlags) THEN
+			BEGIN
+			  NL;
+			  Print('Please wait, copying file from CD-ROM ... ');
+			  IF CopyMoveFile(TRUE,'',DownloadPath+SQOutSp(FileInfo.FileName),TempDir+'CD\'+SQOutSp(FileInfo.FileName),FALSE) THEN
+				DownloadPath := TempDir+'CD\';
+			END;
+		  NL;
+		  IF PYNQ('Auto-logoff after '+AOnOff(ProtocolNumber = -1,'viewing file','file transfer')+'? ',0,FALSE) THEN
+			Include(TransferFlags,IsAutoLogOff);
+		  NL;
+		  Star('Ready to '+AOnOff(ProtocolNumber = -1,'view','send')+': ^1'+SQOutSp(FileInfo.FileName)+'.');
+		  
+		  ExecProtocol(AOnOff(ProtocolNumber = -1,DownloadPath+SQOutSp(FileInfo.FileName),''),
+							  TempDir+'UP\',FunctionalMCI(Protocol.EnvCmd,'','')+#13#10+General.ProtPath+
+							  FunctionalMCI(Protocol.DLCmd,DownloadPath+SQOutSp(FileInfo.FileName),''),
+							  0,ReturnCode,TransferTime);
+							  
+		  NL;
+		  Star('File '+AOnOff(ProtocolNumber = -1,'viewing','download')+' complete.');
 
-      IF (IsCDRom IN TransferFlags) THEN
-      BEGIN
-        NL;
-        Print('Please wait, copying file from CD-ROM ... ');
-        IF CopyMoveFile(TRUE,'',DownloadPath+SQOutSp(FileInfo.FileName),TempDir+'CD\'+SQOutSp(FileInfo.FileName),FALSE) THEN
-          DownloadPath := TempDir+'CD\';
-      END;
+		  IF (ProtocolNumber = -1) THEN
+			BEGIN
+			  IF (ReturnCode = 0) THEN
+				Include(TransferFlags,IsTransferOk);
+			END
+		  ELSE
+			BEGIN
+			  IF FindReturnCode(Protocol.DLCode,Protocol.PRFlags,IntToStr(ReturnCode)) THEN
+				Include(TransferFlags,IsTransferOk);
+			END;
 
-      NL;
-      IF PYNQ('Auto-logoff after '+AOnOff(ProtocolNumber = -1,'viewing file','file transfer')+'? ',0,FALSE) THEN
-        Include(TransferFlags,IsAutoLogOff);
+		  IF (NOT (IsTransferOk IN TransferFlags)) THEN
+			BEGIN
+			  NL;
+			  Star(AOnOff(ProtocolNumber = -1,'Text view','Download')+' unsuccessful.');
+			  SysOpLog('^8'+AOnOff(ProtocolNumber = -1,'Text view','Download')+' failed: "^1'+SQOutSp(FileInfo.FileName)+
+					   '^8" from ^1'+MemFileArea.AreaName);
+			  Include(TransferFlags,isPaused);
+			END
+		  ELSE
+			BEGIN
+			  LIL := 0;
+			  SysOpLog('^1'+AOnOff(ProtocolNumber = -1,'Viewed','Downloaded')+' "^1'+SQOutSp(FileInfo.FileName)+
+					   '^1" from ^1'+MemFileArea.AreaName+'.');
+			  
+			  { --- }
+			  
+			  { LeeW: This totals record seems to be screwing everything up -- Was it part of unfinished batch DL implementation? }
+			  
+			  (*
+			  FillChar(Totals,SizeOf(Totals),0);
 
-      NL;
-      Star('Ready to '+AOnOff(ProtocolNumber = -1,'view','send')+': ^1'+SQOutSp(FileInfo.FileName)+'.');
+			  Inc(Totals.FilesDL);
+			  Inc(Totals.BytesDL,FileInfo.FileSize);
+			  Inc(Totals.PointsDL,FileInfo.FilePoints);
 
-      ExecProtocol(AOnOff(ProtocolNumber = -1,DownloadPath+SQOutSp(FileInfo.FileName),''),
-                   TempDir+'UP\',
-                   FunctionalMCI(Protocol.EnvCmd,'','')+
-                   #13#10
-                   +General.ProtPath+FunctionalMCI(Protocol.DLCmd,DownloadPath+SQOutSp(FileInfo.FileName),''),
-                   0,
-                   ReturnCode,
-                   TransferTime);
+			  IF (ChargeFileRatio(FileArea)) THEN
+				BEGIN
+				  Inc(Totals.FilesDLRatio);
+				  Inc(Totals.BytesDLRatio,FileInfo.FileSize);
+				END;
 
-      NL;
-      Star('File '+AOnOff(ProtocolNumber = -1,'viewing','download')+' complete.');
+			  IF (ChargeFilePoints(FileArea)) THEN
+				Inc(Totals.PointsDLRatio,FileInfo.FilePoints);
+			  *)
+			  
+			  IF ((ThisUser.Downloads + 1{Totals.FilesDLRatio}) < 2147483647) THEN
+				Inc(ThisUser.Downloads{,Totals.FilesDLRatio})
+			  ELSE
+				ThisUser.Downloads := 2147483647;
 
-      IF (ProtocolNumber = -1) THEN
-      BEGIN
-        IF (ReturnCode = 0) THEN
-          Include(TransferFlags,IsTransferOk);
-      END
-      ELSE
-      BEGIN
-        IF FindReturnCode(Protocol.DLCode,Protocol.PRFlags,IntToStr(ReturnCode)) THEN
-          Include(TransferFlags,IsTransferOk);
-      END;
+			  IF ((ThisUser.DLToday + 1{Totals.FilesDLRatio}) < 2147483647) THEN
+				Inc(ThisUser.DLToday{,Totals.FilesDLRatio})
+			  ELSE
+				ThisUser.DLToday := 2147483647;
 
-      IF (NOT (IsTransferOk IN TransferFlags)) THEN
-      BEGIN
-        NL;
-        Star(AOnOff(ProtocolNumber = -1,'Text view','Download')+' unsuccessful.');
-        SysOpLog('^8'+AOnOff(ProtocolNumber = -1,'Text view','Download')+' failed: "^1'+SQOutSp(FileInfo.FileName)+
-                '^8" from ^1'+MemFileArea.AreaName);
-        Include(TransferFlags,isPaused);
-      END
-      ELSE
-      BEGIN
-        LIL := 0;
+			  IF ((ThisUser.DK + ({Totals.BytesDLRatio}FileInfo.FileSize DIV 1024)) < 2147483647) THEN
+				Inc(ThisUser.DK,({Totals.BytesDLRatio}FileInfo.FileSize DIV 1024))
+			  ELSE
+				ThisUser.DK := 2147483647;
 
-        SysOpLog('^1'+AOnOff(ProtocolNumber = -1,'Viewed','Downloaded')+' "^1'+SQOutSp(FileInfo.FileName)+
-                 '^1" from ^1'+MemFileArea.AreaName+'.');
+			  IF ((ThisUser.DLKToday + ({Totals.BytesDLRatio}FileInfo.FileSize DIV 1024)) < 2147483647) THEN
+				Inc(ThisUser.DLKToday,({Totals.BytesDLRatio}FileInfo.FileSize DIV 1024))
+			  ELSE
+				ThisUser.DLKToday := 2147483647;
 
-        FillChar(Totals,SizeOf(Totals),0);
+			  IF ((ThisUser.FilePoints - {Totals.PointsDLRatio}FileInfo.FilePoints) > 0) THEN
+				Dec(ThisUser.FilePoints,{Totals.PointsDLRatio}FileInfo.FilePoints)
+			  ELSE
+				ThisUser.FilePoints := 0;
 
-        Inc(Totals.FilesDL);
-        Inc(Totals.BytesDL,FileInfo.FileSize);
-        Inc(Totals.PointsDL,FileInfo.FilePoints);
+			  IF ((DownloadsToday + 1{Totals.FilesDL}) < 2147483647) THEN
+				Inc(DownloadsToday{,Totals.FilesDL})
+			  ELSE
+				DownloadsToday := 2147483647;
 
-        IF (ChargeFileRatio(FileArea)) THEN
-        BEGIN
-          Inc(Totals.FilesDLRatio);
-          Inc(Totals.BytesDLRatio,FileInfo.FileSize);
-        END;
+			  IF ((DownloadKBytesToday + ({Totals.BytesDL}FileInfo.FileSize DIV 1024)) < 2147483647) THEN
+				Inc(DownloadKBytesToday,({Totals.BytesDL}FileInfo.FileSize DIV 1024))
+			  ELSE
+				DownloadKBytesToday := 2147483647;
 
-        IF (ChargeFilePoints(FileArea)) THEN
-          Inc(Totals.PointsDLRatio,FileInfo.FilePoints);
+			  SaveURec(ThisUser,UserNum);
 
-        IF ((ThisUser.Downloads + Totals.FilesDLRatio) < 2147483647) THEN
-          Inc(ThisUser.Downloads,Totals.FilesDLRatio)
-        ELSE
-          ThisUser.Downloads := 2147483647;
+			  LIL := 0;
 
-        IF ((ThisUser.DLToday + Totals.FilesDLRatio) < 2147483647) THEN
-          Inc(ThisUser.DLToday,Totals.FilesDLRatio)
-        ELSE
-          ThisUser.DLToday := 2147483647;
+			  { LeeW: Improve these stats/make custo}
 
-        IF ((ThisUser.DK + (Totals.BytesDLRatio DIV 1024)) < 2147483647) THEN
-          Inc(ThisUser.DK,(Totals.BytesDLRatio DIV 1024))
-        ELSE
-          ThisUser.DK := 2147483647;
+			  NL;
+			  Print('^1Download statistics (Totals):^0');
+			  NL;
+			  Star('File name         : ^1'+SQOutSp(FileInfo.FileName));
+			  Star('File size         : ^1'+ConvertBytes({Totals.BytesDL}FileInfo.FileSize,FALSE));
+			  Star('File point(s)     : ^1'+FormatNumber({Totals.PointsDL}FileInfo.FilePoints));
+			  Star(AOnOff(ProtocolNumber = -1,'View time         ','Download time     ')+': ^1'+FormattedTime(TransferTime));
+			  Star('Transfer rate     : ^1'+FormatNumber(GetCPS(FileInfo.FileSize,Transfertime))+' cps');
+			  
+			  SysOpLog('^1 - Totals:'+
+					   ' '+FormatNumber({Totals.FilesDL}1)+' '+Plural('file',{Totals.FilesDL}1)+
+					   ', '+ConvertBytes({Totals.BytesDL}FileInfo.FileSize,FALSE)+
+					   ', '+FormatNumber({Totals.PointsDL}FileInfo.FilePoints)+' fp'+
+					   ', '+FormattedTime(TransferTime)+
+					   ', '+FormatNumber(GetCPS({Totals.BytesDL}FileInfo.FileSize,TransferTime))+' cps.');
+			  LIL := 0;
+			  
+			  NL;
+			  Print('^1Download statistics (Charges):^0');
+			  NL;
+			  Star('File(s)           : ^1'+FormatNumber({Totals.FilesDLRatio}1));
+			  Star('File size         : ^1'+ConvertBytes({Totals.BytesDLRatio}FileInfo.FileSize,FALSE));
+			  Star('File point(s)     : ^1'+FormatNumber({Totals.PointsDLRatio}FileInfo.FilePoints));
 
-        IF ((ThisUser.DLKToday + (Totals.BytesDLRatio DIV 1024)) < 2147483647) THEN
-          Inc(ThisUser.DLKToday,(Totals.BytesDLRatio DIV 1024))
-        ELSE
-          ThisUser.DLKToday := 2147483647;
+			  SysOpLog('^1 - Charges:'+
+					   ' '+FormatNumber({Totals.FilesDLRatio}1)+' '+Plural('file',{Totals.FilesDLRatio}1)+
+					   ', '+ConvertBytes({Totals.BytesDLRatio}FileInfo.FileSize,FALSE)+
+					   ', '+FormatNumber({Totals.PointsDLRatio}FileInfo.FilePoints)+' fp.');
 
-        IF ((ThisUser.FilePoints - Totals.PointsDLRatio) > 0) THEN
-          Dec(ThisUser.FilePoints,Totals.PointsDLRatio)
-        ELSE
-          ThisUser.FilePoints := 0;
+			  CreditUploader(FileInfo);
 
-        IF ((DownloadsToday + Totals.FilesDL) < 2147483647) THEN
-          Inc(DownloadsToday,Totals.FilesDL)
-        ELSE
-          DownloadsToday := 2147483647;
+			  IF (DirFileRecNum <> -1) THEN
+				BEGIN
+				  Inc(FileInfo.Downloaded);
+				  Seek(FileInfoFile,DirFileRecNum);
+				  Write(FileInfoFile,FileInfo);
+				  LastError := IOResult;
+				END;
 
-        IF ((DownloadKBytesToday + (Totals.BytesDL DIV 1024)) < 2147483647) THEN
-          Inc(DownloadKBytesToday,(Totals.BytesDL DIV 1024))
-        ELSE
-          DownloadKBytesToday := 2147483647;
+			  LIL := 0;
+			  NL;
+			  Print('^1Enjoy the file, '+Caps(ThisUser.Name)+'!^0');
+			  PauseScr(FALSE);
+			END;
 
-        SaveURec(ThisUser,UserNum);
-
-        LIL := 0;
-
-        NL;
-        Print('^1Download statistics (Totals):^0');
-        NL;
-        Star('File name         : ^1'+SQOutSp(FileInfo.FileName));
-        Star('File size         : ^1'+ConvertBytes(Totals.BytesDL,FALSE));
-        Star('File point(s)     : ^1'+FormatNumber(Totals.PointsDL));
-        Star(AOnOff(ProtocolNumber = -1,'View time         ','Download time     ')+': ^1'+FormattedTime(TransferTime));
-        Star('Transfer rate     : ^1'+FormatNumber(GetCPS(FileInfo.FileSize,Transfertime))+' cps');
-
-        SysOpLog('^1 - Totals:'+
-                 ' '+FormatNumber(Totals.FilesDL)+' '+Plural('file',Totals.FilesDL)+
-                 ', '+ConvertBytes(Totals.BytesDL,FALSE)+
-                 ', '+FormatNumber(Totals.PointsDL)+' fp'+
-                 ', '+FormattedTime(TransferTime)+
-                 ', '+FormatNumber(GetCPS(Totals.BytesDL,Transfertime))+' cps.');
-        LIL := 0;
-
-        NL;
-        Print('^1Download statistics (Charges):^0');
-        NL;
-        Star('File(s)           : ^1'+FormatNumber(Totals.FilesDLRatio));
-        Star('File size         : ^1'+ConvertBytes(Totals.BytesDLRatio,FALSE));
-        Star('File point(s)     : ^1'+FormatNumber(Totals.PointsDLRatio));
-
-        SysOpLog('^1 - Charges:'+
-                 ' '+FormatNumber(Totals.FilesDLRatio)+' '+Plural('file',Totals.FilesDLRatio)+
-                 ', '+ConvertBytes(Totals.BytesDLRatio,FALSE)+
-                 ', '+FormatNumber(Totals.PointsDLRatio)+' fp.');
-
-        CreditUploader(FileInfo);
-
-        IF (DirFileRecNum <> -1) THEN
-        BEGIN
-          Inc(FileInfo.Downloaded);
-          Seek(FileInfoFile,DirFileRecNum);
-          Write(FileInfoFile,FileInfo);
-          LastError := IOResult;
-        END;
-
-        LIL := 0;
-
-        NL;
-        Print('^1Enjoy the file, '+Caps(ThisUser.Name)+'!^0');
-        PauseScr(FALSE);
-
-      END;
-
-      IF (ProtBiDirectional IN Protocol.PRFlags) AND (NOT OfflineMail) THEN
-        BatchUpload(TRUE,0);
-
-      IF (IsAutoLogoff IN TransferFlags) THEN
-        CountDown
-    END;
+		  IF (ProtBiDirectional IN Protocol.PRFlags) AND (NOT OfflineMail) THEN
+			BatchUpload(TRUE,0);
+		  IF (IsAutoLogoff IN TransferFlags) THEN
+			CountDown
+		END;
   END;
 END;
 
-PROCEDURE Receive(FileName: Str12;
-                  UploadPath: PathStr;
-                  ResumeFile: Boolean;
-                  VAR UploadOk,
-                  KeyboardAbort,
-                  AddULBatch: Boolean;
-                  VAR TransferTime: LongInt);
+PROCEDURE Receive(FileName: Str12; UploadPath: PathStr; ResumeFile: Boolean; VAR UploadOk, KeyboardAbort, AddULBatch: Boolean; 
+				  VAR TransferTime: LongInt);
 VAR
   ReturnCode,
   ProtocolNumber: Integer;
 BEGIN
   UploadOk := TRUE;
-
   KeyboardAbort := FALSE;
-
   TransferTime := 0;
-
   ProtocolNumber := DoProtocol(Protocol,TRUE,FALSE,FALSE,ResumeFile);
-
   CASE ProtocolNumber OF
-    -1 : UploadOk := FALSE;
-    -2 : BEGIN
-           UploadOk := FALSE;
-           KeyboardAbort := TRUE;
+    -1: UploadOk := FALSE;
+    -2: BEGIN
+		  UploadOk := FALSE;
+		  KeyboardAbort := TRUE;
          END;
-    -3 : BEGIN
-           UploadOk := FALSE;
-           KeyboardAbort := TRUE;
-         END;
-    -4 : AddULBatch := TRUE;
-    -5 : UploadOk := FALSE;
-  ELSE
-    IF (NOT InCom) THEN
-      UploadOk := FALSE
-    ELSE
-    BEGIN
-
-      PurgeDir(TempDir+'UP\',FALSE);
-
-      NL;
-      Star('Ready to receive: ^1'+SQOutSp(FileName)+'.');
-
-      TimeLock := TRUE;
-
-      ExecProtocol('',
-                   UploadPath,
-                   FunctionalMCI(Protocol.EnvCmd,'','')+
-                   #13#10+
-                   General.ProtPath+FunctionalMCI(Protocol.ULCmd,SQOutSp(FileName),''),
-                   0,
-                   ReturnCode,
-                   TransferTime);
-
-      TimeLock := FALSE;
-
-      NL;
-      Star('File upload complete.');
-
-      UploadOk := FindReturnCode(Protocol.ULCode,Protocol.PRFlags,IntToStr(ReturnCode));
-    END;
+    -3: BEGIN
+          UploadOk := FALSE;
+          KeyboardAbort := TRUE;
+        END;
+    -4: AddULBatch := TRUE;
+    -5: UploadOk := FALSE;
+	ELSE
+	  IF (NOT InCom) THEN
+		UploadOk := FALSE
+	  ELSE
+		BEGIN
+		  PurgeDir(TempDir+'UP\',FALSE);
+		  NL;
+		  Star('Ready to receive: ^1'+SQOutSp(FileName)+'.');
+		  TimeLock := TRUE;
+		  ExecProtocol('',UploadPath,FunctionalMCI(Protocol.EnvCmd,'','')+#13#10+General.ProtPath+FunctionalMCI(
+					   Protocol.ULCmd,SQOutSp(FileName),''),0,ReturnCode,TransferTime);
+		  TimeLock := FALSE;
+		  NL;
+		  Star('File upload complete.');
+		  UploadOk := FindReturnCode(Protocol.ULCode,Protocol.PRFlags,IntToStr(ReturnCode));
+		END;
   END;
 END;
-
 END.

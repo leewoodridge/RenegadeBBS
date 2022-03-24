@@ -7,12 +7,7 @@ INTERFACE
 USES
   Common;
 
-PROCEDURE ExecProtocol(TextFN,
-                       Dir,
-                       BatLine: AStr;
-                       OKLevel: Integer;
-                       VAR ReturnCode: Integer;
-                       VAR TransferTime: LongInt);
+PROCEDURE ExecProtocol(TextFN,Dir,BatLine: AStr; OKLevel: Integer; VAR ReturnCode: Integer; VAR TransferTime: LongInt);
 FUNCTION FindReturnCode(ProtCode: ProtocolCodeType; XBStat: PRFlagSet; ReturnCode: AStr): Boolean;
 FUNCTION DoProtocol(VAR Protocol: ProtocolRecordType; UL,DL,Batch,Resume: Boolean): Integer;
 
