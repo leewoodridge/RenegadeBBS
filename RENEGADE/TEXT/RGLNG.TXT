@@ -1172,3 +1172,11 @@ $
 $EMail_Deleted_Prompt
 ^0This user is deleted - Send E-Mail anyway?
 $
+
+$Top_Files_Download_Prompt
+%LFWould you like to download one of these files?
+$
+
+$Top_Files_Download_Input
+%LFDownload which file?
+$
