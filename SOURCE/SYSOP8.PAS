@@ -1,10 +1,25 @@
 {$A+,B-,D+,E-,F+,I-,L+,N-,O+,R-,S+,V-}
+{     (                                         }
+{    )\ )                           (           }
+{   (()/(  (         (  (  (     )  )\ )  (     }
+{    \(_))))\ (     ))\ )\))( ( /( (()/( ))\    }
+{   (_)) /((_))\ ) /((_|(_))\ )(_)) ((_))(( )   }
+{   | _ \_)) _(_/((_)) \( )(_|(_)_  _| (_))/    }
+{   |   / -_) ' \)) -_)/ _` |/ _` / _` / -_)    }
+{   |_|_\___|_||_|\___|\__, |\__,_\__,_\___|    }
+{   ------------------ |___/ ----------------   }
+{   B U L L E T I N   B O A R D   S Y S T E M   }
+{   -----------------------------------------   }
 {
-Lee Woodridge
- 10/20/2021 - Color config now uses pipe codes instead of caret codes
- 11/10/2021 - changed default new base options -- sysop acs and colors
-            - add submenu for changing color options
+    [DONE]
+     10/20/2021 - Color config now uses pipe code instead of caret codes -- Should we make it possible to use either?
+     11/10/2021 - Changed default new base configuration -- SysOp ACS and colors
+                - Added submenu for color configuration
+     04/04/2022 - Fix page length
+    [TO-DO]
+     - ...
 }
+
 UNIT SysOp8;
 
 INTERFACE
@@ -1111,19 +1126,19 @@ VAR
     IF (RecNumToList1 = 0) THEN
     BEGIN
       NumDone := 0;
-      Assign(EmailFile,General.DataPath+'MEMAIL.DAT');
+      Assign(EMailFile,General.DataPath+'MEMAIL.DAT');
       Reset(EMailFile);
-      Seek(EmailFile,RecNumToList1);
+      Seek(EMailFile,RecNumToList1);
       Read(EMailFile,MemMsgArea);
       DisplayMsgArea(RecNumToList1);
-      Close(EmailFile);
+      Close(EMailFile);
       LastError := IOResult;
       RecNumToList := 1;
     END;
     Assign(MsgAreaFile,General.DataPath+'MBASES.DAT');
     Reset(MsgAreaFile);
     NumDone := 1;
-    WHILE (NumDone < (PageLength - 5)) AND (RecNumToList1 >= 1) AND (RecNumToList1 <= NumMsgAreas)
+    WHILE (NumDone < (PageLength - 7)) AND (RecNumToList1 >= 1) AND (RecNumToList1 <= NumMsgAreas)
           AND (NOT Abort) AND (NOT HangUp) DO
     BEGIN
       Seek(MsgAreaFile,(RecNumToList1 - 1));
@@ -1145,7 +1160,8 @@ BEGIN
   REPEAT
     IF (Cmd <> '?') THEN
       ListMsgAreas(RecNumToList);
-    InputChar('%LF^2Message Area Editor [^1CDIMPRTX^2,(^1?^2)Help,(^1Q^2)uit]: ',Cmd,'QCDIMPRTX^?'^M,[CapAll]);
+    NL;
+    InputChar('^2Message Area Editor [^1CDIMPRTX^2,(^1?^2)Help,(^1Q^2)uit]: ',Cmd,'QCDIMPRTX^?'^M,[CapAll]);
     CASE Cmd OF
       ^M  : IF (RecNumToList < 0) OR (RecNumToList > NumMsgAreas) THEN
               RecNumToList := 0;

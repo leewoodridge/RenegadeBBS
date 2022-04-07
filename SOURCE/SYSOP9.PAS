@@ -802,7 +802,7 @@ VAR
     NumDone := 0;
     NumOnLine := 0; { LeeW: Added }
     TempStr := ''; { ^ }
-    WHILE (NumDone < (PageLength - 6)*2) AND (RecNumToList1 >= 1) AND (RecNumToList1 <= NumFileAreas)
+    WHILE (NumDone < (PageLength - 7)*2) AND (RecNumToList1 >= 1) AND (RecNumToList1 <= NumFileAreas)
      AND (NOT Abort) AND (NOT HangUp) DO
       BEGIN
         Seek(FileAreaFile,(RecNumToList1 - 1));
@@ -844,7 +844,7 @@ BEGIN
   REPEAT
     IF (Cmd <> '?') THEN
       ListFileAreas(RecNumToList,MCIVars);    
-      NL;
+    NL;
     InputChar('^2File Area Editor [^1CDIMPT^2,(^1?^2)Help,(^1Q^2)uit]: ',Cmd,'QCDIMPT?'^M,[CapAll]);
     CASE Cmd OF
       ^M  : IF (RecNumToList < 1) OR (RecNumToList > NumFileAreas) THEN
