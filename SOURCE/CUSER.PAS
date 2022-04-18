@@ -959,7 +959,7 @@ BEGIN
             Inc(Tries);
             IF (Tries >= General.MaxLogonTries) THEN
               BEGIN
-                Print('^8Exceeded maximum number of retries. Disconnecting.^0'); {**improve this**use file/lang fallback}
+                lRGLngStr(275,FALSE); {"Exceeded maximum number of retries. Disconnecting."}
                 HangUp := TRUE;
               END;
           UNTIL (Done1) OR (HangUp);

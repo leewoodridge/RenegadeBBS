@@ -2,7 +2,10 @@
 {
 added a bunch of hangup checks, in an attempt to remove artifacts printed after hangup
 indented everything
-11/20/2021 moved findonlyonce from bulletin NESTED in logonmain since only place that calls it
+ 11/20/2021 - Moved FindOnlyOnce from bulletin NESTED in LogonMaint since only place that calls it
+ 04/15/2022 - Added checks for logonlastcallers, logononeliners, logonvoting
+ 04/16/2022 - Implemented mandatory voting
+            - Voting prompts and message in language file now
 }
 UNIT Maint;
 
@@ -27,6 +30,7 @@ USES
   File12,
   Mail1,
   Mail4,
+  OneLiner, {LeeW: Added}
   ShortMsg,
   TimeFunc,
   Vote;
@@ -37,6 +41,7 @@ VAR
   LastCaller: LastCallerRec;
   TempStr,
   TempStr1: AStr;
+  Tries: Byte; { LeeW: Added -- Attempts for forced voting }
   Cmd: Char;
   Counter,
   Counter1: Integer;
@@ -404,6 +409,12 @@ BEGIN
     IF (General.LogonQuote) AND (NOT HangUp) THEN
       RGQuote('LGNQUOTE');
       
+    IF (General.LogonOneLiners) AND (NOT HangUp) THEN { LeeW: Added -- order? }
+      OneLiners;
+    
+    IF (General.LogonLastCallers) AND (NOT HangUp) THEN { LeeW: Added -- order? }
+      TodaysCallers(0,'');
+      
     IF (CheckBirthday) AND (NOT HangUp) THEN
       BEGIN
         ShowBDay(IntToStr(UserNum));
@@ -449,18 +460,38 @@ BEGIN
         {ELSE
           NL};
       END;
-
-    IF (NOT (RVoting IN ThisUser.ACFlags)) AND (NOT HangUp) THEN
+      
+    {-}
+    
+    IF ((General.LogonVoting) OR (General.ForceVoting)) AND (UnVotedTopics > 0) AND NOT (RVoting IN ThisUser.ACFlags) 
+    AND NOT (HangUp) THEN
       BEGIN
-        Counter := UnVotedTopics;
-        IF (Counter > 0) THEN
+        LangStringArray[0] := IntToStr(UnVotedTopics);
+        LangStringArray[1] := Plural('',UnVotedTopics);
+        {-}
+        IF (General.ForceVoting) THEN
           BEGIN
-            {NL;}
-            Prompt('^1You have not voted on ^9'+IntToStr(Counter)+'^1 voting '+Plural('question',Counter));
-            {NL;}
-          END;
+            Tries := 0;
+            lRGLngStr(273,FALSE); {"Voting is mandatory. Please vote on the following topics ..."}
+            PauseScr(FALSE);
+            REPEAT
+              VoteAll;
+              Inc(Tries);
+              IF (Tries >= General.MaxLogonTries) THEN
+                BEGIN
+                  lRGLngStr(275,FALSE); {"Exceeded maximum number of retries. Disconnecting."}
+                  HangUp := TRUE;
+                END;
+            UNTIL (UnVotedTopics = 0) OR (HangUp);
+          END
+        ELSE IF PYNQ(lRGLngStr(274,TRUE),0,FALSE) THEN {"You have not voted on # topics; Vote now?"}
+          VoteAll
+        ELSE
+          SysOpLog('Declined to vote on unvoted topics');
       END;
-
+    
+    {-}
+    
     IF Exist(General.DataPath+'BATCHDL.DAT') AND (NOT HangUp) THEN
       BEGIN
         Assign(BatchDLFile,General.DataPath+'BATCHDL.DAT');
@@ -521,10 +552,10 @@ BEGIN
       UNTIL (NumBatchULFiles = 0) OR (FileSysOp) OR (HangUp);
 
     BatchDLULInfo;
-
+(*
     IF (LIL <> 0) THEN
       PauseScr(FALSE); {LeeW: ???}
-
+*)
     {NL;}
     
     Update_Screen;

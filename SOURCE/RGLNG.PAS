@@ -658,6 +658,12 @@ BEGIN
                 RgStrNum := 271
               ELSE IF (S = 'TOP_FILES_DOWNLOAD_INPUT') THEN
                 RgStrNum := 272
+              ELSE IF (S = 'MANDATORY_VOTING') THEN
+                RgStrNum := 273
+              ELSE IF (S = 'LOGON_VOTE_PROMPT') THEN
+                RgStrNum := 274
+              ELSE IF (S = 'EXCEEDED_MAX_ATTEMPTS') THEN
+                RgStrNum := 275
                 {// END OF COMB }
                 (*
               ELSE IF (S = '') THEN

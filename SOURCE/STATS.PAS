@@ -2,6 +2,8 @@
 
 {
 why does downloads show blank entries but users not???
+added hmt files
+04/15/2022 added check for download top files prompt
 }
 
 UNIT STATS;
@@ -107,12 +109,12 @@ VAR
   Counter: Byte;
 BEGIN
   FOR Counter := 1 TO 10 DO
-	BEGIN
+    BEGIN
       Top10User[Counter].RecNum := Counter;
       Top10User[Counter].UNum := -1;
       Top10User[Counter].Info := 0.0;
       Top10User[Counter].Decimal := 0;
-	END;
+    END;
 END;
 
 PROCEDURE InitTop10FileArray(VAR Top10User: Top10FileArray);
@@ -120,12 +122,12 @@ VAR
   Counter: Byte;
 BEGIN
   FOR Counter := 1 TO 10 DO
-	BEGIN
+    BEGIN
       Top10File[Counter].RecNum := Counter;
       Top10File[Counter].DirNum := -1;
       Top10File[Counter].DirRecNum := -1;
       Top10File[Counter].Downloaded := 0;
-	END;
+    END;
 END;
 
 PROCEDURE SortUserDecending(VAR Top10User: Top10UserArray; UNum: Integer; Info: Real; Decimal: Byte);
@@ -184,32 +186,32 @@ BEGIN
   Reset(UserFile);
   UNum := 1;
   WHILE (UNum <= (FileSize(UserFile) - 1)) AND (NOT Abort) AND (NOT HangUp) DO
-	BEGIN
+    BEGIN
       IF (ExcludeUserNum = 0) OR (UNum <> ExcludeUserNum) THEN
-		BEGIN
-		  Seek(UserFile,UNum);
-		  Read(UserFile,User);
-		  IF (NOT (Deleted IN User.SFlags)) AND (NOT (LockedOut IN User.SFlags)) THEN
-			BEGIN
-			  CASE Cmd OF
-				'A' : Info := User.TTimeOn;
-				'B' : Info := User.UK;
-				'C' : Info := User.DK;
-				'D' : Info := User.EmailSent;
-				'E' : Info := User.MsgPost;
-				'F' : Info := User.FeedBack;
-				'G' : Info := User.LoggedOn;
-				'H' : Info := User.Uploads;
-				'I' : Info := User.Downloads;
-				'J' : Info := User.FilePoints;
-				'K' : Info := (User.UK / MaxR(1.0,User.DK));
-				'L' : Info := (User.MsgPost / MaxR(1.0,User.LoggedOn));
-			  END;
-			  SortUserDecending(Top10User,UNum,Info,Decimal);
-			END;
-		END;
+        BEGIN
+          Seek(UserFile,UNum);
+          Read(UserFile,User);
+          IF (NOT (Deleted IN User.SFlags)) AND (NOT (LockedOut IN User.SFlags)) THEN
+            BEGIN
+              CASE Cmd OF
+                'A' : Info := User.TTimeOn;
+                'B' : Info := User.UK;
+                'C' : Info := User.DK;
+                'D' : Info := User.EmailSent;
+                'E' : Info := User.MsgPost;
+                'F' : Info := User.FeedBack;
+                'G' : Info := User.LoggedOn;
+                'H' : Info := User.Uploads;
+                'I' : Info := User.Downloads;
+                'J' : Info := User.FilePoints;
+                'K' : Info := (User.UK / MaxR(1.0,User.DK));
+                'L' : Info := (User.MsgPost / MaxR(1.0,User.LoggedOn));
+              END;
+              SortUserDecending(Top10User,UNum,Info,Decimal);
+            END;
+        END;
       Inc(UNum);
-	END;
+    END;
   Close(UserFile);
 END;
 
@@ -221,21 +223,21 @@ BEGIN
   IF (FileArea <> FArea) THEN
     ChangeFileArea(FArea);
   IF (FileArea = FArea) THEN
-	BEGIN
+    BEGIN
       RecNo(F,'*.*',DirFileRecNum);
       IF (BadDownloadPath) THEN
-		Exit;
+        Exit;
       WHILE (DirFileRecNum <> -1) AND (NOT Abort) AND (NOT HangUp) DO
-		BEGIN
-		  Seek(FileInfoFile,DirFileRecNum);
-		  Read(FileInfoFile,F);
-		  IF (CanSee(F)) THEN
-			SortFileDecending(Top10File,FileArea,DirFileRecNum,F.Downloaded);
-		  NRecNo(F,DirFileRecNum);
-		END;
+        BEGIN
+          Seek(FileInfoFile,DirFileRecNum);
+          Read(FileInfoFile,F);
+          IF (CanSee(F)) THEN
+            SortFileDecending(Top10File,FileArea,DirFileRecNum,F.Downloaded);
+          NRecNo(F,DirFileRecNum);
+        END;
       Close(FileInfoFile);
       Close(ExtInfoFile);
-	END;
+    END;
 END;
 
 PROCEDURE SearchTop10GlobalFileSpec(VAR Top10File: Top10FileArray);
@@ -254,16 +256,16 @@ BEGIN
   Next := FALSE;
   FArea := 1;
   WHILE (FArea >= 1) AND (FArea <= NumFileAreas) AND (NOT Next) AND (NOT Abort) AND (NOT HangUp) DO
-	BEGIN
+    BEGIN
       SearchTop10AreaFileSpec(FArea,Top10File);
       WKey;
       IF (Next) THEN
-		BEGIN
-		  Abort := FALSE;
-		  Next := FALSE;
-		END;
+        BEGIN
+          Abort := FALSE;
+          Next := FALSE;
+        END;
       Inc(FArea);
-	END;
+    END;
   ConfSystem := SaveConfSystem;
   IF (SaveConfSystem) THEN
     NewCompTables;
@@ -379,31 +381,27 @@ BEGIN
 
   { --- }
 
-  TransferFlags := [];
-  IF (PYNQ(lRGLngStr(271,TRUE),0,FALSE)) THEN
-	BEGIN
-	  Counter := -1;
-	  InputInteger(lRGLngStr(272,TRUE),Counter,[],1,10,Changed);
-	  IF (Counter <> -1) THEN
-		IF (Top10File[Counter].DirNum <> -1) AND (Top10File[Counter].DirRecNum <> -1) THEN
-		  BEGIN
-			InitFileArea(Top10File[Counter].DirNum);
-			IF (BadDownloadPath) THEN
-			  Exit;
-			Seek(FileInfoFile,Top10File[Counter].DirRecNum);
-			Read(FileInfoFile,F);
-			CLS;
-			DLX(F,Top10File[Counter].DirRecNum,TransferFlags); { LeeW: Updated this }
-			Close(FileInfoFile);
-			Close(ExtInfoFile);
-			{PauseScr(FALSE);}
-		  END;
-	END
-
-  { --- }
-  
-  {ELSE
-	PauseScr(FALSE)};
+  IF (General.TopFilesDownload) AND (PYNQ(lRGLngStr(271,TRUE),0,FALSE)) THEN
+    BEGIN
+      Counter := -1;
+      InputInteger(lRGLngStr(272,TRUE),Counter,[],1,10,Changed);
+      IF (Counter <> -1) THEN
+        IF (Top10File[Counter].DirNum <> -1) AND (Top10File[Counter].DirRecNum <> -1) THEN
+          BEGIN
+            InitFileArea(Top10File[Counter].DirNum);
+            IF (BadDownloadPath) THEN
+              Exit;
+            Seek(FileInfoFile,Top10File[Counter].DirRecNum);
+            Read(FileInfoFile,F);
+            CLS; {?}
+            TransferFlags := [];
+            DLX(F,Top10File[Counter].DirRecNum,TransferFlags); { LeeW: Updated this }
+            Close(FileInfoFile);
+            Close(ExtInfoFile);
+          END;
+    END;
+  IF NOT (General.TopFilesDownload) THEN
+    PauseScr(FALSE);
 END;
 
 PROCEDURE GetUserStats(MenuOption: Str50);
@@ -416,104 +414,104 @@ VAR
 BEGIN
   MenuOption := AllCaps(MenuOption);
   IF (MenuOption = '') OR (NOT (MenuOption[1] IN ['A'..'M'])) THEN
-	BEGIN
+    BEGIN
       NL;
       Print('Invalid menu option for user statistics, please inform the SysOp.');
       PauseScr(FALSE);
       SysOpLog('Invalid menu option for user statistics, valid options are A-M. "'+MenuOption+'"');
-	END
+    END
   ELSE IF (MenuOption[1] IN ['A'..'L']) THEN
-	BEGIN
+    BEGIN
       ExcludeUserNum := 0;
       IF (Pos(';',MenuOption) <> 0) THEN
         ExcludeUserNum := StrToInt(Copy(MenuOption,(Pos(';',MenuOption) + 1),50));
       CASE UpCase(MenuOption[1]) OF
-		'A' : BEGIN
-				Title := SemiCmd(lRGLngStr(243,TRUE),1);
-				Header := SemiCmd(lRGLngStr(243,TRUE),2);
-				Decimal := 0;
-				Width := 10;
-			  END;
-		'B' : BEGIN
-				Title := SemiCmd(lRGLngStr(244,TRUE),1);
-				Header := SemiCmd(lRGLngStr(244,TRUE),2);
-				Decimal := 0;
-				Width := 10;
+        'A' : BEGIN
+                Title := SemiCmd(lRGLngStr(243,TRUE),1);
+                Header := SemiCmd(lRGLngStr(243,TRUE),2);
+                Decimal := 0;
+                Width := 10;
               END;
-		'C' : BEGIN
-				Title := SemiCmd(lRGLngStr(245,TRUE),1);
-				Header := SemiCmd(lRGLngStr(245,TRUE),2);
-				Decimal := 0;
-				Width := 10;
+        'B' : BEGIN
+                Title := SemiCmd(lRGLngStr(244,TRUE),1);
+                Header := SemiCmd(lRGLngStr(244,TRUE),2);
+                Decimal := 0;
+                Width := 10;
               END;
-		'D' : BEGIN
-				Title := SemiCmd(lRGLngStr(246,TRUE),1);
-				Header := SemiCmd(lRGLngStr(246,TRUE),2);
-				Decimal := 0;
-				Width := 10;
+        'C' : BEGIN
+                Title := SemiCmd(lRGLngStr(245,TRUE),1);
+                Header := SemiCmd(lRGLngStr(245,TRUE),2);
+                Decimal := 0;
+                Width := 10;
               END;
-		'E' : BEGIN
-				Title := SemiCmd(lRGLngStr(247,TRUE),1);
-				Header := SemiCmd(lRGLngStr(247,TRUE),2);
-				Decimal := 0;
-				Width := 10;
+        'D' : BEGIN
+                Title := SemiCmd(lRGLngStr(246,TRUE),1);
+                Header := SemiCmd(lRGLngStr(246,TRUE),2);
+                Decimal := 0;
+                Width := 10;
               END;
-		'F' : BEGIN
-				Title := SemiCmd(lRGLngStr(248,TRUE),1);
-				Header := SemiCmd(lRGLngStr(248,TRUE),2);
-				Decimal := 0;
-				Width := 10;
+        'E' : BEGIN
+                Title := SemiCmd(lRGLngStr(247,TRUE),1);
+                Header := SemiCmd(lRGLngStr(247,TRUE),2);
+                Decimal := 0;
+                Width := 10;
               END;
-		'G' : BEGIN
-				Title := SemiCmd(lRGLngStr(249,TRUE),1);
-				Header := SemiCmd(lRGLngStr(249,TRUE),2);
-				Decimal := 0;
-				Width := 10;
+        'F' : BEGIN
+                Title := SemiCmd(lRGLngStr(248,TRUE),1);
+                Header := SemiCmd(lRGLngStr(248,TRUE),2);
+                Decimal := 0;
+                Width := 10;
               END;
-		'H' : BEGIN
-				Title := SemiCmd(lRGLngStr(250,TRUE),1);
-				Header := SemiCmd(lRGLngStr(250,TRUE),2);
-				Decimal := 0;
-				Width := 10;
+        'G' : BEGIN
+                Title := SemiCmd(lRGLngStr(249,TRUE),1);
+                Header := SemiCmd(lRGLngStr(249,TRUE),2);
+                Decimal := 0;
+                Width := 10;
               END;
-		'I' : BEGIN
-				Title := SemiCmd(lRGLngStr(251,TRUE),1);
-				Header := SemiCmd(lRGLngStr(251,TRUE),2);
-				Decimal := 0;
-				Width := 10;
+        'H' : BEGIN
+                Title := SemiCmd(lRGLngStr(250,TRUE),1);
+                Header := SemiCmd(lRGLngStr(250,TRUE),2);
+                Decimal := 0;
+                Width := 10;
               END;
-		'J' : BEGIN
-				Title := SemiCmd(lRGLngStr(252,TRUE),1);
-				Header := SemiCmd(lRGLngStr(252,TRUE),2);
-				Decimal := 0;
-				Width := 10;
+        'I' : BEGIN
+                Title := SemiCmd(lRGLngStr(251,TRUE),1);
+                Header := SemiCmd(lRGLngStr(251,TRUE),2);
+                Decimal := 0;
+                Width := 10;
               END;
-		'K' : BEGIN
-				Title := SemiCmd(lRGLngStr(253,TRUE),1);
-				Header := SemiCmd(lRGLngStr(253,TRUE),2);
-				Decimal := 2;
-				Width := 12;
+        'J' : BEGIN
+                Title := SemiCmd(lRGLngStr(252,TRUE),1);
+                Header := SemiCmd(lRGLngStr(252,TRUE),2);
+                Decimal := 0;
+                Width := 10;
               END;
-		'L' : BEGIN
-				Title := SemiCmd(lRGLngStr(254,TRUE),1);
-				Header := SemiCmd(lRGLngStr(254,TRUE),2);
-				Decimal := 2;
-				Width := 12;
+        'K' : BEGIN
+                Title := SemiCmd(lRGLngStr(253,TRUE),1);
+                Header := SemiCmd(lRGLngStr(253,TRUE),2);
+                Decimal := 2;
+                Width := 12;
+              END;
+        'L' : BEGIN
+                Title := SemiCmd(lRGLngStr(254,TRUE),1);
+                Header := SemiCmd(lRGLngStr(254,TRUE),2);
+                Decimal := 2;
+                Width := 12;
               END;
       END;
       SearchTop10User(Top10User,MenuOption[1],ExcludeUserNum,Decimal);
       DisplayTop10UserArray(Top10User,Title,Header,Decimal,Width);
-	END
+    END
   ELSE IF (MenuOption[1] = 'M') THEN
-	BEGIN
-	  Title := SemiCmd(lRGLngStr(255,TRUE),1);
-	  Header := SemiCmd(lRGLngStr(255,TRUE),2);
-	  {
-	  Decimal := 0;
-	  Width := 12;
-	  }
-	  SearchTop10GlobalFileSpec(Top10File);
-	  DisplayTop10FileArray(Top10File,Title,Header);
+    BEGIN
+      Title := SemiCmd(lRGLngStr(255,TRUE),1);
+      Header := SemiCmd(lRGLngStr(255,TRUE),2);
+      {
+      Decimal := 0;
+      Width := 12;
+      }
+      SearchTop10GlobalFileSpec(Top10File);
+      DisplayTop10FileArray(Top10File,Title,Header);
   END;
 END;
 END.

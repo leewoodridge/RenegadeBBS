@@ -32,7 +32,7 @@ FUNCTION GetTagLine: Str74;
 IMPLEMENTATION
 
 USES
-  Dos,
+  DOS,
   File0,
   File1,
   Shortmsg,
@@ -781,14 +781,14 @@ BEGIN
           END;
           Inc(TempTextSize,(Length(MsgTxtStr) + 1));
           IF (' * Origin: ' = Copy(MsgTxtStr,1,11)) THEN
-            MsgTxtStr := '|'+ZeroPad(IntToStr(MemMsgArea.Origin_Color))+MsgTxtStr
+            MsgTxtStr := GetC(MemMsgArea.Origin_Color)+MsgTxtStr
           ELSE IF ('---'= Copy(MsgTxtStr,1,3)) AND ((Length(MsgTxtStr) = 3) OR (MsgTxtStr[4] <> '-')) THEN
-            MsgTxtStr := '|'+ZeroPad(IntToStr(MemMsgArea.Tear_Color))+MsgTxtStr
+            MsgTxtStr := GetC(MemMsgArea.Tear_Color)+MsgTxtStr
           ELSE IF (Pos('> ',Copy(MsgTxtStr,1,5)) > 0) THEN
-            MsgTxtStr := '|'+ZeroPad(IntToStr(MemMsgArea.Quote_Color))+MsgTxtStr
+            MsgTxtStr := GetC(MemMsgArea.Quote_Color)+MsgTxtStr
           ELSE IF (Pos(#254,Copy(MsgTxtStr,1,5)) > 0) THEN
-            MsgTxtStr := '|'+ZeroPad(IntToStr(MemMsgArea.Tear_Color))+MsgTxtStr;
-          PrintACR('|'+ZeroPad(IntToStr(MemMsgArea.Text_Color))+MsgTxtStr);
+            MsgTxtStr := GetC(MemMsgArea.Tear_Color)+MsgTxtStr;
+          PrintACR(GetC(MemMsgArea.Text_Color)+MsgTxtStr);
         UNTIL (TempTextSize >= MHeader.TextSize) OR (Abort) OR (HangUp);
       END;
     MCIAllowed := TRUE;

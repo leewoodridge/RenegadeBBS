@@ -2,6 +2,7 @@
 {
 indented
 aesthetics
+04/15/2022 added quote and onliner acs
 }
 UNIT SysOp2C;
 
@@ -52,12 +53,19 @@ BEGIN
                  PadLeftStr('^0(^1W^0) "Invisible" Mode : ^1'+Invisible,39));
         PrintACR(PadLeftStr('^0(^1X^0) Mail file attach : ^1'+FileAttachACS,39)+' '+
                  PadLeftStr('^0(^1Y^0) SysOp PW at logon: ^1'+SPW,39));
-        PrintACR(PadLeftStr('^0(^1Z^0) Last On Add      : ^1'+LastOnDatACS,39));
+        PrintACR(PadLeftStr('^0(^1Z^0) Last On Add      : ^1'+LastOnDatACS,39)+' '+
+                 PadLeftStr('^0(^1!^0) Add Quote        : ^1'+AddQuoteACS,39));
+        PrintACR(PadLeftStr('^0(^1@^0) Add OneLiner     : ^1'+AddOneLinerACS,39){+' '+}
+                 );
+        
+      { PrintACR(PadLeftStr('^0(^1^0) : ^1'+ACSVAR,39)+' '+
+                 PadLeftStr('^0(^1^0) : ^1'+ACSVAR,39)); }
+        
         MCIAllowed := TRUE;
         NL;
         InputChar('ACS Configuration [^1A^2-^1P^2,^1R^2-^1Z^2,(^1Q^2)uit]: ',Cmd,
-              'QABCDEFGHIJKLMNOPRSTUVWXYZ'{^M},[CapAll]);
-        IF (Cmd IN ['A'..'P','R'..'Z']) THEN
+              'QABCDEFGHIJKLMNOPRSTUVWXYZ!@'{^M},[CapAll]);
+        IF (Cmd <> 'Q'{IN ['A'..'P','R'..'Z']}) THEN
           BEGIN
             CASE Cmd OF
               'A' : TempACS := SOp;
@@ -86,6 +94,11 @@ BEGIN
               'Y' : TempACS := SPW;
               'Z' : TempACS := LastOnDatACS;
             END;
+            if cmd = '!' then
+            InputString('%LFNew ACS: ',AddQuoteACS,(SizeOf(ACString)-1),[InterActiveEdit],Changed)
+            else if cmd = '@' then
+            InputString('%LFNew ACS: ',AddOneLinerACS,(SizeOf(ACString)-1),[InterActiveEdit],Changed)
+            else
             InputString('%LFNew ACS: ',TempACS,(SizeOf(ACString)-1),[InterActiveEdit],Changed);
             CASE Cmd OF
               'A' : SOp := TempACS;

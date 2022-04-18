@@ -1076,8 +1076,8 @@ VAR
         BEGIN
           ReadLn(QuoteFile,TempStr1);
           Inc(QuoteLi);
-          TempStr1 := '^1'+Copy(PadRightInt(QuoteLi,Length(IntToStr(MaxQuoteLines)))+':'+'|'+
-                      ZeroPad(IntToStr(MemMsgArea.Quote_Color))+TempStr1,1,MaxLineLen);
+          TempStr1 := '^1'+Copy(PadRightInt(QuoteLi,Length(IntToStr(MaxQuoteLines)))+':'+
+                      GetC(MemMsgArea.Quote_Color)+TempStr1,1,MaxLineLen); {LeeW: Uses quote color now}
           PrintACR(TempStr1);
         END;
       Close(QuoteFile);

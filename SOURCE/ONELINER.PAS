@@ -9,6 +9,8 @@ Lee Woodridge
             - OneLiner_Random prints a random oneliner, but I don't know how to make the func store it
  10/08/2021 - Change SysOp to AACS(General.AnonPubRead) to see anonymous posters names
  10/19/2021 - Added SysOpLog error message if ONELM.EXT is missing
+ 04/15/2022 - Removed unused code (onrec)
+              Added toggle for newest on top/bottom
 }
 UNIT OneLiner;
 
@@ -34,7 +36,7 @@ TYPE
 PROCEDURE OneLiners; { View and prompt to add }
 PROCEDURE OneLiner_Add; { Only add }
 PROCEDURE OneLiner_View; { Only view }
-FUNCTION OneLiner_Random: STRING; { Display a random oneliner }
+FUNCTION OneLiner_Random: STRING; { Display a random OneLiner }
 
 IMPLEMENTATION
 
@@ -187,7 +189,6 @@ END;
 PROCEDURE OneLiner_View;
 VAR
   OneLinerList: OneLinerRecordType;
-  OnRec: LongInt;
   Counter : Byte;
 BEGIN
   Assign(OneLinerListFile,General.DataPath+'ONELINER.DAT');
@@ -214,23 +215,24 @@ BEGIN
     END;
   IF (FileSize(OneLinerListFile)=0) THEN
     BEGIN
-     lRGLngStr(109,FALSE);
+     lRGLngStr(109,FALSE); { No OneLiners }
     END
   ELSE
     BEGIN
-      OnRec := 1;
-      Counter := (FileSize(OneLinerListFile));
-      FOR Counter := (FileSize(OneLinerListFile)) DOWNTO 1 DO
-        BEGIN
-          Seek(OneLinerListFile,(Counter-1));
-          Read(OneLinerListFile,OneLinerList);
-          DisplayBuffer(OneLinerListMCI,@OneLinerList,NIL);
-          Inc(OnRec);
-          IF ((OnRec-1) = 10) THEN
-            Break
-          ELSE
-            OnRec := OnRec;
-        END;
+      IF General.OneLinersNewTop THEN
+        FOR Counter := (FileSize(OneLinerListFile)) DOWNTO 1 DO { LeeW: Newest at top }
+          BEGIN
+            Seek(OneLinerListFile,(Counter-1));
+            Read(OneLinerListFile,OneLinerList);
+            DisplayBuffer(OneLinerListMCI,@OneLinerList,NIL);
+          END
+      ELSE
+        FOR Counter := 1 TO (FileSize(OneLinerListFile)) DO { LeeW: Newest at bottom }
+          BEGIN
+            Seek(OneLinerListFile,(Counter-1));
+            Read(OneLinerListFile,OneLinerList);
+            DisplayBuffer(OneLinerListMCI,@OneLinerList,NIL);
+          END;
     END;
   Close(OneLinerListFile);
   LastError := IOResult;
@@ -262,8 +264,8 @@ BEGIN
   Assign(OneLinerListFile,General.DataPath+'ONELINER.DAT');
   Reset(OneLinerListFile);
   REPEAT
-    Rand := Random(10);
-  UNTIL (Rand>0) and (Rand<FileSize(OneLinerListFile));
+    Rand := Random(10{FileSize(OneLinerListFile)???});
+  UNTIL (Rand>0) AND (Rand<FileSize(OneLinerListFile));
   Seek(OneLinerListFile,(Rand));
   Read(OneLinerListFile,OneLinerList);
   DisplayBuffer(OneLinerListMCI,@OneLinerList,NIL);
@@ -273,8 +275,11 @@ END;
 
 PROCEDURE OneLiners;
 BEGIN
-OneLiner_View;
-OneLiner_Add;
+  OneLiner_View;
+  IF AACS(General.AddOneLinerACS) THEN
+    OneLiner_Add
+  ELSE
+    PauseScr(FALSE);
 END;
 
 END.

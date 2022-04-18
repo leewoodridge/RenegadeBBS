@@ -36,7 +36,7 @@ BEGIN
         Abort := FALSE;
         Next := FALSE;
         ConfigHeader('System Toggles');
-        PrintACR(PadLeftStr('^0(^1A^0) Handles allowed on system : ^1'+ShowOnOff(AllowAlias),39)+
+        PrintACR({PadLeftStr('^0(^1A^0) Handles allowed on system : ^1'+ShowOnOff(AllowAlias),39)+}
                  PadLeftStr('^0(^1B^0) Phone number in logon     : ^1'+ShowOnOff(PhonePW),39));
         PrintACR(PadLeftStr('^0(^1C^0) Local security protection : ^1'+ShowOnOff(LocalSec),39)+
                  PadLeftStr('^0(^1D^0) Use EMS for overlay file  : ^1'+ShowOnOff(UseEMS),39));
@@ -62,11 +62,29 @@ BEGIN
                  PadLeftStr('^0(^1Y^0) Use LightBars             : ^1'+ShowOnOff(UseLightBars),39));
         PrintACR(PadLeftStr('^0(^1Z^0) Inactivity Warn/TimeOut   : ^1'+AOnOff((TimeOutBell = -1) AND (TimeOut = -1),'Off',
                             AOnOff((TimeOutBell = -1),'Off',IntToStr(TimeOutBell))+'^0/^1'+AOnOff((TimeOut = -1),'Off',
-                            IntToStr(TimeOut))),39));
+                            IntToStr(TimeOut))),39)+
+                 PadLeftStr('^0(^1!^0) Newest OneLiners on top   : ^1'+ShowOnOff(OneLinersNewTop),39));
+        PrintACR(PadLeftStr('^0(^1@^0) LastCallers in logon      : ^1'+ShowOnOff(LogonLastCallers),39)+
+                 PadLeftStr('^0(^1#^0) OneLiners in logon        : ^1'+ShowOnOff(LogonOneLiners),39));
+        PrintACR(PadLeftStr('^0(^1$^0) Voting in logon           : ^1'+ShowOnOff(LogonVoting),39)+
+                 PadLeftStr('^0(^1%^0) Prompt to DL top files    : ^1'+ShowOnOff(TopFilesDownload),39));
+        PrintACR(PadLeftStr('^0(^1^^0) TimeStamp SysOp log       : ^1'+ShowOnOff(TimeStampLogs),39)+
+                 PadLeftStr('^0(^1&^0) Use SplitChat as default  : ^1'+ShowOnOff(DefSplitChat),39));
+        PrintACR(PadLeftStr('^0(^1*^0) Mandatory voting          : ^1'+ShowOnOff(ForceVoting),39){+}
+                 );
         NL;
         InputChar('Enter selection [^1A^2-^1P^2,^1R^2-^1Z^2,^1Q^2=^1Quit^2]: ',Cmd,
-                  'QABCDEFGHIJKLMNOPRSTUVWXYZ'^M,[CapAll]);
+                  'QABCDEFGHIJKLMNOPRSTUVWXYZ!@#$%^&*'^M,[CapAll]);
       CASE Cmd OF
+        '!' : Toggle(OneLinersNewTop);
+        '@' : Toggle(LogonLastCallers);
+        '#' : Toggle(LogonOneLiners);
+        '$' : Toggle(LogonVoting);
+        '%' : Toggle(TopFilesDownload);
+        '^' : Toggle(TimeStampLogs);
+        '&' : Toggle(DefSplitChat);
+        '*' : Toggle(ForceVoting);
+        {'' : Toggle();}
         'A' : AllowAlias := NOT AllowAlias;
         'B' : BEGIN
                 PhonePW := NOT PhonePW;

@@ -18,6 +18,7 @@ Lee Woodridge
             - Added "Buf := ^M" after line/split chat exit, is equiv to pressing enter after chat to refresh screen
               maybe there's a better way to do this??? should keep eye on it incase unintended consequences
                 - skips to next if reading messages, same behavior for file listing expected
+ 04/15/2022 - added check for defsplitchat
 }
 
 UNIT Chat;
@@ -123,7 +124,7 @@ BEGIN
               #32 : BEGIN
                       Chatted := TRUE;
                       ChatAttempts := 0;
-                      IF (OkANSI) THEN
+                      IF (OkANSI) AND (General.DefSplitChat) THEN
                         SysOpSplitChat
                       ELSE
                         SysOpLineChat;

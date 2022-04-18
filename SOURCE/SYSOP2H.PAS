@@ -9,7 +9,6 @@ UNIT SysOp2H;
 
 INTERFACE
 
-PROCEDURE GetPipeColor (VAR ColorVar: Byte; s: STRING);
 PROCEDURE NetworkConfiguration;
 
 IMPLEMENTATION
@@ -18,41 +17,8 @@ USES
   Common,
   NodeList,
   SysOp2, { ConfigHeader }
+  SysOp2J, { GetColor }
   TimeFunc; { ZeroPad }
-  
-  PROCEDURE GetPipeColor (VAR ColorVar: Byte; s: STRING);
-  CONST
-    ColorName: ARRAY[0..7] OF STRING[7] = ('Black','Blue','Green','Cyan','Red','Magenta','Yellow','White');
-  VAR
-    TempColor,
-    Counter: Byte;
-  BEGIN
-    SetC(7);
-    NL;
-    FOR Counter := 0 TO 7 DO
-      BEGIN
-        SetC(7);
-        Prompt('('+IntToStr(Counter)+') ');
-        SetC(Counter);
-        Prompt(PadLeftStr(ColorName[Counter],12));
-        SetC(7);
-        Prompt(PadLeftStr('('+IntToStr(Counter+8)+') ',5));
-        SetC(Counter+8);
-        Print(PadLeftStr(ColorName[Counter]+'!',9));
-      END;
-    NL;
-    InputByte('New '+s+' color',TempColor,[NumbersOnly],0,15,Changed); (* Suppress Error *)
-    IF (TempColor IN [0..15]) THEN
-      BEGIN
-        ColorVar := TempColor;
-        lRGLngStr(155,FALSE); {"Saved!"}
-      END(*
-    ELSE
-      BEGIN
-        lRGLngStr(154,FALSE); {"Aborted!"}
-      END*);
-    SetC(7);
-  END;
 
 PROCEDURE NetworkConfiguration;
 VAR
@@ -73,13 +39,13 @@ BEGIN
       PrintACR('^0(^1B^0) Origin Line     : ^1'+Origin);
       NL;
       PrintACR(PadLeftStr('^0(^1C^0) Strip IFNA Kludge Lines : ^1'+ShowYesNo(SKludge),39)+
-               PadLeftStr('^0(^11^0) Standard Text Color : |'+ZeroPad(IntToStr(Text_Color))+'Text',39));
+               PadLeftStr('^0(^11^0) Standard Text Color : '+GetC(Text_Color)+'Text',39));
       PrintACR(PadLeftStr('^0(^1D^0) Strip SEEN-BY Lines     : ^1'+ShowYesNo(SSeenBy),39)+
-               PadLeftStr('^0(^12^0) Quoted Text Color   : |'+ZeroPad(IntToStr(Quote_Color))+'Quoted',39));
+               PadLeftStr('^0(^12^0) Quoted Text Color   : '+GetC(Quote_Color)+'Quoted',39));
       PrintACR(PadLeftStr('^0(^1E^0) Strip Origin Lines      : ^1'+ShowYesNo(SOrigin),39)+
-               PadLeftStr('^0(^13^0) Tear Line Color     : |'+ZeroPad(IntToStr(Tear_Color))+'Tear',39));
+               PadLeftStr('^0(^13^0) Tear Line Color     : '+GetC(Tear_Color)+'Tear',39));
       PrintACR(PadLeftStr('^0(^1F^0) Add Tear/Origin Line    : ^1'+ShowYesNo(AddTear),39)+
-               PadLeftStr('^0(^14^0) Origin Line Color   : |'+ZeroPad(IntToStr(Origin_Color))+'Origin',39));
+               PadLeftStr('^0(^14^0) Origin Line Color   : '+GetC(Origin_Color)+'Origin',39));
       NL;
       PrintACR('^0(^1G^0) Default EchoMail Path   : ^1'+DefEchoPath);
       PrintACR('^0(^1H^0) Default NetMail Path    : ^1'+NetMailPath);
@@ -144,18 +110,10 @@ BEGIN
                          AKA[20].Net,
                          AKA[20].Node,
                          AKA[20].Point);
-        '1' : BEGIN
-                GetPipeColor(Text_Color,'standard text');
-              END;
-        '2' : BEGIN
-                GetPipeColor(Quote_Color,'quoted text');
-              END;
-        '3' : BEGIN
-                GetPipeColor(Tear_Color,'tear line');
-              END;
-        '4' : BEGIN
-                GetPipeColor(Origin_Color,'origin line');
-              END;
+        '1' : Text_Color := GetColor;
+        '2' : Quote_Color := GetColor;
+        '3' : Tear_Color := GetColor;
+        '4' : Origin_Color := GetColor;
       END;
     END;
   UNTIL (Cmd = 'Q') OR (HangUp);

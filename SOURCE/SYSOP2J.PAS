@@ -6,6 +6,8 @@ UNIT SysOp2J;
 
 INTERFACE
 
+FUNCTION DisplayColorStr(Color: Byte): STRING;
+FUNCTION GetColor: Byte;
 PROCEDURE ColorConfiguration;
 
 IMPLEMENTATION
@@ -15,20 +17,15 @@ USES
   File11,
   File1,
   Mail4,
+  SysOp2, {ConfigHeader,HL}
   TimeFunc;
 
-PROCEDURE ColorConfiguration;
 CONST
   ColorName: ARRAY[0..7] OF STRING[7] = ('Black','Blue','Green','Cyan','Red','Magenta','Yellow','White');
-  ColorDesc: ARRAY[0..9] OF STRING[20] = ('Normal Text','Bright Text','Prompt','Input Field','Header Text','Header Border',
+  ColorDesc: ARRAY[0..9] OF STRING[17] = ('Normal Text','Bright Text','Prompt','Input Field','Header Text','Header Border',
                                           'Lightbar Normal','Lightbar Selected','Warning/Error','Notification');
-VAR
-  TempScheme: SchemeRec;
-  Cmd: Char;
-  RecNumToList: Integer;
-  SaveTempPause: Boolean;
 
-  FUNCTION DisplayColorStr(Color: Byte): AStr;
+  FUNCTION DisplayColorStr(Color: Byte): STRING;
   VAR
     TempStr: AStr;
   BEGIN
@@ -85,6 +82,13 @@ VAR
     SetC(7);
     GetColor := NewColor;
   END;
+
+PROCEDURE ColorConfiguration;
+VAR
+  TempScheme: SchemeRec;
+  Cmd: Char;
+  RecNumToList: Integer;
+  SaveTempPause: Boolean;
 
   PROCEDURE SystemColors(VAR TempScheme1: SchemeRec; Cmd1: Char; VAR Changed: Boolean);
   VAR
@@ -761,9 +765,12 @@ VAR
       RecNumToList1 := 1;
     Abort := FALSE;
     Next := FALSE;
-    CLS;
-    PrintACR('^1###^2:^1'+PadLeftStr('Description',30)+'^2:^1Colors');
-    PrintACR('^2===:==============================:============================');
+    {CLS;}
+    ConfigHeader('Color Scheme Editor');
+    PrintACR('^5<^4##^5> <^4Description^5>                  <^4Colors^5>');
+    HL;
+    {PrintACR('^1###^2:^1'+PadLeftStr('Description',30)+'^2:^1Colors');
+    PrintACR('^2===:==============================:============================');}
     Reset(SchemeFile);
     NumDone := 0;
     WHILE (NumDone < (PageLength - 5)) AND (RecNumToList1 >= 1) AND (RecNumToList1 <= NumSchemes)
@@ -772,8 +779,8 @@ VAR
       Seek(SchemeFile,(RecNumToList1 - 1));
       Read(SchemeFile,Scheme);
       WITH Scheme DO
-        Prompt('^1'+PadRightInt(RecNumToList1,3)+
-               ' ^1'+PadLeftStr(Description,30)+
+        Prompt(' ^1'+PadLeftInt(RecNumToList1,4)+
+               ' ^0'+PadLeftStr(Description,30)+
                ' ');
       ShowColors;
       Inc(RecNumToList1);
@@ -793,7 +800,8 @@ BEGIN
   REPEAT
     IF (Cmd <> '?') THEN
       ListSchemes(RecNumToList);
-    InputChar('%LFColor scheme editor [^1?^2=^1Help^2]: ',Cmd,'QDIMP?'^M,[CapAll]);
+    NL;
+    InputChar('^2Color Scheme Editor [^1DIMP^2,(^1?^2)Help,(^1Q^2)uit]: ',Cmd,'QDIMP?'^M,[CapAll]);
     CASE Cmd OF
       ^M  : IF (RecNumToList < 1) OR (RecNumToList > NumSchemes) THEN
               RecNumToList := 1;

@@ -6,6 +6,8 @@
                 > Validation Editor (*S) 
                 > Color Scheme Editor (*G)
  11/15/2021 - Direct memory addressing for *T command only works in real mode (DOS)
+ 04/13/2022 - added hangup check quick fix for extra 'a' cmds after timeout -- could be in menuexec or domenuexec,
+              not sure if it matters
 }
 UNIT Menus;
 
@@ -13,6 +15,7 @@ INTERFACE
 
 USES
   Common,
+  Common3, {for inputscroll, my testing -- remove later}
   Events,
   SysOp2J,
   MyIO;
@@ -135,16 +138,19 @@ VAR
 BEGIN
   MainMenuHandle(Cmd);
   IF ((Copy(Cmd,1,2) = '\\') AND (SysOp)) THEN
-  BEGIN
-    DoMenuCommand(Done,Copy(Cmd,1,2),Copy(Cmd,3,Length(Cmd) - 2),NewMenuCmd,'Activating SysOp Cmd');
-    IF (NewMenuCmd <> '') THEN
-      Cmd := NewMenuCmd
-    ELSE
-      Cmd := '';
-  END;
+    BEGIN
+      DoMenuCommand(Done,Copy(Cmd,1,2),Copy(Cmd,3,Length(Cmd) - 2),NewMenuCmd,'Activating SysOp Cmd');
+      IF (NewMenuCmd <> '') THEN
+        Cmd := NewMenuCmd
+      ELSE
+        Cmd := '';
+    END;
+    
   NewMenuCmd := '';
-  REPEAT
-    DoMenuExec(Cmd,NewMenuCmd)
+  
+  REPEAT  
+    (*IF NOT (HangUp) THEN { LeeW: Added check to prevent 'a' cmd after timeout }*)
+      DoMenuExec(Cmd,NewMenuCmd)
   UNTIL (NewMenuCmd = '') OR (HangUp);
 END;
 
@@ -219,17 +225,17 @@ BEGIN
   Cmd := '';
   IF (Buf <> '') THEN
     IF (Buf[1] = '`') THEN
-    BEGIN
-      Buf := Copy(Buf,2,(Length(Buf) - 1));
-      Counter := Pos('`',Buf);
-      IF (Counter <> 0) THEN
       BEGIN
-        Cmd := AllCaps(Copy(Buf,1,(Counter - 1)));
-        Buf := Copy(Buf,(Counter + 1),(Length(Buf) - Counter));
-        NL;
-        Exit;
+        Buf := Copy(Buf,2,(Length(Buf) - 1));
+        Counter := Pos('`',Buf);
+        IF (Counter <> 0) THEN
+          BEGIN
+            Cmd := AllCaps(Copy(Buf,1,(Counter - 1)));
+            Buf := Copy(Buf,(Counter + 1),(Length(Buf) - Counter));
+            NL;
+            Exit;
+          END;
       END;
-    END;
 
   SHas0 := '?';
   SHas1 := '';
@@ -237,20 +243,19 @@ BEGIN
   Has1 := FALSE;
   Has2 := FALSE;
 
-
   FOR CmdToExec := 1 TO NumCmds DO
     IF ((CmdToExec <= (NumCmds - GlobalCmds)) OR NOT (NoGlobalUsed IN MemMenu.MenuFlags)) THEN
       IF (AACS(MemCmd^[CmdToExec].ACS)) THEN
         IF (MemCmd^[CmdToExec].CKeys[0] = #1) THEN
-        BEGIN
-          Has0 := TRUE;
-          SHas0 := SHas0 + MemCmd^[CmdToExec].CKeys;
-        END
+          BEGIN
+            Has0 := TRUE;
+            SHas0 := SHas0 + MemCmd^[CmdToExec].CKeys;
+          END
         ELSE IF ((MemCmd^[CmdToExec].CKeys[1] = '/') AND (MemCmd^[CmdToExec].CKeys[0] = #2)) THEN
-        BEGIN
-          Has1 := TRUE;
-          SHas1 := SHas1 + MemCmd^[CmdToExec].CKeys[2];
-        END
+          BEGIN
+            Has1 := TRUE;
+            SHas1 := SHas1 + MemCmd^[CmdToExec].CKeys[2];
+          END
         ELSE
           Has2 := TRUE;
 
@@ -266,9 +271,7 @@ BEGIN
     InputMain(Cmd,60,[CapAll,NoLineFeed])
   ELSE
   BEGIN
-
     REPEAT
-
       Key := GetKey;
       IF (Key = F_UP) OR (Key = F_DOWN) OR (Key = F_LEFT) OR (Key = F_RIGHT) THEN
       BEGIN
@@ -391,6 +394,8 @@ BEGIN
       IF ((NOT (SS[1] IN ['0'..'9'])) AND ((Length(SS) = 2) AND (Length(SaveSS) = 1))) THEN
         UserColor(3);
 }
+
+
     UNTIL ((GotCmd) OR (HangUp));
 
     CursorOn(TRUE);
@@ -540,6 +545,10 @@ VAR
   CmdExists,
   Done: Boolean;
 BEGIN
+
+  IF (HangUp) THEN
+    EXIT; { LeeW: Added -- testing, seems to work, not sure if better here or in menuexec }
+
   IF (NewMenuCmd <> '') THEN
   BEGIN
     Cmd := NewMenuCmd;
@@ -592,18 +601,10 @@ BEGIN
   CASE Cmd[1] OF
     '^' : CASE Cmd[2] OF { Command for testing }
             '^' : BEGIN
-                    Print(cmd);
-                    Print(menuoption);
-                    PauseScr(FALSE);
-            
-                    PrintF('xy');
-                    print('%XY02;02%2');
-                    print('%XY03;03%3');
-                    print('%XY04;04%4');
-                    print('%XY05;05%5');
-                    ansig(20,20);
-                    pausescr(false);
+                    InputScroll('param1',cmd,15,[],Changed);
                   END;
+          ELSE
+            NoCmd := TRUE;
           END;
     '$' : CASE Cmd[2] OF
             'D' : Deposit;
@@ -731,7 +732,7 @@ BEGIN
     'H' : CASE Cmd[2] OF
             'C' : IF PYNQ(MenuOption,0,FALSE) THEN
                   BEGIN
-                    CLS;
+                    {CLS;}
                     PrintF('LOGOFF');
                     HangUp := TRUE;
                     {HungUp := FALSE;}
@@ -1050,10 +1051,10 @@ BEGIN
   IF (NoCmd) THEN
     IF (CoSysOp) THEN
       BEGIN
-        TempStr := 'Invalid menu command keys: '+Cmd[1]+Cmd[2]+' '+Cmd;
+        TempStr := 'Invalid menu command "'+Cmd+'"';
         NL;
         Print(TempStr);
-        SysOpLog('^8[!] ^0'+TempStr);
+        SysOpLog('^8[ERROR] ^1'+TempStr);
       END;
   IF ((Cmd[1] + Cmd[2]) <> 'NW') THEN
     Update_Node('',FALSE);

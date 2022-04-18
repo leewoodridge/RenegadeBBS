@@ -16,6 +16,7 @@
      11/10/2021 - Changed default new base configuration -- SysOp ACS and colors
                 - Added submenu for color configuration
      04/04/2022 - Fix page length
+     04/15/2022 - Change 'Q' flag to say 'Allow TagLine', since it doesn't seem to have any affect on quoting
     [TO-DO]
      - ...
 }
@@ -33,7 +34,7 @@ USES
   File2,
   Mail0,
   SysOp2, {ConfigHeader}
-  SysOp2H, {GetPipeColor}
+  SysOp2J, { GetColor }
   SysOp7,
   TimeFunc; {ZeroPad}
 
@@ -642,10 +643,10 @@ VAR
                     NL;
                     InputChar('^2Message Colors [^11^2-^14^2,<^1CR^2>Quit]: ',Cmd1,^M'1234',[CapAll]);
                     CASE Cmd1 OF
-                      '1' : GetPipeColor(Text_Color,'standard text');
-                      '2' : GetPipeColor(Quote_Color,'quoted text');
-                      '3' : GetPipeColor(Tear_Color,'tear line');
-                      '4' : GetPipeColor(Origin_Color,'origin line');
+                      '1' : Text_Color := GetColor;
+                      '2' : Quote_Color := GetColor;
+                      '3' : Tear_Color := GetColor;
+                      '4' : Origin_Color := GetColor;
                     END;
                   UNTIL (Cmd1 = ^M) OR (HangUp);
                   Cmd1 := #0;
@@ -715,7 +716,7 @@ VAR
                               NL;
                               LCmds(25,1,'Real names','Unhidden');
                               LCmds(25,1,'AFilter ANSI/8-bit ASCII','Private msgs allowed');
-                              LCmds(25,1,'Force Read','Quote/Tagline');
+                              LCmds(25,1,'Force Read','QAllow Taglines');
                             END;
                     END;
                   UNTIL (Cmd1 = ^M) OR (HangUp);

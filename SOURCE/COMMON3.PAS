@@ -27,6 +27,7 @@ make inputformatted interactive if string is defined
 add inputvalidation for inputformatted, maybe have it pass '' if incomplete? --PARAMS for AllowIncomplete
 inputflags : add different types like dir, filename etc, notabortable, askblank
 SHOULD BLANK PROMPT BE IN MAIN OR PRINTSTRING--main
+!!!AFTER ALL CALLS TO MPL MUST RESET COLOR TO 0 USERCOLOR(0);!!!
 }
 UNIT Common3; { INPUT PROCS }
 
@@ -48,6 +49,8 @@ PROCEDURE InputString(S: AStr; VAR InputStr: AStr; MaxLen: Byte; InputFlags: Inp
 PROCEDURE InputFormatted(S: AStr; VAR InputStr: STRING; Format: STRING; Abortable: Boolean);
 PROCEDURE InputPath(S: AStr; VAR DirPath: Str40; CreateDir,AllowExit: Boolean; VAR Changed: Boolean);
 {PROCEDURE InputPath2(S: STRING; VAR Path: STRING; AskMkDir, Abortable: Boolean; VAR Changed: Boolean);}
+PROCEDURE InputScroll(S: AStr; VAR InputStr: AStr; MaxLen: Byte; InputFlags: InputFlagSet; VAR Changed: Boolean);
+{ ^ LeeW: work in progress... }
 
 IMPLEMENTATION
 
@@ -55,11 +58,211 @@ USES
   CRT,
   DOS;
   
+PROCEDURE InputScroll(S: AStr; VAR InputStr: AStr; MaxLen: Byte; InputFlags: InputFlagSet; VAR Changed: Boolean);
+VAR
+  counter, counter1, counter2: byte; { temp }
+  savex: byte; {save x(horiz) cusrsor pos}
+  xinput: word;         { user keyboard input }
+  xpassedstr,       { string that was passed for interactiveedit }
+  xoutstring: astr;     { string we're going to output }
+  xfieldlength: byte; { length of input field }
+  xfieldpos,            { where in the input field we are }
+  xstrpos: byte;    { where in the string we are }
+  insertmode: boolean;
+  FieldStartX: Byte; { X position where input field starts }
+  
+  PROCEDURE SetCursor(InsertMode: Boolean); ASSEMBLER;
+  ASM
+    cmp InsertMode,0
+    je @turnon
+    mov ch,0
+    mov Cl,7
+    jmp @goforit
+    @turnon:
+    mov ch,6
+    mov Cl,7
+    @goforit:
+    mov ah,1
+    int 10h
+  END;
+  
+  PROCEDURE xupdatefield;
+  VAR
+    Counter,counter2: Byte;
+  BEGIN
+  counter2 := 1;
+  
+    ANSIG(FieldStartX,WhereY); { go to field 1st pos }
+    
+    FOR Counter := 1 TO xfieldlength DO
+    begin
+    if xstrpos-xfieldlength+counter2 >= 1 then
+      Prompt(xoutstring[xstrpos-xfieldlength+counter2]);
+      Inc(counter2);
+     end;
+    ANSIG(FieldStartX+(xFieldPos-1),WhereY); { go to orig field pos }
+  END;
+  {
+  PROCEDURE MPrompt(S: STRING);
+  BEGIN
+    SerialOut(S);
+    IF (WantOut) THEN
+      Write(S);
+  END;
+  }
+  PROCEDURE Cursor_Left;
+  BEGIN
+  if (xfieldpos >= 1) and (xfieldpos <= xfieldlength) and (xstrpos >= 1) and (xstrpos <= length(xoutstring)) then
+  begin
+    IF (OkANSI) THEN
+      SerialOut(#27'[D');
+    IF (WantOut) THEN
+      GoToXY((WhereX - 1),WhereY);
+    Dec(xfieldpos);
+    Dec(xstrpos);
+    end;
+  END;
+  
+  PROCEDURE Cursor_Right;
+  BEGIN
+  if (xfieldpos >= 1) and (xfieldpos <= xfieldlength) and (xstrpos >= 1) and (xstrpos <= length(xoutstring)+1) then
+  begin
+    if xFieldPos = xfieldlength then
+      xupdatefield;
+    IF (OkANSI) THEN
+      SerialOut(#27'[C');
+    IF (WantOut) THEN
+      GoToXY((WhereX + 1),WhereY);
+    if xFieldPos <> xfieldlength then
+      Inc(xfieldpos);
+    Inc(xstrpos);
+    end;
+  END;
+  
+BEGIN
+            { NOTES
+                - always start editing at end of string+1
+            }
+                    {Print(Cmd);
+                    Print(MenuOption);}
+                    {}
+                    InsertMode := FALSE;
+                    
+                    xpassedstr := 'lets_make_this_more_readable';
+                    xoutstring := xpassedstr;
+                    xfieldlength := 10;
+                    {}
+                    xstrpos := xfieldlength;
+                    
+                    if length(xpassedstr)+1 > xfieldlength then
+                      xfieldpos := xfieldlength
+                    else
+                      xfieldpos := length(xpassedstr)+1;
+                      
+                    {}
+                    Prt('Prompt goes here:');
+                    FieldStartX := WhereX;
+                    MPL(xfieldlength);
+                    if xpassedstr <> '' then
+                    { check for size, print beginning or end }
+                    {mprompt(copy(xpassedstr,1,xfieldlength-1));}
+                    xupdatefield;
+                    REPEAT
+                    SetCursor(InsertMode);
+                      xinput := GetKey;
+                      
+                      case xinput of
+                                          
+                        F_LEFT :
+                              IF (xfieldpos > 1) THEN
+                                BEGIN
+                                  Cursor_Left;
+                                END;
+                        F_RIGHT :
+                              IF (xfieldpos <= length(xoutstring)) THEN
+                                begin
+                                  Cursor_Right;
+                                end;
+                        F_END :
+                              WHILE xstrpos < length(xoutstring)+1 {(Cp < (Cl + 1)) AND (Cp <= MaxLen)} DO
+                                begin
+                                Cursor_Right;
+                                end;
+                        F_HOME :
+                              WHILE (xfieldpos > 1) DO
+                                BEGIN
+                                { will need to reprint text if changing field area }
+                                  Cursor_Left;
+                                END;
+                                
+                        8 : { BACKSPACE }
+                              IF (xstrpos > 1) THEN
+                                BEGIN
+                                  Dec(xstrpos);
+                                  Dec(xfieldpos);
+                                  Delete(xoutstring,xstrpos,1);
+                                  BackSpace;
+                                  xupdatefield;
+                                  {
+                                  CP = string cursor position
+                                  CL = length of outstr
+                                  }
+end;
+                                
+     32..255: {c=xinput, s=xoutstring cp=stringpos cl=fieldpos??}
+          BEGIN
+                    xinput := Ord(Char(xinput));
+                    BEGIN
+                (*IF ((InsertMode) {AND (length(xoutstring) < MaxLen)}) OR ((NOT InsertMode) AND 
+                (length(xoutstring) <= MaxLen)) THEN*)
+                  BEGIN
+                    OutKey(Char(xinput));
+                    IF (InsertMode) THEN
+                      BEGIN
+                        {Is := Char(xinput);}
+                        {MPrompt(Copy(xoutstring,xstrpos,255));}
+                        Insert(Char(xinput),xoutstring,xstrpos);
+                        {FOR Counter := Cp TO Cl DO
+                          Cursor_Left;} 
+                      END
+                    ELSE
+                      xoutstring[xstrpos]:= Char(xinput);
+                    {IF (InsertMode) OR ((xstrpos - 1) = Cl) THEN
+                      Inc(Cl);
+                    Inc(Cp);}
+                    {IF (Trapping) THEN
+                      Write(TrapFile,Char(c));}
+                      {if xFieldPos = xfieldlength then
+                      
+                      else}
+                      xupdatefield;
+                  END;
+                  
+              END;
+              
+              END;
+        
+                                
+                                
+                      end; {CASE}
+                      
+                    UNTIL (xinput = 13) OR (HangUp); { or esc??? or firstkey and space}
+                    {}
+                    NL;
+                    NL;
+                    Print('XOS: "'+xoutstring+'" | FieldPos:'+inttostr(xfieldpos)+' | StrPos:'+inttostr(xstrpos));
+                    print('xoutstring -- length : '+inttostr(length(xoutstring)){+' | sizeof: '+inttostr(sizeof(xoutstring))});
+                    NL;
+                    PauseScr(FALSE);
+                  END;
+                  
+{ --- }
+
 PROCEDURE InputPath(S: AStr; VAR DirPath: Str40; CreateDir,AllowExit: Boolean; VAR Changed: Boolean);
 VAR
   TempDirPath: Str40;
   CurDir: PathStr;
-  Counter: Byte;
+  Counter: Byte;  
 BEGIN
   REPEAT
     TempDirPath := DirPath;
@@ -219,7 +422,8 @@ BEGIN
   i := 1;
   UpdateString;
   FarBack := i;
-  
+  {
+  (*if inputstr <> '' then*)
   WHILE (i <= Length(TempStr)) AND (Format[i] IN ['#','@']) DO
     BEGIN
       c := UpCase(InputStr[i]);
@@ -228,7 +432,8 @@ BEGIN
       Inc(i);
       UpdateString;
     END;
-    {^ LeeW: Quick and dirty hack to populate field}
+    }
+    {^ LeeW: Quick and dirty hack to populate field --- nope}
   
   REPEAT
     c := Char(GetKey);

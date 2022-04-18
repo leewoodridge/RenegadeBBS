@@ -1,6 +1,7 @@
 {$A+,B-,D+,E-,F+,I-,L+,N-,O+,R-,S-,V-}
 {
 11/5/2021 Nested Local_Input1 in lStatus_screen
+04/15/2022 - alt+s no more, alt-c will use whichever chat is configured as default (as long as ansiok)
 }
 UNIT Common2;
 
@@ -663,6 +664,7 @@ BEGIN
               General.IsTopWindow := NOT General.IsTopWindow;
               Update_Screen;
             END;
+            (*
        31 : IF (NOT InChat) THEN                              { ALT-S   }                   { ALT-A         }
               SysOpSplitChat
             ELSE
@@ -670,7 +672,7 @@ BEGIN
               InChat := FALSE;
               ChatReason := '';
             END;
-
+*)
        47 : IF (UserOn) THEN
             BEGIN                              { ALT-V         }
               S[1] := #0;
@@ -761,13 +763,18 @@ BEGIN
 
       30 : ToggleWindow(TRUE);                               { ALT-A         }
 
-      46 : IF (NOT InChat) THEN                                                 { ALT-C         }
-             SysOpLineChat
-           ELSE
-           BEGIN
-             InChat := FALSE;
-             ChatReason := '';
-           END;
+      46 :  IF (NOT InChat) THEN { ALT-C }
+              BEGIN
+                IF (OkANSI) AND (General.DefSplitChat) THEN
+                  SysOpSplitChat
+                ELSE
+                  SysOpLineChat;
+              END
+            ELSE
+              BEGIN
+                InChat := FALSE;
+                ChatReason := '';
+              END;
 
       72,                                                  { Arrow up    }
       75,                                                  { Arrow left  }

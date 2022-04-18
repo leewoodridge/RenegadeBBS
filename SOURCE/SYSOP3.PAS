@@ -69,8 +69,8 @@ VAR
             END;
         2 : S := '^0A. User Name : ^1'+PadLeftStr(Name,29)+'^0 L. Security  : ^1'+IntToStr(SL);
         3 : S := '^0B. Real Name : ^1'+PadLeftStr(RealName,29)+'^0 M. D Security: ^1'+IntToStr(DSL);
-        4 : S := '^0C. Address   : ^1'+PadLeftStr(Street,29)+'^0 N. AR: ^1'+DisplayARFlags(ARFlags,'3','1');
-        5 : S := '^0D. City/State: ^1'+PadLeftStr(CityState,29)+'^0 O. AC: ^1'+DisplayACFlags(ACFlags,'3','1');
+        4 : S := '^0C. Address   : ^1'+PadLeftStr(Street,29)+'^0 N. AR: ^1'+DisplayARFlags(ARFlags,'1','0');
+        5 : S := '^0D. City/State: ^1'+PadLeftStr(CityState,29)+'^0 O. AC: ^1'+DisplayACFlags(ACFlags,'1','0');
         6 : S := '^0E. Zip code  : ^1'+PadLeftStr(ZipCode,29)+'^0 P. Sex/Age   : ^1'+
                                      Sex+IntToStr(AgeUser(BirthDate))+' ('+ToDate8(PD2Date(BirthDate))+')';
         7 : S := '^0F. SysOp note: ^1'+PadLeftStr(Note,29)+'^0 R. Phone num : ^1'+Ph;
@@ -278,8 +278,8 @@ VAR
           1 : TempStr1 := '"'+F_ACS+'"';
           2 : TempStr1 := IntToStr(F_SL1)+' SL ... '+IntToStr(F_SL2)+' SL';
           3 : TempStr1 := IntToStr(F_DSL1)+' DSL ... '+IntToStr(F_DSL2)+' DSL';
-          4 : TempStr1 := DisplayARFlags(F_AR,'3','1');
-          5 : TempStr1 := DisplayACFlags(F_AC,'3','1');
+          4 : TempStr1 := DisplayARFlags(F_AR,'1','0');
+          5 : TempStr1 := DisplayACFlags(F_AC,'1','0');
           6 : TempStr1 := Find_FS;
           7 : TempStr1 := PD2Date(F_LastOn1)+' ... '+PD2Date(F_LastOn2);
           8 : TempStr1 := PD2Date(F_FirstOn1)+' ... '+PD2Date(F_FirstOn2);
@@ -1041,17 +1041,22 @@ BEGIN
                             InputChar('^2Clear Fields [^1A^2-^1M^2,(^1*^2)All,(^1?^2)Help,(^1Q^2)uit]: ',Cmd,
                                       'Q?*ABCDEFGHIJKL',[CapAll]);
                             CASE Cmd OF
-                              '*' : BEGIN
-                                      IF PYNQ('Are you SURE you want to clear all personal information?',0,FALSE) THEN
-                                        BEGIN
-                                        END;
-                                      IF PYNQ('Are you SURE you want to clear all user preferences?',0,FALSE) THEN
-                                        BEGIN
-                                        END;
-                                      IF PYNQ('Are you SURE you want to clear all user statistics?',0,FALSE) THEN
-                                        BEGIN
-                                        END;
-                                    END;
+                              '*' : IF PYNQ('%LFAre you SURE you want to clear all personal information?',0,FALSE) THEN
+                                      BEGIN
+                                        User.RealName := '';
+                                        { User.Country := ''; }
+                                        User.Street := '';
+                                        User.CityState := '';
+                                        User.ZipCode := '';
+                                        User.Birthdate := -1869054590; {10/10/1910}
+                                        User.Ph := '';
+                                        User.UsrDefStr[1] := '';
+                                        User.UsrDefStr[2] := '';
+                                        User.UsrDefStr[3] := '';
+                                        User.ForgotPWAnswer := '';
+                                        User.Note := '';
+                                        User.Sex := #0;
+                                      END;
                               'A' : User.RealName := '';
                             { ' ' : User.Country := ''; }
                               'B' : User.Street := '';
@@ -1067,23 +1072,14 @@ BEGIN
                               'L' : User.Sex := #0;
                               '?' : BEGIN
                                       NL;
-                                      Print('^5'#196#196' ^4PERSONAL INFO ^5'#196#196);
                                       LCmds3(19,1,'A Real Name',        'B Address',   'C City, State');
                                       LCmds3(19,1,'D Zip Code',         'E Birthdate', 'F Phone Number');
                                       LCmds3(19,1,'G '+PadLeftStr(lRGLngStr(41,TRUE),16),
                                                   'H '+PadLeftStr(lRGLngStr(42,TRUE),16),
                                                   'I '+PadLeftStr(lRGLngStr(43,TRUE),16));
                                       LCmds3(19,1,'J Forgot PW Answer', 'K Note',      'L Gender');
-                                      Print('^5'#196#196' ^4USER PREFERENCES ^5'#196#196);
-                                      {
-                                      
-                                      }
-                                      LCmds3(19,1,'','','');
-                                      Print('^5'#196#196' ^4USER STATISTICS ^5'#196#196);
-                                      {
-                                      
-                                      }
-                                      LCmds3(19,1,'','','');
+
+                                      {LCmds3(19,1,'','','');}
                                     END;
                             END;
                           UNTIL (Cmd = 'Q') OR (HangUp);

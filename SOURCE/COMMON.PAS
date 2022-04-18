@@ -32,11 +32,12 @@ Lee Woodridge
             - removed all instances of [displayvalue] from input cmds, and replaced with interactiveedit
                if interactiveedit is used and user no support ansi then it will show current value at end of prompt "...[123]"
  11/23/2021 - increased number parameter of plural from byte to integer
+ 04/15/2022 - added timestamplogs toggle
  
  log formatting prefix proposal
- [%] warning??
- [!] ERROR
- [*] security
+ [W] warning??
+ [E] ERROR
+ [S] security
 *)
 UNIT Common;
 
@@ -197,7 +198,6 @@ TYPE
     
     AllowEscape,     { ESC aborts, leaving unchanged }
     
-    
     { Input type }
     NumbersOnly,     { Numeric values only } {IsNumberOnly}
     AllowNegative,   { Negative numbers allowed }
@@ -347,47 +347,47 @@ VAR
   DirInfo: SearchRec;                  {  }
   Buf: STRING[255];                    { macro buffer }
   MLC: STRING[255];                    { multiline FOR chat }
-  ChatReason,               { last chat reason }
-  LastLineStr,              { "last-line" STRING FOR Word-wrapping }
-  StartDir: AStr;           { Directory BBS was executed from }
-  TempDir,                  { Temporary Directory base name }
-  InResponseTo: STRING[40]; { reason FOR reply }
-  LastDIRFileName: Str12;   { last filename FOR recno/nrecno }
-  CurrentColor,             { Current ANSI color }
-  ExitErrorLevel,           { Errorlevel to exit with }
-  TShuttleLogon,            { type OF special Shuttle Logon command }
-  TFilePrompt,              { type OF special FILE Prompt command }
-  TReadPrompt,              { type OF special Read Prompt command }
-  PublicPostsToday,         { posts made by User this call }
-  FeedBackPostsToday,       { feedback sent by User this call }
-  PrivatePostsToday: Byte;  { E-mail sent by User this call }
-  LastDIRRecNum,            { last record # FOR recno/nrecno }
-  ChatAttempts,             { number chat attempts made by User }
-  LIL,                      { lines on screen since last PauseScr() }
-  PublicReadThisCall,       { # public messages has Read this call }
-  UserNum: Integer;         { User's User number }
-  Rate: Word;               { cps FOR FILE transfers }
-  NewFileDate,              { NewScan Pointer date }
-  DownloadsToday,           { download sent TO User this call }
-  UploadsToday,             { uploads sent by User this call }
-  DownloadKBytesToday,      { download k by User this call }
-  UploadKBytesToday,        { upload k by User this call }
-  CreditsLastUpdated,       { Time Credits last updated }
-  TimeOn,                   { time User logged on }
-  LastBeep,                 {  }
-  LastKeyHit,               {  }
-  ChopTime,                 { time TO chop off FOR system events }
-  ExtraTime,                { extra time - given by F7/F8, etc }
-  CreditTime,               { credit time adjustment }
-  FreeTime: LongInt;        { free time }
-  BlankMenuNow,             { Is WFC menu blanked out? }
-  Abort,                    { Global abort }
-  Next,                     { Global next }
-  RQArea,                   {  }
-  FQArea,                   {  }
-  MQArea,                   {  }
-  VQArea,                   {  }
-  Changed: Boolean;         { Global changed - LeeW: Added }
+  ChatReason,                          { last chat reason }
+  LastLineStr,                         { "last-line" STRING FOR Word-wrapping }
+  StartDir: AStr;                      { Directory BBS was executed from }
+  TempDir,                             { Temporary Directory base name }
+  InResponseTo: STRING[40];            { reason FOR reply }
+  LastDIRFileName: Str12;              { last filename FOR recno/nrecno }
+  CurrentColor,                        { Current ANSI color }
+  ExitErrorLevel,                      { Errorlevel to exit with }
+  TShuttleLogon,                       { type OF special Shuttle Logon command }
+  TFilePrompt,                         { type OF special FILE Prompt command }
+  TReadPrompt,                         { type OF special Read Prompt command }
+  PublicPostsToday,                    { posts made by User this call }
+  FeedBackPostsToday,                  { feedback sent by User this call }
+  PrivatePostsToday: Byte;             { E-mail sent by User this call }
+  LastDIRRecNum,                       { last record # FOR recno/nrecno }
+  ChatAttempts,                        { number chat attempts made by User }
+  LIL,                                 { lines on screen since last PauseScr() }
+  PublicReadThisCall,                  { # public messages has Read this call }
+  UserNum: Integer;                    { User's User number }
+  Rate: Word;                          { cps FOR FILE transfers }
+  NewFileDate,                         { NewScan Pointer date }
+  DownloadsToday,                      { download sent TO User this call }
+  UploadsToday,                        { uploads sent by User this call }
+  DownloadKBytesToday,                 { download k by User this call }
+  UploadKBytesToday,                   { upload k by User this call }
+  CreditsLastUpdated,                  { Time Credits last updated }
+  TimeOn,                              { time User logged on }
+  LastBeep,                            {  }
+  LastKeyHit,                          {  }
+  ChopTime,                            { time TO chop off FOR system events }
+  ExtraTime,                           { extra time - given by F7/F8, etc ** DONT THINK THIS IS USED ANYMORE **}
+  CreditTime,                          { credit time adjustment }
+  FreeTime: LongInt;                   { free time }
+  BlankMenuNow,                        { Is WFC menu blanked out? }
+  Abort,                               { Global abort }
+  Next,                                { Global next }
+  RQArea,                              { Read message quick input (MenuCmd R#) }
+  FQArea,                              { Change file area quick input (MenuCmd F#) }
+  MQArea,                              { Change message area quick input (MenuCmd M#) }
+  VQArea,                              { Vote on topic quick input (MenuCmd V#) }
+  Changed: Boolean;                    { Global changed - LeeW: Added }
 
   { Voting Variables }
   VotingFile: FILE OF VotingRecordType; {  }
@@ -493,15 +493,15 @@ VAR
   { Menu Variables }
   MenuFile: FILE OF MenuRec; {  }
   MenuR: MenuRec;            {  }
-  MemMenu: MemMenuRec;       { menu information }
+  MemMenu: MemMenuRec;       { Menu information }
   MemCmd: MemCmdPointer;     { Command information }
   MenuRecNumArray:           {  }
     ARRAY [1..MaxMenus] OF Integer;
   CmdNumArray:               {  }
     ARRAY [1..MaxMenus] OF Byte;
-  MenuStack:                 { menu stack }
+  MenuStack:                 { Menu stack }
     ARRAY [1..MaxMenus] OF Byte;
-  MenuKeys: AStr;            { keys TO Abort menu display WITH }
+  MenuKeys: AStr;            { Keys to abort menu display with }
   NumMenus,                  {  }
   NumCmds,                   {  }
   GlobalCmds,                {  }
@@ -509,6 +509,7 @@ VAR
   FallBackMenu,              {  }
   CurMenu,                   {  }
   CurHelpLevel: Byte;        {  }
+  (* LastCommand: STRING[255];   { Last command and parameter ("CMD;PARAM") - LeeW: Added 03/23/2022 } *)
 
 {UNSORTED}
 FUNCTION Timer: LongInt;
@@ -537,7 +538,7 @@ PROCEDURE SysOpShell;
 PROCEDURE RedrawForANSI;
 FUNCTION ExtractDriveNumber(s: AStr): Byte;
 FUNCTION CTP(t,b: LongInt): STRING; { Calculate percentage }
-PROCEDURE TLeft; { log user off for time expiration/event }
+PROCEDURE TLeft; { Log user off for time expiration/event }
 PROCEDURE LoadNode(NodeNumber: Byte);
 PROCEDURE Update_Node(NActivityDesc: AStr; SaveVars: Boolean);
 {}
@@ -1148,6 +1149,9 @@ BEGIN
       261,
       262 : FOR b := 0 TO 1 DO { $TOP_USERS_HEADER, $TOP_FILES_HEADER }
               IF (LangStringArray[b] <> '') THEN
+                S := Substitute(S,'@'+IntToStr(b),LangStringArray[b]);
+      274 : FOR b := 0 TO 1 DO { $LOGON_VOTE_PROMPT }
+              {IF (LangStringArray[b] <> '') THEN} {LeeW: Need to allow blank string in case not plural}
                 S := Substitute(S,'@'+IntToStr(b),LangStringArray[b]);
     END;
     { -- }
@@ -2120,10 +2124,10 @@ END;
 
 PROCEDURE SysOpLog(s:AStr);
 BEGIN
-  {IF (General.TimeStampLogs) THEN}
+  IF (General.TimeStampLogs) THEN
     SL1('^0  '+TimeStamp+'^1 '+S)
-  {ELSE
-    SL1('^1  '+S)};
+  ELSE
+    SL1('^1  '+S);
 END;
 
 FUNCTION StrToInt(S: Str11): LongInt;
@@ -2210,6 +2214,8 @@ BEGIN
   Caps := InString;
 END;
 
+{-}
+
 FUNCTION GetC(c: Byte): STRING;
 CONST
   xclr: ARRAY [0..7] OF Char = ('0','4','2','6','1','5','3','7');
@@ -2226,30 +2232,51 @@ VAR
   END;
 
 BEGIN
-  b := FALSE;
-  IF ((CurrentColor AND (NOT c)) AND $88) <> 0 THEN
-  BEGIN
-    s := #27+'[0';
-    CurrentColor := $07;
-  END
+  s := '';
+  IF (OkANSI) THEN {LeeW: Added}
+    BEGIN
+      IF (NOT (Color IN ThisUser.ACFlags)) THEN {LeeW: Added}
+        IF ((C AND 8) = 8) THEN
+          C := 15
+        ELSE
+          C := 7;
+      {-}
+      b := FALSE;
+      IF ((CurrentColor AND (NOT c)) AND $88) <> 0 THEN
+        BEGIN
+          s := #27+'[0';
+          CurrentColor := $07;
+        END
+      ELSE
+        s := #27+'[';
+      IF (c AND 7 <> CurrentColor AND 7) THEN
+        adto('3'+xclr[c AND 7]);
+      IF (c AND $70 <> CurrentColor AND $70) THEN
+        adto('4'+xclr[(c SHR 4) AND 7]);
+      IF (c AND 128 <> 0) THEN
+        adto('5');
+      IF (c AND 8 <> 0) THEN
+        adto('1');
+      IF (NOT b) THEN
+        adto('3'+xclr[c AND 7]);
+      s := s + 'm';
+    END
   ELSE
-    s := #27+'[';
-  IF (c AND 7 <> CurrentColor AND 7) THEN
-    adto('3'+xclr[c AND 7]);
-  IF (c AND $70 <> CurrentColor AND $70) THEN
-    adto('4'+xclr[(c SHR 4) AND 7]);
-  IF (c AND 128 <> 0) THEN
-    adto('5');
-  IF (c AND 8 <> 0) THEN
-    adto('1');
-  IF (NOT b) THEN
-    adto('3'+xclr[c AND 7]);
-  s := s + 'm';
+    BEGIN { NOT OKANSI }
+      TextAttr := 7;
+      Exit;
+    END;
   GetC := s;
+  {-}
+  TextAttr := C;
+  CurrentColor := C;
 END;
+
+{-}
 
 PROCEDURE SetC(C: Byte);
 BEGIN
+{
   IF (NOT (OkANSI OR OkAvatar)) THEN
   BEGIN
     TextAttr := 7;
@@ -2265,11 +2292,12 @@ BEGIN
     IF (OutCom) THEN
       IF (OkAvatar) THEN
         SerialOut(^V^A+Chr(C AND $7f))
-      ELSE
+      ELSE}
         SerialOut(GetC(C));
+        {
     TextAttr := C;
     CurrentColor := C;
-  END;
+  END;}
 END;
 
 PROCEDURE UserColor(Color: Byte);
@@ -2662,7 +2690,7 @@ BEGIN
           TimedOut := TRUE;
           PrintF('TIMEOUT');
           IF (NoFile) THEN
-            lRGLngStr(242,FALSE); { Timeout message } {Print(^M^J^M^J'Time out - disconnecting.'^M^J^M^J);}
+            lRGLngStr(242,FALSE); { Timeout message }
           HangUp := TRUE;
           SysOpLog('Inactivity timeout at '+TimeStr); {LeeW: Add how long?}
         END;
@@ -2712,7 +2740,7 @@ BEGIN
           
         END;
         IF (InChat) THEN
-          C := Ord(Chinkey)
+          C := Ord(ChInKey)
         ELSE
           C := InKey;
       END;

@@ -25,7 +25,7 @@ CONST
   MaxEvents = 10;
   MaxArcs = 8;
   MaxCmds = 200;
-  MaxMenus = 100;
+  MaxMenus = 200; { LeeW: Increased from 100 }
   MaxResultCodes = 20;
   MaxExtDesc = 99;
   MaxFileAreas = 32767;
@@ -450,15 +450,15 @@ TYPE
     CSMaxWaiting,                   { max mail waiting for Co-SysOp + }
     MaxMassMailList,                {  }
     MaxLogonTries,                  { tries allowed for PW's at logon }
-    SysOpColor,                     { SysOp color in chat mode }
-    UserColor,                      { user color in chat mode }
+    SysOpColor,                     { SysOp chat color }
+    UserColor,                      { User char color }
     SliceTimer,                     {  }
     MaxBatchDLFiles,                {  }
     MaxBatchULFiles,                {  }
-    Text_Color,                     { Color of standard text } {**CHANGE THESE TO STRING[6] "|00|00" **}
-    Quote_Color,                    { Color of quoted text } {^}
-    Tear_Color,                     { Color of tear line } {^}
-    Origin_Color,                   { Color of origin line } {^}
+    Text_Color,                     { Color of message standard text }
+    Quote_Color,                    { Color of message quoted text }
+    Tear_Color,                     { Color of message tear line }
+    Origin_Color,                   { Color of message origin line }
     BackSysOpLogs,                  { Number of days to keep SysOp logs }
     EventWarningTime,               { Minutes before warning user of upcoming event }
     WFCBlankTime,                   { Minutes before blanking out WFC menu }
@@ -540,8 +540,8 @@ TYPE
     SearchDup,                      { Search for dupes on UL? }
     ForceBatchDL,                   {  }
     ForceBatchUL,                   {  }
-    LogonQuote,                     {  }
-    UserAddQuote,                   {  }
+    LogonQuote,                     { Display random quote during logon? }
+    UserAddQuote,                   { Prompt user to add quote -- LeeW: make this during logon only, will add acs later}
     StripCLog,                      { strip colors from SysOp log? }
     SKludge,                        { Show kludge lines? }
     SSeenby,                        { Show seen-by lines? }
@@ -610,26 +610,21 @@ TYPE
     
     NewUserQToggles:                { Toggles for new user application questions }
       ARRAY [1..30] OF Boolean;
+    OneLinersNewTop,                { Newest OneLiners on top? }
+    LogonLastCallers,               { Display Last Callers Information During Logon }
+    LogonOneLiners,                 { OneLiners during logon? }
+    LogonVoting: Boolean;           { Prompt user to vote on topics during logon? (or force if mandatory) }
+    AddQuoteACS,                    { Add A Quote ACS }
+    AddOneLinerACS: ACString;       { Add A OneLiner ACS }
+    TopFilesDownload,               { Prompt user to download top files? }
+    TimeStampLogs,                  { Apply TimeStamp To Log Files? }
+    DefSplitChat: Boolean;          { Use split chat as default? }
     
     (*
     { ** THINGS I INTEND TO IMPLEMENT ** }
     
-    AskTagLine: Boolean;            { Prompt user to add random tagline to messages? }
-    
-    Logon_OneLiners,                { OneLiners during logon? }
-    Logon_OneLiners_Add,            { Prompt user to add a OneLiner during logon? }
-    Logon_Quote_Add,                { Prompt user to add a Quote during logon? }
-    Logon_Voting: Boolean;          { Prompt user to vote on unvoted topics during logon? (or force if mandatory) }
-    Logon_LastCallers: Boolean;     { Display Last Callers Information During Logon }
-    
-    AddQuoteACS,                    { Add A Quote ACS }
-    AddOneLinerACS: ACString;       { Add A OneLiner ACS }
-    
     DefNumOneLiners: SmallInt;      { Default Number Of OneLiners To Display If MenuOption = 0 }
     DefNumLastCallers: SmallInt;    { Default Number Of LastCallers To Display If MenuOption = 0}
-    
-    TimeStampLogs: Boolean;         { Apply TimeStamp To Log Files? }
-    DefSplitChat: Boolean;          { Use split chat as default? }
     
     NewAppMsgMandatory: Boolean;    { Are we forcing new user to send message to SysOp or just prompting? }
     MaxAnswerAttempts: Byte;        { Max answer attempts for questions before giving up }
@@ -668,7 +663,7 @@ TYPE
     MAFilter,    { whether to filter ANSI/8-bit ASCII }
     MAPrivate,   { allow private messages }
     MAForceRead, { force the reading of this area }
-    MAQuote,     { Allow Quote/Tagline to messages posted in this area }
+    MAQuote,     { Allow Quote/Tagline to messages posted in this area ** RENAME THIS MATagLine **}
     MASKludge,   { strip IFNA kludge lines }
     MASSeenBy,   { strip SEEN-BY lines }
     MASOrigin,   { strip origin lines }
@@ -723,8 +718,8 @@ TYPE
     ULPath: STRING[40];   { upload path       }
     MaxFiles: Integer;    { max files allowed - VerbRec Limit would allow up to LongInt Value or Maximum 433835}
     Password: STRING[20]; { password required }
-    ArcType,              { wanted archive type (1..255,0=inactive) }
-    CmtType: Byte;        { wanted comment type (1..3,0=inactive) }
+    ArcType,              { Wanted archive type (1..255,0=Inactive) }
+    CmtType: Byte;        { Wanted comment type (1..3,0=Inactive) }
     ACS,                  { access requirements }
     ULACS,                { upload requirements }
     DLACS: ACString;      { download requirements }
@@ -759,23 +754,23 @@ TYPE
 
   LastCallerRec = {$IFDEF WIN32} PACKED {$ENDIF} RECORD { LASTON.DAT : Last few callers records }
     Node: Byte;           { Node number }
-    UserName: STRING[36]; { User name OF caller }
-    Location: STRING[30]; { Location OF caller }
-    Caller,               { system caller number }
-    UserID,               { User ID # }
-    Speed: LongInt;       { Speed OF caller 0=Local }
-    LogonTime,            { time user logged on }
-    LogoffTime: UnixTime; { time user logged off }
-    NewUser,              { was it a new user? }
-    Invisible: Boolean;   { Invisible user? }
-    Uploads,              { Uploads during call }
-    Downloads,            { Downloads ^ }
-    MsgRead,              { Messages Read }
-    MsgPost,              { Messages Posted }
-    EmailSent,            { Emails sent }
+    UserName: STRING[36]; { Callers username }
+    Location: STRING[30]; { Callers location }
+    Caller,               { System caller number }
+    UserID,               { User ID number }
+    Speed: LongInt;       { Connection speed (0=Local) }
+    LogonTime,            { Time logged on }
+    LogoffTime: UnixTime; { Time logged off }
+    NewUser,              { Was user new? }
+    Invisible: Boolean;   { Was user invisible? }
+    Uploads,              { Uploads }
+    Downloads,            { Downloads }
+    MsgRead,              { Messages read }
+    MsgPost,              { Messages posted }
+    EmailSent,            { E-Mails sent }
     FeedbackSent: Word;   { Feedback sent }
-    UK,                   { Upload kbytes during call }
-    DK: LongInt;          { Download ^ }
+    UK,                   { kBytes uploaded }
+    DK: LongInt;          { kBytes downloaded }
     Reserved:             { Reserved }
       ARRAY [1..17] OF Byte; 
   END;
@@ -824,8 +819,8 @@ TYPE
     HiBaud: LongInt;              { High baud rate limit }
     EventACS: ACString;           { Event ACS }
     MaxTimeAllowed: WORD;         { Max Time per user this event }
-    SetARflag,                    { AR Flag to Set }
-    ClearARflag: CHAR;            { AR Flag to Clear }
+    SetARFlag,                    { AR flag to set }
+    ClearARFlag: CHAR;            { AR flag to clear }
     EFlags: EFlagSet;             { Kinds of Events Supported}   { Changed }
   END;
 
@@ -904,7 +899,7 @@ TYPE
 
   ScanRec = {$IFDEF WIN32} PACKED {$ENDIF} RECORD { *.SCN files / MESSAGES }
     NewScan: Boolean;   { Scan this area? }
-    LastRead: UnixTime; { Last date read  }
+    LastRead: UnixTime; { Last read date }
   END;
 
   SchemeRec = {$IFDEF WIN32} PACKED {$ENDIF} RECORD { SCHEME.DAT }
@@ -936,10 +931,10 @@ TYPE
     Software: STRING[8];      { Software used by BBS }
     Speed: STRING[8];         { Highest connect speed OF BBS }
     Description: STRING[60];  { Description OF BBS }
-    Description2: STRING[60]; { Second line OF descrition }
+    Description2: STRING[60]; { Second line OF description }
     DateAdded: UnixTime;      { Date entry was added }
     DateEdited: UnixTime;     { Date entry was last edited }
-    XA: STRING[8];            { sysop definable A }
+    XA: STRING[8];            { SysOp definable A }
     XB: STRING[30];           { sysop definable B }
     XC: STRING[30];           { sysop definable C }
     XD: STRING[40];           { sysop definable D }

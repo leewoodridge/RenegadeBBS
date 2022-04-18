@@ -534,6 +534,7 @@ BEGIN
                     DLToday := 0;
                     DLKToday := 0;
                     TimeBankWith := 0;
+                    {leew: add ultoday/ulktoday}
                   END;
               UserOn := TRUE;
               Update_Screen;
@@ -654,6 +655,7 @@ BEGIN
                           DLToday := 0;
                           DLKToday := 0;
                           TimeBankWith := 0;
+                          {leew: add ultoday/ulktoday}
                         END;
                     UserOn := TRUE;
                     Update_Screen;
@@ -864,7 +866,7 @@ BEGIN
   GotName := FALSE;
   IF ((General.ShuttleLog) AND (NOT FastLogon) AND (NOT HangUp)) THEN
     DoShuttle;
-  Setc(7);
+  SetC(7);
   CLS;
   Print(Centre(VerLine(1)));
   Print(Centre(VerLine(2)));
@@ -981,6 +983,7 @@ BEGIN
             TimeBankAdd := 0;
             DLToday := 0;
             DLKToday := 0;
+            {leew: add ultoday/ulktoday}
             TimeBankWith := 0;
           END
           ELSE IF (General.PerCall) THEN

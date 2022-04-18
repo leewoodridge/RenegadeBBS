@@ -874,5 +874,4 @@ BEGIN
   LoadFileArea(FileArea);
   LastError := IOResult;
 END;
-
 END.
