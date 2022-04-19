@@ -1122,6 +1122,7 @@ $
 
 ### @0 = MenuCmd, @1 = Passed Parameter --- !!!NOT IMPLEMENTED YET!!!
 $Invalid_Parameter
+^8Invalid menu command or parameter. The SysOp has been notified, please try again later.
 $
 
 ### @0 = Title ("Most minutes online") @1 = Header Field ("<Minutes>")
@@ -1179,4 +1180,19 @@ $
 
 $Top_Files_Download_Input
 %LFDownload which file?
+$
+
+### ADD $Lightbar_Continuous
+
+$MANDATORY_VOTING
+Voting is mandatory. Please vote on the following topics ...
+$
+
+### @0 = Number of questions ("3") @1 = Plural if more than 1 question ("s")
+$LOGON_VOTE_PROMPT
+^2You have not voted on ^1@0^2 voting question@1, Vote now?
+$
+
+$EXCEEDED_MAX_ATTEMPTS
+^8Exceeded maximum number of retries. Disconnecting.^0
 $
