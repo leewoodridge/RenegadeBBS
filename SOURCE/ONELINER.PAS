@@ -189,8 +189,9 @@ END;
 PROCEDURE OneLiner_View;
 VAR
   OneLinerList: OneLinerRecordType;
-  Counter : Byte;
+  Counter, Counter2 : Byte;
 BEGIN
+Counter2 := 1;
   Assign(OneLinerListFile,General.DataPath+'ONELINER.DAT');
   Reset(OneLinerListFile);
   LastError := IOResult;
@@ -220,14 +221,14 @@ BEGIN
   ELSE
     BEGIN
       IF General.OneLinersNewTop THEN
-        FOR Counter := (FileSize(OneLinerListFile)) DOWNTO 1 DO { LeeW: Newest at top }
+        FOR Counter := (FileSize(OneLinerListFile)) DOWNTO (FileSize(OneLinerListFile)-9) DO { LeeW: Newest at top }
           BEGIN
             Seek(OneLinerListFile,(Counter-1));
             Read(OneLinerListFile,OneLinerList);
             DisplayBuffer(OneLinerListMCI,@OneLinerList,NIL);
           END
       ELSE
-        FOR Counter := 1 TO (FileSize(OneLinerListFile)) DO { LeeW: Newest at bottom }
+        FOR Counter := (FileSize(OneLinerListFile)-9) TO (FileSize(OneLinerListFile)) DO { LeeW: Newest at bottom }
           BEGIN
             Seek(OneLinerListFile,(Counter-1));
             Read(OneLinerListFile,OneLinerList);
