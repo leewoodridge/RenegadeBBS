@@ -192,18 +192,18 @@ END;
 
 PROCEDURE Shel(CONST s: AStr);
 BEGIN
-  SavCurWind := General.CurWindow;
   SaveX := WhereX;
   SaveY := WhereY;
-  SetWindow(Wind,1,1,80,25,7,0,0);
+  SaveScreen(Wind);
+  Window(1,1,80,25);
+  {-}
+  TextBackGround(0);
+  TextColor(7);
   ClrScr;
   TextBackGround(1);
   TextColor(15);
   ClrEOL;
-  Write(s);
-  TextBackGround(0);
-  TextColor(7);
-  WriteLn;
+  WriteLn(s); {LeeW: Upcase?}
 END;
 
 PROCEDURE Shel2(x: Boolean);

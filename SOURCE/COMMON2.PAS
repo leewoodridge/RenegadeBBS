@@ -1031,112 +1031,491 @@ VAR
   Changed,
   Done,
   Done1: Boolean;
+  {}
+  Infield_Out_FGrd,
+  Infield_Out_BkGd,
+  Infield_Inp_FGrd,
+  Infield_Inp_BkGd,
+  Infield_Last_Arrow,
+  Infield_Last_Normal: Byte;
+TYPE
+  Infield_Special_Function_Proc_Rec = PROCEDURE(c: Char);
+  
+CONST
+  Infield_Seperators: SET OF Char = [' ','\','.'];
+  Infield_Only_Allow_On: BOOLEAN = FALSE;
+  Infield_Arrow_Exit: BOOLEAN = FALSE;
+  Infield_Arrow_Exited: BOOLEAN = FALSE;
+  Infield_Arrow_Exited_Keep: BOOLEAN = FALSE;
+  Infield_Special_Function_On: BOOLEAN = FALSE;
+  Infield_Arrow_Exit_TypeDefs: BOOLEAN = FALSE;
+  Infield_Normal_Exit_KeyDefs: BOOLEAN = FALSE;
+  Infield_Normal_Exited: BOOLEAN = FALSE;
+  
+  PROCEDURE infield1(x,y: Byte; VAR s: AStr; Len: Byte);
+  VAR
+	SaveS: AStr;
+	c: Char;
+	SaveTextAttr,
+	SaveX,
+	SaveY: Byte;
+	i,
+	p,
+	z: Integer;
+	Ins,
+	Done,
+	NoKeyYet: BOOLEAN;
+	
+	Infield_Special_Function_Proc: Infield_Special_Function_Proc_Rec;
+	Infield_Only_Allow,
+	Infield_Special_Function_Keys,
+	Infield_Arrow_Exit_Types,
+	Infield_Normal_Exit_Keys: STRING;
+	
+  PROCEDURE GoCPos;
+  BEGIN
+    GoToXY(x + p - 1,y);
+  END;
 
+  PROCEDURE Exit_W_Arrow;
+  VAR
+    i: Integer;
+  BEGIN
+    Infield_Arrow_Exited := TRUE;
+    Infield_Last_Arrow := Ord(c);
+    Done := TRUE;
+    IF (Infield_Arrow_Exited_Keep) THEN
+    BEGIN
+      z := Len;
+      FOR i := Len DOWNTO 1 DO
+        IF (s[i] = ' ') THEN
+          Dec(z)
+        ELSE
+          i := 1;
+      s[0] := chr(z);
+    END
+    ELSE
+      s := SaveS;
+  END;
+
+  PROCEDURE Exit_W_Normal;
+  VAR
+    i: Integer;
+  BEGIN
+    Infield_Normal_Exited := TRUE;
+    Infield_Last_Normal := Ord(c);
+    Done := TRUE;
+    IF (Infield_Arrow_Exited_Keep) THEN
+    BEGIN
+      z := Len;
+      FOR i := Len DOWNTO 1 DO
+        IF (s[i] = ' ') THEN
+          Dec(z)
+        ELSE
+          i := 1;
+      s[0] := chr(z);
+    END
+    ELSE
+      s := SaveS;
+  END;
+
+BEGIN
+  SaveTextAttr := TextAttr;
+  SaveX := WhereX;
+  SaveY := WhereY;
+  SaveS := s;
+  Ins := FALSE;
+  Done := FALSE;
+  Infield_Arrow_Exited := FALSE;
+  GoToXY(x,y);
+  TextAttr := (Infield_Inp_BkGd * 16) + Infield_Inp_FGrd;
+  FOR i := 1 TO Len DO
+    Write(' ');
+  FOR i := (Length(s) + 1) TO Len DO
+    s[i] := ' ';
+  GoToXY(x,y);
+  Write(s);
+  p := 1;
+  gocpos;
+  NoKeyYet := TRUE;
+  REPEAT
+    REPEAT
+      c := ReadKey
+    UNTIL ((NOT Infield_Only_Allow_On) OR
+           (Pos(c,Infield_Special_Function_Keys) <> 0) OR
+           (Pos(c,Infield_Normal_Exit_Keys) <> 0) OR
+           (Pos(c,Infield_Only_Allow) <> 0) OR (c = #0));
+
+    IF ((Infield_Normal_Exit_Keydefs) AND
+      (Pos(c,Infield_Normal_Exit_Keys) <> 0)) THEN
+        Exit_W_Normal;
+
+    IF ((Infield_Special_Function_On) AND
+        (Pos(c,Infield_Special_Function_Keys) <> 0)) THEN
+      Infield_Special_Function_Proc(c)
+    ELSE
+    BEGIN
+      IF (NoKeyYet) THEN
+      BEGIN
+        NoKeyYet := FALSE;
+        IF (c IN [#32..#255]) THEN
+        BEGIN
+          GoToXY(x,y);
+          FOR i := 1 TO Len DO
+          BEGIN
+            Write(' ');
+            s[i] := ' ';
+          END;
+          GoToXY(x,y);
+        END;
+      END;
+      CASE c OF
+        #0 : BEGIN
+               c := ReadKey;
+               IF ((Infield_Arrow_Exit) AND (Infield_Arrow_Exit_TypeDefs) AND
+                   (Pos(c,Infield_Arrow_Exit_Types) <> 0)) THEN
+                 Exit_W_Arrow
+               ELSE
+               CASE c OF
+                 #72,#80 :
+                       IF (Infield_Arrow_Exit) THEN
+                         Exit_W_Arrow;
+                 #75 : IF (p > 1) THEN
+                         Dec(p);
+                 #77 : IF (p < Len + 1) THEN
+                         Inc(p);
+                 #71 : p := 1;
+                 #79 : BEGIN
+                         z := 1;
+                         FOR i := Len DOWNTO 2 DO
+                          IF ((s[i - 1] <> ' ') AND (z = 1)) THEN
+                            z := i;
+                         IF (s[z] = ' ') THEN
+                           p := z
+                         ELSE
+                           p := Len + 1;
+                       END;
+                 #82 : Ins := NOT Ins;
+                 #83 : IF (p <= Len) THEN
+                       BEGIN
+                         FOR i := p TO (Len - 1) DO
+                         BEGIN
+                           s[i] := s[i + 1];
+                           Write(s[i]);
+                         END;
+                         s[Len] := ' ';
+                         Write(' ');
+                       END;
+                #115 : IF (p > 1) THEN
+                       BEGIN
+                         i := (p - 1);
+                         WHILE ((NOT (s[i - 1] IN Infield_Seperators)) OR
+                               (s[i] IN Infield_Seperators)) AND (i > 1) DO
+                           Dec(i);
+                         p := i;
+                       END;
+                #116 : IF (p <= Len) THEN
+                       BEGIN
+                         i := p + 1;
+                         WHILE ((NOT (s[i-1] IN Infield_Seperators)) OR
+                               (s[i] IN Infield_Seperators)) AND (i <= Len) DO
+                           Inc(i);
+                         p := i;
+                       END;
+                #117 : IF (p <= Len) THEN
+                         FOR i := p TO Len DO
+                         BEGIN
+                           s[i] := ' ';
+                           Write(' ');
+                         END;
+               END;
+               gocpos;
+             END;
+			 {
+       #27 : BEGIN
+               s := SaveS;
+               Done := TRUE;
+             END;
+			 }
+       #13 : BEGIN
+               Done := TRUE;
+               z := Len;
+               FOR i := Len DOWNTO 1 DO
+                IF (s[i] = ' ') THEN
+                  Dec(z)
+                ELSE
+                  i := 1;
+               s[0] := chr(z);
+             END;
+        #8 : IF (p <> 1) THEN
+             BEGIN
+               Dec(p);
+               s[p] := ' ';
+               gocpos;
+               Write(' ');
+               gocpos;
+             END;
+      ELSE
+        IF ((c IN [#32..#255]) AND (p <= Len)) THEN
+        BEGIN
+          IF ((Ins) AND (p <> Len)) THEN
+          BEGIN
+            Write(' ');
+            FOR i := Len DOWNTO (p + 1) DO
+              s[i] := s[i - 1];
+            FOR i := (p + 1) TO Len DO
+              Write(s[i]);
+            gocpos;
+          END;
+          Write(c);
+          s[p] := c;
+          Inc(p);
+        END;
+      END;
+    END;
+  UNTIL (Done);
+  GoToXY(x,y);
+  TextAttr := (Infield_Out_BkGd * 16) + Infield_Out_FGrd;
+  FOR i := 1 TO Len DO
+    Write(' ');
+  GoToXY(x,y);
+  Write(s);
+  GoToXY(SaveX,SaveY);
+  TextAttr := SaveTextAttr;
+  Infield_Only_Allow_On := FALSE;
+  Infield_Special_Function_On := FALSE;
+  Infield_Normal_Exit_Keydefs := FALSE;
+END;
+
+{*
+ *  ÚÄÄÄ¿   ÉÍÍÍ»   °°°°°   ±±±±±   ²²²²²   ÛÛÛÛÛ   ÖÄÄÄ·  ÕÍÍÍ¸
+ *  ³ 1 ³   º 2 º   ° 3 °   ± 4 ±   ² 5 ²   Û 6 Û   º 7 º  ³ 8 ³
+ *  ÀÄÄÄÙ   ÈÍÍÍ¼   °°°°°   ±±±±±   ²²²²²   ÛÛÛÛÛ   ÓÄÄÄ½  ÔÍÍÍ¾
+ *}
+ 
+PROCEDURE Box(LineType,TLX,TLY,BRX,BRY: Integer);
+VAR
+  TL,TR,BL,BR,HLine,VLine: Char;
+  i: Integer;
+BEGIN
+  Window(1,1,MaxDisplayCols,MaxDisplayRows);
+  CASE LineType OF
+    1 : BEGIN
+          TL := #218;
+          TR := #191;
+          BL := #192;
+          BR := #217;
+          VLine := #179;
+          HLine := #196;
+        END;
+    2 : BEGIN
+          TL := #201;
+          TR := #187;
+          BL := #200;
+          BR := #188;
+          VLine := #186;
+          HLine := #205;
+        END;
+    3 : BEGIN
+          TL := #176;
+          TR := #176;
+          BL := #176;
+          BR := #176;
+          VLine := #176;
+          HLine := #176;
+        END;
+    4 : BEGIN
+          TL := #177;
+          TR := #177;
+          BL := #177;
+          BR := #177;
+          VLine := #177;
+          HLine := #177;
+        END;
+    5 : BEGIN
+          TL := #178;
+          TR := #178;
+          BL := #178;
+          BR := #178;
+          VLine := #178;
+          HLine := #178;
+        END;
+    6 : BEGIN
+          TL := #219;
+          TR := #219;
+          BL := #219;
+          BR := #219;
+          VLine := #219;
+          HLine := #219;
+        END;
+    7 : BEGIN
+          TL := #214;
+          TR := #183;
+          BL := #211;
+          BR := #189;
+          VLine := #186;
+          HLine := #196;
+        END;
+    8 : BEGIN
+          TL := #213;
+          TR := #184;
+          BL := #212;
+          BR := #190;
+          VLine := #179;
+          HLine := #205;
+        END;
+    ELSE
+    BEGIN
+      TL := #32;
+      TR := #32;
+      BL := #32;
+      BR := #32;
+      VLine := #32;
+      HLine := #32;
+    END;
+  END;
+  GoToXY(TLX,TLY);
+  Write(TL);
+  GoToXY(BRX,TLY);
+  Write(TR);
+  GoToXY(TLX,BRY);
+  Write(BL);
+  GoToXY(BRX,BRY);
+  Write(BR);
+  FOR i := (TLX + 1) TO (BRX - 1) DO
+  BEGIN
+    GoToXY(i,TLY);
+    Write(HLine);
+  END;
+  FOR i := (TLX + 1) TO (BRX - 1) DO
+  BEGIN
+    GoToXY(i,BRY);
+    Write(HLine);
+  END;
+  FOR i := (TLY + 1) TO (BRY - 1) DO
+  BEGIN
+    GoToXY(TLX,i);
+    Write(VLine);
+  END;
+  FOR i := (TLY + 1) TO (BRY - 1) DO
+  BEGIN
+    GoToXY(BRX,I);
+    Write(VLine);
+  END;
+  IF (LineType > 0) THEN
+    Window((TLX + 1),(TLY + 1),(BRX - 1),(BRY - 1))
+  ELSE
+    Window(TLX,TLY,BRX,BRY);
+END;
+  
+  {}
+  
   PROCEDURE Shd(i: Integer; b: Boolean);
   VAR
     C1: Char;
     Counter: Byte;
   BEGIN
-    gp(0,i);
-    IF (b) THEN
-      TextColor(14)
-    ELSE
-      TextColor(9);
-    CASE i OF
-      1 : Write('SL  :');
-      2 : Write('DSL :');
-      3 : Write('BL  :');
-      4 : Write('Note:');
-      5 : Write('AR:');
-      6 : Write('AC:');
-    END;
-    IF (b) THEN
-    BEGIN
-      TextColor(0);
-      TextBackGround(7);
-    END
-    ELSE
-      TextColor(14);
-    Write(' ');
-    WITH ThisUser DO
-      CASE i OF
-        0 : IF (b) THEN
-              Write('ÄDoneÄ')
-            ELSE
-            BEGIN
-              TextColor(9);
-              Write('Ä');
-              TextColor(11);
-              Write('Done');
-              TextColor(9);
-              Write('Ä');
-            END;
-        1 : Write(PadLeftInt(SL,3));
-        2 : Write(PadLeftInt(DSL,3));
-        3 : Write(PadLeftInt(AccountBalance,5));
-        4 : Write(PadLeftStr(Note,39));
-        5 : FOR C1 := 'A' TO 'Z' DO
-            BEGIN
-              IF (C1 IN ARFlags) THEN
-                TextColor(4)
-              ELSE IF (b) THEN
-                TextColor(0)
-              ELSE
-                TextColor(7);
-              Write(C1);
-            END;
-        6 : IF (b) THEN
-              CPR($07,$70)
-            ELSE
-              CPR($70,$07);
-      END;
-    Write(' ');
-    TextBackGround(0);
-    CursorOn(i IN [1..4]);
-    IF (b) THEN
-    BEGIN
-      GoToXY(26,12);
-      TextColor(14);
-      FOR Counter := 1 TO 41 DO
-        Write(' ');
-      GoToXY(26,12);
-      CASE i OF
-        0 : Write('Done');
-        1 : Write('Security Level (0-255)');
-        2 : Write('Download Security Level (0-255)');
-        3 : Write('Account balance');
-        4 : Write('SysOp Note for this user');
-        5 : Write('Access flags ("!" to toggle all)');
-        6 : Write('Restrictions & special ("!" to clear)');
-      END;
-    END;
+	gp(0,i);
+	IF (b) THEN
+	  TextColor(Scheme.Color[1])
+	ELSE
+	  TextColor(Scheme.Color[1]);
+	CASE i OF
+	  1 : Write('SL  :');
+	  2 : Write('DSL :');
+	  3 : Write('Crdt:');
+	  4 : Write('Note:');
+	  5 : Write('AR:');
+	  6 : Write('AC:');
+	END;
+	IF (b) THEN
+	  BEGIN
+		TextColor(Scheme.Color[6]);
+		TextBackGround(7);
+	  END
+	ELSE
+	  TextColor(Scheme.Color[2]); {field values}
+	Write(' ');
+	WITH ThisUser DO
+	  CASE i OF
+		0 : IF (b) THEN
+			  BEGIN { Selected }
+				TextColor(15);
+				Write('[DONE]')
+			  END
+			ELSE
+			  BEGIN { Not Selected }
+				TextColor(7);
+				Write('[DONE]');
+			  END;
+		1 : Write(PadLeftInt(SL,3));
+		2 : Write(PadLeftInt(DSL,3));
+		3 : Write(PadLeftInt(AccountBalance,5));
+		4 : Write(PadLeftStr(Note,39));
+		5 : FOR C1 := 'A' TO 'Z' DO
+			  BEGIN
+				IF (C1 IN ARFlags) THEN
+				  TextColor(4)
+				ELSE IF (b) THEN
+				  TextColor(0)
+				ELSE
+				  TextColor(7);
+				Write(C1);
+			  END;
+		6 : IF (b) THEN
+			  CPR(116,112) { Selected }
+			  { LeeW: First is color for enabled flag
+					  Second is color for disabled flag }
+			ELSE
+			  CPR(4,7); { Not Selected }
+	  END;
+	Write(' ');
+	TextBackGround(0);
+	CursorOn(i IN [1..4]);
+	IF (b) THEN
+	  BEGIN
+		GoToXY(26,12);
+		TextColor(Scheme.Color[2]);
+		FOR Counter := 1 TO 41 DO
+		  Write(' ');
+		GoToXY(26,12);
+		CASE i OF
+		  0 : Write('Exit User Editor');
+		  1 : Write('Security Level (0-255)');
+		  2 : Write('Download Security Level (0-255)');
+		  3 : Write('Account Credit Balance');
+		  4 : Write('SysOp Note');
+		  5 : Write('Access Flags '#196#196' (!) Clear');
+		  6 : Write('Restrictions & Privileges '#196#196' (!) Clear');
+		END;
+	  END;
   END;
 
-  PROCEDURE ddwind;
+  PROCEDURE DDWind;
   VAR
     Counter: Byte;
   BEGIN
-    CursorOn(FALSE);
-    TextColor(9);
-    Box(1,18,6,68,13);
-    Window(19,7,67,12);
-    ClrScr;
-    Box(1,18,6,68,11);
-    Window(19,7,67,10);
-    Window(1,1,MaxDisplayCols,MaxDisplayRows);
-    GoToXY(20,12);
-    TextColor(9);
-    Write('Desc:');
-    FOR Counter := 0 TO 6 DO
-      Shd(Counter,FALSE);
-    Shd(oo,TRUE);
+	CursorOn(FALSE);
+	TextColor(Scheme.Color[5]); { Border Color }
+	Box(1,18,6,68,13);
+	Window(19,7,67,12);
+	ClrScr;
+	Box(1,18,6,68,11);
+	Window(19,7,67,10);
+	Window(1,1,MaxDisplayCols,MaxDisplayRows);
+	GoToXY(20,12);
+	TextColor(Scheme.Color[1]); { "Desc:" Text }
+	Write('Desc:');
+	FOR Counter := 0 TO 6 DO
+	  Shd(Counter,FALSE);
+	Shd(oo,TRUE);
   END;
 
 BEGIN
   SaveURec(ThisUser,UserNum);
   Infield_Out_Fgrd := 0;
   Infield_Out_Bkgd := 7;
-  InField_Inp_Fgrd := 0;
+  InField_Inp_Fgrd := 15;
   InField_Inp_Bkgd := 7;
   Infield_Arrow_Exit := TRUE;
   Infield_Arrow_Exited := FALSE;
@@ -1148,155 +1527,157 @@ BEGIN
   ddwind;
   Done := FALSE;
   REPEAT
-    Infield_Arrow_Exited := FALSE;
-    CASE oo OF
-      0 : BEGIN
-            Done1 := FALSE;
-            Shd(oo,TRUE);
-            REPEAT
-              C := ReadKey;
-              CASE UpCase(C) OF
-                ^M : BEGIN
-                       Done := TRUE;
-                       Done1 := TRUE;
-                     END;
-                #0 : BEGIN
-                       C := ReadKey;
-                       CASE Ord(C) OF
-                         80,72 :   {arrow down, up}
-                               BEGIN
-                                 Infield_Arrow_Exited := TRUE;
-                                 Infield_Last_Arrow := Ord(C);
-                                 Done1 := TRUE;
-                               END;
-                       END;
-                     END;
-              END;
-            UNTIL (Done1);
-          END;
-      1 : BEGIN
-            S := IntToStr(ThisUser.SL);
-            InField1(26,7,S,3);
-            IF (StrToInt(S) <> ThisUser.SL) THEN
-              IF (StrToInt(S) >= 0) AND (StrToInt(S) <= 255) THEN
-              BEGIN
-                ThisUser.SL := StrToInt(S);
-                Inc(ThisUser.TLToday,General.TimeAllow[ThisUser.SL] - General.TimeAllow[ThisUser.SL]);
-              END;
-          END;
-      2 : BEGIN
-            S := IntToStr(ThisUser.DSL);
-            InField1(26,8,S,3);
-            IF (StrToInt(S) <> ThisUser.DSL) THEN
-              IF (StrToInt(S) >= 0) AND (StrToInt(S) <= 255) THEN
-                ThisUser.DSL := StrToInt(S);
-          END;
-      3 : BEGIN
-            S := IntToStr(AccountBalance);
-            InField1(26,9,S,5);
-            AdjustBalance(AccountBalance - StrToInt(S));
-          END;
-      4 : BEGIN
-            S := ThisUser.Note;
-            InField1(26,10,S,39);
-            ThisUser.Note := S;
-          END;
-      5 : BEGIN
-            Done1 := FALSE;
-            REPEAT
-              C := UpCase(ReadKey);
-              CASE C OF
-                #13 : Done1 := TRUE;
-                 #0 : BEGIN
-                        C := ReadKey;
-                        CASE Ord(C) OF
-                          80,72:  {arrow down,up}
-                                BEGIN
-                                  Infield_Arrow_Exited := TRUE;
-                                  Infield_Last_Arrow := Ord(C);
-                                  Done1 := TRUE;
-                                END;
-                        END;
-                      END;
-                '!' : BEGIN
-                        FOR C := 'A' TO 'Z' DO
-                          ToggleARFlag(C,ThisUser.ARFlags,Changed);
-                        Shd(oo,TRUE);
-                      END;
-                'A'..'Z' :
-                      BEGIN
-                        ToggleARFlag(C,ThisUser.ARFlags,Changed);
-                        Shd(oo,TRUE);
-                      END;
-              END;
-            UNTIL (Done1);
-          END;
-      6 : BEGIN
-            S := 'LCVUA*PEKM1234';
-            Done1 := FALSE;
-            REPEAT
-              C := UpCase(ReadKey);
-              IF (C = #13) THEN
-                Done1 := TRUE
-              ELSE IF (C = #0) THEN
-              BEGIN
-                C := ReadKey;
-                CASE Ord(C) OF
-                  80,72: {arrow down,up}
-                        BEGIN
-                          Infield_Arrow_Exited := TRUE;
-                          Infield_Last_Arrow := Ord(C);
-                          Done1 := TRUE;
-                        END;
-                END;
-              END
-              ELSE IF (Pos(C,S) <> 0) THEN
-              BEGIN
-                ToggleACFlags(C,ThisUser.ACFlags,Changed);
-                Shd(oo,TRUE);
-              END
-              ELSE
-              BEGIN
-                IF (C = '!') THEN
-                  FOR i := 1 TO Length(S) DO
-                    ToggleACFlags(S[i],ThisUser.ACFlags,Changed);
-                Shd(oo,TRUE);
-              END;
-            UNTIL (Done1);
-          END;
-    END;
-    IF (NOT Infield_Arrow_Exited) THEN
-    BEGIN
-      Infield_Arrow_Exited := TRUE;
-      Infield_Last_Arrow := 80;  {arrow down}
-    END;
-    IF (Infield_Arrow_Exited) THEN
-      CASE Infield_Last_Arrow OF
-        80,72 :
-              BEGIN     {arrow down,up}
-                Shd(oo,FALSE);
-                IF (Infield_Last_Arrow = 80) THEN
-                BEGIN  {arrow down}
-                  Inc(oo);
-                  IF (oo > 6) THEN
-                    oo := 0;
-                END
-                ELSE
-                BEGIN
-                  Dec(oo);
-                  IF (oo < 0) THEN
-                    oo := 6;
-                END;
-                Shd(oo,TRUE);
-              END;
-      END;
-  UNTIL (Done);
-  GoToXY(SaveWhereX,SaveWhereY);
-  TextAttr := SaveTextAttr;
-  CursorOn(TRUE);
-  NewCompTables;
-  SaveURec(ThisUser,UserNum);
+	Infield_Arrow_Exited := FALSE;
+	CASE oo OF
+	  0 : BEGIN
+	  {indent to here}
+			  Done1 := FALSE;
+			  Shd(oo,TRUE);
+			  REPEAT
+				C := ReadKey;
+				CASE UpCase(C) OF
+				  ^M :  BEGIN
+						  Done := TRUE;
+						  Done1 := TRUE;
+						END;
+				  #0 :  BEGIN
+						  C := ReadKey;
+						  CASE Ord(C) OF
+							80,72 : {Arrow Down, Up}
+							  BEGIN
+								Infield_Arrow_Exited := TRUE;
+								Infield_Last_Arrow := Ord(C);
+								Done1 := TRUE;
+							  END;
+						  END;
+						END;
+				END;
+			  UNTIL (Done1);
+			END;
+		1 : BEGIN
+			  S := IntToStr(ThisUser.SL);
+			  InField1(26,7,S,3);
+			  IF (StrToInt(S) <> ThisUser.SL) THEN
+				IF (StrToInt(S) >= 0) AND (StrToInt(S) <= 255) THEN
+				  BEGIN
+					ThisUser.SL := StrToInt(S);
+					Inc(ThisUser.TLToday,General.TimeAllow[ThisUser.SL] - General.TimeAllow[ThisUser.SL]);
+				  END;
+			END;
+		2 : BEGIN
+			  S := IntToStr(ThisUser.DSL);
+			  InField1(26,8,S,3);
+			  IF (StrToInt(S) <> ThisUser.DSL) THEN
+				IF (StrToInt(S) >= 0) AND (StrToInt(S) <= 255) THEN
+				  ThisUser.DSL := StrToInt(S);
+			END;
+		3 : BEGIN
+			  S := IntToStr(AccountBalance);
+			  InField1(26,9,S,5);
+			  AdjustBalance(AccountBalance - StrToInt(S));
+			END;
+		4 : BEGIN
+			  S := ThisUser.Note;
+			  InField1(26,10,S,39);
+			  ThisUser.Note := S;
+			END;
+		5 : BEGIN
+			  Done1 := FALSE;
+			  REPEAT
+				C := UpCase(ReadKey);
+				CASE C OF
+				  #13 : Done1 := TRUE;
+				  #0  : BEGIN
+						  C := ReadKey;
+						  CASE Ord(C) OF
+							80,72 : {Arrow Up, Down}
+							  BEGIN
+								Infield_Arrow_Exited := TRUE;
+								Infield_Last_Arrow := Ord(C);
+								Done1 := TRUE;
+							  END;
+						  END;
+						END;
+				  '!' : BEGIN
+						  FOR C := 'A' TO 'Z' DO
+							{ToggleARFlag(C,ThisUser.AR,Changed);}
+							Exclude(ThisUser.ARFlags,C);
+							Shd(oo,TRUE);
+						END;
+				  'A'..'Z' :
+						BEGIN
+						  ToggleARFlag(C,ThisUser.ARFlags,Changed);
+						  Shd(oo,TRUE);
+						END;
+				END;
+			  UNTIL (Done1);
+			END;
+		6 : BEGIN
+			  S := 'LCVUA*PEKM1234';
+			  Done1 := FALSE;
+			  REPEAT
+				C := UpCase(ReadKey);
+				IF (C = #13) THEN
+				  Done1 := TRUE
+				ELSE IF (C = #0) THEN
+				  BEGIN
+					C := ReadKey;
+					CASE Ord(C) OF
+					  80,72: {Arrow Down, Up}
+						BEGIN
+						  Infield_Arrow_Exited := TRUE;
+						  Infield_Last_Arrow := Ord(C);
+						  Done1 := TRUE;
+						END;
+					END;
+				  END
+				ELSE IF (Pos(C,S) <> 0) THEN
+				  BEGIN
+					ToggleACFlags(C,ThisUser.ACFlags,Changed);
+					Shd(oo,TRUE);
+				  END
+				ELSE
+				  BEGIN
+					IF (C = '!') THEN
+					  FOR i := 1 TO Length(S) DO
+						{ToggleACFlags(S[i],ThisUser.Flags,Changed);}
+						Exclude(ThisUser.ACFlags,TACCH(S[i]));
+						Shd(oo,TRUE);
+				  END;
+			  UNTIL (Done1);
+			END;
+	  END;
+	  IF (NOT Infield_Arrow_Exited) THEN
+		BEGIN
+		  Infield_Arrow_Exited := TRUE;
+		  Infield_Last_Arrow := 80;  {arrow down}
+		END;
+	  IF (Infield_Arrow_Exited) THEN
+		CASE Infield_Last_Arrow OF
+		  80,72 :
+			BEGIN     {arrow down,up}
+			  Shd(oo,FALSE);
+			  IF (Infield_Last_Arrow = 80) THEN
+				BEGIN  {arrow down}
+				  Inc(oo);
+				  IF (oo > 6) THEN
+					oo := 0;
+				END
+			  ELSE
+				BEGIN
+				  Dec(oo);
+				  IF (oo < 0) THEN
+					oo := 6;
+				END;
+			  Shd(oo,TRUE);
+			END;
+		END;
+	UNTIL (Done);
+	GoToXY(SaveWhereX,SaveWhereY);
+	TextAttr := SaveTextAttr;
+	CursorOn(TRUE);
+	NewCompTables;
+	SaveURec(ThisUser,UserNum);
 END;
 
 END.
-

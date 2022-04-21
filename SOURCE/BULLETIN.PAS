@@ -7,6 +7,10 @@ Lee Woodridge
             - Header and footer for quote now use standardized format, like automsg and oneliners
  11/20/2021 - moved findonlyonce to maint, nested in logonmaint
  12/10/2021 - fixed case issue for ~to and ~tl in lastcaller mci, MAYBE
+ 04/18/2022 - Cleaned up IF statements in RGQuote
+			- Added ACS check
+
+ should we combine rgquote to rgquote.pas??
 }
 INTERFACE
 
@@ -496,9 +500,7 @@ BEGIN
   Read(StrPointerFile,StrPointer);
   Close(StrPointerFile);
   LastError := IOResult;
-  {IF (Exist(General.MiscPath+'QUOTEH.*')) THEN}
-    PrintF('QUOTEH');
-  {ELSE}
+  PrintF('QUOTEH');
   IF (NoFile) THEN
     BEGIN
       lRGLngStr(241,FALSE); {"And now... A quote for you!"}
@@ -526,9 +528,7 @@ BEGIN
   UNTIL (TotLoad >= StrPointer.TextSize) OR EOF(RGStrFile) OR (HangUp);
   Close(RGStrFile);
   LastError := IOResult;
-  {IF (Exist(General.MiscPath+'QUOTET.*')) THEN}
-    PrintF('QUOTET');
-  {ELSE}
+  PrintF('QUOTET');
   IF (NoFile) THEN
     BEGIN
       UserColor(5);
@@ -538,10 +538,13 @@ BEGIN
       UserColor(0);
     END;
   SysOpLog('Read Quote ('+AllCaps(MenuOption)+')');
-  IF (NOT General.UserAddQuote) THEN
-    PauseScr(FALSE)
-  ELSE IF (PYNQ(lRGLngStr(179,TRUE),0,FALSE)) AND (NOT HangUp) THEN {"Would you like to add a quote?"}
-    BEGIN
+  
+  {-}
+  
+  IF (NOT General.UserAddQuote) OR (NOT AACS(General.AddQuoteACS)) AND (NOT HangUp) THEN
+	PauseScr(FALSE)
+  ELSE IF (PYNQ(lRGLngStr(179,TRUE),0,FALSE)) {"Would you like to add a quote?"} AND (NOT HangUp) THEN
+	BEGIN
       PrintF('QUOTEADD');
       InResponseTo := '';
       MHeader.Status := [];

@@ -37,17 +37,17 @@ BEGIN
         Next := FALSE;
         ConfigHeader('System Toggles');
         PrintACR({PadLeftStr('^0(^1A^0) Handles allowed on system : ^1'+ShowOnOff(AllowAlias),39)+}
-                 PadLeftStr('^0(^1B^0) Phone number in logon     : ^1'+ShowOnOff(PhonePW),39));
+                 PadLeftStr('^0(^1B^0) Phone # security question : ^1'+ShowOnOff(PhonePW),39));
         PrintACR(PadLeftStr('^0(^1C^0) Local security protection : ^1'+ShowOnOff(LocalSec),39)+
                  PadLeftStr('^0(^1D^0) Use EMS for overlay file  : ^1'+ShowOnOff(UseEMS),39));
-        PrintACR(PadLeftStr('^0(^1E^0) Global activity trapping  : ^1'+ShowOnOff(GlobalTrap),39)+
-                 PadLeftStr('^0(^1F^0) Auto chat buffer open     : ^1'+ShowOnOff(AutoChatOpen),39));
+        PrintACR(PadLeftStr('^0(^1E^0) Global activity logging   : ^1'+ShowOnOff(GlobalTrap),39)+
+                 PadLeftStr('^0(^1F^0) Global chat logging       : ^1'+ShowOnOff(AutoChatOpen),39));
         PrintACR(PadLeftStr('^0(^1G^0) AutoMessage in logon      : ^1'+ShowOnOff(AutoMInLogon),39)+
                  PadLeftStr('^0(^1H^0) Bulletins in logon        : ^1'+ShowOnOff(BullInLogon),39));
         PrintACR(PadLeftStr('^0(^1I^0) User info in logon        : ^1'+ShowOnOff(YourInfoInLogon),39)+
-                 PadLeftStr('^0(^1J^0) Strip color off SysOp Log : ^1'+ShowOnOff(StripCLog),39));
-        PrintACR(PadLeftStr('^0(^1K^0) Offhook in local logon    : ^1'+ShowOnOff(OffHookLocalLogon),39)+
-                 PadLeftStr('^0(^1L^0) Trap Teleconferencing     : ^1'+ShowOnOff(TrapTeleConf),39));
+                 PadLeftStr('^0(^1J^0) Strip color off SysOp log : ^1'+ShowOnOff(StripCLog),39));
+        PrintACR(PadLeftStr('^0(^1K^0) Offhook for local logon   : ^1'+ShowOnOff(OffHookLocalLogon),39)+
+                 PadLeftStr('^0(^1L^0) Global teleconf logging   : ^1'+ShowOnOff(TrapTeleConf),39));
         PrintACR(PadLeftStr('^0(^1M^0) Compress file/msg numbers : ^1'+ShowOnOff(CompressBases),39)+
                  PadLeftStr('^0(^1N^0) Use BIOS for video output : ^1'+ShowOnOff(UseBIOS),39));
         PrintACR(PadLeftStr('^0(^1O^0) Use IEMSI handshakes      : ^1'+ShowOnOff(UseIEMSI),39)+
@@ -56,10 +56,10 @@ BEGIN
                  PadLeftStr('^0(^1S^0) Use shuttle logon         : ^1'+ShowOnOff(ShuttleLog),39));
         PrintACR(PadLeftStr('^0(^1T^0) Chat call paging          : ^1'+ShowOnOff(ChatCall),39)+
                  PadLeftStr('^0(^1U^0) Time limits are per call  : ^1'+ShowOnOff(PerCall),39));
-        PrintACR(PadLeftStr('^0(^1V^0) SysOp Password checking   : ^1'+ShowOnOff(SysOpPWord),39)+
+        PrintACR(PadLeftStr('^0(^1V^0) SysOp password checking   : ^1'+ShowOnOff(SysOpPWord),39)+
                  PadLeftStr('^0(^1W^0) Random quote in logon     : ^1'+ShowOnOff(LogonQuote),39));
         PrintACR(PadLeftStr('^0(^1X^0) User add random quote     : ^1'+ShowOnOff(UserAddQuote),39)+
-                 PadLeftStr('^0(^1Y^0) Use LightBars             : ^1'+ShowOnOff(UseLightBars),39));
+                 PadLeftStr('^0(^1Y^0) Use lightbars             : ^1'+ShowOnOff(UseLightBars),39));
         PrintACR(PadLeftStr('^0(^1Z^0) Inactivity Warn/TimeOut   : ^1'+AOnOff((TimeOutBell = -1) AND (TimeOut = -1),'Off',
                             AOnOff((TimeOutBell = -1),'Off',IntToStr(TimeOutBell))+'^0/^1'+AOnOff((TimeOut = -1),'Off',
                             IntToStr(TimeOut))),39)+
@@ -69,13 +69,14 @@ BEGIN
         PrintACR(PadLeftStr('^0(^1$^0) Voting in logon           : ^1'+ShowOnOff(LogonVoting),39)+
                  PadLeftStr('^0(^1%^0) Prompt to DL top files    : ^1'+ShowOnOff(TopFilesDownload),39));
         PrintACR(PadLeftStr('^0(^1^^0) TimeStamp SysOp log       : ^1'+ShowOnOff(TimeStampLogs),39)+
-                 PadLeftStr('^0(^1&^0) Use SplitChat as default  : ^1'+ShowOnOff(DefSplitChat),39));
+                 PadLeftStr('^0(^1&^0) Use split chat as default : ^1'+ShowOnOff(DefSplitChat),39));
         PrintACR(PadLeftStr('^0(^1*^0) Mandatory voting          : ^1'+ShowOnOff(ForceVoting),39){+}
                  );
         NL;
         InputChar('Enter selection [^1A^2-^1P^2,^1R^2-^1Z^2,^1Q^2=^1Quit^2]: ',Cmd,
                   'QABCDEFGHIJKLMNOPRSTUVWXYZ!@#$%^&*'^M,[CapAll]);
       CASE Cmd OF
+	  { ' ' : Toggle(); }
         '!' : Toggle(OneLinersNewTop);
         '@' : Toggle(LogonLastCallers);
         '#' : Toggle(LogonOneLiners);
@@ -84,15 +85,8 @@ BEGIN
         '^' : Toggle(TimeStampLogs);
         '&' : Toggle(DefSplitChat);
         '*' : Toggle(ForceVoting);
-        {'' : Toggle();}
-        'A' : AllowAlias := NOT AllowAlias;
-        'B' : BEGIN
-                PhonePW := NOT PhonePW;
-                IF (PhonePW) THEN
-                  NewUserToggles[7] := 8
-                ELSE
-                  NewUserToggles[7] := 0;
-              END;
+        {'A' : AllowAlias := NOT AllowAlias;}
+        'B' : Toggle(PhonePW);
         'C' : LocalSec := NOT LocalSec;
         'D' : BEGIN
                 UseEMS := NOT UseEMS;

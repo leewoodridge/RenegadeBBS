@@ -34,10 +34,12 @@ Lee Woodridge
  11/23/2021 - increased number parameter of plural from byte to integer
  04/15/2022 - added timestamplogs toggle
  
+{ clean up setc/getc}
+ 
  log formatting prefix proposal
- [W] warning??
- [E] ERROR
- [S] security
+ [ ] warning??
+ [ ] ERROR
+ [ ] security
 *)
 UNIT Common;
 
@@ -2232,51 +2234,36 @@ VAR
   END;
 
 BEGIN
-  s := '';
-  IF (OkANSI) THEN {LeeW: Added}
-    BEGIN
-      IF (NOT (Color IN ThisUser.ACFlags)) THEN {LeeW: Added}
-        IF ((C AND 8) = 8) THEN
-          C := 15
-        ELSE
-          C := 7;
-      {-}
-      b := FALSE;
-      IF ((CurrentColor AND (NOT c)) AND $88) <> 0 THEN
-        BEGIN
-          s := #27+'[0';
-          CurrentColor := $07;
-        END
-      ELSE
-        s := #27+'[';
-      IF (c AND 7 <> CurrentColor AND 7) THEN
-        adto('3'+xclr[c AND 7]);
-      IF (c AND $70 <> CurrentColor AND $70) THEN
-        adto('4'+xclr[(c SHR 4) AND 7]);
-      IF (c AND 128 <> 0) THEN
-        adto('5');
-      IF (c AND 8 <> 0) THEN
-        adto('1');
-      IF (NOT b) THEN
-        adto('3'+xclr[c AND 7]);
-      s := s + 'm';
-    END
+  b := FALSE;
+  IF ((CurrentColor AND (NOT c)) AND $88) <> 0 THEN
+  BEGIN
+    s := #27+'[0';
+    CurrentColor := $07;
+  END
   ELSE
-    BEGIN { NOT OKANSI }
-      TextAttr := 7;
-      Exit;
-    END;
+    s := #27+'[';
+  IF (c AND 7 <> CurrentColor AND 7) THEN
+    adto('3'+xclr[c AND 7]);
+  IF (c AND $70 <> CurrentColor AND $70) THEN
+    adto('4'+xclr[(c SHR 4) AND 7]);
+  IF (c AND 128 <> 0) THEN
+    adto('5');
+  IF (c AND 8 <> 0) THEN
+    adto('1');
+  IF (NOT b) THEN
+    adto('3'+xclr[c AND 7]);
+  s := s + 'm';
   GetC := s;
   {-}
-  TextAttr := C;
-  CurrentColor := C;
+  TextAttr := C; CurrentColor := C; {leew: added these 2, incase called outside of setc}
 END;
-
-{-}
 
 PROCEDURE SetC(C: Byte);
 BEGIN
-{
+(*
+if c = currentcolor then
+prompt('!!'); {leew: test}
+*)
   IF (NOT (OkANSI OR OkAvatar)) THEN
   BEGIN
     TextAttr := 7;
@@ -2292,16 +2279,21 @@ BEGIN
     IF (OutCom) THEN
       IF (OkAvatar) THEN
         SerialOut(^V^A+Chr(C AND $7f))
-      ELSE}
+      ELSE
         SerialOut(GetC(C));
-        {
     TextAttr := C;
     CurrentColor := C;
-  END;}
+  END;
 END;
+
+{-}
 
 PROCEDURE UserColor(Color: Byte);
 BEGIN
+{
+if currentcolor = Scheme.Color[Color + 1] then
+exit;
+}
   IF (Color IN [0..9]) THEN
     IF (OkANSI OR OkAvatar) THEN
       SetC(Scheme.Color[Color + 1]);
@@ -2383,8 +2375,10 @@ END;
 
 PROCEDURE Prt(CONST InString: STRING);
 BEGIN
+{if currentcolor <> Scheme.Color[1] then}
   UserColor(0);
   Prompt(InString);
+  {if currentcolor <> Scheme.Color[1] then}
   UserColor(0);
 END;
 
@@ -4164,10 +4158,10 @@ BEGIN
   ELSE
     Cmd := Char(GetKey);
   IF (IsCont) THEN
-    FOR Counter := 1 TO LennMCI(lRGLngStr(44,TRUE){FString.Continue}) DO
+    FOR Counter := 1 TO LennMCI(lRGLngStr(44,TRUE)) DO { Continue prompt }
       BackSpace
   ELSE
-    FOR Counter := 1 TO LennMCI(lRGLNGStr(5,TRUE){FString.lPause}) DO
+    FOR Counter := 1 TO LennMCI(lRGLNGStr(5,TRUE)) DO { Pause prompt }
       BackSpace;
   IF (Abort) THEN
     NL;

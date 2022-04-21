@@ -2,8 +2,8 @@
 {
 Added: Disabled forgotpw question for CoSysOp+
 Added: Won't prompt for SysOpPW if blank
-        phonepw if blank or toggle disabled
-        bdaycheck if = -1869054590 or toggle disabled
+        or phonepw if blank or toggle disabled
+        or bdaycheck if = -1869054590 or toggle disabled
 }
 UNIT Logon;
 

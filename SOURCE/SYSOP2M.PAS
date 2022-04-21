@@ -38,22 +38,14 @@ VAR
   Cmd,
   Cmd1: Char;
   Counter: Byte; {LeeW: Added}
-  {
-  LowNum,
-  HighNum,
-  }
   TempInt: Integer; {LeeW: Added for new user private msg }
 BEGIN
   REPEAT
-    CLS;
     Abort := FALSE;
     Next := FALSE;
-    {MCIAllowed := FALSE;}
     WITH General DO
       BEGIN
         ConfigHeader('New User Question Toggles');
-        PrintACR(PadLeftStr('^0(^10^0) Refuse New Users : ^1'+ShowYesNo(ClosedSystem),39));
-        NL;
         PrintACR(PadLeftStr('^0(^1A^0) User Name        : ^1'+ShowYesNo(AllowAlias),39)+
                  PadLeftStr('^0(^1N^0) Term Emulation   : ^1'+ShowYesNo(NewUserQToggles[15] = TRUE),39));
         PrintACR(PadLeftStr('^0(^1B^0) Real Name        : ^1'+ShowYesNo(NewUserQToggles[02] = TRUE),39)+
@@ -83,9 +75,8 @@ BEGIN
                                                              +PadLeftInt(NewApp,5)),39));
         PrintACR(PadLeftStr('^0 - "^1'+General.ForgotPWQuestion+'^0"',79));
       END;
-    {MCIAllowed := TRUE;}
     NL;
-    InputChar('^2New User Question Toggles [^1A^2-^1P^2,^1R^2-^1U^2,^10^2-^11^2,(^1Q^2)uit]: ',Cmd,
+    InputChar('^2New User Question Toggles [^1A^2-^1P^2,^1R^2-^1Z^2,^11^2,(^1Q^2)uit]: ',Cmd,
           'QABCDEFGHIJKLMNOPRSTUVWXYZ01*',[CapAll]);
     WITH General DO
       CASE Cmd OF
@@ -96,7 +87,6 @@ BEGIN
                 ClosedSystem := FALSE;
                 NewApp := 1;
               END;
-        '0' : ClosedSystem := NOT ClosedSystem;
         'A' : BEGIN
                 AllowAlias := NOT AllowAlias;
                 IF (AllowAlias = FALSE) AND (NewUserQToggles[02] = FALSE) THEN
@@ -164,22 +154,20 @@ BEGIN
                 NL;
                 InputChar('^2New user message '#196#196' (^1E^2)nable, (^1D^2)isable, or <^1CR^2>Abort: ',Cmd,^M'ED',[CapAll]);
                 IF (Cmd IN ['E','D']) THEN
-                BEGIN
-                { LEEW: add mandatory or optional question}
-                  CASE Cmd OF
-                    'E' : BEGIN
-                            NL;
-                            {new user application letter -- mandatory or optional?}
-                            Print('^0Send new user message to which user?');
-                            lFindUserWS(TempInt);
-                            {NewAppMsgMandatory := YNQ('Should the new user letter be mandatory?',TRUE);}
-                          END;
-                    'D' : TempInt := -1;
+                  BEGIN
+                    CASE Cmd OF
+                      'E' : BEGIN
+                              NL;
+                              {new user application letter -- mandatory or optional?}
+                              Print('^0Send new user message to which user?');
+                              lFindUserWS(TempInt);
+                              {NewAppMsgMandatory := YNQ('Should the new user letter be mandatory?',TRUE);}
+                            END;
+                      'D' : TempInt := -1;
+                    END;
+                    IF (TempInt <> 0) THEN
+                      NewApp := TempInt;
                   END;
-                  IF (TempInt <> 0) THEN
-                    NewApp := TempInt;
-                  {Cmd := #0;}
-                END;
               END;
       END;
   UNTIL (Cmd = 'Q') OR (HangUp);

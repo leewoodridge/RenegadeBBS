@@ -100,7 +100,9 @@ VAR
     IF (ThisUser.ForgotPWAnswer = '') AND (General.ForgotPWQuestion <> '') AND
        (General.NewUserQToggles[14] = TRUE) THEN { Forgot PW Answer }
       UpdateArray[14] := TRUE;
-      
+    
+	{ LeeW: Add check for a mandatory password change here }
+	
       {
     IF (ThisUser. = '') AND (General.NewUserQToggles[] = TRUE) THEN
       UpdateArray[] := TRUE;

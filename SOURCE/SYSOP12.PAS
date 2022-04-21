@@ -308,7 +308,7 @@ VAR
           CmdStr := 'ABC'
         ELSE
           CmdStr := 'ABC[]FJL';
-        InputChar('%LF^2Modify Conference [(^1?)^2Help,(^1Q)^2uit]: ',Cmd1,'Q?'+CmdStr+^M,[CapAll]);
+        InputChar('%LF^2Modify Conference [(^1?^2)Help,(^1Q^2)uit]: ',Cmd1,'Q?'+CmdStr+^M,[CapAll]);
         CASE Cmd1 OF
           'A' : BEGIN
                   Print('%LF^8You can not modify the conference key.');

@@ -44,6 +44,9 @@ CONST
     TempColor,
     Counter: Byte;
   BEGIN
+  { -1 results in exit--do
+  }
+  
     SetC(7);
     NL;
     FOR Counter := 0 TO 7 DO
@@ -57,6 +60,7 @@ CONST
       SetC(Counter + 8);
       Print(PadLeftStr(ColorName[Counter]+'!',9));
     END;
+	TempColor := 0; {LeeW: Added}
     InputByte('%LFForeground',TempColor,[Numbersonly],0,15,Changed); (* Suppress Error *)
     IF (TempColor IN [0..15]) THEN
       NewColor := TempColor
@@ -70,6 +74,7 @@ CONST
       SetC(Counter);
       Print(PadLeftStr(ColorName[Counter],12));
     END;
+	TempColor := 0; {LeeW: Added}
     InputByte('%LFBackground',TempColor,[NumbersOnly],0,7,Changed);  (* Suppress Error *)
     IF (TempColor IN [0..7]) THEN
       NewColor := NewColor OR TempColor SHL 4;
@@ -466,27 +471,26 @@ VAR
         BEGIN
           Abort := FALSE;
           Next := FALSE;
-          CLS;
           IF (Editing) THEN
-            PrintACR('^1Editing color scheme #'+IntToStr(RecNumToEdit)+' of '+IntToStr(NumSchemes))
+		    ConfigHeader('Editing Color Scheme #'+IntToStr(RecNumToEdit)+' Of '+IntToStr(NumSchemes))
           ELSE
-            PrintACR('^1Inserting color scheme #'+IntToStr(RecNumToEdit)+' of '+IntToStr(NumSchemes + 1));
-          NL;
-          PrintACR('^01. Description   : ^1'+Scheme.Description);
-          Prompt('^02. System colors : ');
+		    ConfigHeader('Inserting Color Scheme #'+IntToStr(RecNumToEdit)+' Of '+IntToStr(NumSchemes + 1));
+          PrintACR('^0(^11^0) Description   : ^1'+Scheme.Description);
+          Prompt('^0(^12^0) System colors : ');
           ShowColors;
-          PrintACR('^03. File listings');
-          PrintACR('^04. Message listings');
-          PrintACR('^05. File area listings');
-          PrintACR('^06. Message area listings');
-          PrintACR('^07. Offline mail screen');
-          PrintACR('^08. Private mail listing');
+          PrintACR('^0(^13^0) File listings');
+          PrintACR('^0(^14^0) Message listings');
+          PrintACR('^0(^15^0) File area listings');
+          PrintACR('^0(^16^0) Message area listings');
+          PrintACR('^0(^17^0) Offline mail screen');
+          PrintACR('^0(^18^0) Private mail listing');
         END;
         IF (NOT Editing) THEN
           CmdStr := '12345678'
         ELSE
           CmdStr := '12345678[]FJL';
-        InputChar('%LFModify menu [^1?^2=^1Help^2]: ',Cmd1,'Q?'+CmdStr++^M,[CapAll]);
+		NL;
+        InputChar('^2Color Scheme Editor [^11^2-^18^2,(^1?^2)Help,(^1Q^2)uit]: ',Cmd1,'Q?'+CmdStr++^M,[CapAll]);
         CASE Cmd1 OF
           '1' : REPEAT
                   TempScheme1.Description := Description;
