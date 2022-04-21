@@ -31,9 +31,6 @@ BEGIN
     BEGIN
       Abort := FALSE;
       Next := FALSE;
-      {
-      Print('%CL^1Network Configuration:');
-      NL;}
       ConfigHeader('Network Mail Configuration');
       PrintACR('^0(^1A^0) Net Addresses ...');
       PrintACR('^0(^1B^0) Origin Line     : ^1'+Origin);
@@ -46,7 +43,7 @@ BEGIN
                PadLeftStr('^0(^13^0) Tear Line Color     : '+GetC(Tear_Color)+'Tear',39));
       PrintACR(PadLeftStr('^0(^1F^0) Add Tear/Origin Line    : ^1'+ShowYesNo(AddTear),39)+
                PadLeftStr('^0(^14^0) Origin Line Color   : '+GetC(Origin_Color)+'Origin',39));
-	  Common.UserColor(0); {LeeW: Just to avoid potential problems with GetC}
+	  ReDrawForANSI; {LeeW: Just to avoid colorbleed problems with GetC}
       NL;
       PrintACR('^0(^1G^0) Default EchoMail Path   : ^1'+DefEchoPath);
       PrintACR('^0(^1H^0) Default NetMail Path    : ^1'+NetMailPath);

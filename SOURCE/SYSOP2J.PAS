@@ -24,7 +24,7 @@ CONST
   ColorName: ARRAY[0..7] OF STRING[7] = ('Black','Blue','Green','Cyan','Red','Magenta','Yellow','White');
   ColorDesc: ARRAY[0..9] OF STRING[17] = ('Normal Text','Bright Text','Prompt','Input Field','Header Text','Header Border',
                                           'Lightbar Normal','Lightbar Selected','Warning/Error','Notification');
-
+  
   FUNCTION DisplayColorStr(Color: Byte): STRING;
   VAR
     TempStr: AStr;
@@ -44,9 +44,7 @@ CONST
     TempColor,
     Counter: Byte;
   BEGIN
-  { -1 results in exit--do
-  }
-  
+{ input validation please!}
     SetC(7);
     NL;
     FOR Counter := 0 TO 7 DO
