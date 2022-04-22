@@ -33,13 +33,10 @@ Lee Woodridge
                if interactiveedit is used and user no support ansi then it will show current value at end of prompt "...[123]"
  11/23/2021 - increased number parameter of plural from byte to integer
  04/15/2022 - added timestamplogs toggle
- 
-{ clean up setc/getc}
- 
- log formatting prefix proposal
- [ ] warning??
- [ ] ERROR
- [ ] security
+ 04/21/2022 - Nested GetC inside SetC since it's the only proc that calls it
+ [NOTES]
+ clean up setc/getc
+ inputmessage linelen param should be 79??? or 80 ... is 78
 *)
 UNIT Common;
 
@@ -623,7 +620,7 @@ PROCEDURE SysOpLog(s: AStr); { Write entry to SysOp log with indent (user action
 PROCEDURE InitTrapFile;
 PROCEDURE OutTrap(c: Char); {leew: was missing}
 { Color stuff }
-FUNCTION GetC(c: Byte): STRING;
+(*FUNCTION GetC(c: Byte): STRING;*)
 PROCEDURE ShowColors;
 PROCEDURE SetC(C: Byte);
 PROCEDURE UserColor(Color: Byte);
@@ -2218,6 +2215,8 @@ END;
 
 {-}
 
+PROCEDURE SetC(C: Byte);
+
 FUNCTION GetC(c: Byte): STRING;
 CONST
   xclr: ARRAY [0..7] OF Char = ('0','4','2','6','1','5','3','7');
@@ -2254,16 +2253,9 @@ BEGIN
     adto('3'+xclr[c AND 7]);
   s := s + 'm';
   GetC := s;
-  {-}
-  TextAttr := C; CurrentColor := C; {leew: added these 2, incase called outside of setc}
 END;
 
-PROCEDURE SetC(C: Byte);
 BEGIN
-(*
-if c = currentcolor then
-prompt('!!'); {leew: test}
-*)
   IF (NOT (OkANSI OR OkAvatar)) THEN
   BEGIN
     TextAttr := 7;
@@ -2290,10 +2282,6 @@ END;
 
 PROCEDURE UserColor(Color: Byte);
 BEGIN
-{
-if currentcolor = Scheme.Color[Color + 1] then
-exit;
-}
   IF (Color IN [0..9]) THEN
     IF (OkANSI OR OkAvatar) THEN
       SetC(Scheme.Color[Color + 1]);
@@ -2375,10 +2363,8 @@ END;
 
 PROCEDURE Prt(CONST InString: STRING);
 BEGIN
-{if currentcolor <> Scheme.Color[1] then}
   UserColor(0);
   Prompt(InString);
-  {if currentcolor <> Scheme.Color[1] then}
   UserColor(0);
 END;
 
@@ -3261,7 +3247,7 @@ BEGIN
   IF (AllowAbort) AND (Abort) THEN
     Exit;
   Abort := FALSE;
-  TurnOff := (InString[Length(InString)] = #29);
+  TurnOff := (InString[Length(InString)] = #29); {Group separator}
   IF (TurnOff) THEN
     Dec(InString[0]);
   CheckHangup;

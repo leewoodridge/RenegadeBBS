@@ -431,11 +431,11 @@ VAR
           PrintACR('^0K. Password    : ^1'+AOnOff(Password = '','*None*',Password));
           IF (MAType IN [1,2]) THEN
             PrintACR('^0M. Net Address : ^1'+NodeStr(AKA));
-          Prompt('^0N. Colors      : ');
-		  Prompt(GetC(Text_Color)+'Text ');
-		  Prompt(GetC(Quote_Color)+'Quoted ');
-		  Prompt(GetC(Tear_Color)+'Tear ');
-		  PrintACR(GetC(Origin_Color)+'Origin');
+          PrintACR('^0N. Colors      : '#29);
+          SetC(Text_Color); PrintACR('Text '#29);
+          SetC(Quote_Color); PrintACR('Quote '#29);
+          SetC(Tear_Color); PrintACR('Tear '#29);
+          SetC(Origin_Color); PrintACR('Origin');
           PrintACR('^0O. Read menu   : ^1'+IntToStr(MessageReadMenu));
           IF (MAType IN [1,2]) THEN
             PrintACR('^0P. Mail flags  : ^1'+DisplayNetFlags(MAFlags,'5','1'));
@@ -637,11 +637,10 @@ VAR
           'N' : BEGIN
                   REPEAT
                     ConfigHeader('Message Colors');
-                    PrintACR('^0(^11^0) Text   : '+GetC(Text_Color)+'Text');
-                    PrintACR('^0(^12^0) Quoted : '+GetC(Quote_Color)+'Quoted');
-                    PrintACR('^0(^13^0) Tear   : '+GetC(Tear_Color)+'Tear');
-                    PrintACR('^0(^14^0) Origin : '+GetC(Origin_Color)+'Origin');
-					UserColor(0); {LeeW: Just to avoid potential problems}
+                    PrintACR('^0(^11^0) Text   : '#29); SetC(Text_Color); PrintACR('Text');
+                    PrintACR('^0(^12^0) Quote  : '#29); SetC(Quote_Color); PrintACR('Quote');
+                    PrintACR('^0(^13^0) Tear   : '#29); SetC(Tear_Color); PrintACR('Tear');
+                    PrintACR('^0(^14^0) Origin : '#29); SetC(Origin_Color); PrintACR('Origin');
                     NL;
                     InputChar('^2Message Colors [^11^2-^14^2,<^1CR^2>Quit]: ',Cmd1,^M'1234',[CapAll]);
                     CASE Cmd1 OF

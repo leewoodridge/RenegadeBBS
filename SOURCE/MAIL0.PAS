@@ -790,8 +790,7 @@ BEGIN
           ELSE IF (Pos(#254,Copy(MsgTxtStr,1,5)) > 0) THEN {LeeW: ?}
             SetC(MemMsgArea.Tear_Color)
 		  ELSE
-		    IF MemMsgArea.Text_Color <> CurrentColor THEN
-			  SetC(MemMsgArea.Text_Color); {LeeW: Added}
+			SetC(MemMsgArea.Text_Color);
 			
           PrintACR(MsgTxtStr);
         UNTIL (TempTextSize >= MHeader.TextSize) OR (Abort) OR (HangUp);

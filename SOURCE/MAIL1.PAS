@@ -332,7 +332,7 @@ BEGIN
   Write_Msg := FALSE;
 END;
 
-FUNCTION Inputmessage(Pub, IsReply: Boolean; CONST MsgTitle: Str40; VAR MHeader: MHeaderRec;
+FUNCTION InputMessage(Pub, IsReply: Boolean; CONST MsgTitle: Str40; VAR MHeader: MHeaderRec;
                       CONST ReadInMsg: AStr; MaxLineLen: Byte; MaxMsgLines: Integer): Boolean;
 CONST
   TopScreen = 3; { First screen line for text entry }
@@ -1076,16 +1076,22 @@ VAR
         BEGIN
           ReadLn(QuoteFile,TempStr1);
           Inc(QuoteLi);
+        (*
           TempStr1 := '^1'+Copy(PadRightInt(QuoteLi,Length(IntToStr(MaxQuoteLines)))+':'+
-                      GetC(MemMsgArea.Quote_Color)+TempStr1,1,MaxLineLen); {LeeW: Uses quote color now}
+                      TempStr1,1,MaxLineLen); {LeeW: Uses quote color now}
           PrintACR(TempStr1);
+        *)
+          PrintACR('^1'+PadRightInt(QuoteLi,Length(IntToStr(MaxQuoteLines)))+':'#29);
+          SetC(MemMsgArea.Quote_Color);
+          PrintACR(Copy(TempStr1,1,MaxLineLen-(Length(IntToStr(MaxQuoteLines))+1)));
         END;
       Close(QuoteFile);
       Reset(QuoteFile);
       REPEAT
         NL;
         Prt('^2Enter first line to quote [(^1H^2)eader,(^1Q^2)uit]: ^3');
-        Scaninput(TempStr1,'HQ?'^M);
+        TempStr1 := ''; {LeeW: Added}
+        ScanInput(TempStr1,'HQ?'^M);
         IF (TempStr1 = 'H') THEN
           BEGIN
             WHILE (TempStr1 > '') AND (NOT EOF(QuoteFile)) AND (CurrentLine <= MaxLines) DO

@@ -50,9 +50,11 @@ BEGIN
         PrintACR('^0(^1H^0) Default NetMail Path    : ^1'+NetMailPath);
         PrintACR('^0(^1I^0) NetMail Attributes      : ^1'+NetMail_Attr(NetAttribute));
         PrintACR('^0(^1J^0) UUCP Gate Address       : ^1'+PadLeftStr('^1'+IntToStr(AKA[20].Zone)+':'+IntToStr(AKA[20].Net)+
-                                                                     '/'+IntToStr(AKA[20].Node)+'.'+IntToStr(AKA[20].Point),20));
+                                                                     '/'+IntToStr(AKA[20].Node)+'.'+IntToStr(AKA[20].Point)
+                                                                     ,20));
         NL;
-        InputChar('Network Mail Configuration [^1A^2-^1J^2,^11^2-^14^2,(^1Q^2)uit]: ',Cmd,'QABCDEFGHIJ1234',[CapAll]);
+        InputChar('Network Mail Configuration [^1A^2-^1J^2,^11^2-^14^2,(^1Q^2)uit]: ',Cmd,'QABCDEFGHIJ1234',
+                  [CapAll]);
         CASE Cmd OF
           'A' : BEGIN
                   REPEAT
@@ -69,7 +71,8 @@ BEGIN
                         IF (Odd(Counter)) THEN
                           NL;
                       END;
-                    InputChar('%LF^2Network Mail Addresses [^1A^2-^1T^2,<^1CR^2>Quit]: ',Cmd,^M'ABCDEFGHIJKLMNOPQRST',[CapAll]);
+                    InputChar('%LF^2Network Mail Addresses [^1A^2-^1T^2,<^1CR^2>Quit]: ',Cmd,^M'ABCDEFGHIJKLMNOPQRST',
+                              [CapAll]);
                     IF (Cmd IN ['A'..'T']) THEN
                       GetNewAddr('%LF^2Enter Network Address (^1Z^2:^1N^2/^1N^2.^1P^2): ',30,
                                  AKA[(Ord(Cmd) - 65)].Zone,
