@@ -1,7 +1,7 @@
 {$A+,B-,D+,E-,F+,I-,L+,N-,O+,R-,S+,V-}
 
 {
- 02/24/2022 - rewrote/simplified setfileareanewscandate
+ 02/24/2022 - rewrote/simplified setfileareanewscandate -- REMOVED
 }
 
 UNIT File9;
@@ -374,32 +374,17 @@ BEGIN
   LastCommandOvr := TRUE;
 END;
 
-(* Done - Lee Palmer 06/18/06 // Lee Woodridge 2/24/2022*)
+(* Done - Lee Palmer 06/18/06 *)
 PROCEDURE SetFileAreaNewScanDate;
 VAR
-  TempDate: Str10; 
-  {Key: Char;}
+  TempDate: Str10;
+  Key: CHAR;
 BEGIN
-  lRGLngStr(54,FALSE); {"Scan for new files since MM/DD/YYYY"}
-  TempDate := PD2Date(NewFileDate);
-  InputFormatted('',TempDate,'##/##/####',TRUE);
-  IF (DayNum(TempDate) = 0) OR (DayNum(TempDate) > DayNum(DateStr)) THEN
-    BEGIN
-      Print('^8Invalid date entered!^0');
-      SysOpLog('Entered invalid new file scan date "'+TempDate+'"');
-      TempDate := PD2Date(NewFileDate); { LeeW: Use default since input was invalid }
-    END
-  ELSE
-    BEGIN
-      SysOpLog('Set new file scan date to "'+TempDate+'"');
-    END;
-  Print('Scanning for new files from '+TempDate);
-  (*
+  lRGLngStr(54,FALSE); { File newscan date prompt }
   MPL(10);
   Prompt(PD2Date(NewFileDate));
-  Key := #0;
   Key := Char(GetKey);
-  IF (Key = #13) THEN
+  IF (Key = #13) THEN {enter}
     BEGIN
       NL;
       TempDate := PD2Date(NewFileDate);
@@ -411,8 +396,8 @@ BEGIN
       InputFormatted('',TempDate,'##/##/####',TRUE);
       IF (TempDate = '') THEN
         TempDate := PD2Date(NewFileDate);
-      Print('|00');
     END;
+  UserColor(0); {for MPL}
   IF (DayNum(TempDate) = 0) OR (DayNum(TempDate) > DayNum(DateStr)) THEN
     BEGIN
       NL;
@@ -421,12 +406,10 @@ BEGIN
   ELSE
     BEGIN
       NL;
-      Print('|00');
-      {Print('New file scan date set to: ^1'+TempDate+'^0');}
+      Print('^0New file scan date set to: ^1'+TempDate+'^0');
       NewFileDate := Date2PD(TempDate);
       SysOpLog('Set file new scan date to: '+TempDate); {LeeW: Was SL1}
     END;
-    *)
 END;
 
 END.
