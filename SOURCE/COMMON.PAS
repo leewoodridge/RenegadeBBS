@@ -34,6 +34,7 @@ Lee Woodridge
  11/23/2021 - increased number parameter of plural from byte to integer
  04/15/2022 - added timestamplogs toggle
  04/21/2022 - Nested GetC inside SetC since it's the only proc that calls it
+ 04/26/2022 - ANSIG now adds 2 to remote Y pos if status bar is enabled
  [NOTES]
  clean up setc/getc
  inputmessage linelen param should be 79??? or 80 ... is 78
@@ -718,21 +719,22 @@ END;
 
 PROCEDURE Clear_EOL;
 BEGIN
-  IF (NOT OkAvatar) THEN
-    SerialOut(#27'[K')
-  ELSE
-    SerialOut(^V^G);
+  IF (OkANSI) THEN
+    SerialOut(#27'[K');
   IF (WantOut) THEN
     ClrEOL;
 END;
 
 PROCEDURE ANSIG(X,Y: Byte);
 BEGIN
-  IF (ComPortSpeed > 0) THEN
-    IF (OkAvatar) THEN
-      SerialOut(^V^H+Chr(Y)+Chr(X))
-    ELSE
-      SerialOut(#27+'['+IntToStr(Y)+';'+IntToStr(X)+'H');
+  { LeeW: Seems like you have to add 2 to remote Y position if status bar is enabled }
+  IF (OkANSI) AND (ComPortSpeed > 0) THEN
+    BEGIN
+      IF (General.WindowOn) {AND (NOT General.IsTopWindow AND (Y > (MaxDisplayRows - 2))) OR (General.IsTopWindow)} THEN
+        SerialOut(#27+'['+IntToStr(Y+2)+';'+IntToStr(X)+'H') {Row(Y);Column(X)}
+      ELSE 
+        SerialOut(#27+'['+IntToStr(Y)+';'+IntToStr(X)+'H');
+    END;
   IF (WantOut) THEN
     GoToXY(X,Y);
 END;
