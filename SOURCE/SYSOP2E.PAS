@@ -30,7 +30,7 @@ VAR
   LowNum,
   HiNum,
   TempInt: Integer;
-  OnPage: byte;
+  OnPage: Byte;
 BEGIN
   OnPage := 1;
   REPEAT
