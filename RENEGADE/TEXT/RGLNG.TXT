@@ -19,7 +19,7 @@ $SysOp_Working
 $
 
 $Pause
-^3 PAUSE ^0@
+^3 PAUSE @
 $
 
 $Enter_Message_Line_One
@@ -410,13 +410,15 @@ $Message_Area_New_Scan_Min_Max_Error
 %PA
 $
 
+### @0 = '' or 'not ' depending on if area is being scanned
 $File_Area_New_Scan_Area_On_Off
-%LF%FB will %FSbe scanned.
+%LF%FB will @0be scanned.
 %PA
 $
 
+### @0 = '' or 'not ' depending on if area is being scanned
 $Message_Area_New_Scan_Area_On_Off
-%LF%MB will %MSbe scanned.
+%LF%MB will @0be scanned.
 %PA
 $
 
@@ -618,7 +620,7 @@ $Baud_Override_PW
 $
 
 $Caller_Logon
-%LF[Node %ND] Login: @
+%LF^0[Node ^1%ND^0] Login: @
 $
 
 $Logon_As_New
@@ -1120,9 +1122,8 @@ $Conference_Joined
 %LFJoined conference: ^1%CT - %CN%LF%PA
 $
 
-### @0 = MenuCmd, @1 = Passed Parameter --- !!!NOT IMPLEMENTED YET!!!
-$Invalid_Parameter
-^8Invalid menu command or parameter. The SysOp has been notified, please try again later.
+$Invalid_Menu_Command
+%LF^8Invalid menu command!
 $
 
 ### @0 = Title ("Most minutes online") @1 = Header Field ("<Minutes>")
@@ -1181,8 +1182,6 @@ $
 $Top_Files_Download_Input
 %LFDownload which file?
 $
-
-### ADD $Lightbar_Continuous
 
 $MANDATORY_VOTING
 Voting is mandatory. Please vote on the following topics ...
