@@ -1,8 +1,9 @@
 {$A+,B-,D-,E-,F+,I-,L-,N-,O+,R-,S+,V-}
 {
-indented
-aesthetics
-04/15/2022 added quote and onliner acs
+ 00/00/0000 - Indented
+            - Aesthetics
+ 04/15/2022 - Added Quote and OneLiner ACS
+ 04/27/2022 - Multi-page menu system
 }
 UNIT SysOp2C;
 

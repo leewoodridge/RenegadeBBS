@@ -71,7 +71,7 @@ BEGIN
                  PadLeftStr('^0(^1Y^0) TB max per day deposit     : ^1'+IntToStr(MaxDepositPerDay),39));
         PrintACR(PadLeftStr('^0(^1Z^0) TB max per day withdrawal : ^1'+IntToStr(MaxWithDrawalPerDay),39)+
                  PadLeftStr('',39));
-        InputChar('%LFEnter selection [^1A^2-^1P^2,^1R^2-^1Z^2,^10^2-^19^2,^1Q^2=^1Quit^2]: ',Cmd,
+        InputChar('%LFSystem Variables [^1A^2-^1P^2,^1R^2-^1Z^2,(^1Q^2)uit^2]: ',Cmd,
                   'QABCDEFGHIJKLMNOPRSTUVWXYZ1234567890'{^M},[CapAll]);
         CASE Cmd OF
           'I' : BEGIN
@@ -234,7 +234,12 @@ BEGIN
                     'G' : MaxMassMailList := TempB;
                     'H' : BEGIN
                             BirthDateCheck := TempI;
-                            { Toggle newuser question also }
+                            IF (BirthDateCheck<>0) AND (NewUserQToggles[08]=FALSE) THEN { Toggle newuser question }
+                              BEGIN
+                                Print('%LFUsers will be required to provide birthdate at next logon');
+                                NewUserQToggles[08] := TRUE;
+                                PauseScr(FALSE);
+                              END;
                           END;
                     'J' : MaxLogonTries := TempB;
                     'K' : PasswordChange := TempI;

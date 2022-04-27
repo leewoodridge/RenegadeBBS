@@ -114,7 +114,7 @@ BEGIN
                 IF ((NewUserQToggles[07] = FALSE) AND (General.PhonePW = TRUE)) THEN
                   BEGIN
                     General.PhonePW := FALSE;
-                    Print('Disabling phone number verification at logon');
+                    Print('%LFDisabling phone number verification at logon');
                     PauseScr(FALSE);
                   END;
               END;
@@ -123,7 +123,7 @@ BEGIN
                 IF ((NewUserQToggles[08] = FALSE) AND (General.BirthDateCheck <> 0)) THEN
                   BEGIN
                     General.BirthDateCheck := 0;
-                    Print('Disabling birthdate verification at logon');
+                    Print('%LFDisabling birthdate verification at logon');
                     PauseScr(FALSE);
                   END;
               END;
