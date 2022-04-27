@@ -399,7 +399,7 @@ $Timeout
 ^0%LF%LFYou've been logged off due to inactivity. Call back when you've got the time!
 $
 
-###
+### Format for the following are Title;Header Field
 
 $Top_Users_Time
 Most Minutes Online;^5ó^4Minutes^5ò
@@ -469,8 +469,8 @@ $Conference_Joined
 %LFJoined conference: ^1%CT - %CN%LF%PA
 $
 
-### @0 = MenuCmd, @1 = Passed Parameter
-$Invalid_Parameter
+$Invalid_Menu_Command
+%LF^8Invalid menu command!
 $
 
 ### @0 = Title ("Most minutes online") @1 = Header Field ("<Minutes>")
@@ -520,4 +520,26 @@ $
 
 $EMail_Deleted_Prompt
 ^0This user is deleted - Send E-Mail anyway?
+$
+
+
+$Top_Files_Download_Prompt
+%LFWould you like to download one of these files?
+$
+
+$Top_Files_Download_Input
+%LFDownload which file?
+$
+
+$MANDATORY_VOTING
+Voting is mandatory. Please vote on the following topics ...
+$
+
+### @0 = Number of questions ("3") @1 = Plural if more than 1 question ("s")
+$LOGON_VOTE_PROMPT
+^2You have not voted on ^1@0^2 voting question@1, Vote now?
+$
+
+$EXCEEDED_MAX_ATTEMPTS
+^8Exceeded maximum number of retries. Disconnecting.^0
 $

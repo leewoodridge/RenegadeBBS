@@ -2,11 +2,14 @@
                                   MCI CODES
                                  -----------
 
-	Users multinode availability		%ON
-	User's default archive type extension	%OZ
-	User's lightbars on/off                 %OL
+Last updated on Apr 26 2022
 
-Last updated on Nov 1 2021
+	Highest file base number		%BF {CHANGED}
+	Highest message base number		%BM {CHANGED}
+
+	Users multinode availability "ON/OFF"	%ON
+	User's default archive type extension	%OZ
+	User's lightbars "ON/OFF"               %OL {CHANGED}
 
          Account balance                        %AB
          User's address                         %AD

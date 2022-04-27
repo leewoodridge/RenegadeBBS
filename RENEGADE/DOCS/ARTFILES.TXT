@@ -1,5 +1,5 @@
 AUTOH
-AUTOM > Automessage
+AUTOM > AutoMessage
 AUTOT
 -
 ONELH
@@ -8,8 +8,15 @@ ONELT
 -
 DLOAD changed to DOWNLOAD > print before user downloads file
 -
-
 Quote art files have been renamed to follow standard format
 QUOTEHDR > QUOTEH
 QUOTEFTR > QUOTET
 QUOTE > QUOTEADD
+
+TOPFH
+TOPFM > Top files stats
+TOPFT
+
+TOPUH
+TOPUM > Top User stats
+TOPUT
