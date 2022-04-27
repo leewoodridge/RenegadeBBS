@@ -766,7 +766,7 @@ BEGIN
     TempTextSize := 0;
     Abort := FALSE;
     Next := FALSE;
-	{UserColor(MemMsgArea.Text_Color);}
+    {UserColor(MemMsgArea.Text_Color);}
     IF (MHeader.TextSize > 0) THEN
       IF (((MHeader.Pointer - 1) + MHeader.TextSize) <= FileSize(MsgTxtF)) AND (MHeader.Pointer > 0) THEN
       BEGIN
@@ -782,16 +782,16 @@ BEGIN
           END;
           Inc(TempTextSize,(Length(MsgTxtStr) + 1));
           IF (' * Origin: ' = Copy(MsgTxtStr,1,11)) THEN
-		    SetC(MemMsgArea.Origin_Color)
+            SetC(MemMsgArea.Origin_Color)
           ELSE IF ('---'= Copy(MsgTxtStr,1,3)) AND ((Length(MsgTxtStr) = 3) OR (MsgTxtStr[4] <> '-')) THEN
             SetC(MemMsgArea.Tear_Color)
           ELSE IF (Pos('> ',Copy(MsgTxtStr,1,5)) > 0) THEN
             SetC(MemMsgArea.Quote_Color)
           ELSE IF (Pos(#254,Copy(MsgTxtStr,1,5)) > 0) THEN {LeeW: ?}
             SetC(MemMsgArea.Tear_Color)
-		  ELSE
-			SetC(MemMsgArea.Text_Color);
-			
+          ELSE
+            SetC(MemMsgArea.Text_Color);
+            
           PrintACR(MsgTxtStr);
         UNTIL (TempTextSize >= MHeader.TextSize) OR (Abort) OR (HangUp);
       END;

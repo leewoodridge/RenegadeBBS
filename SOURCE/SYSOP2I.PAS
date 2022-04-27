@@ -22,7 +22,7 @@ BEGIN
       BEGIN
         Abort := FALSE;
         Next := FALSE;
-        ConfigHeader('Offline Mail Configuration');
+        ConfigHeader('Offline Mail Configuration',0);
         PrintACR('^0(^1A^0) QWK/REP Packet Name   : ^1'+PacketName);
         PrintACR('^0(^1B^0) Welcome File          : ^1'+QWKWelcome);
         PrintACR('^0(^1C^0) News File             : ^1'+QWKNews);

@@ -38,6 +38,7 @@ Lee Woodridge
  [NOTES]
  clean up setc/getc
  inputmessage linelen param should be 79??? or 80 ... is 78
+ make avail\unavail mci string be conf through lang
 *)
 UNIT Common;
 
@@ -271,14 +272,14 @@ CONST
   CROff: Boolean = FALSE;                 { are CRs turned off? }
   CtrlJOff: Boolean = FALSE;              { turn color TO #1 after ^Js?? }
   DoneAfterNext: Boolean = FALSE;         { offhook AND Exit after Next logoff?  }
-  DoneDay: Boolean = FALSE;               { are we done now? ready TO drop TO DOS? }
+  DoneDay: Boolean = FALSE;               { Are we done and ready to drop to DOS? }
   DOSANSIOn: Boolean = FALSE;             { output chrs TO DOS FOR ANSI codes?!!? }
   FastLogon: Boolean = FALSE;             { Is user opting for fast logon? }
   (*HungUp: Boolean = FALSE;              { did User drop carrier? } THE FUNCTIONALITY FOR THIS HAS BEEN PREVIOUSLY REMOVED**)
   InCom: Boolean = FALSE;                 { Are we accepting input from com? }
-  InWFCMenu: Boolean = FALSE;             { are we IN the WFC menu? }
-  LastCommandGood: Boolean = FALSE;       { was last command a REAL command? }
-  LastCommandOvr: Boolean = FALSE;        { override Pause? (NO Pause?) }
+  InWFCMenu: Boolean = FALSE;             { Are we in WFC menu? }
+  LastCommandGood: Boolean = FALSE;       { Was last menu command valid? }
+  LastCommandOvr: Boolean = FALSE;        { ??? override Pause? (NO Pause?) if TRUE lastcommandgood=FALSE}
   { Startup parameters }
   LocalIOOnly: Boolean = FALSE;           { Are we in local I/O mode? }
   MakeQWKFor: Integer = 0;                { Are we making a QWK packet only? }
@@ -509,24 +510,18 @@ VAR
   FallBackMenu,              {  }
   CurMenu,                   {  }
   CurHelpLevel: Byte;        {  }
-  (* LastCommand: STRING[255];   { Last command and parameter ("CMD;PARAM") - LeeW: Added 03/23/2022 } *)
+  (* LastCommand: STRING[255];  { Last command and parameter ("CMD;PARAM") - LeeW: Added 03/23/2022 } *)
 
 {UNSORTED}
 FUNCTION Timer: LongInt;
 PROCEDURE NewCompTables;
 PROCEDURE Update_Screen;
 PROCEDURE lStatus_Screen(WhichScreen: Byte; Message: AStr; OneKey: Boolean; VAR Answer: AStr);
-PROCEDURE SaveGeneral(X: Boolean);
-PROCEDURE SKey1(VAR c: Char); { SysOp control keys }
 FUNCTION VerLine(B: Byte): STRING; { Renegade BBS version information }
 PROCEDURE Toggle(VAR TheVar: Boolean); { Toggles a boolean } { LeeW: Added }
 FUNCTION PHours(CONST DisplayStr: AStr; LoTime,HiTime: Integer): AStr; {**move to timefunc}
 PROCEDURE WriteWFC(c: Char);
-FUNCTION AccountBalance: LongInt; { Users credits minus debits }
 PROCEDURE AdjustBalance(Adjustment: LongInt); { Add or subtract from users credits/debits }
-PROCEDURE BackErase(Len: Byte);
-FUNCTION UpdateCRC32(CRC: LongInt; VAR Buffer; Len: Word): LongInt;
-FUNCTION CRC32(s: AStr): LongInt;
 FUNCTION FunctionalMCI(CONST s: AStr; FileName,InternalFileName: AStr): STRING;
 FUNCTION SearchUser(Uname: Str36; RealNameOK: Boolean): Integer;
 PROCEDURE PauseScr(IsCont: Boolean); { Pause the screen }
@@ -535,7 +530,6 @@ PROCEDURE ScreenDump(CONST FileName: AStr);
 FUNCTION ValueR(S: AStr): REAL;
 PROCEDURE ShellDOS(MakeBatch: Boolean; CONST Command: AStr; VAR ResultCode: Integer);
 PROCEDURE SysOpShell;
-PROCEDURE RedrawForANSI;
 FUNCTION ExtractDriveNumber(s: AStr): Byte;
 FUNCTION CTP(t,b: LongInt): STRING; { Calculate percentage }
 PROCEDURE TLeft; { Log user off for time expiration/event }
@@ -551,12 +545,14 @@ FUNCTION OnNode(UserNumber: Integer): Byte;
 FUNCTION AgeUser(CONST BirthDate: LongInt): Word; { Calculate age from birthdate }
 FUNCTION PageLength: Word; { Users PageLen if InCom, else Hi(WindMax) }
 FUNCTION NSL: LongInt; { Users time left online }
+FUNCTION AccountBalance: LongInt; { Users credits minus debits }
 {}
 PROCEDURE SaveNode(NodeNumber: Byte);
 PROCEDURE LoadURec(VAR User: UserRecordType; UserNumber: Integer);
 PROCEDURE SaveURec(User: UserRecordType; UserNumber:Integer);
+PROCEDURE SaveGeneral(X: Boolean);
 PROCEDURE OutKey(c: Char);
-
+{}
 FUNCTION DisplayARFlags(AR: ARFlagSet; C1,C2: Char): AStr;
 PROCEDURE ToggleARFlag(Flag: Char; VAR AR: ARFlagSet; VAR Changed: Boolean);
 FUNCTION DisplayACFlags(Flags: ACFlagSet; C1,C2: Char): AStr;
@@ -578,10 +574,12 @@ FUNCTION OkAvatar: Boolean; { Does user support Avatar terminal emulation? }
 FUNCTION OkRIP: Boolean; { Does user support RIP graphics? }
 FUNCTION OkVT100: Boolean; { Does user support VT-100 terminal emulation? }
 { ANSI procedures }
+PROCEDURE BackErase(Len: Byte);
 PROCEDURE Clear_EOL; { ANSI Clear to end of line }
 PROCEDURE ANSIG(X,Y: Byte); { ANSI go to position }
 PROCEDURE CLS; { ANSI Clear screen }
 PROCEDURE DOSANSI(CONST c: Char);
+PROCEDURE RedrawForANSI;
 { Disk operations }
 FUNCTION DiskKBFree(DrivePath: AStr): LongInt; { Calculate drive free space }
 FUNCTION Exist(FileName: AStr): Boolean; { Does file exist? }
@@ -595,26 +593,28 @@ PROCEDURE RenameFile(DisplayStr: AStr; OldFileName,NewFileName: AStr; VAR ReName
 FUNCTION GetFileSize(FileName: AStr): LongInt;
 PROCEDURE GetFileDateTime(CONST FileName: AStr; VAR FileTime: LongInt);
 PROCEDURE SetFileDateTime(CONST FileName: AStr; FileTime: LongInt);
+FUNCTION UpdateCRC32(CRC: LongInt; VAR Buffer; Len: Word): LongInt;
+FUNCTION CRC32(s: AStr): LongInt;
 { Communication routines }
-PROCEDURE Com_Flush_Recv;
-PROCEDURE Com_Flush_Send;
-PROCEDURE Com_Purge_Send;
 FUNCTION Com_Carrier: Boolean;
-FUNCTION Com_Recv: Char;
 FUNCTION Com_IsRecv_Empty: Boolean;
 FUNCTION Com_IsSend_Empty: Boolean;
-PROCEDURE Com_Send(c: Char);
-PROCEDURE Com_Set_Speed(Speed: LongInt);
-PROCEDURE Com_DeInstall;
-PROCEDURE Com_Install;
-PROCEDURE CheckHangup;
-PROCEDURE SerialOut(s: STRING);
+FUNCTION Com_Recv: Char;
 FUNCTION Empty:Boolean;
-PROCEDURE DTR(Status: Boolean);
+PROCEDURE CheckHangup;
+PROCEDURE Com_DeInstall;
+PROCEDURE Com_Flush_Recv;
+PROCEDURE Com_Flush_Send;
+PROCEDURE Com_Install;
+PROCEDURE Com_Purge_Send;
+PROCEDURE Com_Send(c: Char);
 PROCEDURE Com_Send_Str(CONST InString: AStr);
+PROCEDURE Com_Set_Speed(Speed: LongInt);
+PROCEDURE DTR(Status: Boolean);
 PROCEDURE DoPhoneHangUp(ShowIt: Boolean);
-PROCEDURE DoTelnetHangUp(ShowIt: Boolean);
 PROCEDURE DoPhoneOffHook(ShowIt: Boolean);
+PROCEDURE DoTelnetHangUp(ShowIt: Boolean);
+PROCEDURE SerialOut(s: STRING);
 { Logging stuff }
 PROCEDURE SL1(s: AStr); { Write entry to SysOp log }
 PROCEDURE SysOpLog(s: AStr); { Write entry to SysOp log with indent (user actions) }
@@ -646,7 +646,8 @@ FUNCTION CheckPW: Boolean; { Prompt for SysOp password }
 FUNCTION PYNQ(CONST InString: AStr; MaxLen: Byte; YN: Boolean): Boolean; { Yes/No question prompt }
 FUNCTION InKey: Word;
 PROCEDURE WKey;
-{ string stuff}
+PROCEDURE SKey1(VAR c: Char); { SysOp control keys }
+{ String stuff }
 PROCEDURE BackSpace; { Single backspace }
 PROCEDURE DoBackSpace(Start,Finish: Byte); { Multiple backspaces }
 PROCEDURE LCmds(Len,c: Byte; c1,c2: AStr); { 2 column command list }
@@ -662,7 +663,7 @@ FUNCTION PadLeftStr(InString: STRING; MaxLen: Byte): STRING;
 FUNCTION PadRightStr(InString: STRING; MaxLen: Byte): STRING;
 FUNCTION PadLeftInt(L: LongInt; MaxLen: Byte): STRING;
 FUNCTION PadRightInt(L: LongInt; MaxLen: Byte): STRING;
-FUNCTION lRGLNGStr(StrNum: LongInt; PassValue: Boolean): AStr; { Prints/passes string from language file (RGLNG) }
+FUNCTION lRGLngStr(StrNum: LongInt; PassValue: Boolean): AStr; { Prints/passes string from language file (RGLNG) }
 FUNCTION StripLeadSpace(S: STRING): STRING;
 FUNCTION StripTrailSpace(S: STRING): STRING;
 FUNCTION SemiCmd(S: AStr; B: Byte): STRING; { retrieve command parameters separated by ;s }
@@ -1133,6 +1134,8 @@ BEGIN
     Inc(TotLoad,(Length(S) + 1));
     { -- }
     CASE StrNum OF
+       92 : S := Substitute(S,'@0',AOnOff(NewScanFileArea,'','not '));
+       93 : S := Substitute(S,'@0',AOnOff(LastReadRecord.NewScan,'','not ')); {LeeW: Are these right???}
       177 : FOR b := 0 TO 1 DO { $FORWARDING_TO }
               IF (LangStringArray[b] <> '') THEN
                 S := Substitute(S,'@'+IntToStr(b),LangStringArray[b]);
@@ -1151,9 +1154,10 @@ BEGIN
       262 : FOR b := 0 TO 1 DO { $TOP_USERS_HEADER, $TOP_FILES_HEADER }
               IF (LangStringArray[b] <> '') THEN
                 S := Substitute(S,'@'+IntToStr(b),LangStringArray[b]);
-      274 : FOR b := 0 TO 1 DO { $LOGON_VOTE_PROMPT }
-              {IF (LangStringArray[b] <> '') THEN} {LeeW: Need to allow blank string in case not plural}
-                S := Substitute(S,'@'+IntToStr(b),LangStringArray[b]);
+      274 : BEGIN { $LOGON_VOTE_PROMPT }
+              S := Substitute(S,'@0',IntToStr(UnVotedTopics));
+              S := Substitute(S,'@1',Plural('',UnVotedTopics));
+            END;
     END;
     { -- }
     IF (PassValue) THEN
@@ -2353,7 +2357,7 @@ BEGIN
   AllowAbort := SaveAllowAbort;
 END;
 
-PROCEDURE Print(CONST InString: STRING);
+PROCEDURE Print(CONST InString: STRING); {print>prompt>printmain}
 BEGIN
   Prompt(InString+^M^J);
 END;
@@ -2363,7 +2367,7 @@ BEGIN
   Prompt(^M^J);
 END;
 
-PROCEDURE Prt(CONST InString: STRING);
+PROCEDURE Prt(CONST InString: STRING); {prt>prompt>printmain}
 BEGIN
   UserColor(0);
   Prompt(InString);
@@ -2371,29 +2375,8 @@ BEGIN
 END;
 
 PROCEDURE MPL(MaxLen: Byte);
-VAR
-  Counter,
-  SaveWhereX : Byte;
 BEGIN
-  IF (OkANSI OR OkAvatar) THEN
-    BEGIN
-      IF (WhereX+MaxLen > ThisUser.LineLen) THEN
-        NL;
-      UserColor(3);
-      SaveWhereX := WhereX;
-      IF (OutCom) THEN
-        FOR Counter := 1 TO MaxLen DO
-          Com_Send(' ');
-      IF (WantOut) THEN
-        FOR Counter := 1 TO MaxLen DO
-          Write(' ');
-      GoToXY(SaveWhereX,WhereY);
-      IF (OutCom) THEN
-        IF (OkAvatar) THEN
-          SerialOut(^y+^H+Chr(MaxLen))
-        ELSE
-          SerialOut(#27+'['+IntToStr(MaxLen)+'D');
-    END;
+  Common3.MPL(MaxLen);
 END;
 
 FUNCTION InKey: Word;
@@ -2738,7 +2721,7 @@ END;
 
 PROCEDURE CLS;
 BEGIN
-  IF (OkANSI OR OkVT100) THEN
+  IF (OkANSI) THEN
     SerialOut(^[+'[1;1H'+^[+'[2J')
   ELSE
     OutKey(^L);
@@ -4500,9 +4483,6 @@ BEGIN
                   '9' : Add := ShowOnOff(Color IN ACFlags);
                   'L' : Add := ShowOnOff(LightBars in ThisUser.SFlags);  {LeeW: Added -- all lightbars combined to 1 now }
                   'N' : Add := ShowOnOff(NAvail IN NodeR.Status); {LeeW: Can we make this say 'Available'/'Not Available'?}
-                  {
-                  AOnOff((NAvail IN NodeR.Status), 'available','unavailable' );
-                  }
                   'Z' : Add := General.FileArcInfo[ThisUser.DefArcType].EXT;
                   
                    END;

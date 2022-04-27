@@ -15,7 +15,7 @@
      - Removed ClrScrs so we can see what's going on during boot
      - Added ErrorCodeHelp() function for more useful error messages
      - nested findtasker and shareloaded in init
-	 04/18/2022 replaced infield with readln
+     04/18/2022 replaced infield with readln
     [TO DO]
      - 
 }
@@ -155,9 +155,9 @@ VAR
               S2 := DirName;
               Write('New '+DirDesc+' path: ');
               (*InField(S2,40); {input}*)
-			  
-			  ReadLn(S2);
-			  
+              
+              ReadLn(S2);
+              
               S2 := AllCaps(SQOutSp(S2));
               IF (DirName = S2) OR (S2 = '') THEN
                 BEGIN

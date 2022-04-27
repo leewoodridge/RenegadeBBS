@@ -22,8 +22,8 @@ PROCEDURE ToggleWindow(ShowIt: Boolean);
 IMPLEMENTATION
 
 USES
-  Crt,
-  Dos,
+  CRT,
+  DOS,
   TimeFunc,
   Chat,
   SysOp2G,
@@ -213,26 +213,26 @@ BEGIN
   SaveTextattr := TextAttr;
   TextAttr := 7;
   IF (General.WindowOn) THEN
-  BEGIN
-    Clear_Status_Box;
-    IF (General.IsTopWindow) THEN
     BEGIN
-      GoToXY(1, MaxDisplayRows);
-      Write(^J^J);
-    END;
-  END
-  ELSE
-  BEGIN
-    IF (General.IsTopWindow AND (SaveWhereY <= (MaxDisplayRows - 2))) THEN
-      BiosScroll(FALSE)
-    ELSE IF (NOT General.IsTopWindow AND (SaveWhereY > (MaxDisplayRows - 2))) THEN
-    BEGIN
-      BiosScroll(TRUE);
-      Dec(SaveWhereY,2)
+      Clear_Status_Box;
+      IF (General.IsTopWindow) THEN
+        BEGIN
+          GoToXY(1, MaxDisplayRows);
+          Write(^J^J);
+        END;
     END
-    ELSE IF (General.IsTopWindow) THEN
-      Dec(SaveWhereY,2);
-  END;
+  ELSE
+    BEGIN
+      IF (General.IsTopWindow AND (SaveWhereY <= (MaxDisplayRows - 2))) THEN
+        BiosScroll(FALSE)
+      ELSE IF (NOT General.IsTopWindow AND (SaveWhereY > (MaxDisplayRows - 2))) THEN
+        BEGIN
+          BiosScroll(TRUE);
+          Dec(SaveWhereY,2)
+        END
+      ELSE IF (General.IsTopWindow) THEN
+        Dec(SaveWhereY,2);
+    END;
   General.WindowOn := NOT General.WindowOn;
   IF (ShowIt) THEN
     Update_Screen;
@@ -1054,24 +1054,24 @@ CONST
   
   PROCEDURE infield1(x,y: Byte; VAR s: AStr; Len: Byte);
   VAR
-	SaveS: AStr;
-	c: Char;
-	SaveTextAttr,
-	SaveX,
-	SaveY: Byte;
-	i,
-	p,
-	z: Integer;
-	Ins,
-	Done,
-	NoKeyYet: BOOLEAN;
-	
-	Infield_Special_Function_Proc: Infield_Special_Function_Proc_Rec;
-	Infield_Only_Allow,
-	Infield_Special_Function_Keys,
-	Infield_Arrow_Exit_Types,
-	Infield_Normal_Exit_Keys: STRING;
-	
+    SaveS: AStr;
+    c: Char;
+    SaveTextAttr,
+    SaveX,
+    SaveY: Byte;
+    i,
+    p,
+    z: Integer;
+    Ins,
+    Done,
+    NoKeyYet: BOOLEAN;
+    
+    Infield_Special_Function_Proc: Infield_Special_Function_Proc_Rec;
+    Infield_Only_Allow,
+    Infield_Special_Function_Keys,
+    Infield_Arrow_Exit_Types,
+    Infield_Normal_Exit_Keys: STRING;
+    
   PROCEDURE GoCPos;
   BEGIN
     GoToXY(x + p - 1,y);
@@ -1231,12 +1231,12 @@ BEGIN
                END;
                gocpos;
              END;
-			 {
+             {
        #27 : BEGIN
                s := SaveS;
                Done := TRUE;
              END;
-			 }
+             }
        #13 : BEGIN
                Done := TRUE;
                z := Len;
@@ -1415,100 +1415,100 @@ END;
     C1: Char;
     Counter: Byte;
   BEGIN
-	gp(0,i);
-	IF (b) THEN
-	  TextColor(Scheme.Color[1])
-	ELSE
-	  TextColor(Scheme.Color[1]);
-	CASE i OF
-	  1 : Write('SL  :');
-	  2 : Write('DSL :');
-	  3 : Write('Crdt:');
-	  4 : Write('Note:');
-	  5 : Write('AR:');
-	  6 : Write('AC:');
-	END;
-	IF (b) THEN
-	  BEGIN
-		TextColor(Scheme.Color[6]);
-		TextBackGround(7);
-	  END
-	ELSE
-	  TextColor(Scheme.Color[2]); {field values}
-	Write(' ');
-	WITH ThisUser DO
-	  CASE i OF
-		0 : IF (b) THEN
-			  BEGIN { Selected }
-				TextColor(15);
-				Write('[DONE]')
-			  END
-			ELSE
-			  BEGIN { Not Selected }
-				TextColor(7);
-				Write('[DONE]');
-			  END;
-		1 : Write(PadLeftInt(SL,3));
-		2 : Write(PadLeftInt(DSL,3));
-		3 : Write(PadLeftInt(AccountBalance,5));
-		4 : Write(PadLeftStr(Note,39));
-		5 : FOR C1 := 'A' TO 'Z' DO
-			  BEGIN
-				IF (C1 IN ARFlags) THEN
-				  TextColor(4)
-				ELSE IF (b) THEN
-				  TextColor(0)
-				ELSE
-				  TextColor(7);
-				Write(C1);
-			  END;
-		6 : IF (b) THEN
-			  CPR(116,112) { Selected }
-			  { LeeW: First is color for enabled flag
-					  Second is color for disabled flag }
-			ELSE
-			  CPR(4,7); { Not Selected }
-	  END;
-	Write(' ');
-	TextBackGround(0);
-	CursorOn(i IN [1..4]);
-	IF (b) THEN
-	  BEGIN
-		GoToXY(26,12);
-		TextColor(Scheme.Color[2]);
-		FOR Counter := 1 TO 41 DO
-		  Write(' ');
-		GoToXY(26,12);
-		CASE i OF
-		  0 : Write('Exit User Editor');
-		  1 : Write('Security Level (0-255)');
-		  2 : Write('Download Security Level (0-255)');
-		  3 : Write('Account Credit Balance');
-		  4 : Write('SysOp Note');
-		  5 : Write('Access Flags '#196#196' (!) Clear');
-		  6 : Write('Restrictions & Privileges '#196#196' (!) Clear');
-		END;
-	  END;
+    gp(0,i);
+    IF (b) THEN
+      TextColor(Scheme.Color[1])
+    ELSE
+      TextColor(Scheme.Color[1]);
+    CASE i OF
+      1 : Write('SL  :');
+      2 : Write('DSL :');
+      3 : Write('Crdt:');
+      4 : Write('Note:');
+      5 : Write('AR:');
+      6 : Write('AC:');
+    END;
+    IF (b) THEN
+      BEGIN
+        TextColor(Scheme.Color[6]);
+        TextBackGround(7);
+      END
+    ELSE
+      TextColor(Scheme.Color[2]); {field values}
+    Write(' ');
+    WITH ThisUser DO
+      CASE i OF
+        0 : IF (b) THEN
+              BEGIN { Selected }
+                TextColor(15);
+                Write('[DONE]')
+              END
+            ELSE
+              BEGIN { Not Selected }
+                TextColor(7);
+                Write('[DONE]');
+              END;
+        1 : Write(PadLeftInt(SL,3));
+        2 : Write(PadLeftInt(DSL,3));
+        3 : Write(PadLeftInt(AccountBalance,5));
+        4 : Write(PadLeftStr(Note,39));
+        5 : FOR C1 := 'A' TO 'Z' DO
+              BEGIN
+                IF (C1 IN ARFlags) THEN
+                  TextColor(4)
+                ELSE IF (b) THEN
+                  TextColor(0)
+                ELSE
+                  TextColor(7);
+                Write(C1);
+              END;
+        6 : IF (b) THEN
+              CPR(116,112) { Selected }
+              { LeeW: First is color for enabled flag
+                      Second is color for disabled flag }
+            ELSE
+              CPR(4,7); { Not Selected }
+      END;
+    Write(' ');
+    TextBackGround(0);
+    CursorOn(i IN [1..4]);
+    IF (b) THEN
+      BEGIN
+        GoToXY(26,12);
+        TextColor(Scheme.Color[2]);
+        FOR Counter := 1 TO 41 DO
+          Write(' ');
+        GoToXY(26,12);
+        CASE i OF
+          0 : Write('Exit User Editor');
+          1 : Write('Security Level (0-255)');
+          2 : Write('Download Security Level (0-255)');
+          3 : Write('Account Credit Balance');
+          4 : Write('SysOp Note');
+          5 : Write('Access Flags '#196#196' (!) Clear');
+          6 : Write('Restrictions & Privileges '#196#196' (!) Clear');
+        END;
+      END;
   END;
 
   PROCEDURE DDWind;
   VAR
     Counter: Byte;
   BEGIN
-	CursorOn(FALSE);
-	TextColor(Scheme.Color[5]); { Border Color }
-	Box(1,18,6,68,13);
-	Window(19,7,67,12);
-	ClrScr;
-	Box(1,18,6,68,11);
-	Window(19,7,67,10);
-	Window(1,1,MaxDisplayCols,MaxDisplayRows);
-	GoToXY(20,12);
-	TextColor(Scheme.Color[1]); { "Desc:" Text }
-	Write('Desc:');
-	FOR Counter := 0 TO 6 DO
-	  Shd(Counter,FALSE);
-	Shd(oo,TRUE);
+    CursorOn(FALSE);
+    TextColor(Scheme.Color[5]); { Border Color }
+    Box(1,18,6,68,13);
+    Window(19,7,67,12);
+    ClrScr;
+    Box(1,18,6,68,11);
+    Window(19,7,67,10);
+    Window(1,1,MaxDisplayCols,MaxDisplayRows);
+    GoToXY(20,12);
+    TextColor(Scheme.Color[1]); { "Desc:" Text }
+    Write('Desc:');
+    FOR Counter := 0 TO 6 DO
+      Shd(Counter,FALSE);
+    Shd(oo,TRUE);
   END;
 
 BEGIN
@@ -1527,157 +1527,157 @@ BEGIN
   ddwind;
   Done := FALSE;
   REPEAT
-	Infield_Arrow_Exited := FALSE;
-	CASE oo OF
-	  0 : BEGIN
-	  {indent to here}
-			  Done1 := FALSE;
-			  Shd(oo,TRUE);
-			  REPEAT
-				C := ReadKey;
-				CASE UpCase(C) OF
-				  ^M :  BEGIN
-						  Done := TRUE;
-						  Done1 := TRUE;
-						END;
-				  #0 :  BEGIN
-						  C := ReadKey;
-						  CASE Ord(C) OF
-							80,72 : {Arrow Down, Up}
-							  BEGIN
-								Infield_Arrow_Exited := TRUE;
-								Infield_Last_Arrow := Ord(C);
-								Done1 := TRUE;
-							  END;
-						  END;
-						END;
-				END;
-			  UNTIL (Done1);
-			END;
-		1 : BEGIN
-			  S := IntToStr(ThisUser.SL);
-			  InField1(26,7,S,3);
-			  IF (StrToInt(S) <> ThisUser.SL) THEN
-				IF (StrToInt(S) >= 0) AND (StrToInt(S) <= 255) THEN
-				  BEGIN
-					ThisUser.SL := StrToInt(S);
-					Inc(ThisUser.TLToday,General.TimeAllow[ThisUser.SL] - General.TimeAllow[ThisUser.SL]);
-				  END;
-			END;
-		2 : BEGIN
-			  S := IntToStr(ThisUser.DSL);
-			  InField1(26,8,S,3);
-			  IF (StrToInt(S) <> ThisUser.DSL) THEN
-				IF (StrToInt(S) >= 0) AND (StrToInt(S) <= 255) THEN
-				  ThisUser.DSL := StrToInt(S);
-			END;
-		3 : BEGIN
-			  S := IntToStr(AccountBalance);
-			  InField1(26,9,S,5);
-			  AdjustBalance(AccountBalance - StrToInt(S));
-			END;
-		4 : BEGIN
-			  S := ThisUser.Note;
-			  InField1(26,10,S,39);
-			  ThisUser.Note := S;
-			END;
-		5 : BEGIN
-			  Done1 := FALSE;
-			  REPEAT
-				C := UpCase(ReadKey);
-				CASE C OF
-				  #13 : Done1 := TRUE;
-				  #0  : BEGIN
-						  C := ReadKey;
-						  CASE Ord(C) OF
-							80,72 : {Arrow Up, Down}
-							  BEGIN
-								Infield_Arrow_Exited := TRUE;
-								Infield_Last_Arrow := Ord(C);
-								Done1 := TRUE;
-							  END;
-						  END;
-						END;
-				  '!' : BEGIN
-						  FOR C := 'A' TO 'Z' DO
-							{ToggleARFlag(C,ThisUser.AR,Changed);}
-							Exclude(ThisUser.ARFlags,C);
-							Shd(oo,TRUE);
-						END;
-				  'A'..'Z' :
-						BEGIN
-						  ToggleARFlag(C,ThisUser.ARFlags,Changed);
-						  Shd(oo,TRUE);
-						END;
-				END;
-			  UNTIL (Done1);
-			END;
-		6 : BEGIN
-			  S := 'LCVUA*PEKM1234';
-			  Done1 := FALSE;
-			  REPEAT
-				C := UpCase(ReadKey);
-				IF (C = #13) THEN
-				  Done1 := TRUE
-				ELSE IF (C = #0) THEN
-				  BEGIN
-					C := ReadKey;
-					CASE Ord(C) OF
-					  80,72: {Arrow Down, Up}
-						BEGIN
-						  Infield_Arrow_Exited := TRUE;
-						  Infield_Last_Arrow := Ord(C);
-						  Done1 := TRUE;
-						END;
-					END;
-				  END
-				ELSE IF (Pos(C,S) <> 0) THEN
-				  BEGIN
-					ToggleACFlags(C,ThisUser.ACFlags,Changed);
-					Shd(oo,TRUE);
-				  END
-				ELSE
-				  BEGIN
-					IF (C = '!') THEN
-					  FOR i := 1 TO Length(S) DO
-						{ToggleACFlags(S[i],ThisUser.Flags,Changed);}
-						Exclude(ThisUser.ACFlags,TACCH(S[i]));
-						Shd(oo,TRUE);
-				  END;
-			  UNTIL (Done1);
-			END;
-	  END;
-	  IF (NOT Infield_Arrow_Exited) THEN
-		BEGIN
-		  Infield_Arrow_Exited := TRUE;
-		  Infield_Last_Arrow := 80;  {arrow down}
-		END;
-	  IF (Infield_Arrow_Exited) THEN
-		CASE Infield_Last_Arrow OF
-		  80,72 :
-			BEGIN     {arrow down,up}
-			  Shd(oo,FALSE);
-			  IF (Infield_Last_Arrow = 80) THEN
-				BEGIN  {arrow down}
-				  Inc(oo);
-				  IF (oo > 6) THEN
-					oo := 0;
-				END
-			  ELSE
-				BEGIN
-				  Dec(oo);
-				  IF (oo < 0) THEN
-					oo := 6;
-				END;
-			  Shd(oo,TRUE);
-			END;
-		END;
-	UNTIL (Done);
-	GoToXY(SaveWhereX,SaveWhereY);
-	TextAttr := SaveTextAttr;
-	CursorOn(TRUE);
-	NewCompTables;
-	SaveURec(ThisUser,UserNum);
+    Infield_Arrow_Exited := FALSE;
+    CASE oo OF
+      0 : BEGIN
+      {indent to here}
+              Done1 := FALSE;
+              Shd(oo,TRUE);
+              REPEAT
+                C := ReadKey;
+                CASE UpCase(C) OF
+                  ^M :  BEGIN
+                          Done := TRUE;
+                          Done1 := TRUE;
+                        END;
+                  #0 :  BEGIN
+                          C := ReadKey;
+                          CASE Ord(C) OF
+                            80,72 : {Arrow Down, Up}
+                              BEGIN
+                                Infield_Arrow_Exited := TRUE;
+                                Infield_Last_Arrow := Ord(C);
+                                Done1 := TRUE;
+                              END;
+                          END;
+                        END;
+                END;
+              UNTIL (Done1);
+            END;
+        1 : BEGIN
+              S := IntToStr(ThisUser.SL);
+              InField1(26,7,S,3);
+              IF (StrToInt(S) <> ThisUser.SL) THEN
+                IF (StrToInt(S) >= 0) AND (StrToInt(S) <= 255) THEN
+                  BEGIN
+                    ThisUser.SL := StrToInt(S);
+                    Inc(ThisUser.TLToday,General.TimeAllow[ThisUser.SL] - General.TimeAllow[ThisUser.SL]);
+                  END;
+            END;
+        2 : BEGIN
+              S := IntToStr(ThisUser.DSL);
+              InField1(26,8,S,3);
+              IF (StrToInt(S) <> ThisUser.DSL) THEN
+                IF (StrToInt(S) >= 0) AND (StrToInt(S) <= 255) THEN
+                  ThisUser.DSL := StrToInt(S);
+            END;
+        3 : BEGIN
+              S := IntToStr(AccountBalance);
+              InField1(26,9,S,5);
+              AdjustBalance(AccountBalance - StrToInt(S));
+            END;
+        4 : BEGIN
+              S := ThisUser.Note;
+              InField1(26,10,S,39);
+              ThisUser.Note := S;
+            END;
+        5 : BEGIN
+              Done1 := FALSE;
+              REPEAT
+                C := UpCase(ReadKey);
+                CASE C OF
+                  #13 : Done1 := TRUE;
+                  #0  : BEGIN
+                          C := ReadKey;
+                          CASE Ord(C) OF
+                            80,72 : {Arrow Up, Down}
+                              BEGIN
+                                Infield_Arrow_Exited := TRUE;
+                                Infield_Last_Arrow := Ord(C);
+                                Done1 := TRUE;
+                              END;
+                          END;
+                        END;
+                  '!' : BEGIN
+                          FOR C := 'A' TO 'Z' DO
+                            {ToggleARFlag(C,ThisUser.AR,Changed);}
+                            Exclude(ThisUser.ARFlags,C);
+                            Shd(oo,TRUE);
+                        END;
+                  'A'..'Z' :
+                        BEGIN
+                          ToggleARFlag(C,ThisUser.ARFlags,Changed);
+                          Shd(oo,TRUE);
+                        END;
+                END;
+              UNTIL (Done1);
+            END;
+        6 : BEGIN
+              S := 'LCVUA*PEKM1234';
+              Done1 := FALSE;
+              REPEAT
+                C := UpCase(ReadKey);
+                IF (C = #13) THEN
+                  Done1 := TRUE
+                ELSE IF (C = #0) THEN
+                  BEGIN
+                    C := ReadKey;
+                    CASE Ord(C) OF
+                      80,72: {Arrow Down, Up}
+                        BEGIN
+                          Infield_Arrow_Exited := TRUE;
+                          Infield_Last_Arrow := Ord(C);
+                          Done1 := TRUE;
+                        END;
+                    END;
+                  END
+                ELSE IF (Pos(C,S) <> 0) THEN
+                  BEGIN
+                    ToggleACFlags(C,ThisUser.ACFlags,Changed);
+                    Shd(oo,TRUE);
+                  END
+                ELSE
+                  BEGIN
+                    IF (C = '!') THEN
+                      FOR i := 1 TO Length(S) DO
+                        {ToggleACFlags(S[i],ThisUser.Flags,Changed);}
+                        Exclude(ThisUser.ACFlags,TACCH(S[i]));
+                        Shd(oo,TRUE);
+                  END;
+              UNTIL (Done1);
+            END;
+      END;
+      IF (NOT Infield_Arrow_Exited) THEN
+        BEGIN
+          Infield_Arrow_Exited := TRUE;
+          Infield_Last_Arrow := 80;  {arrow down}
+        END;
+      IF (Infield_Arrow_Exited) THEN
+        CASE Infield_Last_Arrow OF
+          80,72 :
+            BEGIN     {arrow down,up}
+              Shd(oo,FALSE);
+              IF (Infield_Last_Arrow = 80) THEN
+                BEGIN  {arrow down}
+                  Inc(oo);
+                  IF (oo > 6) THEN
+                    oo := 0;
+                END
+              ELSE
+                BEGIN
+                  Dec(oo);
+                  IF (oo < 0) THEN
+                    oo := 6;
+                END;
+              Shd(oo,TRUE);
+            END;
+        END;
+    UNTIL (Done);
+    GoToXY(SaveWhereX,SaveWhereY);
+    TextAttr := SaveTextAttr;
+    CursorOn(TRUE);
+    NewCompTables;
+    SaveURec(ThisUser,UserNum);
 END;
 
 END.

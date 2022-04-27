@@ -206,9 +206,9 @@ VAR
             Abort := FALSE;
             Next := FALSE;
             IF (Editing) THEN
-              ConfigHeader('Editing Event #'+IntToStr(RecNumToEdit)+' Of '+IntToStr(NumEvents))
+              ConfigHeader('Editing Event #'+IntToStr(RecNumToEdit)+' Of '+IntToStr(NumEvents),0)
             ELSE
-              ConfigHeader('Inserting Event #'+IntToStr(RecNumToEdit)+' Of '+IntToStr(NumEvents + 1));
+              ConfigHeader('Inserting Event #'+IntToStr(RecNumToEdit)+' Of '+IntToStr(NumEvents + 1),0);
             PrintACR('^0(^1A^0) Event Type            : ^1'+AOnOff(EventIsExternal IN EFlags,'External','Internal'));
             PrintACR('^0(^1B^0) Description           : ^1'+EventDescription);
             PrintACR('^0(^1C^0) Active                : ^1'+AOnOff(EventIsActive IN EFlags,'Active','Inactive'));
@@ -911,7 +911,7 @@ VAR
       RecNumToList1 := 1;
     Abort := FALSE;
     Next := FALSE;
-    ConfigHeader('Event Editor');
+    ConfigHeader('Event Editor',0);
     PrintACR('^5<^4A^5> <^4##^5> <^4Description^5>                  <^4Schedule^5>');
     HL;
     Reset(EventFile);

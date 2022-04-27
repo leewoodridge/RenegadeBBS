@@ -24,7 +24,7 @@ CONST
   ColorName: ARRAY[0..7] OF STRING[7] = ('Black','Blue','Green','Cyan','Red','Magenta','Yellow','White');
   ColorDesc: ARRAY[0..9] OF STRING[17] = ('Normal Text','Bright Text','Prompt','Input Field','Header Text','Header Border',
                                           'Lightbar Normal','Lightbar Selected','Warning/Error','Notification');
-  
+
   FUNCTION DisplayColorStr(Color: Byte): STRING;
   VAR
     TempStr: AStr;
@@ -44,7 +44,6 @@ CONST
     TempColor,
     Counter: Byte;
   BEGIN
-{ input validation please!}
     SetC(7);
     NL;
     FOR Counter := 0 TO 7 DO
@@ -58,7 +57,6 @@ CONST
       SetC(Counter + 8);
       Print(PadLeftStr(ColorName[Counter]+'!',9));
     END;
-	TempColor := 0; {LeeW: Added}
     InputByte('%LFForeground',TempColor,[Numbersonly],0,15,Changed); (* Suppress Error *)
     IF (TempColor IN [0..15]) THEN
       NewColor := TempColor
@@ -72,7 +70,6 @@ CONST
       SetC(Counter);
       Print(PadLeftStr(ColorName[Counter],12));
     END;
-	TempColor := 0; {LeeW: Added}
     InputByte('%LFBackground',TempColor,[NumbersOnly],0,7,Changed);  (* Suppress Error *)
     IF (TempColor IN [0..7]) THEN
       NewColor := NewColor OR TempColor SHL 4;
@@ -470,9 +467,9 @@ VAR
           Abort := FALSE;
           Next := FALSE;
           IF (Editing) THEN
-		    ConfigHeader('Editing Color Scheme #'+IntToStr(RecNumToEdit)+' Of '+IntToStr(NumSchemes))
+            ConfigHeader('Editing Color Scheme #'+IntToStr(RecNumToEdit)+' Of '+IntToStr(NumSchemes),0)
           ELSE
-		    ConfigHeader('Inserting Color Scheme #'+IntToStr(RecNumToEdit)+' Of '+IntToStr(NumSchemes + 1));
+            ConfigHeader('Inserting Color Scheme #'+IntToStr(RecNumToEdit)+' Of '+IntToStr(NumSchemes + 1),0);
           PrintACR('^0(^11^0) Description   : ^1'+Scheme.Description);
           Prompt('^0(^12^0) System colors : ');
           ShowColors;
@@ -487,7 +484,7 @@ VAR
           CmdStr := '12345678'
         ELSE
           CmdStr := '12345678[]FJL';
-		NL;
+        NL;
         InputChar('^2Color Scheme Editor [^11^2-^18^2,(^1?^2)Help,(^1Q^2)uit]: ',Cmd1,'Q?'+CmdStr++^M,[CapAll]);
         CASE Cmd1 OF
           '1' : REPEAT
@@ -768,7 +765,7 @@ VAR
     Abort := FALSE;
     Next := FALSE;
     {CLS;}
-    ConfigHeader('Color Scheme Editor');
+    ConfigHeader('Color Scheme Editor',0);
     PrintACR('^5<^4##^5> <^4Description^5>                  <^4Colors^5>');
     HL;
     {PrintACR('^1###^2:^1'+PadLeftStr('Description',30)+'^2:^1Colors');

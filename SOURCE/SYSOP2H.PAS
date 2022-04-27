@@ -29,7 +29,7 @@ BEGIN
       BEGIN
         Abort := FALSE;
         Next := FALSE;
-        ConfigHeader('Network Mail Configuration');
+        ConfigHeader('Network Mail Configuration',0);
         PrintACR('^0(^1A^0) Net Addresses ...');
         PrintACR('^0(^1B^0) Origin Line     : ^1'+Origin);
         NL;
@@ -60,7 +60,7 @@ BEGIN
                   REPEAT
                     Abort := FALSE;
                     Next := FALSE;
-                    ConfigHeader('Network Mail Addresses');
+                    ConfigHeader('Network Mail Addresses',0);
                     FOR Counter := 0 TO 19 DO
                       BEGIN
                         Prompt(PadLeftStr('^0(^1'+Chr(Counter + 65)+'^0) Address #'+PadLeftInt(Counter,2)+' :^1'+

@@ -101,8 +101,8 @@ VAR
        (General.NewUserQToggles[14] = TRUE) THEN { Forgot PW Answer }
       UpdateArray[14] := TRUE;
     
-	{ LeeW: Add check for a mandatory password change here }
-	
+    { LeeW: Add check for a mandatory password change here }
+    
       {
     IF (ThisUser. = '') AND (General.NewUserQToggles[] = TRUE) THEN
       UpdateArray[] := TRUE;
@@ -468,8 +468,10 @@ BEGIN
     IF ((General.LogonVoting) OR (General.ForceVoting)) AND (UnVotedTopics > 0) AND NOT (RVoting IN ThisUser.ACFlags) 
     AND NOT (HangUp) THEN
       BEGIN
+        (*
         LangStringArray[0] := IntToStr(UnVotedTopics);
         LangStringArray[1] := Plural('',UnVotedTopics);
+        *)
         {-}
         IF (General.ForceVoting) THEN
           BEGIN

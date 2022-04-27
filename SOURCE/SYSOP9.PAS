@@ -792,7 +792,7 @@ VAR
       RecNumToList1 := 1;
     Abort := FALSE;
     Next := FALSE;
-    ConfigHeader('File Area Editor');
+    ConfigHeader('File Area Editor',0);
     CASE DisplayType OF
       1 : PrintACR('^5<^4##^5> <^4File Area Name^5>                  <^4##^5> <^4File Area Name^5>                  ');
       2 : PrintACR('^5<^4##^5> <^4File Area Name^5>      <^4Dat^5>    <^4DL Path^5>            <^4UL Path^5>            ');

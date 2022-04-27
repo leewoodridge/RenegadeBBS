@@ -23,7 +23,7 @@ BEGIN
       BEGIN
         Abort := FALSE;
         Next := FALSE;
-        ConfigHeader('File System Configuration');
+        ConfigHeader('File System Configuration',0);
       { Print('%CL^1File Area Configuration:');
         NL; }
         PrintACR('^0(^1A^0) Upload/download ratio system    : ^1'+ShowOnOff(ULDLRatio));

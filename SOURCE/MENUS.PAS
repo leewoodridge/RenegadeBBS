@@ -5,9 +5,11 @@
                 > Toggle SysOp Availability (*T)
                 > Validation Editor (*S) 
                 > Color Scheme Editor (*G)
+            - Added password check for all SysOp (*) commands
  11/15/2021 - Direct memory addressing for *T command only works in real mode (DOS)
- 04/13/2022 - added hangup check quick fix for extra 'a' cmds after timeout -- could be in menuexec or domenuexec,
-              not sure if it matters
+ 04/13/2022 - Added hangup check quick fix for extra 'a' commands after timeout -- could be in MenuExec or DoMenuExec,
+              not sure if it matters ...
+ 04/26/2022 - Menu command error and SysOp log now executes for all users, not just CoSysOp+
 }
 UNIT Menus;
 
@@ -599,13 +601,15 @@ BEGIN
     Update_Node(NodeActivityDesc,TRUE);
 
   CASE Cmd[1] OF
+  (*
     '^' : CASE Cmd[2] OF { Command for testing }
             '^' : BEGIN
-                    InputScroll('param1',cmd,15,[],Changed);
+                    
                   END;
           ELSE
             NoCmd := TRUE;
           END;
+          *)
     '$' : CASE Cmd[2] OF
             'D' : Deposit;
             'W' : Withdraw;
@@ -1042,19 +1046,17 @@ BEGIN
             ELSE
               NoCmd := TRUE;
             END;
-  ELSE
-    NoCmd := TRUE;
+    ELSE
+      NoCmd := TRUE;
   END;
   LastCommandGood := NOT NoCmd;
   IF (LastCommandOvr) THEN
     LastCommandGood := FALSE;
   IF (NoCmd) THEN
-    IF (CoSysOp) THEN
+    (*IF (CoSysOp) THEN { LeeW: Why only CoSysOp? }*)
       BEGIN
-        TempStr := 'Invalid menu command "'+Cmd+'"';
-        NL;
-        Print(TempStr);
-        SysOpLog('^8[ERROR] ^1'+TempStr);
+        Print(lRGLngStr(260,TRUE)); {"Invalid command!"}
+        SysOpLog('^8[E] ^1Invalid menu command '#196' C: "'+Cmd+'" P: "'+MenuOption+'"');
       END;
   IF ((Cmd[1] + Cmd[2]) <> 'NW') THEN
     Update_Node('',FALSE);

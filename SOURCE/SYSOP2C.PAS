@@ -28,7 +28,7 @@ BEGIN
         Abort := FALSE;
         Next := FALSE;
         MCIAllowed := FALSE;
-        ConfigHeader('ACS Settings');
+        ConfigHeader('ACS Settings',0);
         PrintACR(PadLeftStr('^0(^1A^0) Full SysOp       : ^1'+SOp,39)+' '+
                  PadLeftStr('^0(^1B^0) Full Co-SysOp    : ^1'+CSOp,39));
         PrintACR(PadLeftStr('^0(^1C^0) Msg Area SysOp   : ^1'+MSOp,39)+' '+

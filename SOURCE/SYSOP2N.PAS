@@ -113,7 +113,7 @@ BEGIN
       BEGIN
         Abort := FALSE;
         Next := FALSE;
-        ConfigHeader('SysOp Macro Configuration');
+        ConfigHeader('SysOp Macro Configuration',0);
         FOR TempB := 0 TO 8 DO
           BEGIN
             Prompt('^0(^1'+IntToStr(TempB+1)+'^0) F'+IntToStr(TempB+1)+' Macro  : ^1');

@@ -352,10 +352,7 @@ BEGIN
               ToggleScanFlags(FArea,3);
             IF (FirstFArea = LastFArea) THEN
             BEGIN
-              {
-              %LF^1%FB^1 will %FSbe scanned.
-              }
-              LRGLngStr(92,FALSE);
+              LRGLngStr(92,FALSE); {"FileBaseName will (not) be scanned"}
             END;
               Farea := SaveFArea;
               InputStr := '?';

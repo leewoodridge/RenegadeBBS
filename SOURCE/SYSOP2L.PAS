@@ -23,7 +23,7 @@ BEGIN
       BEGIN
         Abort := FALSE;
         Next := FALSE;
-        ConfigHeader('Credit System Configuration');
+        ConfigHeader('Credit System Configuration',0);
         PrintACR('^0(^1A^0) Credits Per Minute           : ^1'+IntToStr(CreditMinute));
         PrintACR('^0(^1B^0) Credits Per Public Message   : ^1'+IntToStr(CreditPost));
         PrintACR('^0(^1C^0) Credits Per Private Message  : ^1'+IntToStr(CreditEmail));

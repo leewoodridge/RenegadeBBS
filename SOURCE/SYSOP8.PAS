@@ -636,7 +636,7 @@ VAR
                 END;
           'N' : BEGIN
                   REPEAT
-                    ConfigHeader('Message Colors');
+                    ConfigHeader('Message Colors',0);
                     PrintACR('^0(^11^0) Text   : '#29); SetC(Text_Color); PrintACR('Text');
                     PrintACR('^0(^12^0) Quote  : '#29); SetC(Quote_Color); PrintACR('Quote');
                     PrintACR('^0(^13^0) Tear   : '#29); SetC(Tear_Color); PrintACR('Tear');
@@ -1118,7 +1118,7 @@ VAR
     MCIAllowed := FALSE;
     Abort := FALSE;
     Next := FALSE;
-    {CLS;} ConfigHeader('Message Area Editor');
+    {CLS;} ConfigHeader('Message Area Editor',0);
     CASE DisplayType OF
       1 : PrintACR('^5<^4##^5> <^4Message Area Name^5>      <^4Flag^5>  <^4Read    ^5/ ^4Post    ^5/ ^4MCI ACS^5> '
                     +'<^4Max^5>  <^4A^5>');

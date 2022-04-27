@@ -257,9 +257,9 @@ VAR
           Next := FALSE;
           CLS;
           IF (Editing) THEN
-            ConfigHeader('Editing Protocol #'+IntToStr(RecNumToEdit)+' Of '+IntToStr(NumProtocols))
+            ConfigHeader('Editing Protocol #'+IntToStr(RecNumToEdit)+' Of '+IntToStr(NumProtocols),0)
           ELSE
-            ConfigHeader('Inserting Protocol #'+IntToStr(RecNumToEdit)+' Of '+IntToStr(NumProtocols + 1));
+            ConfigHeader('Inserting Protocol #'+IntToStr(RecNumToEdit)+' Of '+IntToStr(NumProtocols + 1),0);
           PrintACR('^0(^1!^0) Type/protocl: ^1'+
                    AOnOff(ProtActive IN PRFlags,'Active','INACTIVE')+' - '+
                    AOnOff(ProtIsBatch IN PRFlags,'Batch','Single')+
@@ -773,7 +773,7 @@ VAR
     Abort := FALSE;
     Next := FALSE;
     {CLS;}
-    ConfigHeader('Protocol Editor');
+    ConfigHeader('Protocol Editor',0);
     {
     PrintACR('^1 ###^2:^1ACS       ^2:^1Description');
     PrintACR('^2 ===:==========:=============================================================');

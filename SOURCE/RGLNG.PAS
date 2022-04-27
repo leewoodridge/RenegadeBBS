@@ -18,6 +18,9 @@ Lee Woodridge
  02/24/2022 - Added change conference strings (#256-259)
  03/20/2022 - added email cant send msgs 263-270
  -
+ 
+ add lightbar_continuous for continue lightbar prompt
+ 
 bug where if a string is empty, like:
 $TEST_STRING
 $
@@ -248,9 +251,9 @@ BEGIN
                 RGStrNum := 67
               ELSE IF (S = 'MESSAGE_AREA_SELECT_NO_FILES') THEN
                 RGStrNum := 68
-              ELSE IF (S = 'MESSAGE_AREA_LIST_PROMPT') THEN
+              ELSE IF (S = 'MESSAGE_AREA_LIST_PROMPT') THEN { LeeW: Where is this used? }
                 RGStrNum := 69
-              ELSE IF (S = 'FILE_AREA_LIST_PROMPT') THEN
+              ELSE IF (S = 'FILE_AREA_LIST_PROMPT') THEN { LeeW: Where is this used? }
                 RGStrNum := 70
               ELSE IF (S = 'FILE_MESSAGE_AREA_LIST_HELP') THEN
                 RGStrNum := 71
@@ -632,7 +635,7 @@ BEGIN
                 RgStrNum := 258
               ELSE IF (S = 'CONFERENCE_JOINED') THEN
                 RgStrNum := 259
-              ELSE IF (S = 'INVALID_PARAMETER') THEN
+              ELSE IF (S = 'INVALID_MENU_COMMAND') THEN
                 RgStrNum := 260
               ELSE IF (S = 'TOP_USERS_HEADER') THEN
                 RgStrNum := 261

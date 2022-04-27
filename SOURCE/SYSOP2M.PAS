@@ -45,7 +45,7 @@ BEGIN
     Next := FALSE;
     WITH General DO
       BEGIN
-        ConfigHeader('New User Question Toggles');
+        ConfigHeader('New User Question Toggles',0);
         PrintACR(PadLeftStr('^0(^1A^0) User Name        : ^1'+ShowYesNo(AllowAlias),39)+
                  PadLeftStr('^0(^1N^0) Term Emulation   : ^1'+ShowYesNo(NewUserQToggles[15] = TRUE),39));
         PrintACR(PadLeftStr('^0(^1B^0) Real Name        : ^1'+ShowYesNo(NewUserQToggles[02] = TRUE),39)+

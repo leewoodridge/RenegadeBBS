@@ -8,7 +8,7 @@ UNIT SysOp2; { System Configuration Main Menu }
 
 INTERFACE
 
-PROCEDURE ConfigHeader(s: STRING); { LeeW: Added - Standardized header for all system configuration menus }
+PROCEDURE ConfigHeader(s: STRING; b: BYTE); { LeeW: Added - Standardized header for all system configuration menus }
 PROCEDURE HL; { LeeW: Added - Horizontal line to User.LineLen ** MOVE TO COMMON??? }
 PROCEDURE SystemConfigurationEditor;
 
@@ -35,18 +35,24 @@ USES
   SysOp2O; { GetSecRange }
   
   
-  PROCEDURE ConfigHeader(s: STRING);
+  PROCEDURE ConfigHeader(s: STRING; b: BYTE);
+  VAR
+    PageNum: STRING[3];
   BEGIN
     CLS;
     Prompt('^5'+#196+#243+' ^4'+s+'^5 '+#242);
     REPEAT
       Prompt(#196);
-    UNTIL WhereX = ThisUser.LineLen;
-    NL;
+    UNTIL WhereX = ThisUser.LineLen-8;
+    IF (b <> 0) THEN
+      BEGIN
+        PageNum := IntToStr(b);
+        Print('^5'+#243+' ^4'+PageNum[1]+'^5/^4'+PageNum[2]+'^5 '+#242#196);
+      END
+    ELSE
+      Print(#196#196#196#196#196#196#196#196);
     NL;
   END;
-  
-  (*' < PG 1/2 > '*)
   
   PROCEDURE HL;
   BEGIN
@@ -67,7 +73,7 @@ BEGIN
       BEGIN
         Abort := FALSE;
         Next := FALSE;
-        ConfigHeader('System Configuration');
+        ConfigHeader('System Configuration',0);
         PrintACR(PadLeftStr('^0(^1A^0) Main BBS Configuration',39)+
                  PadLeftStr('^0(^1B^0) Modem/Node Configuration',39));
         PrintACR(PadLeftStr('^0(^1C^0) System ACS Settings',39)+

@@ -1,5 +1,7 @@
 {$A+,B-,D+,E-,F+,I-,L+,N-,O+,R-,S+,V-}
-
+{
+ansiok check for lightbar menu???
+}
 UNIT Mail4;
 
 INTERFACE
@@ -115,6 +117,11 @@ VAR
   SaveMArea: Integer;
   SaveTempPause: Boolean;
 BEGIN
+{
+no param goes to lightbar selection
+l param goes to regular selection
+}
+
   IF (MenuOption <> '') THEN
     CASE UpCase(MenuOption[1]) OF
       '+' : BEGIN
@@ -224,7 +231,7 @@ BEGIN
     END;
   END
   ELSE
-  BEGIN
+  BEGIN {lightbar area selection}
     SaveTempPause := TempPause;
     TempPause := FALSE;
     MArea := 1;
@@ -449,17 +456,11 @@ BEGIN
             IF (FirstMArea = LastMArea) THEN
               IF (NOT (MAForceRead IN MemMsgArea.MAFlags)) THEN
               BEGIN
-                {
-                %LF^1%MB^1 will %MSbe scanned.
-                }
-                LRGLngStr(93,FALSE);
+                LRGLngStr(93,FALSE); {"MessageBaseName will (not) be scanned"}
               END
               ELSE
               BEGIN
-                {
-                %LF^1%MB^1 cannot be removed from your newscan.
-                }
-                LRGLngStr(94,FALSE);
+                LRGLngStr(94,FALSE); {"MessageBaseName can not be removed from your newscan"}
               END;
               MArea := SaveMArea;
               InputStr := '?';

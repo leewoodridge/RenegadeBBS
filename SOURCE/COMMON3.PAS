@@ -1,29 +1,29 @@
 {$A+,B-,D+,E-,F+,I-,L+,N-,O+,R-,S-,V-,X-}
 {
- 10/21/2021 - updating color codes
- 11/04/2021 - remove redundant procs ...
-            - Removed InputWC, now using inputmain with [ColorAllowed] param
+ 10/21/2021 - Updated color codes
+ 11/04/2021 - Remove redundant procs ...
+            - Removed InputWC, now using InputMain with [ColorAllowed] param
             - Removed InputCaps
-            - Removed InputL, now using inputmain with no param
- 11/05/2021 - Removed Input, now using inputmain with [CapAll] param
-            - Removed Local_OneK -- was unused
+            - Removed InputL, now using InputMain with no param
+ 11/05/2021 - Removed Input, now using InputMain with [CapAll] param
+            - Removed Local_OneK (was unused)
             - Moved Local_Input1 to COMMON2 (nested in lStatus_screen)
-            - converted all OneK to LoneK, same proc except prompt string
-            - converted all getpassword calls to inputmain with [IsPassword] param
- 11/18/2021 - increased all numeric string lenths by 1 to account for possible negatives needing extra char for "-"
-            - inputmain increases maxlen by 1 if AllowNegative
-            - inputmain prints mpl unless noinputfield specified -- can remove MPL from everywhere, some places will need added
-            - if interactiveedit specified, and no ansi, now prints current val like displayvalue flag used to
+            - Converted all OneK to LOneK, same proc except prompt string
+            - Converted all GetPassword calls to InputMain with [IsPassword] param
+ 11/18/2021 - Increased all numeric string lengths by 1 to account for possible negatives needing extra char for "-"
+            - InputMain increases MaxLen by 1 if AllowNegative
+            - InputMain prints MPL unless NoInputField specified (Can remove MPL from everywhere, some places will need added)
+            - If InteractiveEdit specified, and no ANSI, now prints current val like DisplayValue flag used to
  11/20/2021 - Removed all WOC input procs and converted all calls (UGH!)
-            - inputmain - esc now aborts
- 11/21/2021 - removed inputdefault, now using inputstring
-            - removed all redundant MPL calls (UGH!)
- 11/22/2021 - OneK1 is now InputChar, now uses inputflags -- supports CapAll,NoInputField,NoLineFeed, 
-              displaykey param removed, was 99.9% unused
-            - replaced all calls to LOneK to InputChar (UGH!)
- 12/22/2021 - quick and dirty hack to make inputformatted populate field like interactiveedit, except no arrowkey movement
+            - InputMain - ESC now aborts
+ 11/21/2021 - Removed InputDefault, now using InputString
+            - Removed all redundant MPL calls (UGH!)
+ 11/22/2021 - OneK1 is now InputChar, now uses InputFlags -- supports CapAll,NoInputField,NoLineFeed, ...
+            - Removed DisplayKey param from InputChar (was unused)
+            - Replaced all calls to LOneK to InputChar (UGH!)
+ 04/26/2022 - Cleaning up InputPath
+ 
 todo:
-make inputformatted interactive if string is defined
 add inputvalidation for inputformatted, maybe have it pass '' if incomplete? --PARAMS for AllowIncomplete
 inputflags : add different types like dir, filename etc, notabortable, askblank
 SHOULD BLANK PROMPT BE IN MAIN OR PRINTSTRING--main
@@ -48,217 +48,19 @@ PROCEDURE InputChar(S: AStr; VAR C: Char; ValidKeys: AStr; InputFlags: InputFlag
 PROCEDURE InputString(S: AStr; VAR InputStr: AStr; MaxLen: Byte; InputFlags: InputFlagSet; VAR Changed: Boolean);
 PROCEDURE InputFormatted(S: AStr; VAR InputStr: STRING; Format: STRING; Abortable: Boolean);
 PROCEDURE InputPath(S: AStr; VAR DirPath: Str40; CreateDir,AllowExit: Boolean; VAR Changed: Boolean);
-{PROCEDURE InputPath2(S: STRING; VAR Path: STRING; AskMkDir, Abortable: Boolean; VAR Changed: Boolean);}
-PROCEDURE InputScroll(S: AStr; VAR InputStr: AStr; MaxLen: Byte; InputFlags: InputFlagSet; VAR Changed: Boolean);
-{ ^ LeeW: work in progress... }
 
 IMPLEMENTATION
 
 USES
   CRT,
   DOS;
-  
-PROCEDURE InputScroll(S: AStr; VAR InputStr: AStr; MaxLen: Byte; InputFlags: InputFlagSet; VAR Changed: Boolean);
-VAR
-  counter, counter1, counter2: byte; { temp }
-  savex: byte; {save x(horiz) cusrsor pos}
-  xinput: word;         { user keyboard input }
-  xpassedstr,       { string that was passed for interactiveedit }
-  xoutstring: astr;     { string we're going to output }
-  xfieldlength: byte; { length of input field }
-  xfieldpos,            { where in the input field we are }
-  xstrpos: byte;    { where in the string we are }
-  insertmode: boolean;
-  FieldStartX: Byte; { X position where input field starts }
-  
-  PROCEDURE SetCursor(InsertMode: Boolean); ASSEMBLER;
-  ASM
-    cmp InsertMode,0
-    je @turnon
-    mov ch,0
-    mov Cl,7
-    jmp @goforit
-    @turnon:
-    mov ch,6
-    mov Cl,7
-    @goforit:
-    mov ah,1
-    int 10h
-  END;
-  
-  PROCEDURE xupdatefield;
-  VAR
-    Counter,counter2: Byte;
-  BEGIN
-  counter2 := 1;
-  
-    ANSIG(FieldStartX,WhereY); { go to field 1st pos }
-    
-    FOR Counter := 1 TO xfieldlength DO
-    begin
-    if xstrpos-xfieldlength+counter2 >= 1 then
-      Prompt(xoutstring[xstrpos-xfieldlength+counter2]);
-      Inc(counter2);
-     end;
-    ANSIG(FieldStartX+(xFieldPos-1),WhereY); { go to orig field pos }
-  END;
-  {
-  PROCEDURE MPrompt(S: STRING);
-  BEGIN
-    SerialOut(S);
-    IF (WantOut) THEN
-      Write(S);
-  END;
-  }
-  PROCEDURE Cursor_Left;
-  BEGIN
-  if (xfieldpos >= 1) and (xfieldpos <= xfieldlength) and (xstrpos >= 1) and (xstrpos <= length(xoutstring)) then
-  begin
-    IF (OkANSI) THEN
-      SerialOut(#27'[D');
-    IF (WantOut) THEN
-      GoToXY((WhereX - 1),WhereY);
-    Dec(xfieldpos);
-    Dec(xstrpos);
-    end;
-  END;
-  
-  PROCEDURE Cursor_Right;
-  BEGIN
-  if (xfieldpos >= 1) and (xfieldpos <= xfieldlength) and (xstrpos >= 1) and (xstrpos <= length(xoutstring)+1) then
-  begin
-    if xFieldPos = xfieldlength then
-      xupdatefield;
-    IF (OkANSI) THEN
-      SerialOut(#27'[C');
-    IF (WantOut) THEN
-      GoToXY((WhereX + 1),WhereY);
-    if xFieldPos <> xfieldlength then
-      Inc(xfieldpos);
-    Inc(xstrpos);
-    end;
-  END;
-  
-BEGIN
-            { NOTES
-                - always start editing at end of string+1
-            }
-                    {Print(Cmd);
-                    Print(MenuOption);}
-                    {}
-                    InsertMode := FALSE;
-                    
-                    xpassedstr := 'lets_make_this_more_readable';
-                    xoutstring := xpassedstr;
-                    xfieldlength := 10;
-                    {}
-                    xstrpos := xfieldlength;
-                    
-                    if length(xpassedstr)+1 > xfieldlength then
-                      xfieldpos := xfieldlength
-                    else
-                      xfieldpos := length(xpassedstr)+1;
-                      
-                    {}
-                    Prt('Prompt goes here:');
-                    FieldStartX := WhereX;
-                    MPL(xfieldlength);
-                    if xpassedstr <> '' then
-                    { check for size, print beginning or end }
-                    {mprompt(copy(xpassedstr,1,xfieldlength-1));}
-                    xupdatefield;
-                    REPEAT
-                    SetCursor(InsertMode);
-                      xinput := GetKey;
-                      
-                      case xinput of
-                                          
-                        F_LEFT :
-                              IF (xfieldpos > 1) THEN
-                                BEGIN
-                                  Cursor_Left;
-                                END;
-                        F_RIGHT :
-                              IF (xfieldpos <= length(xoutstring)) THEN
-                                begin
-                                  Cursor_Right;
-                                end;
-                        F_END :
-                              WHILE xstrpos < length(xoutstring)+1 {(Cp < (Cl + 1)) AND (Cp <= MaxLen)} DO
-                                begin
-                                Cursor_Right;
-                                end;
-                        F_HOME :
-                              WHILE (xfieldpos > 1) DO
-                                BEGIN
-                                { will need to reprint text if changing field area }
-                                  Cursor_Left;
-                                END;
-                                
-                        8 : { BACKSPACE }
-                              IF (xstrpos > 1) THEN
-                                BEGIN
-                                  Dec(xstrpos);
-                                  Dec(xfieldpos);
-                                  Delete(xoutstring,xstrpos,1);
-                                  BackSpace;
-                                  xupdatefield;
-                                  {
-                                  CP = string cursor position
-                                  CL = length of outstr
-                                  }
-end;
-                                
-     32..255: {c=xinput, s=xoutstring cp=stringpos cl=fieldpos??}
-          BEGIN
-                    xinput := Ord(Char(xinput));
-                    BEGIN
-                (*IF ((InsertMode) {AND (length(xoutstring) < MaxLen)}) OR ((NOT InsertMode) AND 
-                (length(xoutstring) <= MaxLen)) THEN*)
-                  BEGIN
-                    OutKey(Char(xinput));
-                    IF (InsertMode) THEN
-                      BEGIN
-                        {Is := Char(xinput);}
-                        {MPrompt(Copy(xoutstring,xstrpos,255));}
-                        Insert(Char(xinput),xoutstring,xstrpos);
-                        {FOR Counter := Cp TO Cl DO
-                          Cursor_Left;} 
-                      END
-                    ELSE
-                      xoutstring[xstrpos]:= Char(xinput);
-                    {IF (InsertMode) OR ((xstrpos - 1) = Cl) THEN
-                      Inc(Cl);
-                    Inc(Cp);}
-                    {IF (Trapping) THEN
-                      Write(TrapFile,Char(c));}
-                      {if xFieldPos = xfieldlength then
-                      
-                      else}
-                      xupdatefield;
-                  END;
-                  
-              END;
-              
-              END;
-        
-                                
-                                
-                      end; {CASE}
-                      
-                    UNTIL (xinput = 13) OR (HangUp); { or esc??? or firstkey and space}
-                    {}
-                    NL;
-                    NL;
-                    Print('XOS: "'+xoutstring+'" | FieldPos:'+inttostr(xfieldpos)+' | StrPos:'+inttostr(xstrpos));
-                    print('xoutstring -- length : '+inttostr(length(xoutstring)){+' | sizeof: '+inttostr(sizeof(xoutstring))});
-                    NL;
-                    PauseScr(FALSE);
-                  END;
-                  
-{ --- }
 
 PROCEDURE InputPath(S: AStr; VAR DirPath: Str40; CreateDir,AllowExit: Boolean; VAR Changed: Boolean);
+{notes
+mkdir cant make subdirs
+
+call common.makedir???
+}
 VAR
   TempDirPath: Str40;
   CurDir: PathStr;
@@ -276,100 +78,83 @@ BEGIN
       TempDirPath := TempDirPath + '\';
 
     IF (AllowExit) AND (TempDirPath = '') THEN
-    BEGIN
-      NL;
-      Print('Aborted!');
-    END
+      Print('%LFAborted!')
     ELSE IF (TempDirPath = '') THEN
-    BEGIN
-      NL;
-      Print('^8A valid path must be specified!^0');
-    END
+      Print('%LF^8A valid path must be specified!^0')
     ELSE IF (NOT (TempDirPath[1] IN ['A'..'Z'])) OR (Length(TempDirPath) < 3) OR
-         (NOT (TempDirPath[2] = ':')) OR (NOT (TempDirPath[3] = '\')) THEN
-    BEGIN
-      NL;
-      Print('^8Invalid drive specification: "'+Copy(TempDirPath,1,3)+'"^0');
-      TempDirPath := '';
-    END
-    ELSE
-    BEGIN
-      GetDir(0,CurDir);
-      ChDir(TempDirPath[1]+':');
-      IF (IOResult <> 0) THEN
+            (NOT (TempDirPath[2] = ':')) OR (NOT (TempDirPath[3] = '\')) THEN
       BEGIN
         NL;
-        Print('^8Drive does not exist: "'+Copy(TempDirPath,1,3)+'"^0');
+        Print('^8Invalid drive specification: "'+Copy(TempDirPath,1,3)+'"^0');
         TempDirPath := '';
       END
-      ELSE
+    ELSE { no unexpected input, continue }
       BEGIN
-        ChDir(CurDir);
-        IF (CreateDir) THEN
-        BEGIN
-          TempDirPath := BSlash(TempDirPath,TRUE);
-          IF (Length(TempDirPath) > 3) AND (NOT ExistDir(TempDirPath)) THEN
+        GetDir(0,CurDir); { store current dir in curdir }
+        ChDir(TempDirPath[1]+':'); { try changing to input drive }
+        IF (IOResult <> 0) THEN
           BEGIN
             NL;
-            {---}
-            IF PYNQ('Directory does not exist, create it? ',0,FALSE) THEN
-              BEGIN
-                Counter := 2;
-                WHILE (Counter <= Length(TempDirPath)) DO
-                  BEGIN
-                    IF (TempDirPath[Counter] = '\') THEN
-                      IF (TempDirPath[Counter - 1] <> ':') THEN
-                        IF (NOT ExistDir(Copy(TempDirPath,1,(Counter - 1)))) THEN
-                          BEGIN
-                            MkDir(Copy(TempDirPath,1,(Counter - 1)));
-                            LastError := IOResult;
-                            IF (LastError <> 0) THEN
-                              BEGIN
-                                NL;
-                                Print('Error creating directory: '+Copy(TempDirPath,1,(Counter - 1)));
-                                SysOpLog('^8Error creating directory: '+Copy(TempDirPath,1,(Counter - 1)));
-                                TempDirPath := '';
-                              END;
-                          END;
-                    Inc(Counter);
-                  END;
-              END;
-            {---}
+            Print('^8Drive does not exist: "'+Copy(TempDirPath,1,3)+'"^0');
+            TempDirPath := '';
+          END
+        ELSE { no error on drive change }
+          BEGIN
+            ChDir(CurDir);
+            TempDirPath := BSlash(TempDirPath,TRUE);
+            IF (CreateDir) AND (Length(TempDirPath) > 3) AND (NOT ExistDir(TempDirPath)) AND 
+               PYNQ('%LFDirectory does not exist, create it? ',0,FALSE) THEN
+                    FOR Counter := 2 to Length(TempDirPath) DO
+                      IF (TempDirPath[Counter] = '\') THEN
+                        IF (TempDirPath[Counter - 1] <> ':') THEN
+                          IF (NOT ExistDir(Copy(TempDirPath,1,(Counter - 1)))) THEN
+                            BEGIN
+                              MkDir(Copy(TempDirPath,1,(Counter - 1)));
+                              LastError := IOResult;
+                              IF (LastError <> 0) THEN
+                                BEGIN
+                                  NL;
+                                  Print('Error creating directory: '+Copy(TempDirPath,1,(Counter - 1)));
+                                  SysOpLog('^8Error creating directory: '+Copy(TempDirPath,1,(Counter - 1)));
+                                  TempDirPath := '';
+                                END;
+                            END;
           END;
-        END;
       END;
-    END;
   UNTIL (TempDirPath <> '') OR (AllowExit) OR (HangUp);
-  IF (TempDirPath <> '') THEN
-    TempDirPath := BSlash(TempDirPath,TRUE);
+  
+  {IF (TempDirPath <> '') THEN
+    TempDirPath := BSlash(TempDirPath,TRUE);}
   IF (TempDirPath <> DirPath) THEN
     Changed := TRUE;
   DirPath := TempDirPath;
 END;
+
+{-}
 
 PROCEDURE MPL(MaxLen: Byte);
 VAR
   Counter,
   SaveWhereX : Byte;
 BEGIN
-  IF (OkANSI OR OkAvatar) THEN
+  IF (OkANSI) THEN
     BEGIN
       IF (WhereX+MaxLen > ThisUser.LineLen) THEN
         NL;
       UserColor(3);
       SaveWhereX := WhereX;
       IF (OutCom) THEN
-        FOR Counter := 1 TO MaxLen DO
-          Com_Send(' ');
-      IF (WantOut) THEN
-        FOR Counter := 1 TO MaxLen DO
-          Write(' ');
-      GoToXY(SaveWhereX,WhereY);
-      IF (OutCom) THEN
-        IF (OkAvatar) THEN
-          SerialOut(^y+^H+Chr(MaxLen))
-        ELSE
+        BEGIN
+          FOR Counter := 1 TO MaxLen DO
+            Com_Send(' ');
           SerialOut(#27+'['+IntToStr(MaxLen)+'D');
+        END;
+      IF (WantOut) THEN
+        BEGIN
+          FOR Counter := 1 TO MaxLen DO
+            Write(' ');
+          GoToXY(SaveWhereX,WhereY);
+        END;
     END;
 END;
 
@@ -399,7 +184,6 @@ END;
 
 PROCEDURE InputFormatted(S: AStr; VAR InputStr: STRING; Format: STRING; Abortable: Boolean);
 VAR
-  tempstr: string;
   c: Char;
   i,
   FarBack: Byte;
@@ -415,26 +199,12 @@ VAR
   END;
 
 BEGIN
-  TempStr := InputStr;
   InputStr := '';
   Prt('^2'+S);
   MPL(Length(Format));
   i := 1;
   UpdateString;
   FarBack := i;
-  {
-  (*if inputstr <> '' then*)
-  WHILE (i <= Length(TempStr)) AND (Format[i] IN ['#','@']) DO
-    BEGIN
-      c := UpCase(InputStr[i]);
-      OutKey(c);
-      InputStr := InputStr + c;
-      Inc(i);
-      UpdateString;
-    END;
-    }
-    {^ LeeW: Quick and dirty hack to populate field --- nope}
-  
   REPEAT
     c := Char(GetKey);
     IF (i <= Length(Format)) THEN
@@ -620,8 +390,8 @@ VAR
 BEGIN
   Changed := FALSE;
   Prt(S);  
-  IF NOT (NoInputField IN InputFlags) THEN
-    MPL(MaxLen);
+  {IF NOT (NoInputField IN InputFlags) THEN
+    MPL(MaxLen);}
   SaveInputStr := InputStr;
   InputMain(SaveInputStr,MaxLen,InputFlags);
   IF (SaveInputStr = '') OR (Length(SQOutSp(SaveInputStr)) = 0) THEN
@@ -632,6 +402,7 @@ BEGIN
   IF (SaveInputStr <> InputStr) THEN
     Changed := TRUE;
   InputStr := SaveInputStr;
+  {UserColor(0);}
 END;
 
 PROCEDURE InputMain(VAR S: STRING; MaxLen: Byte; InputFlags: InputFlagSet);
@@ -781,7 +552,6 @@ BEGIN
                     c := Ord(UpCase(Char(c)));
               END;
             IF (NOT (NumbersOnly IN InputFlags)) OR (c IN [45,48..57]) THEN
-            {leew other input val here?}
               BEGIN
                 IF ((InsertMode) AND (Cl < MaxLen)) OR ((NOT InsertMode) AND (Cp <= MaxLen)) THEN
                   BEGIN
@@ -840,6 +610,8 @@ BEGIN
     S[0] := Chr(Cl);
   UNTIL (c = 13) OR (HangUp);
   
+  UserColor(0);
+  
   {
   IF ((Redisplay IN InputFlags) AND (S = '')) THEN
     BEGIN
@@ -851,9 +623,9 @@ BEGIN
   IF (IsPassword IN InputFlags) THEN
     Echo := TRUE;
     
-  UserColor(0);
   IF (NOT (NoLineFeed IN InputFlags)) THEN
     NL;
+    
   MLC := '';
   SetCursor(FALSE);
 END;

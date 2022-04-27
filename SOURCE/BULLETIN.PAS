@@ -8,7 +8,7 @@ Lee Woodridge
  11/20/2021 - moved findonlyonce to maint, nested in logonmaint
  12/10/2021 - fixed case issue for ~to and ~tl in lastcaller mci, MAYBE
  04/18/2022 - Cleaned up IF statements in RGQuote
-			- Added ACS check
+            - Added ACS check
 
  should we combine rgquote to rgquote.pas??
 }
@@ -542,9 +542,9 @@ BEGIN
   {-}
   
   IF (NOT General.UserAddQuote) OR (NOT AACS(General.AddQuoteACS)) AND (NOT HangUp) THEN
-	PauseScr(FALSE)
+    PauseScr(FALSE)
   ELSE IF (PYNQ(lRGLngStr(179,TRUE),0,FALSE)) {"Would you like to add a quote?"} AND (NOT HangUp) THEN
-	BEGIN
+    BEGIN
       PrintF('QUOTEADD');
       InResponseTo := '';
       MHeader.Status := [];

@@ -223,7 +223,7 @@ VAR
       RecNumToList1 := 1;
     Abort := FALSE;
     Next := FALSE;
-    ConfigHeader('Voting Topic Choice Editor');
+    ConfigHeader('Voting Topic Choice Editor',0);
     PrintACR('^5<^4##^5> <^4Votes^5> <^4Choice^5>');
     HL;
     NumDone := 0;
@@ -372,10 +372,10 @@ VAR
           Next := FALSE;
           {CLS;}
           IF (Editing) THEN
-            ConfigHeader('^1Editing Voting Topic #'+IntToStr(RecNumToEdit)+' Of '+IntToStr(NumVotes))
+            ConfigHeader('^1Editing Voting Topic #'+IntToStr(RecNumToEdit)+' Of '+IntToStr(NumVotes),0)
             
           ELSE
-            ConfigHeader('^1Inserting Voting Topic #'+IntToStr(RecNumToEdit)+' Of '+IntToStr(NumVotes + 1));
+            ConfigHeader('^1Inserting Voting Topic #'+IntToStr(RecNumToEdit)+' Of '+IntToStr(NumVotes + 1),0);
           {NL;}
           PrintACR('^0(^11^0) Topic       : ^1'+Question1);
           IF (Question2 <> '') THEN
@@ -691,7 +691,7 @@ VAR
       RecNumToList1 := 1;
     Abort := FALSE;
     Next := FALSE;
-    ConfigHeader('Voting Topic Editor');
+    ConfigHeader('Voting Topic Editor',0);
     PrintACR('^5<^4##^5> <^4Votes^5> <^4Topic^5>');
     HL;
     Reset(VotingFile);
