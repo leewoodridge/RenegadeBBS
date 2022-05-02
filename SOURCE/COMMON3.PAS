@@ -390,19 +390,19 @@ VAR
 BEGIN
   Changed := FALSE;
   Prt(S);  
-  {IF NOT (NoInputField IN InputFlags) THEN
-    MPL(MaxLen);}
   SaveInputStr := InputStr;
   InputMain(SaveInputStr,MaxLen,InputFlags);
+  
   IF (SaveInputStr = '') OR (Length(SQOutSp(SaveInputStr)) = 0) THEN
     IF NOT (NoBlankPrompt IN InputFlags) AND PYNQ('Blank String?',0,FALSE) THEN
       SaveInputStr := ''
     ELSE
-      SaveInputStr := InputStr;
+	  IF (SaveInputStr = '') THEN
+		SaveInputStr := InputStr;
+
   IF (SaveInputStr <> InputStr) THEN
     Changed := TRUE;
   InputStr := SaveInputStr;
-  {UserColor(0);}
 END;
 
 PROCEDURE InputMain(VAR S: STRING; MaxLen: Byte; InputFlags: InputFlagSet);
@@ -618,7 +618,7 @@ BEGIN
       S := SaveS;
       MPrompt(S);
     END;
-    }
+  }
     
   IF (IsPassword IN InputFlags) THEN
     Echo := TRUE;

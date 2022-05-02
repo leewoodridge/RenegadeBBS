@@ -10,12 +10,14 @@
  04/13/2022 - Added hangup check quick fix for extra 'a' commands after timeout -- could be in MenuExec or DoMenuExec,
               not sure if it matters ...
  04/26/2022 - Menu command error and SysOp log now executes for all users, not just CoSysOp+
+ 04/27/2022 - Menu command error messages use language file now (Invalid/NoACS)
 }
 UNIT Menus;
 
 INTERFACE
 
 USES
+crt,
   Common,
   Common3, {for inputscroll, my testing -- remove later}
   Events,
@@ -576,11 +578,11 @@ BEGIN
   IF (NOT Done) AND (Cmd <> '') THEN
     IF ((NOT CmdACS) AND (Cmd <> '')) THEN
     BEGIN
-      NL;
+      {NL;}
       IF ((CmdNotHid) AND (CmdExists)) THEN
-        Print('Insufficient clearence for this command.')
+        lRGLngStr(276,FALSE) {"You do not have access to this command!"}
       ELSE
-        Print('Invalid command.');
+        lRGLngStr(260,FALSE); {"Invalid menu command!"}
     END;
 END;
 
@@ -601,15 +603,13 @@ BEGIN
     Update_Node(NodeActivityDesc,TRUE);
 
   CASE Cmd[1] OF
-  (*
     '^' : CASE Cmd[2] OF { Command for testing }
             '^' : BEGIN
-                    
+                    print('x'+inttostr(hi(windmax))+' y'+inttostr(lo(windmax))+'%pa')
                   END;
           ELSE
             NoCmd := TRUE;
           END;
-          *)
     '$' : CASE Cmd[2] OF
             'D' : Deposit;
             'W' : Withdraw;

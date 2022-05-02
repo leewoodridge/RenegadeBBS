@@ -17,10 +17,13 @@ Lee Woodridge
  ... top users/files in here somewhere
  02/24/2022 - Added change conference strings (#256-259)
  03/20/2022 - added email cant send msgs 263-270
+ 00/00/0000 - 271-272 download top files
+ 00/00/0000 - 273-274 voting
+ 00/00/0000 - 275 max attempts
+ 04/27/2022 - 276 menu command no acs 
  -
- 
  add lightbar_continuous for continue lightbar prompt
- 
+ -
 bug where if a string is empty, like:
 $TEST_STRING
 $
@@ -667,6 +670,8 @@ BEGIN
                 RgStrNum := 274
               ELSE IF (S = 'EXCEEDED_MAX_ATTEMPTS') THEN
                 RgStrNum := 275
+              ELSE IF (S = 'MENU_COMMAND_NO_ACCESS') THEN
+                RgStrNum := 276
                 {// END OF COMB }
                 (*
               ELSE IF (S = '') THEN

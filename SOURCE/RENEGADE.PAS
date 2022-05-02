@@ -333,8 +333,8 @@ BEGIN
 
   Init;
 
-  MaxDisplayRows := (Hi(WindMax) + 1);
-  MaxDisplayCols := (Lo(WindMax) + 1);
+  MaxDisplayRows := (Hi(WindMax) + 1); {25}
+  MaxDisplayCols := (Lo(WindMax) + 1); {80}
   ScreenSize := 2 * MaxDisplayRows * MaxDisplayCols;
   IF (ScreenSize > 8000) THEN
     ScreenSize := 8000;

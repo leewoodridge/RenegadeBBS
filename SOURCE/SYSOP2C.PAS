@@ -64,7 +64,7 @@ BEGIN
         
           MCIAllowed := TRUE;
           NL;
-          InputChar('ACS Configuration [^1A^2-^1P^2,^1R^2-^1Z^2,(^1Q^2)uit]: ',Cmd,
+          InputChar('ACS Configuration [^1A^2-^1P^2,^1R^2-^1Z^2,<^1CR^2>Page,(^1Q^2)uit]: ',Cmd,
                     'QABCDEFGHIJKLMNOPRSTUVWXYZ!@'^M,[CapAll]);
           IF (Cmd IN ['A'..'P','R'..'Z']) THEN
             BEGIN
@@ -141,7 +141,7 @@ BEGIN
         
           MCIAllowed := TRUE;
           NL;
-          InputChar('ACS Configuration [^1A^2-^1B^2,(^1Q^2)uit]: ',Cmd,
+          InputChar('ACS Configuration [^1A^2-^1B^2,<^1CR^2>Page,(^1Q^2)uit]: ',Cmd,
                     'QAB'^M,[CapAll]);
           IF (Cmd IN ['A'..'B']) THEN
             BEGIN

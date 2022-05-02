@@ -276,6 +276,7 @@ VAR
         IF PYNQ('%LFIs this correct? ',0,FALSE) THEN
         BEGIN
           TempScheme1.Color[Ord(Cmd1) - 10] := NewColor;
+		  Changed := TRUE; { LeeW: Added}
         END;
       END;
     UNTIL (Cmd1 = ^M) OR (HangUp);

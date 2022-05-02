@@ -36,6 +36,9 @@ Lee Woodridge
  04/21/2022 - Nested GetC inside SetC since it's the only proc that calls it
  04/26/2022 - ANSIG now adds 2 to remote Y pos if status bar is enabled
  [NOTES]
+ 
+ messing with ansig/pagelength ...
+ 
  clean up setc/getc
  inputmessage linelen param should be 79??? or 80 ... is 78
  make avail\unavail mci string be conf through lang
@@ -197,10 +200,11 @@ TYPE
     NoInputRange,    { Don't display valid input range after prompt (numeric input only) - LeeW: Added }
     NoLineFeed,      { No linefeed after <CR> pressed }
     
-    AllowEscape,     { ESC aborts, leaving unchanged }
+    {AllowAbort}AllowEscape,     { ESC aborts, leaving unchanged }
+	{AllowBlank,}	 { Allow blank string, or a string of only spaces ???}
     
     { Input type }
-    NumbersOnly,     { Numeric values only } {IsNumberOnly}
+    NumbersOnly,     { Numeric values only }
     AllowNegative,   { Negative numbers allowed }
     IsPassword       { Masks input with echo char - LeeW: Added }
     (*
@@ -730,12 +734,12 @@ PROCEDURE ANSIG(X,Y: Byte);
 BEGIN
   { LeeW: Seems like you have to add 2 to remote Y position if status bar is enabled }
   IF (OkANSI) AND (ComPortSpeed > 0) THEN
-    BEGIN
-      IF (General.WindowOn) {AND (NOT General.IsTopWindow AND (Y > (MaxDisplayRows - 2))) OR (General.IsTopWindow)} THEN
+    (*BEGIN
+      IF (General.WindowOn) AND {(NOT General.IsTopWindow AND} (Y > (MaxDisplayRows - 2)){) OR (General.IsTopWindow)} THEN
         SerialOut(#27+'['+IntToStr(Y+2)+';'+IntToStr(X)+'H') {Row(Y);Column(X)}
-      ELSE 
+      ELSE *)
         SerialOut(#27+'['+IntToStr(Y)+';'+IntToStr(X)+'H');
-    END;
+    {END;}
   IF (WantOut) THEN
     GoToXY(X,Y);
 END;
@@ -2538,8 +2542,8 @@ FUNCTION PageLength: Word;
 BEGIN
   IF (InCom) THEN
     PageLength := ThisUser.PageLen
-  ELSE IF (General.WindowOn) AND NOT (InWFCMenu) THEN
-    PageLength := (MaxDisplayRows - 2)
+  (*ELSE IF (General.WindowOn) AND NOT (InWFCMenu) THEN { LeeW: seems to have fixed ANSI positioning bug }
+    PageLength := (MaxDisplayRows - 2)*)
   ELSE
     PageLength := MaxDisplayRows;
 END;

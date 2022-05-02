@@ -68,7 +68,7 @@ BEGIN
                               AOnOff((TimeOutBell = -1),'Off',IntToStr(TimeOutBell))+'^0/^1'+AOnOff((TimeOut = -1),'Off',
                               IntToStr(TimeOut))),39));
           NL;
-          InputChar('System Toggles [^1A^2-^1P^2,^1R^2-^1Z^2,(^1Q^2)uit]: ',Cmd,
+          InputChar('System Toggles [^1A^2-^1P^2,^1R^2-^1Z^2,<^1CR^2>Page,(^1Q^2)uit]: ',Cmd,
                     'QABCDEFGHIJKLMNOPRSTUVWXYZ'^M,[CapAll]);
           CASE Cmd OF
             ^M  : IF (OnPage = 1) THEN
@@ -146,7 +146,7 @@ BEGIN
                    PadLeftStr('^0(^1F^0) TimeStamp SysOp log       : ^1'+ShowOnOff(TimeStampLogs),39));
           PrintACR(PadLeftStr('^0(^1G^0) Use split chat as default : ^1'+ShowOnOff(DefSplitChat),39));
           NL;
-          InputChar('System Toggles [^1A^2-^1G^2,(^1Q^2)uit^2]: ',Cmd,
+          InputChar('System Toggles [^1A^2-^1G^2,<^1CR^2>Page,(^1Q^2)uit^2]: ',Cmd,
                     'QABCDEFG'^M,[CapAll]);
           CASE Cmd OF
             ^M  : IF (OnPage = 1) THEN
