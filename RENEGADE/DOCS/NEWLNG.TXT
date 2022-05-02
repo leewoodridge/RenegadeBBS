@@ -44,7 +44,7 @@ You can't reply to an anonymous message!
 $
 
 $Auto_Message_Header
-Auto-Message:
+%CL^4Auto-Message
 $
 
 $Enter_OneLiner
@@ -52,7 +52,7 @@ Enter your OneLiner:
 $
 
 $Add_OneLiner
-Add a OneLiner?
+Would you like to add a OneLiner?
 $
 
 $Add_OneLiner_Confirm
@@ -60,7 +60,7 @@ Are you sure you want to add this OneLiner?
 $
 
 $OneLiner_Header
-%BN OneLiners
+%CL^4OneLiners
 $
 
 $No_OneLiners
@@ -158,7 +158,7 @@ $Cant_Forward_User
 ^8%LFYou can not forward mail to that user!^0
 $
 
-@0 = User Name, @1 = User Number
+### @0 = User Name, @1 = User Number
 $Forwarding_To
 ^0%LFYour mail is now being forwarded to ^1@0 ^0(^1#@1^0)
 $
@@ -215,7 +215,7 @@ $Enter_City
 %LF^2Enter your city
 $
 
-@0 = 'state' OR 'province' depending on country
+### @0 = 'state' OR 'province' depending on country
 $Enter_State_Province
 %LF^2Enter your @0 abbreviation: @
 $
@@ -357,11 +357,11 @@ $QWK_New_Files
 $
 
 $Update_Info
-Please update the following information ...
+^0Please update the following information ...
 $
 
 $Update_Info_Done
-%LFThank you!
+%LF^0Thank you!%LF%PA
 $
 
 $Force_Batch_DL
@@ -373,7 +373,7 @@ $Force_Batch_UL
 $
 
 $Quote_Add
-Would you like to add a quote? 
+Would you like to add a Quote?
 $
 
 $Public_Messages_Header
@@ -386,7 +386,7 @@ $User_Not_Found
 ^8User not found^0
 $
 
-@0 = User Name
+### @0 = User Name
 $User_Search_Ask
 ^0Did you mean ^1@0^0? 
 $
@@ -522,7 +522,6 @@ $EMail_Deleted_Prompt
 ^0This user is deleted - Send E-Mail anyway?
 $
 
-
 $Top_Files_Download_Prompt
 %LFWould you like to download one of these files?
 $
@@ -542,4 +541,8 @@ $
 
 $EXCEEDED_MAX_ATTEMPTS
 ^8Exceeded maximum number of retries. Disconnecting.^0
+$
+
+$MENU_COMMAND_NO_ACCESS
+^8You do not have access to this command!^0
 $
