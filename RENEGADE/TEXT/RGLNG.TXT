@@ -1195,3 +1195,7 @@ $
 $EXCEEDED_MAX_ATTEMPTS
 ^8Exceeded maximum number of retries. Disconnecting.^0
 $
+
+$MENU_COMMAND_NO_ACCESS
+^8You do not have access to this command!^0
+$
