@@ -365,7 +365,7 @@ VAR
     ELSE
       Print('[---:----:----:----:----:----:----:----|----:----:----:----:----:----:----:---]');
   END;
-
+(*
   PROCEDURE ANSIG(X,Y: Byte);
   BEGIN
     IF (ComPortSpeed > 0) THEN
@@ -376,7 +376,7 @@ VAR
     IF (WantOut) THEN
       GoToXY(X,Y);
   END;
-
+*)
   PROCEDURE Count_Lines;
   BEGIN
     TotalLines := MaxLines;

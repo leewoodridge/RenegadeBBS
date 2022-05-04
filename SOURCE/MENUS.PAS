@@ -603,6 +603,7 @@ BEGIN
     Update_Node(NodeActivityDesc,TRUE);
 
   CASE Cmd[1] OF
+  (*
     '^' : CASE Cmd[2] OF { Command for testing }
             '^' : BEGIN
                     print('x'+inttostr(hi(windmax))+' y'+inttostr(lo(windmax))+'%pa')
@@ -610,6 +611,7 @@ BEGIN
           ELSE
             NoCmd := TRUE;
           END;
+          *)
     '$' : CASE Cmd[2] OF
             'D' : Deposit;
             'W' : Withdraw;
@@ -1052,12 +1054,17 @@ BEGIN
   LastCommandGood := NOT NoCmd;
   IF (LastCommandOvr) THEN
     LastCommandGood := FALSE;
+    
+  IF ((CurMenu = General.NewUserInformationMenu) AND (Cmd='OQ')) THEN
+    NoCmd := FALSE; {leew: quick and dirty fix}
+    
   IF (NoCmd) THEN
     (*IF (CoSysOp) THEN { LeeW: Why only CoSysOp? }*)
       BEGIN
         Print(lRGLngStr(260,TRUE)); {"Invalid command!"}
         SysOpLog('^8[E] ^1Invalid menu command '#196' C: "'+Cmd+'" P: "'+MenuOption+'"');
       END;
+      
   IF ((Cmd[1] + Cmd[2]) <> 'NW') THEN
     Update_Node('',FALSE);
   IF (NewMenuToLoad) THEN

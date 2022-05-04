@@ -1055,7 +1055,7 @@ BEGIN
               REPEAT
                 SaveFArea := FArea;
                 IF (Cmd = '?') THEN
-                  LFileAreaList(FArea,NumFAreas,5,FALSE);
+                  LFileAreaList(FArea,NumFAreas,6,FALSE);
                 InputChar(LRGLngStr(70,TRUE),Cmd,'Q[]?',[CapAll]); { File area list prompt }
                 TempPause := FALSE;
                 IF (Cmd <> 'Q') THEN
@@ -1123,7 +1123,7 @@ BEGIN
     REPEAT
       SaveFArea := FArea;
       IF (InputStr = '?') THEN
-        lFileAreaList(FArea,NumFAreas,5,FALSE);
+        lFileAreaList(FArea,NumFAreas,6,FALSE);
       {%LFChange file area? [^1#^2,^1?^2=^1Help^2,^1Q^2=^1Quit^2]: @}
       FileAreaScanInput(LRGLngStr(72,TRUE),Length(IntToStr(HighFileArea)),InputStr,'Q[]?',LowFileArea,HighFileArea);
       IF (InputStr <> 'Q') THEN

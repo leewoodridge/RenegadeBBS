@@ -739,7 +739,7 @@ BEGIN
           REPEAT
             SaveFArea := FArea;
             IF (InputStr = '?') THEN
-              LFileAreaList(FArea,NumFAreas,5,FALSE);
+              LFileAreaList(FArea,NumFAreas,6,FALSE);
 
             FileAreaScanInput('%LFMove to which file area? (^1'+IntToStr(LowFileArea)+'^2-^1'+IntToStr(HighFileArea)+'^2)'+
                              ' [^1?^2=^1First^2,^1<CR>^2=^1Next^2]: ',Length(IntToStr(HighFileArea)),InputStr,'[]?',

@@ -260,7 +260,7 @@ BEGIN
   REPEAT
     SaveFArea := FArea;
     IF (InputStr = '?') THEN
-      LFileAreaList(FArea,NumFAreas,5,TRUE);
+      LFileAreaList(FArea,NumFAreas,6,TRUE);
     {
     %LFToggle new scan? [^1#^2,^1#^2-^1#^2,^1F^2=^1Flag ^2or ^1U^2=^1Unflag All^2,^1?^2=^1Help^2,^1Q^2=^1Quit^2]: @
     }

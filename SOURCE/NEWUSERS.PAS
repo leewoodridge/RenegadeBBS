@@ -2,6 +2,8 @@
 {
 temporarily bypassed newuserq toggles, going to implement new system
 stopped newuser application putting caller id in sysop note since it has its own place already
+
+OQ invalid menu command happening line 116
 }
 UNIT NewUsers;
 
@@ -43,7 +45,8 @@ VAR
   CmdExists,
   Done: Boolean;
 BEGIN
-  SL1('* New user logon');
+  {SL1('* New user logon');}
+  SysOpLog('^9[*] ^1New user applying ...');
 
   UserNum := 0;
 

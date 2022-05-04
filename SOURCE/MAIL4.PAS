@@ -173,7 +173,7 @@ l param goes to regular selection
               REPEAT
                 SaveMArea := MArea;
                 IF (Cmd = '?') THEN
-                  MessageAreaList(MArea,NumMAreas,5,FALSE);
+                  MessageAreaList(MArea,NumMAreas,6,FALSE);
                 {
                 %LFMessage area list? [^1?^2=^1Help^2,^1Q^2=^1Quit^2]: @
                 }
@@ -242,7 +242,7 @@ l param goes to regular selection
     REPEAT
       SaveMArea := MArea;
       IF (InputStr = '?') THEN
-        MessageAreaList(MArea,NumMAreas,5,FALSE);
+        MessageAreaList(MArea,NumMAreas,6,FALSE);
       {
       %LFChange message area? [^1#^2,^1?^2=^1Help^2,^1Q^2=^1Quit^2]: @
       }
@@ -364,7 +364,7 @@ BEGIN
   REPEAT
     SaveMArea := MArea;
     IF (InputStr = '?') THEN
-      MessageAreaList(MArea,NumMAreas,5,TRUE);
+      MessageAreaList(MArea,NumMAreas,6,TRUE);
     {
     %LFToggle new scan? [^1#^2,^1#^2-^1#^2,^1F^2=^1Flag ^2or ^1U^2=^1Unflag All^2,^1?^2=^1Help^2,^1Q^2=^1Quit^2]: @
     }

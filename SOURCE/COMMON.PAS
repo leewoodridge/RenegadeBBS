@@ -201,7 +201,7 @@ TYPE
     NoLineFeed,      { No linefeed after <CR> pressed }
     
     {AllowAbort}AllowEscape,     { ESC aborts, leaving unchanged }
-	{AllowBlank,}	 { Allow blank string, or a string of only spaces ???}
+    {AllowBlank,}    { Allow blank string, or a string of only spaces ???}
     
     { Input type }
     NumbersOnly,     { Numeric values only }
@@ -674,7 +674,7 @@ FUNCTION SemiCmd(S: AStr; B: Byte): STRING; { retrieve command parameters separa
 FUNCTION MCI(CONST s: STRING): STRING;
 FUNCTION Plural(InString: STRING; Number: Integer): STRING; { Passes string, or string + s if number value <> 1 }
 FUNCTION FormattedTime(TimeUsed: LongInt): STRING; { Returns time - E.G. "10 Seconds" }
-FUNCTION FormatNumber(L: LongInt): STRING; { Returns “thousands-separated” number - E.G. "1,250" }
+FUNCTION FormatNumber(L: LongInt): STRING; { Returns ?thousands-separated? number - E.G. "1,250" }
 FUNCTION ToLower(S: STRING): STRING; { Returns string in all lowercase }
 FUNCTION LennMCI(CONST InString: STRING): Integer; { Returns string length minus MCIs and color codes }
 FUNCTION Substitute(Src: STRING; CONST Old,New: STRING): STRING; { Replace part of a string }
@@ -2542,8 +2542,8 @@ FUNCTION PageLength: Word;
 BEGIN
   IF (InCom) THEN
     PageLength := ThisUser.PageLen
-  (*ELSE IF (General.WindowOn) AND NOT (InWFCMenu) THEN { LeeW: seems to have fixed ANSI positioning bug }
-    PageLength := (MaxDisplayRows - 2)*)
+  ELSE IF (General.WindowOn) AND NOT (InWFCMenu) THEN
+    PageLength := (MaxDisplayRows - 2)
   ELSE
     PageLength := MaxDisplayRows;
 END;
@@ -3948,7 +3948,7 @@ END;
 PROCEDURE Star(InString: AStr);
 BEGIN
   IF (OkANSI OR OkAvatar) THEN
-    Prompt('^2þ ')
+    Prompt('^2? ')
   ELSE
     Prompt('* ');
   IF (InString[Length(InString)] = #29) THEN
