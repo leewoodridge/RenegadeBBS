@@ -11,6 +11,9 @@ Lee Woodridge
  10/19/2021 - Added SysOpLog error message if ONELM.EXT is missing
  04/15/2022 - Removed unused code (onrec)
               Added toggle for newest on top/bottom
+ 05/16/2022 - Fixed reading oneliner data file out of range
+            - Changed Counter var type from byte to integer (need negatives)
+            - removed unused var Counter2
 }
 UNIT OneLiner;
 
@@ -189,9 +192,9 @@ END;
 PROCEDURE OneLiner_View;
 VAR
   OneLinerList: OneLinerRecordType;
-  Counter, Counter2 : Byte;
+  Counter: Integer; { Need negatives }
 BEGIN
-Counter2 := 1;
+{Counter2 := 1;}
   Assign(OneLinerListFile,General.DataPath+'ONELINER.DAT');
   Reset(OneLinerListFile);
   LastError := IOResult;
@@ -223,6 +226,8 @@ Counter2 := 1;
       IF General.OneLinersNewTop THEN
         FOR Counter := (FileSize(OneLinerListFile)) DOWNTO (FileSize(OneLinerListFile)-9) DO { LeeW: Newest at top }
           BEGIN
+            IF (Counter<1) THEN
+              Break;
             Seek(OneLinerListFile,(Counter-1));
             Read(OneLinerListFile,OneLinerList);
             DisplayBuffer(OneLinerListMCI,@OneLinerList,NIL);
@@ -230,6 +235,8 @@ Counter2 := 1;
       ELSE
         FOR Counter := (FileSize(OneLinerListFile)-9) TO (FileSize(OneLinerListFile)) DO { LeeW: Newest at bottom }
           BEGIN
+            IF (Counter<1) THEN
+              Continue;
             Seek(OneLinerListFile,(Counter-1));
             Read(OneLinerListFile,OneLinerList);
             DisplayBuffer(OneLinerListMCI,@OneLinerList,NIL);
