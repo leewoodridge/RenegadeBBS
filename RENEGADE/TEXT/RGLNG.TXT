@@ -728,8 +728,8 @@ $Saved
 ^9Saved!
 $
 
-$Name_First_AND_Last
-^8Enter your first AND last name!^0%PA
+$Name_First_And_Last
+^8Enter your first AND last name!^0
 $
 
 $Name_Exists
@@ -737,7 +737,7 @@ $Name_Exists
 $
 
 $Name_Blacklisted
-^8That username has been blacklisted!^0
+^8That name has been blacklisted!^0
 $
 
 $Invalid_Address
@@ -1198,4 +1198,8 @@ $
 
 $MENU_COMMAND_NO_ACCESS
 ^8You do not have access to this command!^0
+$
+
+$Name_Invalid
+^8Invalid username!^0
 $
