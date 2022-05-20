@@ -546,3 +546,7 @@ $
 $MENU_COMMAND_NO_ACCESS
 ^8You do not have access to this command!^0
 $
+
+$Name_Invalid
+^8Invalid username!^0
+$
