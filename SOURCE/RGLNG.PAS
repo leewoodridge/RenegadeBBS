@@ -672,6 +672,8 @@ BEGIN
                 RgStrNum := 275
               ELSE IF (S = 'MENU_COMMAND_NO_ACCESS') THEN
                 RgStrNum := 276
+              ELSE IF (S = 'NAME_INVALID') THEN
+                RgStrNum := 277
                 {// END OF COMB }
                 (*
               ELSE IF (S = '') THEN
