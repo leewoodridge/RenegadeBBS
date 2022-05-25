@@ -34,7 +34,6 @@ Lee Woodridge
  11/23/2021 - increased number parameter of plural from byte to integer
  04/15/2022 - added timestamplogs toggle
  04/21/2022 - Nested GetC inside SetC since it's the only proc that calls it
- 04/26/2022 - ANSIG now adds 2 to remote Y pos if status bar is enabled
  [NOTES]
  
  messing with ansig/pagelength ...
@@ -289,6 +288,7 @@ CONST
   MakeQWKFor: Integer = 0;                { Are we making a QWK packet only? }
   UpQWKFor: Integer = 0;                  { Are we uploading a QWK packet only? }
   PackBasesOnly: Boolean = FALSE;         { Are we packing message bases only? }
+  PackUsersOnly: Boolean = FALSE;         { Are we packing users only? -- LeeW: Added } 
   SortFilesOnly: Boolean = FALSE;         { Are we sorting file bases only? }
   FileBBSOnly: Boolean = FALSE;           { Are we verifying FILES.BBS only? }
   {}
@@ -731,17 +731,23 @@ BEGIN
 END;
 
 PROCEDURE ANSIG(X,Y: Byte);
+VAR
+  ToggleBack: Boolean;
 BEGIN
-  { LeeW: Seems like you have to add 2 to remote Y position if status bar is enabled }
+  ToggleBack := FALSE;
+  IF (General.WindowOn) AND (Y>PageLength-2) THEN
+    BEGIN
+      ToggleBack := TRUE;
+      ToggleWindow(FALSE);
+    END;
+  
   IF (OkANSI) AND (ComPortSpeed > 0) THEN
-    (*BEGIN
-      IF (General.WindowOn) AND {(NOT General.IsTopWindow AND} (Y > (MaxDisplayRows - 2)){) OR (General.IsTopWindow)} THEN
-        SerialOut(#27+'['+IntToStr(Y+2)+';'+IntToStr(X)+'H') {Row(Y);Column(X)}
-      ELSE *)
-        SerialOut(#27+'['+IntToStr(Y)+';'+IntToStr(X)+'H');
-    {END;}
+    SerialOut(#27+'['+IntToStr(Y)+';'+IntToStr(X)+'H');
   IF (WantOut) THEN
     GoToXY(X,Y);
+    
+  IF (ToggleBack) THEN
+    ToggleWindow(TRUE);
 END;
 
 FUNCTION ToLower(S: STRING): STRING;
@@ -1162,6 +1168,9 @@ BEGIN
               S := Substitute(S,'@0',IntToStr(UnVotedTopics));
               S := Substitute(S,'@1',Plural('',UnVotedTopics));
             END;
+      279 : FOR b := 0 TO 1 DO { $YOUR_PUBLIC_MSGS_FOUND }
+              IF (LangStringArray[b] <> '') THEN
+                S := Substitute(S,'@'+IntToStr(b),LangStringArray[b]);
     END;
     { -- }
     IF (PassValue) THEN
@@ -2542,8 +2551,8 @@ FUNCTION PageLength: Word;
 BEGIN
   IF (InCom) THEN
     PageLength := ThisUser.PageLen
-  ELSE IF (General.WindowOn) AND NOT (InWFCMenu) THEN
-    PageLength := (MaxDisplayRows - 2)
+  {ELSE IF (General.WindowOn) AND NOT (InWFCMenu) THEN
+    PageLength := (MaxDisplayRows - 2)}
   ELSE
     PageLength := MaxDisplayRows;
 END;
@@ -4145,7 +4154,7 @@ BEGIN
   MCIAllowed := SaveMCIAllowed;
 END;
 
-FUNCTION SearchUser(Uname: Str36; RealNameOK: Boolean): Integer;
+FUNCTION SearchUser(UName: Str36; RealNameOK: Boolean): Integer;
 VAR
   UserIDX: UserIDXRec;
   Current: Integer;
@@ -4155,14 +4164,14 @@ BEGIN
   Reset(UserIDXFile);
   IF (IOResult <> 0) THEN
     BEGIN
-    SysOpLog('Error opening USERS.IDX.');
-    Exit;
-  END;
+      SysOpLog('Error opening USERS.IDX.');
+      Exit;
+    END;
 
   WHILE (Uname[Length(Uname)] = ' ') DO
     Dec(Uname[0]);
 
-  Uname := AllCaps(Uname);
+  UName := AllCaps(UName);
 
   Current := 0;
   Done := FALSE;

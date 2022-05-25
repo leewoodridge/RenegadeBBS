@@ -674,6 +674,14 @@ BEGIN
                 RgStrNum := 276
               ELSE IF (S = 'NAME_INVALID') THEN
                 RgStrNum := 277
+              ELSE IF (S = 'YOUR_PUBLIC_MSGS_SCANNING') THEN
+                RgStrNum := 278
+              ELSE IF (S = 'YOUR_PUBLIC_MSGS_FOUND') THEN
+                RgStrNum := 279
+              ELSE IF (S = 'YOUR_PUBLIC_MSGS_NONE') THEN
+                RgStrNum := 280
+              ELSE IF (S = 'YOUR_PUBLIC_MSGS_READ') THEN
+                RgStrNum := 281
                 {// END OF COMB }
                 (*
               ELSE IF (S = '') THEN

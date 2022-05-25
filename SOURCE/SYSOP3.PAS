@@ -1089,29 +1089,57 @@ BEGIN
                   '+' : CStuff(25,3,User); { Mailbox }
                   '1'..'5' :
                         ChangeRecords(Ord(Cmd) - 48);
-                  'A' : BEGIN
+                  'A' : IF (UNum = 0) THEN { Don't use CStuff if new user template }
+                          BEGIN
+                            NL;
+                            Prompt('^2New User Name: ');
+                            InputMain(TempStr,(SizeOf(ThisUser.Name) - 1),[CapAll,AllowEscape]);
+                            UNum1 := SearchUser(TempStr,FALSE);
+                            IF ((UNum1 = 0) OR (UNum1 = UNum)) AND (TempStr <> '') THEN
+                              BEGIN
+                                User.Name := TempStr;
+                                Save := TRUE;
+                              END;
+                          END
+                        ELSE
+                          CStuff(1,3,User); { User name }
+                     (* BEGIN
                           IF (Deleted IN User.SFlags) THEN
                             Print('Can''t rename deleted users.')
                           ELSE
+                            BEGIN
+                              Print('Enter new name.');
+                              Prt(': ');
+                              InputMain(TempStr,(SizeOf(ThisUser.Name) - 1),[CapAll]);
+                              UNum1 := SearchUser(TempStr,TRUE);
+                              IF ((UNum1 = 0) OR (UNum1 = UNum)) AND (TempStr <> '') THEN
+                                BEGIN
+                                  InsertIndex(User.Name,UNum,FALSE,TRUE);
+                                  User.Name := TempStr;
+                                  InsertIndex(User.Name,UNum,FALSE,FALSE);
+                                  Save := TRUE;
+                                  IF (UNum = UserNum) THEN
+                                    ThisUser.Name := TempStr;
+                                END
+                              ELSE
+                                Print('Illegal Name.');
+                            END;
+                        END; *)
+                  'B' : IF (UNum = 0) THEN { Don't use CStuff if new user template }
                           BEGIN
-                            Print('Enter new name.');
-                            Prt(': ');
-                            InputMain(TempStr,(SizeOf(ThisUser.Name) - 1),[CapAll]);
+                            NL;
+                            Prompt('^2New Real Name: ');
+                            InputMain(TempStr,(SizeOf(ThisUser.RealName) - 1),[CapWords,AllowEscape]);
                             UNum1 := SearchUser(TempStr,TRUE);
                             IF ((UNum1 = 0) OR (UNum1 = UNum)) AND (TempStr <> '') THEN
-                            BEGIN
-                              InsertIndex(User.Name,UNum,FALSE,TRUE);
-                              User.Name := TempStr;
-                              InsertIndex(User.Name,UNum,FALSE,FALSE);
-                              Save := TRUE;
-                              IF (UNum = UserNum) THEN
-                                ThisUser.Name := TempStr;
-                            END
-                            ELSE
-                              Print('Illegal Name.');
-                          END;
-                        END;
-                  'B' : BEGIN
+                              BEGIN
+                                User.RealName := TempStr;
+                                Save := TRUE;
+                              END;
+                          END
+                        ELSE
+                          CStuff(2,3,User); { Real name }
+                     (* BEGIN
                           TempStr := User.RealName;
                           CStuff(2,3,User); { Real name }
                           IF (User.RealName <> TempStr) THEN
@@ -1119,7 +1147,7 @@ BEGIN
                             InsertIndex(TempStr,UNum,TRUE,TRUE);
                             InsertIndex(User.RealName,UNum,TRUE,FALSE);
                           END;
-                        END;
+                        END; *)
                   'C' : CStuff(4,3,User); { Address }
                   'D' : CStuff(5,3,User); { City, State }
                   'E' : CStuff(6,3,User); { Zip code }
@@ -1303,7 +1331,7 @@ BEGIN
                           CStuff(8,3,User); { Birthdate }
                           CStuff(9,3,User); { Gender }
                         END;
-                  'R' : CStuff(7,3,User); { Phone num }
+                  'R' : CStuff(7,3,User); { Phone number }
                   'T' : BEGIN
                           Print('New last on date (MM/DD/YYYY).');
                           Prt(': ');

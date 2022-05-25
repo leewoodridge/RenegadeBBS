@@ -1266,7 +1266,8 @@ BEGIN
     MsgsFound := FALSE;
     Write(ScanAllPublicMsgFile,MsgsFound);
   END;
-  Prompt('%LF|11S|03canning |11F|03or |11Y|03our |15NEW |11P|03ublic |11M|03essages |11. . . ');
+  {Prompt('%LF|11S|03canning |11F|03or |11Y|03our |15NEW |11P|03ublic |11M|03essages |11. . . ');}
+  lRGLngStr(278,FALSE);
   FirstTime := TRUE;
   AnyFound := FALSE;
   MArea := 1;
@@ -1305,10 +1306,13 @@ BEGIN
             IF (FirstTime) THEN
             BEGIN
               NL;
-              NL;
+              {NL;}
               FirstTime := FALSE;
             END;
-            Print('^1'+PadLeftStr(MemMsgArea.Name,30)+' ^0'+IntToStr(PubMsgsFound));
+            {Print('^1'+PadLeftStr(MemMsgArea.Name,30)+' ^0'+IntToStr(PubMsgsFound));}
+            LangStringArray[0] := MemMsgArea.Name;
+            LangStringArray[1] := IntToStr(PubMsgsFound);
+            lRGLngStr(279,FALSE);
             AnyFound := TRUE;
           END;
         END;
@@ -1318,13 +1322,14 @@ BEGIN
   END;
   Close(ScanAllPublicMsgFile);
   IF (NOT AnyFound) THEN
-    Print('|15NO |11M|03essages |11F|03ound|11.')
+    lRGLngStr(280,FALSE)
+    {Print('|15NO |11M|03essages |11F|03ound|11.')}
   ELSE
   BEGIN
     Abort := FALSE;
     Next := FALSE;
-    NL;
-    IF PYNQ('Read your new public messages now? ',0,FALSE) THEN
+    {NL;}
+    IF PYNQ(lRGLngStr(281,TRUE){;'Read your new public messages now? '},0,FALSE) THEN
     BEGIN
       Assign(ScanAllPublicMsgFile,TempDir+'SAPM'+IntToStr(ThisNode)+'.DAT');
       Reset(ScanAllPublicMsgFile);

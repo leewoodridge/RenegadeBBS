@@ -4,7 +4,7 @@ Added: Won't ask for forgot pw answer if question is blank
 Added: Almost all strings are in lang except for a few i'm still working on
 All CStuff calls in other units have been updated, might need to change how in some of them, maint will be =1 for mandatory
  05/14/2022 - fixed maxtries now counts right
-			- AskName no longer lets you bypass with blank string fixed input validation
+            - AskName no longer lets you bypass with blank string fixed input validation
 
 colorscheme and screen have changed var now
 --
@@ -68,21 +68,21 @@ VAR
       Delete(TmpName,1,1);
     WHILE (TmpName[Length(TmpName)] = ' ') DO
       Dec(TmpName[0]);
-	  
-	{ Invalid checks start here }
-	  
+      
+    { Invalid checks start here }
+      
     IF ((Pos(' ',TmpName) = 0) AND (How <> 3) AND NOT (General.AllowAlias)) THEN
       BEGIN
         Done1 := FALSE;
         Print(^G+lRGLngStr(156,TRUE)); {"First and last!"}
         SL1('Invalid name: '+TmpName+' (single word)' );
       END
-	ELSE IF SqOutSp(TmpName) = '' THEN {blank name}
-	  BEGIN
-		Done1 := FALSE;
-		Print(^G+lRGLngStr(277,TRUE)); {"Invalid name, try again!"}
+    ELSE IF SqOutSp(TmpName) = '' THEN {blank name}
+      BEGIN
+        Done1 := FALSE;
+        Print(^G+lRGLngStr(277,TRUE)); {"Invalid name, try again!"}
         SL1('Invalid name: '+TmpName+' (blank)' );
-	  END
+      END
     ELSE
       BEGIN
         UNum := SearchUser(TmpName,TRUE);
@@ -92,10 +92,10 @@ VAR
             Print(^G+lRGLngStr(157,TRUE)); {"Already exists"}
             SL1('Invalid name: '+TmpName+' (duplicate)' );
           END
-		ELSE
-		  Done1 := TRUE;
-		  
-		{ Check if name is blacklisted }
+        ELSE
+          Done1 := TRUE;
+          
+        { Check if name is blacklisted }
         Assign(TextFile,General.MiscPath+'TRASHCAN.TXT');
         Reset(TextFile);
         IF (IOResult = 0) THEN
@@ -120,23 +120,23 @@ VAR
             Close(TextFile);
           END;
       END;
-	  
-	{ - }
-	  
+      
+    { - }
+      
     IF (Done1) THEN
-	  BEGIN
-		IF (How = 2) THEN
-		  SysOpLog('Changed username from '+User.Name+' to '+TmpName);
-		IF (UserNum > -1) THEN { Don't add index of unregistered users! }
+      BEGIN
+        IF (How = 2) THEN
+          SysOpLog('Changed username from '+User.Name+' to '+TmpName);
+        IF (UserNum > -1) THEN { Don't add index of unregistered users! }
           BEGIN
-		    Print(IntToStr(UserNum)+'%PA'); { LeeW: Testing }
-			InsertIndex(User.Name,UserNum,FALSE,TRUE);
-			User.Name := TmpName;
-			InsertIndex(User.Name,UserNum,FALSE,FALSE);
+            (*Print(IntToStr(UserNum)+'%PA'); { LeeW: Testing }*)
+            InsertIndex(User.Name,UserNum,FALSE,TRUE);
+            User.Name := TmpName;
+            InsertIndex(User.Name,UserNum,FALSE,FALSE);
           END
-		ELSE
+        ELSE
           User.Name := TmpName;
-	  END;
+      END;
   END;
 
   PROCEDURE AskRealName;
@@ -180,19 +180,19 @@ VAR
           END;
       END;
     IF (Done1) THEN
-	  BEGIN
-		IF (How = 2) THEN
-		  SysOpLog('Changed real name from '+User.RealName+' to '+TmpRealName);
-		IF (UserNum > -1) THEN { Don't add index of unregistered users! }
-		  BEGIN
-			Print(IntToStr(UserNum)+'%PA'); { LeeW: Testing }
-		    InsertIndex(User.RealName,UserNum,TRUE,TRUE);
-			User.RealName := TmpRealName;
-			InsertIndex(User.RealName,UserNum,TRUE,FALSE);
-		  END
-		ELSE
-		  User.RealName := TmpRealName;
-	  END;    
+      BEGIN
+      (*Print('UNum:'+IntToStr(unum)+'... UserNum:'+inttostr(usernum)+' %PA'); { LeeW: Testing }*)
+        IF (How = 2) THEN
+          SysOpLog('Changed real name from '+User.RealName+' to '+TmpRealName);
+        IF (UserNum > -1) THEN { Don't add index of unregistered users! }
+          BEGIN
+            InsertIndex(User.RealName,UserNum,TRUE,TRUE);
+            User.RealName := TmpRealName;
+            InsertIndex(User.RealName,UserNum,TRUE,FALSE);
+          END
+        ELSE
+          User.RealName := TmpRealName;
+      END;    
   END;
 
   PROCEDURE AskCountry;
@@ -987,14 +987,14 @@ BEGIN
                 lRGLngStr(275,FALSE); {"Exceeded maximum number of retries. Disconnecting."}
                 HangUp := TRUE;
               END
-			ELSE
-			  WW(Which);
+            ELSE
+              WW(Which);
           UNTIL (Done1) OR (HangUp);
     2,3 :
           BEGIN { 2 = "OP" Menu command, 3 = User editor }
             WW(Which);
             IF (NOT Done1) THEN
-              lRGLngStr(154,FALSE); {"Aborted!"} (*Print('^8Function aborted!^0');*)
+              lRGLngStr(154,FALSE); {"Aborted!"}
             IF (How=2) THEN
               PauseScr(FALSE);
           END;
