@@ -550,3 +550,20 @@ $
 $Name_Invalid
 ^8Invalid username!^0
 $
+
+$Your_Public_Msgs_Scanning
+%LFScanning for new public messages addressed to you ...
+$
+
+### @0 = Message base name @1 = Number of messages found
+$Your_Public_Msgs_Found
+^0@0 : ^1@1
+$
+
+$Your_Public_Msgs_None
+No messages found
+$
+
+$Your_Public_Msgs_Read
+%LFRead your new public messages now?
+$
