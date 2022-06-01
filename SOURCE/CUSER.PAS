@@ -1,19 +1,24 @@
 {$A+,B-,D+,E-,F+,I-,L+,N-,O+,R-,S+,V-}
 {
-Added: Won't ask for forgot pw answer if question is blank
-Added: Almost all strings are in lang except for a few i'm still working on
-All CStuff calls in other units have been updated, might need to change how in some of them, maint will be =1 for mandatory
+ 00/00/0000 - Added: Won't ask for forgot pw answer if question is blank
+            - Added: Almost all strings are in lang except for a few i'm still working on
+            - All CStuff calls in other units have been updated, might need to change how in some of them,
+              maint will be =1 for mandatory
+            - maxtries hangup now in lang
+            - colorscheme and screensize now have changed var
  05/14/2022 - fixed maxtries now counts right
             - AskName no longer lets you bypass with blank string fixed input validation
-
-colorscheme and screen have changed var now
+ 05/25/2022 - Added input validation to address
+ 05/30/2022 - Added separate user editor prompts (EXCEPT mailbox--thats in SYSOP3)
+ 
 --
 TODO:
+minor aesthetic work, mostly for user editor prompts
 Update lightbarproc when datafile changes are made
 add country in userrec
 better validation for qwk & screensize
-better maxtries msg/file before hangup
 }
+
 UNIT CUser;
 
 INTERFACE
@@ -47,7 +52,6 @@ VAR
     TextFile: Text;
     UNum: Integer;
   BEGIN
-    (*Done1 := FALSE; { Probably don't need this }*)
     IF (How = 1) THEN
       IF (General.AllowAlias) AND (IEMSIRec.Handle <> '') THEN
         BEGIN
@@ -59,10 +63,16 @@ VAR
           Buf := IEMSIRec.UserName;
           IEMSIRec.UserName := '';
         END;
-    IF (General.AllowAlias) THEN
-      lRGLngStr(195,FALSE) {"Enter handle"}
+    IF (How<>3) THEN
+      BEGIN
+        IF (General.AllowAlias) THEN
+          lRGLngStr(195,FALSE) {"Enter handle"}
+        ELSE
+          lRGLngStr(196,FALSE); {"Enter real name"}
+      END
     ELSE
-      lRGLngStr(196,FALSE); {"Enter real name"}
+      Prt('New Username: '); { Prompt for user editor }
+      
     InputMain(TmpName,(SizeOf(User.Name)-1),[CapAll]);
     WHILE (TmpName[1] IN [' ','0'..'9']) AND (Length(TmpName) > 0) DO
       Delete(TmpName,1,1);
@@ -80,8 +90,11 @@ VAR
     ELSE IF SqOutSp(TmpName) = '' THEN {blank name}
       BEGIN
         Done1 := FALSE;
-        Print(^G+lRGLngStr(277,TRUE)); {"Invalid name, try again!"}
-        SL1('Invalid name: '+TmpName+' (blank)' );
+        IF (How<>3) THEN
+          BEGIN
+            Print(^G+lRGLngStr(277,TRUE)); {"Invalid name, try again!"}
+            SL1('Invalid name: '+TmpName+' (blank)' );
+          END;
       END
     ELSE
       BEGIN
@@ -89,40 +102,43 @@ VAR
         IF (UNum > 0) AND (UNum <> UserNum) THEN
           BEGIN
             Done1 := FALSE;
-            Print(^G+lRGLngStr(157,TRUE)); {"Already exists"}
-            SL1('Invalid name: '+TmpName+' (duplicate)' );
+            IF (How<>3) THEN
+              BEGIN
+                Print(^G+lRGLngStr(157,TRUE)); {"Already exists"}
+                SL1('Invalid name: '+TmpName+' (duplicate)' );
+              END;
           END
         ELSE
           Done1 := TRUE;
-          
-        { Check if name is blacklisted }
-        Assign(TextFile,General.MiscPath+'TRASHCAN.TXT');
-        Reset(TextFile);
-        IF (IOResult = 0) THEN
+        
+        IF (How<>3) THEN { Don't check for blacklisted names if in user editor }
           BEGIN
-            TmpName2 := ' '+TmpName+' ';
-            WHILE NOT EOF(TextFile) DO
+            Assign(TextFile,General.MiscPath+'TRASHCAN.TXT');
+            Reset(TextFile);
+            IF (IOResult = 0) THEN
               BEGIN
-                ReadLn(TextFile,TmpName1);
-                IF (TmpName1[Length(TmpName1)] = #1) THEN
-                  TmpName1[Length(TmpName1)] := ' '
-                ELSE
-                  TmpName1 := TmpName1 + ' ';
-                TmpName1 := ' ' + TmpName1;
-                TmpName1 := AllCaps(TmpName1);
-                IF (Pos(TmpName1,TmpName2) <> 0) THEN
+                TmpName2 := ' '+TmpName+' ';
+                WHILE NOT EOF(TextFile) DO
                   BEGIN
-                    Done1 := FALSE;
-                    Print(^G+lRGLngStr(158,TRUE)); {"Blacklisted"}
-                    SL1('Invalid username: '+TmpName+' (blacklisted)' );
+                    ReadLn(TextFile,TmpName1);
+                    IF (TmpName1[Length(TmpName1)] = #1) THEN
+                      TmpName1[Length(TmpName1)] := ' '
+                    ELSE
+                      TmpName1 := TmpName1 + ' ';
+                    TmpName1 := ' ' + TmpName1;
+                    TmpName1 := AllCaps(TmpName1);
+                    IF (Pos(TmpName1,TmpName2) <> 0) THEN
+                      BEGIN
+                        Done1 := FALSE;
+                        Print(^G+lRGLngStr(158,TRUE)); {"Blacklisted"}
+                        SL1('Invalid username: '+TmpName+' (blacklisted)' );
+                      END;
                   END;
+                Close(TextFile);
               END;
-            Close(TextFile);
           END;
       END;
-      
-    { - }
-      
+    
     IF (Done1) THEN
       BEGIN
         IF (How = 2) THEN
@@ -157,17 +173,25 @@ VAR
           Buf := IEMSIRec.UserName;
           IEMSIRec.UserName := '';
         END;
-    lRGLngStr(197,FALSE); {"Enter real name"}
+        
+    IF (How<>3) THEN
+      lRGLngStr(197,FALSE) {"Enter real name"}
+    ELSE
+      Prt('New Real Name: ');
     InputMain(TmpRealName,(SizeOf(User.RealName)-1),[CapWords]);
     WHILE (TmpRealName[1] IN [' ','0'..'9']) AND (Length(TmpRealName) > 0) DO
       Delete(TmpRealName,1,1);
     WHILE (TmpRealName[Length(TmpRealName)] = ' ') DO
       Dec(TmpRealName[0]);
-    IF (Pos(' ',TmpRealName) = 0) AND (How <> 3) THEN
+    
+    IF (TmpRealName='') OR ((Pos(' ',TmpRealName) = 0) AND (How <> 3)) THEN
       BEGIN
         Done1 := FALSE;
-        Print(^G+lRGLngStr(156,TRUE)); {"First and last!"}
-        SL1('Invalid real name: '+TmpRealName+' (single word)' );
+        IF (How<>3) THEN
+          BEGIN
+            Print(^G+lRGLngStr(156,TRUE)); {"First and last!"}
+            SL1('Invalid real name: '+TmpRealName+' (single word)' );
+          END;
       END
     ELSE 
       BEGIN
@@ -175,13 +199,15 @@ VAR
         IF (UNum > 0) AND (UNum <> UserNum) THEN
           BEGIN
             Done1 := FALSE;
-            Print(^G+lRGLngStr(157,TRUE)); {"Already exists"}
-            SL1('Invalid real name: '+TmpRealName+' (duplicate)' );
+            IF (How<>3) THEN
+              BEGIN
+                Print(^G+lRGLngStr(157,TRUE)); {"Already exists"}
+                SL1('Invalid real name: '+TmpRealName+' (duplicate)' );
+              END;
           END;
       END;
     IF (Done1) THEN
       BEGIN
-      (*Print('UNum:'+IntToStr(unum)+'... UserNum:'+inttostr(usernum)+' %PA'); { LeeW: Testing }*)
         IF (How = 2) THEN
           SysOpLog('Changed real name from '+User.RealName+' to '+TmpRealName);
         IF (UserNum > -1) THEN { Don't add index of unregistered users! }
@@ -199,7 +225,10 @@ VAR
   VAR
     TmpCountry: Char;
   BEGIN
-    lRGLngStr(198,FALSE); {"Select country"}
+    IF (How<>3) THEN
+      lRGLngStr(198,FALSE) {"Select country"}
+    ELSE
+      Prt('^2Select Country [(^11^2)USA,(^12^2)Canada,(^13^2)Other]: '); { User editor prompt }
     IF (How=1) THEN
       InputChar('',TmpCountry,'123',[CapAll])
     ELSE
@@ -214,13 +243,43 @@ VAR
   PROCEDURE AskAddress;
   VAR
     TmpAddress: STRING[30];
+    
+    FUNCTION AddressOK(S: STRING): Boolean;
+    VAR
+      I: Integer;
+      B1,B2,B3: Boolean;
+    BEGIN
+      B1 := FALSE;
+      B2 := FALSE;
+      B3 := FALSE;
+      FOR I:= 1 TO Length(S) DO
+        BEGIN
+          IF (S[I] IN ['a'..'z','A'..'Z']) THEN
+            B1 := TRUE;
+          IF (S[I] IN ['0'..'9']) THEN
+            B2 := TRUE;
+          IF (S[I] IN [' ']) THEN
+            B3 := TRUE;
+        END;
+      IF (B1 AND B2 AND B3) THEN
+        AddressOK := TRUE
+      ELSE
+        AddressOK := FALSE;
+    END;
+    
   BEGIN
     TmpAddress := User.Street;
-    lRGLngStr(199,FALSE); {"Enter your address"}
-    InputMain(TmpAddress,(SizeOf(User.Street)-1),[CapWords]);
-    IF (TmpAddress <> '') THEN { LeeW: Add check for 1 letter, 1 number, 1 space }
+    
+    IF (How<>3) THEN
+      lRGLngStr(199,FALSE) {"Enter address"}
+    ELSE
+      Prompt('^2New Address: '); { User editor prompt }
+    
+    InputString('',TmpAddress,(SizeOf(User.Street)-1),[CapWords],Changed);
+    
+    IF AddressOK(TmpAddress) OR (How=3) THEN { Check for 1 letter, 1 number, 1 space }
       BEGIN
-        IF (How = 2) AND (TmpAddress <> User.Street) THEN
+        IF (How=2) AND (User.Street<>TmpAddress) THEN
           SysOpLog('Changed address from '+User.Street+' to '+TmpAddress);
         User.Street := TmpAddress;
         Done1 := TRUE;
@@ -232,38 +291,37 @@ VAR
     TmpCityState,
     TmpCityState1: AStr;
   BEGIN
-    IF (How <> 1) OR (TmpCountryCode=0) THEN
+    IF ((How <> 1) OR (TmpCountryCode=0)) and (how<>3) THEN
       AskCountry;
     {/}
+    
+    IF (How = 3) THEN { User editor }
+      BEGIN
+        Prt('Enter new city & state abbreviation: ');
+        InputMain(TmpCityState,(SizeOf(User.CityState) - 1),[]);
+        IF (TmpCityState <> '') THEN
+          User.CityState := TmpCityState;
+        Done1 := TRUE;
+        Exit;
+      END;
+    
     CASE TmpCountryCode OF
       1, 2  : BEGIN
-                IF (How = 3) THEN { User editor }
+                lRGLngStr(200,FALSE); {"Enter city name"}
+                InputMain(TmpCityState,((SizeOf(User.CityState) - 1) - 4),[CapWords]);
+                IF (Pos(',',TmpCityState) <> 0) THEN
                   BEGIN
-                    Prt('Enter new city & state abbreviation: ');
-                    InputMain(TmpCityState,(SizeOf(User.CityState) - 1),[{CapWords}]);
-                    IF (TmpCityState <> '') THEN
-                      User.CityState := TmpCityState;
-                    Done1 := TRUE;
+                    lRGLngStr(160,FALSE); {"Invalid"}
                     Exit;
-                  END
-                ELSE
-                  BEGIN
-                    lRGLngStr(200,FALSE); {"Enter city name"}
-                    InputMain(TmpCityState,((SizeOf(User.CityState) - 1) - 4),[CapWords]);
-                    IF (Pos(',',TmpCityState) <> 0) THEN
-                      BEGIN
-                        lRGLngStr(160,FALSE); {"Invalid"}
-                        Exit;
-                      END;
-                    IF (Length(TmpCityState) < 3) THEN
-                      Exit;
-                    LangStringArray[0] := AOnOff((TmpCountryCode = 1),'state','province');
-                    lRGLngStr(201,FALSE); {"Enter state/province abbreviation"}
-                    InputMain(TmpCityState1,2,[CapAll]);
-                    IF (Length(TmpCityState1) < 2) THEN
-                      Exit;
-                    TmpCityState := TmpCityState+', '+TmpCityState1;
                   END;
+                IF (Length(TmpCityState) < 3) THEN
+                  Exit;
+                LangStringArray[0] := AOnOff((TmpCountryCode = 1),'state','province');
+                lRGLngStr(201,FALSE); {"Enter state/province abbreviation"}
+                InputMain(TmpCityState1,2,[CapAll]);
+                IF (Length(TmpCityState1) < 2) THEN
+                  Exit;
+                TmpCityState := TmpCityState+', '+TmpCityState1;
               END;
       3     : BEGIN
                 lRGLngStr(200,FALSE); {"Enter city name"}
@@ -286,17 +344,40 @@ VAR
     TmpZipCode: STRING[10];
   BEGIN
     IF (How <> 1) OR (TmpCountryCode=0) THEN
-      AskCountry;
+      BEGIN
+        AskCountry;
+        NL;
+      END;
+      
+    TmpZipCode := User.ZipCode;
+      
     CASE TmpCountryCode OF
-      1 : InputFormatted(lRGLngStr(202,TRUE),TmpZipCode,'#####-####',(How <> 1)); {"Enter zip code"}
-      2 : InputFormatted(lRGLngStr(203,TRUE),TmpZipCode,'@#@#@#',(How <> 1)); {"Enter postal code"}
+      1 : BEGIN
+            IF (How<>3) THEN
+              lRGLngStr(202,FALSE)
+            ELSE
+              Prompt('^2Enter zip code: '); { For user editor }
+            InputFormatted('',TmpZipCode,'#####-####',(How <> 1)); {"Enter zip code"}
+          END;
+      2 : BEGIN
+            IF (How<>3) THEN
+              lRGLngStr(203,FALSE)
+            ELSE
+              Prompt('^2Enter postal code: '); { For user editor }
+            InputFormatted('',TmpZipCode,'@#@#@#',(How <> 1)); {"Enter postal code"}
+          END;
       3 : BEGIN
-            lRGLngStr(204,FALSE); {"Enter postal code"}
+            IF (How<>3) THEN
+              lRGLngStr(204,FALSE) {"Enter postal code"}
+            ELSE
+              Prompt('^2Enter postal code: '); { For user editor }
             InputMain(TmpZipCode,(SizeOf(User.ZipCode) - 1),[CapAll]);
           END;
     END;
     IF (TmpZipCode <> '') OR ((Length(TmpZipCode) > 2) AND (TmpCountryCode=3)) THEN
       BEGIN
+        IF (How = 2) AND (User.ZipCode <> TmpZipCode) THEN
+          SysOpLog('Changed phone from '+User.ZipCode+' to '+TmpZipCode);
         User.ZipCode := TmpZipCode;
         Done1 := TRUE;
       END;
@@ -318,7 +399,11 @@ VAR
       3 : TmpCountryCode := 1;
     {/}
     END;
-    lRGLngStr(205,FALSE); {"Enter phone number"}
+    IF (How = 3) THEN
+      Prompt('^2Enter phone number: ') { For user editor }
+    ELSE
+      lRGLngStr(205,FALSE); {"Enter phone number"}
+      
     CASE TmpCountryCode OF
       1, 2 :  BEGIN
                 InputFormatted('',TmpPhone,'(###)###-####',(How <> 1));
@@ -348,15 +433,23 @@ VAR
     CurYear: Word;
     BadDate: Boolean;
   BEGIN
-    TmpDate := PD2Date(User.BirthDate);
+    BadDate := FALSE;
+    
+    TmpDate := PD2Date(User.BirthDate); {Why?}
     GetYear(CurYear);
     IF (How = 1) AND (IEMSIRec.BDate <> '') THEN
       BEGIN
         Buf := IEMSIRec.BDate;
         IEMSIRec.BDate := '';
       END;
-      BadDate := FALSE;
-      InputFormatted(lRGLngStr(206,TRUE),TmpDate,'##/##/####',(How <> 1)); {"Enter date of birth"}
+      
+      IF (How=3) THEN
+        Prompt('^2Enter birth date: ') { For user editor }
+      ELSE
+        lRGLngStr(206,FALSE); {"Enter date of birth"}
+      
+      InputFormatted('',TmpDate,'##/##/####',(How<>1));
+      
       IF (TmpDate <> '') AND NOT (HangUp) THEN
         BEGIN
           TmpMonth := StrToInt(Copy(TmpDate,1,2));
@@ -378,10 +471,11 @@ VAR
             BadDate := TRUE;
           IF (TmpYear < (CurYear - 100)) THEN
             BadDate := TRUE;
-          {/}
+          
           IF (BadDate) THEN
             BEGIN
-              lRGLngStr(161,FALSE); {"Invalid"}
+              IF (How <> 3) THEN { Suppress error in user editor }
+                lRGLngStr(161,FALSE); {"Invalid"}
             END
           ELSE
             BEGIN
@@ -397,16 +491,22 @@ VAR
   VAR
     TmpGender: Char;
   BEGIN
-    IF (How = 1) THEN
+    IF (How=3) THEN
+      Prompt('^2Enter Gender [(^1M^2)ale,(^1F^2)emale]: ') { For user editor }
+    ELSE
+      lRGLngStr(207,FALSE); {"Are you (M)ale or (F)emale?"}
+  
+    IF (How=1) THEN
       BEGIN
         User.Sex := #0;
-        InputChar(lRGLngStr(207,TRUE),TmpGender,'MF',[CapAll]); {"Are you (M)ale or (F)emale?"}
+        InputChar('',TmpGender,'MF',[CapAll]);
       END
     ELSE
-      InputChar(lRGLngStr(207,TRUE),TmpGender,^M'MF',[CapAll]); { Abortable }
+      InputChar('',TmpGender,^M'MF',[CapAll]); { Abortable }
+
     IF TmpGender IN ['M','F'] THEN
       BEGIN
-        IF (How = 2) THEN
+        IF (How=2) THEN
           SysOpLog('Changed gender from '+AOnOff((TmpGender='F'),'Male','Female')+' to '+
                                           AOnOff((TmpGender='M'),'Male','Female'));
         User.Sex := TmpGender;
@@ -421,19 +521,22 @@ VAR
   BEGIN
     TmpQuestion := '';
     TmpAnswer := User.UsrDefStr[QuestionNum];
-    CASE QuestionNum OF
-      1 : TmpQuestion := lRGLngStr(38,TRUE);
-      2 : TmpQuestion := lRGLngStr(39,TRUE);
-      3 : TmpQuestion := lRGLngStr(40,TRUE);
-    END;
+    IF (How<>3) THEN
+      CASE QuestionNum OF
+        1 : TmpQuestion := lRGLngStr(38,TRUE);
+        2 : TmpQuestion := lRGLngStr(39,TRUE);
+        3 : TmpQuestion := lRGLngStr(40,TRUE);
+      END
+    ELSE
+      TmpQuestion := 'New Answer: ';
     IF (TmpQuestion = '') THEN
       BEGIN
         User.UsrDefStr[QuestionNum] := '';
         Done1 := TRUE;
         EXIT;
       END;
-    {/}
-    NL;
+    IF (How<>3) THEN
+      NL;
     Prt('^2'+TmpQuestion{+' '});
     InputMain(TmpAnswer,(SizeOf(User.UsrDefStr[QuestionNum])-1),[InterActiveEdit,CapWords]);
     IF (TmpAnswer <> '') THEN
@@ -532,23 +635,38 @@ VAR
   PROCEDURE CfgTermEmu;
   VAR
     Cmd: Char;
+    TmpString1,
+    TmpString2: AStr;
   BEGIN
   { Exclude(User.ACFlags,ANSI); }
     Exclude(User.ACFlags,Avatar);
     Exclude(User.ACFlags,VT100);
     Exclude(User.SFlags,RIP);
   { Exclude(User.SFlags,AutoDetect); }
-    {/}
-    PrintF('TERMINAL');
-    IF PYNQ(lRGLngStr(213,TRUE),0,TRUE) THEN {"Support ANSI?"}
+    
+    IF (How<>3) THEN
+      PrintF('TERMINAL');
+      
+    IF (How = 3) THEN
+      Prompt('^2Enable ANSI terminal emulation?') { For user editor }
+    ELSE
+      lRGLngStr(213,FALSE); {"Support ANSI?"}
+
+    IF PYNQ('',0,TRUE) THEN
       Include(User.ACFlags,ANSI)
     ELSE
       Exclude(User.ACFlags,ANSI);
-    IF (PYNQ(lRGLngStr(214,TRUE),0,TRUE)) THEN {"Auto-detect?"}
+      
+    IF (How = 3) THEN
+      Prompt('^2Auto-detect terminal emulation at logon?') { For user editor }
+    ELSE
+      lRGLngStr(214,FALSE); {"Auto-detect?"}
+      
+    IF PYNQ('',0,TRUE) THEN 
       Include(User.SFlags,AutoDetect)
     ELSE
       Exclude(User.SFlags,AutoDetect);
-    {/}
+    
     IF (ANSI IN User.ACFlags) THEN
       Include(User.SFlags,FSEditor)
     ELSE
@@ -839,7 +957,7 @@ VAR
   
   PROCEDURE ToggleMailBox;
   VAR
-  OpenString: STRING[65];
+    OpenString: STRING[65];
     
     PROCEDURE ForwardMail;
     VAR
@@ -873,12 +991,12 @@ VAR
     
   BEGIN
     IF (User.ForUsr <> 0) THEN
-      OpenString := lRGLngStr(225,TRUE) {"Open mailbox?" Mail is being forwarded }
+      lRGLngStr(225,FALSE) {"Open mailbox?" Mail is being forwarded }
     ELSE
-      OpenString := lRGLngStr(226,TRUE); {"Open mailbox?" Mail is not being forwarded }      
+      lRGLngStr(226,FALSE); {"Open mailbox?" Mail is not being forwarded }      
     IF (NoMail IN User.ACFlags) THEN
       BEGIN
-        IF PYNQ('^2'+OpenString,0,FALSE) THEN
+        IF PYNQ('',0,FALSE) THEN
           BEGIN
             Exclude(User.ACFlags,NoMail);
             lRGLngStr(172,FALSE); {"Mailbox open"}
@@ -892,16 +1010,20 @@ VAR
           END;
       END
     ELSE
-      IF PYNQ(lRGLngStr(227,TRUE),0,FALSE) THEN {"Close your mailbox?"}
-        BEGIN
-          Include(User.ACFlags,NoMail);
-          lRGLngStr(174,FALSE); {"Mailbox closed"}
-          SysOpLog(AllCaps(User.Name)+' closed their mailbox');
-        END;
+      BEGIN
+        lRGLngStr(227,FALSE); {"Close your mailbox?"}
+        IF PYNQ('',0,FALSE) THEN
+          BEGIN
+            Include(User.ACFlags,NoMail);
+            lRGLngStr(174,FALSE); {"Mailbox closed"}
+            SysOpLog(AllCaps(User.Name)+' closed their mailbox');
+          END;
+      END;
     IF ((User.ForUsr = 0) AND (NoMail IN User.ACFlags)) THEN
       BEGIN
         lRGLngStr(175,FALSE); { Mail forwarding info }
-        IF PYNQ(lRGLngStr(228,TRUE),0,FALSE) THEN {"Forward mail?"}
+        lRGLngStr(228,FALSE); {"Forward mail?"}
+        IF PYNQ('',0,FALSE) THEN 
           ForwardMail;
       END;
     Done1 := TRUE;
@@ -913,7 +1035,10 @@ VAR
     Counter: Byte;
     ValidKeys: STRING[10];
   BEGIN
-    lRGLngStr(178,FALSE); {"QWK configuration"}
+    IF (How<>3) THEN
+      lRGLngStr(178,FALSE) {"QWK configuration"}
+    ELSE
+      Print('QWK Configuration');
     ValidKeys := '';
     FOR Counter := 1 TO NumArcs DO
       IF (General.FileArcInfo[Counter].Ext <> '') AND (General.FileArcInfo[Counter].Active) THEN
@@ -923,15 +1048,30 @@ VAR
         END;
     IF (How <> 1) THEN
       ValidKeys := ValidKeys+^M; { Allow abort }
-    InputChar(lRGLngStr(230,TRUE),TmpDefArcType,ValidKeys,[CapAll]); {"Select archive format"}
+      
+    IF (How<>3) THEN
+      InputChar(lRGLngStr(230,TRUE),TmpDefArcType,ValidKeys,[CapAll]) {"Select archive format"}
+    ELSE
+      InputChar('Select archive format: ',TmpDefArcType,ValidKeys,[CapAll]); {"Select archive format"}
+    
     IF (StrToInt(TmpDefArcType) <> User.DefArcType) AND (TmpDefArcType <> ^M) THEN
       BEGIN
         User.DefArcType := StrToInt(TmpDefArcType);
       END;
     {/}
-    User.GetOwnQWK := PYNQ(lRGLngStr(231,TRUE),0,FALSE); {"Own replies?"}
-    User.PrivateQWK := PYNQ(lRGLngStr(232,TRUE),0,FALSE); {"Private mail?"}
-    User.ScanFilesQWK := PYNQ(lRGLngStr(233,TRUE),0,FALSE); {"New file list?"}
+    
+    IF (How<>3) THEN
+      BEGIN
+        User.GetOwnQWK := PYNQ(lRGLngStr(231,TRUE),0,FALSE); {"Own replies?"}
+        User.PrivateQWK := PYNQ(lRGLngStr(232,TRUE),0,FALSE); {"Private mail?"}
+        User.ScanFilesQWK := PYNQ(lRGLngStr(233,TRUE),0,FALSE); {"New file list?"}
+      END
+    ELSE
+      BEGIN
+        User.GetOwnQWK := PYNQ('Include own replies?',0,FALSE); {"Own replies?"}
+        User.PrivateQWK := PYNQ('Include private mail?',0,FALSE); {"Private mail?"}
+        User.ScanFilesQWK := PYNQ('Include new file listing?',0,FALSE); {"New file list?"}
+      END;
     Done1 := TRUE;
   END;
   
@@ -969,10 +1109,11 @@ VAR
       24 : ToggleEditor;    { Toggle line / fullscreen editor }
       25 : ToggleMailbox;   { Toggle mailbox & mail forwarding }
       26 : CfgQWK;          { Configure QWK }
-      27 : Done1 := TRUE;   { NOTHING }
-      28 : Done1 := TRUE;   { NOTHING }
-      29 : Done1 := TRUE;   { NOTHING }
-      30 : Done1 := TRUE;   { NOTHING }
+      { Unused }
+      27 : Done1 := TRUE;   { }
+      28 : Done1 := TRUE;   { }
+      29 : Done1 := TRUE;   { }
+      30 : Done1 := TRUE;   { }
     END;
   END;
 

@@ -1,8 +1,8 @@
 {$A+,B-,D+,E-,F+,I-,L+,N-,O+,R-,S+,V-}
 {
-changing clear field data
-if no seperate sysop log, prompt to view normal sysop log
-
+ 00/00/0000 - Expanded clear field options
+ 00/00/0000 - If no separate log file, prompt to view normal SysOp log
+ 05/25/2022 - Username and RealName don't use CStuff if editing new user profile
 }
 UNIT SysOp3;
 
@@ -517,7 +517,7 @@ VAR
               END;
         '4' : BEGIN
                 REPEAT
-                  Prt('Toggle which AR flag? ('+DisplayArFlags(F_AR,'5','4')+'^2) [^1?^2=^1Help^2,^1<CR>^2=^1Quit^2]: ');
+                  Prt('Toggle which AR flag? ('+DisplayARFlags(F_AR,'5','4')+'^2) [^1?^2=^1Help^2,^1<CR>^2=^1Quit^2]: ');
                   InputChar('',Cmd1,^M'ABCDEFGHIJKLMNOPQRSTUVWXYZ?',[CapAll]);
                   IF (Cmd1 = '?') THEN
                     PrintF('ARFLAGS')
@@ -691,19 +691,19 @@ VAR
     InitMsgArea(-1);
     Reset(MsgHdrF);
     FOR MsgNum := 1 TO HiMsg DO
-    BEGIN
-      LoadHeader(MsgNum,MHeader);
-      IF (NOT (MDeleted IN MHeader.Status)) AND ((MHeader.MTO.UserNum = UNum) OR (MHeader.From.UserNum = UNum)) THEN
       BEGIN
-        Include(MHeader.Status,MDeleted);
-        SaveHeader(MsgNum,MHeader);
-        LoadURec(User1,MHeader.MTO.UserNum);
-        IF (User1.Waiting > 0) THEN
-          Dec(User1.Waiting);
-        SaveURec(User1,MHeader.MTO.UserNum);
-        Reset(MsgHdrF);
+        LoadHeader(MsgNum,MHeader);
+        IF (NOT (MDeleted IN MHeader.Status)) AND ((MHeader.MTO.UserNum = UNum) OR (MHeader.From.UserNum = UNum)) THEN
+          BEGIN
+            Include(MHeader.Status,MDeleted);
+            SaveHeader(MsgNum,MHeader);
+            LoadURec(User1,MHeader.MTO.UserNum);
+            IF (User1.Waiting > 0) THEN
+              Dec(User1.Waiting);
+            SaveURec(User1,MHeader.MTO.UserNum);
+            Reset(MsgHdrF);
+          END;
       END;
-    END;
     Close(MsgHdrF);
     InitMsgArea(SaveReadMsgArea);
   END;
@@ -715,20 +715,20 @@ VAR
     Assign(VotingFile,General.DataPath+'VOTING.DAT');
     Reset(VotingFile);
     IF (IOResult = 0) THEN
-    BEGIN
-      FOR Counter1 := 1 TO FileSize(VotingFile) DO
-        IF (User.Vote[Counter1] > 0) THEN
-        BEGIN
-          Seek(VotingFile,(Counter1 - 1));
-          Read(VotingFile,Topic);
-          Dec(Topic.Answers[User.Vote[Counter1]].NumVotedAnswer);
-          Dec(Topic.NumVotedQuestion);
-          Seek(VotingFile,(Counter1 - 1));
-          Write(VotingFile,Topic);
-          User.Vote[Counter1] := 0;
-        END;
-      Close(VotingFile);
-    END;
+      BEGIN
+        FOR Counter1 := 1 TO FileSize(VotingFile) DO
+          IF (User.Vote[Counter1] > 0) THEN
+            BEGIN
+              Seek(VotingFile,(Counter1 - 1));
+              Read(VotingFile,Topic);
+              Dec(Topic.Answers[User.Vote[Counter1]].NumVotedAnswer);
+              Dec(Topic.NumVotedQuestion);
+              Seek(VotingFile,(Counter1 - 1));
+              Write(VotingFile,Topic);
+              User.Vote[Counter1] := 0;
+            END;
+        Close(VotingFile);
+      END;
     LastError := IOResult;
   END;
 
@@ -922,13 +922,14 @@ BEGIN
     END;
     NL;
     InputChar('User Editor [(^1?^2^2)Help,(^1Q^2)uit]: ',Cmd,'Q?[]=${}*ABCDEFGHIJKLMNOPRSTUVWXYZ12345-+_;:\/^'^M,[CapAll]);
-    IF (Cmd IN ['A','F','L'..'O','S'..'X','Z','/','{','}','-',';','^','?','<','\','=','_']) THEN
+    (*IF (Cmd IN ['E','A','F','L'..'O','S'..'X','Z','/','{','}','-',';','^','?','<','\','=','_']) THEN*)
+    IF (Cmd IN ['A'..'I','K'..'O','P','R'..'T','V'..'X','Z','/','{','}','-',';','^','?','<','\','=','_','+']) THEN
       NL;
     CASE Cmd OF
       '?' : BEGIN
               Abort := FALSE;
-              PrintACR('^1Editor Help');
-              NL;
+              {PrintACR('^1Editor Help');
+              NL;}
               LCmds3(21,1,';New list mode',    ':AutoList toggle',  '\Show sysop log');
               LCmds3(21,1,'[Back one user',    ']Forward one user', '=Reload old data');
               LCmds3(21,1,'{Search backward',  '}Search forward',   '*Validate user');
@@ -1038,7 +1039,7 @@ BEGIN
                   '$' : BEGIN
                           REPEAT
                             NL;
-                            InputChar('^2Clear Fields [^1A^2-^1M^2,(^1*^2)All,(^1?^2)Help,(^1Q^2)uit]: ',Cmd,
+                            InputChar('^2Clear Fields [^1A^2-^1L^2,(^1*^2)All,(^1?^2)Help,(^1Q^2)uit]: ',Cmd,
                                       'Q?*ABCDEFGHIJKL',[CapAll]);
                             CASE Cmd OF
                               '*' : IF PYNQ('%LFAre you SURE you want to clear all personal information?',0,FALSE) THEN
@@ -1086,16 +1087,45 @@ BEGIN
                           Cmd := #0;
                         END;
                   '*' : AutoVal(User,UNum);
-                  '+' : CStuff(25,3,User); { Mailbox }
+                  '+' : BEGIN
+                          Prt(' - Users mail is ');
+                          Prt(AOnOff(User.ForUsr<>0,'','not '));
+                          Print('being forwarded');
+                          IF (User.ForUsr<>0) THEN
+                            BEGIN
+                              IF PYNQ('Stop forwarding?',0,FALSE) THEN
+                                User.ForUsr := 0;
+                            END
+                          ELSE
+                            BEGIN
+                              IF PYNQ('Forward their mail?',0,FALSE) THEN
+                                BEGIN
+                                  lFindUserWS(TempMaxUsers); {LeeW: OK to use TempMaxUsers? }
+                                  IF (TempMaxUsers < 1) OR (TempMaxUsers > (MaxUsers - 1)) THEN
+                                    User.ForUsr := TempMaxUsers;
+                                END;
+                            END;
+                          NL;
+                          Prt(' - Users mailbox is ');
+                          Print(AOnOff((NoMail IN User.ACFlags),'closed','open'));
+                          IF (NoMail IN User.ACFlags) THEN
+                            BEGIN
+                              IF PYNQ('^2Open mailbox?',0,FALSE) THEN
+                                Exclude(User.ACFlags,NoMail)
+                            END
+                          ELSE 
+                            IF PYNQ('^2Close mailbox?',0,FALSE) THEN
+                              Include(User.ACFlags,NoMail);
+                        END;(*CStuff(25,3,User); { Mailbox }*)
                   '1'..'5' :
                         ChangeRecords(Ord(Cmd) - 48);
                   'A' : IF (UNum = 0) THEN { Don't use CStuff if new user template }
                           BEGIN
-                            NL;
-                            Prompt('^2New User Name: ');
-                            InputMain(TempStr,(SizeOf(ThisUser.Name) - 1),[CapAll,AllowEscape]);
+                            TempStr := User.Name;
+                            InputString('%LF^2New User Name: ',TempStr,(SizeOf(ThisUser.Name) - 1),
+                                        [CapAll,AllowEscape,InteractiveEdit],Changed);
                             UNum1 := SearchUser(TempStr,FALSE);
-                            IF ((UNum1 = 0) OR (UNum1 = UNum)) AND (TempStr <> '') THEN
+                            IF ((UNum1 = 0) OR (UNum1 = UNum)) AND (TempStr <> '') AND (Changed) THEN
                               BEGIN
                                 User.Name := TempStr;
                                 Save := TRUE;
@@ -1103,35 +1133,13 @@ BEGIN
                           END
                         ELSE
                           CStuff(1,3,User); { User name }
-                     (* BEGIN
-                          IF (Deleted IN User.SFlags) THEN
-                            Print('Can''t rename deleted users.')
-                          ELSE
-                            BEGIN
-                              Print('Enter new name.');
-                              Prt(': ');
-                              InputMain(TempStr,(SizeOf(ThisUser.Name) - 1),[CapAll]);
-                              UNum1 := SearchUser(TempStr,TRUE);
-                              IF ((UNum1 = 0) OR (UNum1 = UNum)) AND (TempStr <> '') THEN
-                                BEGIN
-                                  InsertIndex(User.Name,UNum,FALSE,TRUE);
-                                  User.Name := TempStr;
-                                  InsertIndex(User.Name,UNum,FALSE,FALSE);
-                                  Save := TRUE;
-                                  IF (UNum = UserNum) THEN
-                                    ThisUser.Name := TempStr;
-                                END
-                              ELSE
-                                Print('Illegal Name.');
-                            END;
-                        END; *)
                   'B' : IF (UNum = 0) THEN { Don't use CStuff if new user template }
                           BEGIN
-                            NL;
-                            Prompt('^2New Real Name: ');
-                            InputMain(TempStr,(SizeOf(ThisUser.RealName) - 1),[CapWords,AllowEscape]);
+                            TempStr := User.RealName;
+                            InputString('%LF^2New Real Name: ',TempStr,(SizeOf(ThisUser.RealName) - 1),
+                                        [CapWords,AllowEscape,InteractiveEdit],Changed);
                             UNum1 := SearchUser(TempStr,TRUE);
-                            IF ((UNum1 = 0) OR (UNum1 = UNum)) AND (TempStr <> '') THEN
+                            IF ((UNum1 = 0) OR (UNum1 = UNum)) AND (TempStr <> '') AND (Changed) THEN
                               BEGIN
                                 User.RealName := TempStr;
                                 Save := TRUE;
@@ -1139,19 +1147,10 @@ BEGIN
                           END
                         ELSE
                           CStuff(2,3,User); { Real name }
-                     (* BEGIN
-                          TempStr := User.RealName;
-                          CStuff(2,3,User); { Real name }
-                          IF (User.RealName <> TempStr) THEN
-                          BEGIN
-                            InsertIndex(TempStr,UNum,TRUE,TRUE);
-                            InsertIndex(User.RealName,UNum,TRUE,FALSE);
-                          END;
-                        END; *)
                   'C' : CStuff(4,3,User); { Address }
                   'D' : CStuff(5,3,User); { City, State }
                   'E' : CStuff(6,3,User); { Zip code }
-                  'F' : InputString('^0New SysOp note:%LF^2: ',User.Note,(SizeOf(User.Note) - 1),[NoInputField],Next);
+                  'F' : InputString('^0New SysOp Note:%LF: ',User.Note,(SizeOf(User.Note) - 1),[NoInputField],Next);
                   'G' : CStuff(10,3,User); { SysOp defined question 1 }
                   'H' : CStuff(11,3,User); { SysOp defined question 2 }
                   'I' : CStuff(12,3,User); { SysOp defined question 3 }
@@ -1329,6 +1328,7 @@ BEGIN
                         END;
                   'P' : BEGIN
                           CStuff(8,3,User); { Birthdate }
+                          NL;
                           CStuff(9,3,User); { Gender }
                         END;
                   'R' : CStuff(7,3,User); { Phone number }
