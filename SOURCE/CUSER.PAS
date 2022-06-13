@@ -10,6 +10,8 @@
             - AskName no longer lets you bypass with blank string fixed input validation
  05/25/2022 - Added input validation to address
  05/30/2022 - Added separate user editor prompts (EXCEPT mailbox--thats in SYSOP3)
+ 06/05/2022 - Exo removed print forgot pw question
+ 
  
 --
 TODO:
@@ -71,7 +73,7 @@ VAR
           lRGLngStr(196,FALSE); {"Enter real name"}
       END
     ELSE
-      Prt('New Username: '); { Prompt for user editor }
+      Prt('Enter New User Name: '); { Prompt for user editor }
       
     InputMain(TmpName,(SizeOf(User.Name)-1),[CapAll]);
     WHILE (TmpName[1] IN [' ','0'..'9']) AND (Length(TmpName) > 0) DO
@@ -177,7 +179,7 @@ VAR
     IF (How<>3) THEN
       lRGLngStr(197,FALSE) {"Enter real name"}
     ELSE
-      Prt('New Real Name: ');
+      Prt('Enter New Real Name: '); { Prompt for user editor }
     InputMain(TmpRealName,(SizeOf(User.RealName)-1),[CapWords]);
     WHILE (TmpRealName[1] IN [' ','0'..'9']) AND (Length(TmpRealName) > 0) DO
       Delete(TmpRealName,1,1);
@@ -273,7 +275,7 @@ VAR
     IF (How<>3) THEN
       lRGLngStr(199,FALSE) {"Enter address"}
     ELSE
-      Prompt('^2New Address: '); { User editor prompt }
+      Prompt('Enter New Address: '); { Prompt for user editor }
     
     InputString('',TmpAddress,(SizeOf(User.Street)-1),[CapWords],Changed);
     
@@ -291,13 +293,13 @@ VAR
     TmpCityState,
     TmpCityState1: AStr;
   BEGIN
-    IF ((How <> 1) OR (TmpCountryCode=0)) and (how<>3) THEN
+    IF ((How <> 1) OR (TmpCountryCode=0)) AND (How<>3) THEN
       AskCountry;
     {/}
     
     IF (How = 3) THEN { User editor }
       BEGIN
-        Prt('Enter new city & state abbreviation: ');
+        Prt('Enter New City & State: '); { Prompt for user editor }
         InputMain(TmpCityState,(SizeOf(User.CityState) - 1),[]);
         IF (TmpCityState <> '') THEN
           User.CityState := TmpCityState;
@@ -400,7 +402,7 @@ VAR
     {/}
     END;
     IF (How = 3) THEN
-      Prompt('^2Enter phone number: ') { For user editor }
+      Prompt('Enter New Phone Number: ') { Prompt for user editor }
     ELSE
       lRGLngStr(205,FALSE); {"Enter phone number"}
       
@@ -528,7 +530,7 @@ VAR
         3 : TmpQuestion := lRGLngStr(40,TRUE);
       END
     ELSE
-      TmpQuestion := 'New Answer: ';
+      TmpQuestion := 'Enter New Answer: '; { Prompt for user editor }
     IF (TmpQuestion = '') THEN
       BEGIN
         User.UsrDefStr[QuestionNum] := '';
@@ -617,7 +619,7 @@ VAR
         TmpForgotPWAnswer := User.ForgotPWAnswer;
         lRGLngStr(211,FALSE); {"This question will be asked..."}
         NL;
-        Print(General.ForgotPWQuestion);
+        { Print(General.ForgotPWQuestion); }
         lRGLngStr(212,FALSE); {"Your answer"}
         InputMain(TmpForgotPWAnswer,(SizeOf(User.ForgotPWAnswer)-1),[CapAll,InterActiveEdit]);
         IF (TmpForgotPWAnswer <> '') THEN
@@ -1068,9 +1070,9 @@ VAR
       END
     ELSE
       BEGIN
-        User.GetOwnQWK := PYNQ('Include own replies?',0,FALSE); {"Own replies?"}
-        User.PrivateQWK := PYNQ('Include private mail?',0,FALSE); {"Private mail?"}
-        User.ScanFilesQWK := PYNQ('Include new file listing?',0,FALSE); {"New file list?"}
+        User.GetOwnQWK := PYNQ('Include own replies?',0,FALSE); {"Own replies?"} { Prompt for user editor }
+        User.PrivateQWK := PYNQ('Include private mail?',0,FALSE); {"Private mail?"} { Prompt for user editor }
+        User.ScanFilesQWK := PYNQ('Include new file listing?',0,FALSE); {"New file list?"} { Prompt for user editor }
       END;
     Done1 := TRUE;
   END;

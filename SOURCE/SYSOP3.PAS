@@ -1228,7 +1228,7 @@ BEGIN
                   'K' : CStuff(26,3,User); { QWK }
                   'L' : BEGIN
                           TempB := User.SL;
-                          InputByte('Enter new SL',TempB,[NumbersOnly],0,255,Changed);
+                          InputByte('Enter New SL',TempB,[NumbersOnly],0,255,Changed);
                           IF (TempB >= 0) AND (TempB <= 255) THEN
                           BEGIN
                             Ok := TRUE;
@@ -1256,7 +1256,7 @@ BEGIN
                         END;
                   'M' : BEGIN
                           TempB := User.DSL;
-                          InputByte('Enter new DSL',TempB,[NumbersOnly],0,255,Changed);
+                          InputByte('Enter New DSL',TempB,[NumbersOnly],0,255,Changed);
                           IF (TempB >= 0) AND (TempB <= 255) THEN
                           BEGIN
                             Ok := TRUE;

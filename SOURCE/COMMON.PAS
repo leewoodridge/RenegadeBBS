@@ -34,10 +34,11 @@ Lee Woodridge
  11/23/2021 - increased number parameter of plural from byte to integer
  04/15/2022 - added timestamplogs toggle
  04/21/2022 - Nested GetC inside SetC since it's the only proc that calls it
+ 06/05/2022 - exo added %EP null pause -- LeeW: I switched to getkey because readkey don't read remote input
+ 
  [NOTES]
  
- messing with ansig/pagelength ...
- 
+ messing with ansig/pagelength ... check pagelength for wrong positioning
  clean up setc/getc
  inputmessage linelen param should be 79??? or 80 ... is 78
  make avail\unavail mci string be conf through lang
@@ -2551,8 +2552,8 @@ FUNCTION PageLength: Word;
 BEGIN
   IF (InCom) THEN
     PageLength := ThisUser.PageLen
-  {ELSE IF (General.WindowOn) AND NOT (InWFCMenu) THEN
-    PageLength := (MaxDisplayRows - 2)}
+  ELSE IF (General.WindowOn) AND NOT (InWFCMenu) THEN
+    PageLength := (MaxDisplayRows - 2)
   ELSE
     PageLength := MaxDisplayRows;
 END;
@@ -4381,6 +4382,10 @@ BEGIN
                 END;
           'E' : CASE UpCase(S[Index + 2]) OF
                   'D' : Add := AOnOff((Expiration = 0),'Never',ToDate8(PD2Date(Expiration)));
+                  'P' : BEGIN { Blank pause }
+						  Add := Char(GetKey);
+						  Add := '';
+						END;
                   'S' : Add := FormatNumber(EmailSent);
                 { 'T' : Add := IntToStr(General.EventWarningTime); }
                   'W' : Add := FormatNumber(Waiting);

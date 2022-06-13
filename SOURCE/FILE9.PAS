@@ -2,6 +2,7 @@
 
 {
  02/24/2022 - rewrote/simplified setfileareanewscandate -- REMOVED
+ 06/05/2022 - Exo removed print new newscan date
 }
 
 UNIT File9;
@@ -260,7 +261,7 @@ BEGIN
   REPEAT
     SaveFArea := FArea;
     IF (InputStr = '?') THEN
-      LFileAreaList(FArea,NumFAreas,6,TRUE);
+      LFileAreaList(FArea,NumFAreas,7,TRUE);
     {
     %LFToggle new scan? [^1#^2,^1#^2-^1#^2,^1F^2=^1Flag ^2or ^1U^2=^1Unflag All^2,^1?^2=^1Help^2,^1Q^2=^1Quit^2]: @
     }
@@ -402,8 +403,8 @@ BEGIN
     END
   ELSE
     BEGIN
-      NL;
-      Print('^0New file scan date set to: ^1'+TempDate+'^0');
+    { NL;
+      Print('^0New file scan date set to: ^1'+TempDate+'^0'); }
       NewFileDate := Date2PD(TempDate);
       SysOpLog('Set file new scan date to: '+TempDate); {LeeW: Was SL1}
     END;
