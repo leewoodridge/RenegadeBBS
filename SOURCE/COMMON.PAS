@@ -35,6 +35,7 @@ Lee Woodridge
  04/15/2022 - added timestamplogs toggle
  04/21/2022 - Nested GetC inside SetC since it's the only proc that calls it
  06/05/2022 - exo added %EP null pause -- LeeW: I switched to getkey because readkey don't read remote input
+ 07/31/2022 - removed usercolor cmds from prt
  
  [NOTES]
  
@@ -85,7 +86,7 @@ TYPE
   MemCmdRec = RECORD                   { COMMAND RECORD }
     LDesc: STRING[100];                { Long command description }
     ACS: ACString;                     { Access requirements }
-    NodeActivityDesc: STRING[50];      { Node activity description }
+    NodeActivityDesc: STRING[50];	   { Node activity description }
     CmdFlags: CmdFlagSet;              { Flags }
     SDesc: STRING[35];                 { Short command description }
     CKeys: STRING[14];                 { Execution key }
@@ -93,7 +94,7 @@ TYPE
     Options: STRING[50];               { Command parameters }
   END;
 
-  LightBarRecordType = RECORD
+  LightBarRecordType = RECORD	
     XPos,
     YPos: Byte;
     CmdToExec: Integer;
@@ -194,8 +195,7 @@ TYPE
     CapWords,        { Forces capitalization of first character of words }
     { Interface }
     InteractiveEdit, { Interactive editing }
-    NoBlankPrompt,   { Will not prompt if you want to save a blank string, blank strings will revert 
-                       to previous data - LeeW: Added }
+    NoBlankPrompt,   { Will not prompt to save a blank string, blank strings will leave unchanged - LeeW: Added }
     NoInputField,    { No MPL(#) - LeeW: Added }
     NoInputRange,    { Don't display valid input range after prompt (numeric input only) - LeeW: Added }
     NoLineFeed,      { No linefeed after <CR> pressed }
@@ -2381,11 +2381,11 @@ BEGIN
   Prompt(^M^J);
 END;
 
-PROCEDURE Prt(CONST InString: STRING); {prt>prompt>printmain}
+PROCEDURE Prt(CONST InString: STRING); {Prt>Prompt>PrintMain}
 BEGIN
-  UserColor(0);
+  {UserColor(0);}
   Prompt(InString);
-  UserColor(0);
+  {UserColor(0);}
 END;
 
 PROCEDURE MPL(MaxLen: Byte);

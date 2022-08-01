@@ -1,5 +1,6 @@
 {$A+,B-,D+,E-,F+,I-,L+,N-,O+,R-,S+,V-}
 {
+ 07/31/2022	- Removed inputfield from sysoppw prompt
 Added: Disabled forgotpw question for CoSysOp+
 Added: Won't prompt for SysOpPW if blank
         or phonepw if blank or toggle disabled
@@ -441,7 +442,7 @@ BEGIN
   IF ((AACS(General.SPW)) AND (General.SysOpPW <> '') AND (Ok) AND (InCom) AND (NOT HangUp)) THEN
     BEGIN
       lRGLngStr(185,FALSE); (*Prompt(FString.SysOpPrompt);*)
-      InputMain(SysOpPW,SizeOf(SysOpPW)-1,[IsPassword]); {GetPassword(SysOpPW,20);}
+      InputMain(SysOpPW,SizeOf(SysOpPW)-1,[IsPassword,NoInputField]); {GetPassword(SysOpPW,20);}
       IF (SysOpPW <> General.SysOpPW) THEN
         BEGIN
           lRGLngStr(119,FALSE); (*Prompt(FString.ILogon);*)
