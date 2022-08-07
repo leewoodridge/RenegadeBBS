@@ -95,13 +95,13 @@ VAR
 	Loop: Byte;
   BEGIN
     ClrScr;
-	Pipe('|07                     Renegade BBS User Packer Ä Version 1.0',TRUE);
+	Pipe('|07                     Renegade BBS User Packer Ã„ Version 1.0',TRUE);
 	Pipe('|07              Copyright (c) 2022 The Renegade BBS Development Team',TRUE);
     GoToXY(1,3);
-    Pipe('|08 ÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄ',TRUE);
+    Pipe('|08 Ã„Ã„Ã„Ã„Ã„Ã„Ã„Ã„Ã„Ã„Ã„Ã„Ã„Ã„Ã„Ã„Ã„Ã„Ã„Ã„Ã„Ã„Ã„Ã„Ã„Ã„Ã„Ã„Ã„Ã„Ã„Ã„Ã„Ã„Ã„Ã„Ã„Ã„Ã„Ã„Ã„Ã„Ã„Ã„Ã„Ã„Ã„Ã„Ã„Ã„Ã„Ã„Ã„Ã„Ã„Ã„Ã„Ã„Ã„Ã„Ã„Ã„Ã„Ã„Ã„Ã„Ã„Ã„Ã„Ã„Ã„Ã„Ã„Ã„Ã„Ã„Ã„Ã„',TRUE);
     FOR Loop := 1 TO 18 DO
 	  Pipe('',TRUE);
-    Pipe('|08 ÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄ',TRUE);
+    Pipe('|08 Ã„Ã„Ã„Ã„Ã„Ã„Ã„Ã„Ã„Ã„Ã„Ã„Ã„Ã„Ã„Ã„Ã„Ã„Ã„Ã„Ã„Ã„Ã„Ã„Ã„Ã„Ã„Ã„Ã„Ã„Ã„Ã„Ã„Ã„Ã„Ã„Ã„Ã„Ã„Ã„Ã„Ã„Ã„Ã„Ã„Ã„Ã„Ã„Ã„Ã„Ã„Ã„Ã„Ã„Ã„Ã„Ã„Ã„Ã„Ã„Ã„Ã„Ã„Ã„Ã„Ã„Ã„Ã„Ã„Ã„Ã„Ã„Ã„Ã„Ã„Ã„Ã„Ã„',TRUE);
     Window(2,4,78,21);
   END;
 
@@ -165,7 +165,7 @@ VAR
 	IF (RGDir <> '') AND (RGDir[Length(RGDir)] <> '\') THEN
 	  RGDir := RGDir + '\';
 	IF (RGDir = '') OR (NOT DirExist(RGDir)) THEN
-	  Error('ş RENEGADE.DAT not found!');
+	  Error('Ã¾ RENEGADE.DAT not found!');
   END;
 
   FUNCTION AllCaps(InString: STRING): STRING;
@@ -186,7 +186,7 @@ VAR
   Done: Boolean;
 BEGIN
   SearchUser := 0;
-  Assign(UserIDXFile,'C:\RENEGADE\DATA\USERS.IDX'); { LeeW: Don't hardcore path!!}
+  Assign(UserIDXFile,+DatDir+'\USERS.IDX');
   Reset(UserIDXFile);
   IF (IOResult <> 0) THEN
     BEGIN
@@ -245,7 +245,7 @@ BEGIN { User/SCN Packer }
 
   OpenRenegadeDat(RGDir,FileErr);
   IF FileErr THEN
-	Error('ş RENEGADE.DAT not found!'); { I think this is redundant because of GetRGDir }
+	Error('Ã¾ RENEGADE.DAT not found!'); { I think this is redundant because of GetRGDir }
 	
   ReadFromRenegadeDat(RenegadeDatIn);
   CloseRenegadeDat;
@@ -254,18 +254,18 @@ BEGIN { User/SCN Packer }
   
   OpenUsersIDX(DatDir,FileErr);
   IF FileErr THEN
-	Error('ş USERS.IDX not found!');
+	Error('Ã¾ USERS.IDX not found!');
   OpenUsersDat(DatDir,FileErr);
   IF FileErr THEN
-	Error('ş USERS.DAT not found!');
+	Error('Ã¾ USERS.DAT not found!');
 
   { Assign and ReWrite new IDX and DAT files }
   OpenNewUsersIDX(DatDir,FileErr);
   IF FileErr THEN
-	Error('ş USER_IDX.NEW not found!');
+	Error('Ã¾ USER_IDX.NEW not found!');
   OpenNewUsersDat(DatDir,FileErr);
   IF FileErr THEN
-	Error('ş USER_DAT.NEW not found!');
+	Error('Ã¾ USER_DAT.NEW not found!');
    
   { --- }
 
@@ -322,7 +322,7 @@ EXIT;
   { Generate TEMPORARY new user index }
   FillChar(TookOut,SizeOf(TookOut),' ');
   TookOutCountUser := 0;
-  Pipe('|08ş |07Scanning for deleted users ... ',FALSE);
+  Pipe('|08Ã¾ |07Scanning for deleted users ... ',FALSE);
   FOR RecCount := 0 TO (FileSize(UsersIdx)-1) DO
 	BEGIN
       ReadFromUsersIdx(UsersIdxIn,RecCount);
@@ -373,7 +373,7 @@ EXIT;
     Pipe('|07'+IntToStr(TookOutCountUser)+' deleted records found!',TRUE);
 	
   { Generate new user data file }
-  Pipe('|08ş |07Writing new user data file ... ',FALSE);
+  Pipe('|08Ã¾ |07Writing new user data file ... ',FALSE);
   NewRecCount := 0;
   
   ReadFromUsersDat(UsersDatIn,0); { Add default new user configuration account }
@@ -400,7 +400,7 @@ EXIT;
   CloseUsersDat;
   CloseNewUsersDat;
 
-  Pipe('|08ş |07Deleting previous backups ... ',true);
+  Pipe('|08Ã¾ |07Deleting previous backups ... ',true);
   
   IF FileExist(DatDir+'USER_IDX.BAK') THEN
 	BEGIN
@@ -427,7 +427,7 @@ EXIT;
 		Pipe(Check,TRUE);
 	END;
 
-  Pipe('|08ş |07Backing up user index and data files ... ',true);
+  Pipe('|08Ã¾ |07Backing up user index and data files ... ',true);
   Pipe('   |08- |07USER.IDX ',FALSE);
   Rename(UsersIdx,DatDir+'USER_IDX.BAK');
   IF IOresult <> 0 THEN
@@ -441,7 +441,7 @@ EXIT;
   ELSE
 	Pipe(Check,TRUE);
 	
-  Pipe('|08ş |07Updating user index and data files ... ',TRUE);
+  Pipe('|08Ã¾ |07Updating user index and data files ... ',TRUE);
   Pipe('   |08- |07USER.IDX ',FALSE);
   Rename(NewUsersIdx,DatDir+'USERS.IDX');
   IF IOresult <> 0 THEN
@@ -463,7 +463,7 @@ EXIT;
   { -- UPDATE MSG SCAN RECORDS -- } (* MORE EFFECIENT FIND CODE *)
   
   { Find the first scan record }
-  Pipe('|08ş |07Scanning for message scan record files ... ',TRUE);
+  Pipe('|08Ã¾ |07Scanning for message scan record files ... ',TRUE);
 
   Path2SCN := AddSlash(RenegadeDatIn.MsgPath)+'*.SCN';
   {StrPCopy(Path2SCNPChar,Path2SCN);}
@@ -485,14 +485,14 @@ EXIT;
 
 	  OpenSCN(Path2SCN+DirInfo.Name,FileErr);
 	  IF FileErr THEN
-		Error('|08ş |07Unable to open message scan file '+DirInfo.Name+'!');
+		Error('|08Ã¾ |07Unable to open message scan file '+DirInfo.Name+'!');
 	  OpenNewSCN(Path2SCN+'SCN.NEW',FileErr);
 	  IF FileErr THEN
-		Error('|08ş |07Unable to open message scan file SCN.NEW!');
+		Error('|08Ã¾ |07Unable to open message scan file SCN.NEW!');
 
 	  { Generate new scan record file }
 	  
-	  {Pipe('|07ş Startting TO Synch Msgs Scan Records with User Records',TRUE);}
+	  {Pipe('|07Ã¾ Startting TO Synch Msgs Scan Records with User Records',TRUE);}
 	  
 	  Pipe('      |08- |07GENERATE ',FALSE);
 	  
@@ -511,7 +511,7 @@ EXIT;
 		  { ... else write it to new record }
 		  IF NOT Skip THEN
 			BEGIN
-			  {Pipe('|08ş |07Kept record #'+IntToStr(C1),TRUE);}
+			  {Pipe('|08Ã¾ |07Kept record #'+IntToStr(C1),TRUE);}
 			  ReadFromSCN(SCNIn,RecCount);
 			  WriteToNewSCN(SCNIn,C1);
 			  Inc(C1);
@@ -555,11 +555,11 @@ EXIT;
 	END;
   
   IF (DOSError <> 0) AND (ScanFilesCount = 0) THEN
-	Error('|08ş |07Unable to locate any .SCN files!');
+	Error('|08Ã¾ |07Unable to locate any .SCN files!');
   
   { -- END OF MSG SCAN RECORDS -- }
 
-  Pipe('|08ş |07Finished!',TRUE);
+  Pipe('|08Ã¾ |07Finished!',TRUE);
   Pipe('   |08- |07'+IntToStr(TookOutCountUser)+' user records removed|08',TRUE);
   Pipe('   |08- |07'+IntToStr(TookOutCountScanRecTot)+' scan records removed (from '
 					+IntToStr(ScanFilesCount)+' scan files)',FALSE);
