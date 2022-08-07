@@ -165,7 +165,7 @@ VAR
 	IF (RGDir <> '') AND (RGDir[Length(RGDir)] <> '\') THEN
 	  RGDir := RGDir + '\';
 	IF (RGDir = '') OR (NOT DirExist(RGDir)) THEN
-	  Error('þ RENEGADE.DAT not found!');
+	  Error(' þ RENEGADE.DAT not found!');
   END;
 
   FUNCTION AllCaps(InString: STRING): STRING;
@@ -245,7 +245,7 @@ BEGIN { User/SCN Packer }
 
   OpenRenegadeDat(RGDir,FileErr);
   IF FileErr THEN
-	Error('þ RENEGADE.DAT not found!'); { I think this is redundant because of GetRGDir }
+	Error(' þ RENEGADE.DAT not found!'); { I think this is redundant because of GetRGDir }
 	
   ReadFromRenegadeDat(RenegadeDatIn);
   CloseRenegadeDat;
@@ -254,18 +254,18 @@ BEGIN { User/SCN Packer }
   
   OpenUsersIDX(DatDir,FileErr);
   IF FileErr THEN
-	Error('þ USERS.IDX not found!');
+	Error(' þ USERS.IDX not found!');
   OpenUsersDat(DatDir,FileErr);
   IF FileErr THEN
-	Error('þ USERS.DAT not found!');
+	Error(' þ USERS.DAT not found!');
 
   { Assign and ReWrite new IDX and DAT files }
   OpenNewUsersIDX(DatDir,FileErr);
   IF FileErr THEN
-	Error('þ USER_IDX.NEW not found!');
+	Error(' þ USER_IDX.NEW not found!');
   OpenNewUsersDat(DatDir,FileErr);
   IF FileErr THEN
-	Error('þ USER_DAT.NEW not found!');
+	Error(' þ USER_DAT.NEW not found!');
    
   { --- }
 
