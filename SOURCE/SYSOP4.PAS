@@ -1,19 +1,164 @@
 {$A+,B-,D-,E-,F+,I-,L-,N-,O+,R-,S-,V-}
 
-UNIT SysOp4;
+UNIT SysOp4; { Text editor, scrolling viewer}
 
 INTERFACE
 
 USES
   Common;
 
+PROCEDURE TView(VAR FSpec: AStr); { LeeW: Added - Scrolling text file viewer }
 PROCEDURE TEdit1;
 PROCEDURE TEdit(CONST FSpec: AStr);
 
 IMPLEMENTATION
 
 USES
-  Dos;
+  DOS;
+
+CONST
+  LFNSupport = FALSE; { LeeW: Added - Extension is defined as all characters after the first period }
+
+PROCEDURE TView(VAR FSpec: AStr); { Read a text file and scroll by Eric Miller, implemented by Lee Woodridge }
+
+{ - Do we need additional HangUp checks?
+  - Disable cursor?
+  - Maybe add infobar - total lines, current line, filename, etc }
+
+CONST
+  MaxLine = 200;
+  MaxLength = 80;
+VAR
+  Lines: ARRAY [1..MaxLine] OF STRING [MaxLength]; { LeeW: Users screen configuration?}
+  OldLine,
+  L,
+  CurrentLine,
+  NumLines: Word;
+  TextFile: Text;
+  Key: Word;
+  Redraw,
+  Done,
+  SaveTempPause, { LeeW: Added }
+  SaveMCIAllowed, { ^ }
+  SaveColorAllowed: Boolean; { ^ }
+  { --- }
+  Dir: DirStr; { ^ }
+  Name: NameStr; { ^ }
+  Ext: ExtStr; { ^ }
+  
+BEGIN
+  IF NOT (Exist(FSpec)) AND (FileSysOp) THEN
+    BEGIN
+      NL;
+      Prt('File name: ');
+      InputMain(FSpec,50,[CapAll]);
+    END;
+  
+  { LeeW: Switch to InputPath for proper input validation eventually }
+  
+  FSplit(FSpec,Dir,Name,Ext);
+  IF Dir = '' THEN { If no path specified, assume file is in misc directory }
+    FSpec := General.MiscPath+Name+Ext;
+  
+  Assign(TextFile,FSpec);
+  Reset(TextFile);
+  
+  IF (IOResult <> 0) THEN
+    BEGIN
+      SysOpLog('File not found "'+Dir+Name+Ext+'" (Cmd: VI)'); { LeeW: Wording }
+      EXIT;
+    END
+  ELSE
+    SysOpLog('Viewed text file "'+Dir+Name+Ext+'"');
+
+  SaveTempPause := TempPause;
+  TempPause := False;
+  SaveMCIAllowed := MCIAllowed;
+  MCIAllowed := FALSE; { LeeW: Should we allow? ... Would need to account for MCI length }
+  SaveColorAllowed := ColorAllowed;
+  ColorAllowed := FALSE; { LeeW: ^ }
+    
+  CLS;
+  
+  NumLines := 0;
+  WHILE NOT EOF(TextFile) AND (NumLines < MaxLine) DO { AND NOT HangUp? }
+    BEGIN
+      Inc(NumLines);
+      Readln(TextFile, Lines[NumLines]);
+    END;
+  Close(TextFile);
+
+{ Well... that handles getting the file into memory...
+  but to scroll through using Up/Down & PgUp PgDn is a lot 
+  harder, but not incredibly difficult. }
+  
+  Done := False;
+  Redraw := True;
+  CurrentLine := 1;
+
+  WHILE NOT Done AND NOT HangUp DO
+    BEGIN
+      IF Redraw THEN
+        BEGIN
+          ANSIG(1,1);
+          FOR L := CurrentLine TO CurrentLine + 22 DO
+            BEGIN
+              Clear_EOL;
+              Prt(Lines[L]);
+              IF (L < CurrentLine + 22) AND (Length(Lines[L])<80) THEN { LeeW: Added length check }
+                NL;
+            END;
+            {Write(Lines[L], ' ':(80-Length(Lines[L])));}
+          Redraw := False;
+        END;
+  
+      { LeeW: This only works right for ASCII text files now, ANSI display is all kinds of broken,
+              MCIs and colors could be fairly easily added I think but ANSI would take a bit more doing ... }
+        
+      Key := GetKey;
+      OldLine := CurrentLine;
+      
+      { LeeW: PgUp and PgDown don't work remotely on NetRunner, need to test w/ other terminals }
+      
+      CASE Key OF
+        F_UP: { Up }
+          IF CurrentLine > 1 THEN
+            Dec(CurrentLine);
+        F_DOWN: { Down  }
+          IF CurrentLine < (NumLines-22) THEN
+            Inc(CurrentLine);
+        F_PGUP, 18: { Page Up / Ctrl+R }
+          IF CurrentLine > 23 THEN
+            Dec(CurrentLine, 23)
+          ELSE
+            CurrentLine := 1;
+        F_PGDN, 3: { Page Down / Ctrl+C }
+          IF CurrentLine < (NumLines-44) THEN
+            Inc(CurrentLine, 23)
+          ELSE
+            CurrentLine := NumLines-22;
+        27: { Escape }
+          Done := True;
+      END;
+      
+      IF CurrentLine <> OldLine THEN
+        Redraw := True;
+        
+    END;
+    
+    TempPause := SaveTempPause;
+    MCIAllowed := SaveMCIAllowed;
+    ColorAllowed := SaveColorAllowed;
+    
+    FillChar(Lines,SizeOf(Lines),0); { LeeW: Clear all lines }
+END;
+
+{ That should work for scrolling through the lines. Sorry
+  about not commenting the code a lot; it is almost self-explanatory
+  though, but it works! You could optimize it for larger files
+  by using an array of pointers to strings. But enough for now. }
+
+{ --- }
 
 PROCEDURE TEdit1;
 VAR

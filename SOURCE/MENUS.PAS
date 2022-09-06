@@ -11,15 +11,15 @@
               not sure if it matters ...
  04/26/2022 - Menu command error and SysOp log now executes for all users, not just CoSysOp+
  04/27/2022 - Menu command error messages use language file now (Invalid/NoACS)
+ 09/05/2022 - Added menu command VI - scrolling text viewer
 }
 UNIT Menus;
 
 INTERFACE
 
 USES
-crt,
+  CRT,
   Common,
-  Common3, {for inputscroll, my testing -- remove later}
   Events,
   SysOp2J,
   MyIO;
@@ -603,15 +603,14 @@ BEGIN
     Update_Node(NodeActivityDesc,TRUE);
 
   CASE Cmd[1] OF
-  (*
     '^' : CASE Cmd[2] OF { Command for testing }
             '^' : BEGIN
-                    print('x'+inttostr(hi(windmax))+' y'+inttostr(lo(windmax))+'%pa')
+                    
                   END;
           ELSE
             NoCmd := TRUE;
           END;
-          *)
+  
     '$' : CASE Cmd[2] OF
             'D' : Deposit;
             'W' : Withdraw;
@@ -928,6 +927,7 @@ BEGIN
                       PauseScr(FALSE);
                   END;
             'A' : AddTopic;
+            'I' : TView(MenuOption); { LeeW: Added - View text file scroll ability }
             'L' : ListTopics(TRUE);
             'R' : Results(FALSE);
             'T' : TrackUser;
