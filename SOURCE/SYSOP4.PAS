@@ -27,7 +27,7 @@ PROCEDURE TView(VAR FSpec: AStr); { Read a text file and scroll by Eric Miller, 
 
 CONST
   MaxLine = 200;
-  MaxLength = 80;
+  MaxLength = 79;
 VAR
   Lines: ARRAY [1..MaxLine] OF STRING [MaxLength]; { LeeW: Users screen configuration?}
   OldLine,
@@ -76,7 +76,7 @@ BEGIN
   SaveMCIAllowed := MCIAllowed;
   MCIAllowed := FALSE; { LeeW: Should we allow? ... Would need to account for MCI length }
   SaveColorAllowed := ColorAllowed;
-  ColorAllowed := FALSE; { LeeW: ^ }
+  ColorAllowed := TRUE; { Exo: For Pipe Codes }
     
   CLS;
   
@@ -567,7 +567,7 @@ BEGIN
                     NL;
                     Print('   Enter "." on a separate line to exit insert mode.');
                     IF (OkANSI OR OkAvatar) THEN
-                      Print('^1   อออออออออออออออออออออออออออออออออออออออออออออออออ^0');
+                      Print('^1   รรรรรรรรรรรรรรรรรรรรรรรรรรรรรรรรรรรรรรรรรรรรรรรรร^0');
                     Dec(ThisUser.LineLen,6);
                     S := '';
                     WHILE (S <> '.') AND (S <> '.'+#1) AND (NOT Abort) AND (NOT HangUp) DO
