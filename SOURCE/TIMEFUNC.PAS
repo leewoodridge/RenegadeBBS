@@ -16,10 +16,11 @@ TYPE
   Str5 = STRING[5];
   Str8 = STRING[8];
   Str10 = STRING[10];
-  Str13 = STRING[13]; {LeeW:Added}
+  Str11 = STRING[11];
+  Str13 = STRING[13]; { LeeW: Added }
   Str160 = STRING[160];
 
-PROCEDURE ConvertAmPm(VAR Hour: Word; VAR AmPm: Str2);
+PROCEDURE ConvertAMPM(VAR Hour: Word; VAR AMPM: Str2);
 FUNCTION ZeroPad(S: Str8): Str2;
 PROCEDURE PackToDate(VAR DT: DateTime; L: LongInt);
 FUNCTION DateToPack(VAR DT: DateTime): LongInt;
@@ -39,8 +40,9 @@ FUNCTION CTim(L: LongInt): Str8;
 FUNCTION Days(VAR Month,Year: Word): Word;
 FUNCTION DayNum(DateStr: Str10): Word;
 FUNCTION Dat: Str160;
-FUNCTION DateSuffix(DateNumber: Byte): STRING; {LeeW: Added - Returns 'st','nd','rd' etc.}
-FUNCTION TimeStamp: Str13; {LeeW: Added - Returns "[00:00:00AM] "}
+FUNCTION DateSuffix(DateNumber: Byte): Str2; { LeeW: Added - Returns "st", "nd", "rd", etc. }
+FUNCTION TimeStamp: Str13; { LeeW: Added - Returns "[00:00:00AM] " }
+FUNCTION NumDaysBetween(Date1, Date2: LongInt): Str5; { LeeW: Added - Returns number of days between UNIXTIME dates }
 
 IMPLEMENTATION
 
@@ -54,9 +56,6 @@ CONST
   M28 = (86400 * 28);
 
   SecondsPerMonth: ARRAY [1..12] OF LongInt = (M31,M28,M31,M30,M31,M30,M31,M31,M30,M31,M30,M31);
-
-TYPE
-  Str11 = STRING[11];
 
 (* Done - Lee Palmer 11/23/07 *)
 FUNCTION IntToStr(L: LongInt): Str11;
@@ -75,10 +74,10 @@ VAR
 BEGIN
   Val(S,L,I);
   IF (I > 0) THEN
-  BEGIN
-    S[0] := Chr(I - 1);
-    Val(S,L,I)
-  END;
+    BEGIN
+      S[0] := Chr(I - 1);
+      Val(S,L,I)
+    END;
   IF (S = '') THEN
     StrToInt := 0
   ELSE
@@ -96,16 +95,16 @@ BEGIN
 END;
 
 (* Done - 10/25/07 - Lee Palmer *)
-PROCEDURE ConvertAmPm(VAR Hour: Word; VAR AmPm: Str2);
+PROCEDURE ConvertAMPM(VAR Hour: Word; VAR AMPM: Str2);
 BEGIN
   IF (Hour < 12) THEN
-    AmPm := 'AM'
+    AMPM := 'AM'
   ELSE
-  BEGIN
-    AmPm := 'PM';
-    IF (Hour > 12) THEN
-      Dec(Hour,12);
-  END;
+    BEGIN
+      AMPM := 'PM';
+      IF (Hour > 12) THEN
+        Dec(Hour,12);
+    END;
   IF (Hour = 0) THEN
     Hour := 12;
 END;
@@ -122,22 +121,22 @@ PROCEDURE PackToDate(VAR DT: DateTime; L: LongInt);
 BEGIN
   DT.Year := 1970;
   WHILE (L < 0) DO
-  BEGIN
-    Dec(DT.Year);
-    Inc(L,SecondsPerYear[((DT.Year MOD 4) = 0)]);
-  END;
+    BEGIN
+      Dec(DT.Year);
+      Inc(L,SecondsPerYear[((DT.Year MOD 4) = 0)]);
+    END;
   WHILE (L >= SecondsPerYear[((DT.Year MOD 4) = 0)]) DO
-  BEGIN
-    Dec(L,SecondsPerYear[((DT.Year MOD 4) = 0)]);
-    Inc(DT.Year);
-  END;
+    BEGIN
+      Dec(L,SecondsPerYear[((DT.Year MOD 4) = 0)]);
+      Inc(DT.Year);
+    END;
   DT.Month := 1;
   February(DT.Year);
   WHILE (L >= SecondsPerMonth[DT.Month]) DO
-  BEGIN
-    Dec(L,SecondsPerMonth[DT.Month]);
-    Inc(DT.Month);
-  END;
+    BEGIN
+      Dec(L,SecondsPerMonth[DT.Month]);
+      Inc(DT.Month);
+    END;
   DT.Day := (Word(L DIV 86400) + 1);
   L := (L MOD 86400);
   DT.Hour := Word(L DIV 3600);
@@ -162,18 +161,18 @@ BEGIN
     Inc(DTP,SecondsPerMonth[Month]);
   Year := DT.Year;
   WHILE (Year <> 1970) DO
-  BEGIN
-    IF (DT.Year > 1970) THEN
     BEGIN
-      Dec(Year);
-      Inc(DTP,SecondsPerYear[(Year MOD 4 = 0)]);
-    END
-    ELSE
-    BEGIN
-      Inc(Year);
-      Dec(DTP,SecondsPerYear[((Year - 1) MOD 4 = 0)]);
+      IF (DT.Year > 1970) THEN
+        BEGIN
+          Dec(Year);
+          Inc(DTP,SecondsPerYear[(Year MOD 4 = 0)]);
+        END
+      ELSE
+        BEGIN
+          Inc(Year);
+          Dec(DTP,SecondsPerYear[((Year - 1) MOD 4 = 0)]);
+        END;
     END;
-  END;
   DateToPack := DTP;
 END;
 
@@ -263,33 +262,33 @@ END;
 
 (* Done - Lee Palmer 11/23/07 *)
 FUNCTION PDT2Dat(VAR PDT: LongInt; CONST DOW: Byte): STRING;
-(* Example Output: 12:00 am  Fri Nov 23, 2007 *)
+(* Example Output: 12:00 AM  Fri Nov 23, 2007 *)
 VAR
   DT: DateTime;
-  AmPm: Str2;
+  AMPM: Str2;
 BEGIN
   PackToDate(DT,PDT);
-  ConvertAmPm(DT.Hour,AmPm);
+  ConvertAMPM(DT.Hour,AMPM);
   PDT2Dat := IntToStr(DT.Hour)+
-            ':'+ZeroPad(IntToStr(DT.Min))+
-            ' '+AmPm+
-            '  '+Copy(DayString[DOW],1,3)+
-            ' '+Copy(MonthString[DT.Month],1,3)+
-            ' '+IntToStr(DT.Day)+
-            ', '+IntToStr(DT.Year);
+             ':'+ZeroPad(IntToStr(DT.Min))+
+             ' '+AMPM+
+             '  '+Copy(DayString[DOW],1,3)+
+             ' '+Copy(MonthString[DT.Month],1,3)+
+             ' '+IntToStr(DT.Day)+
+             ', '+IntToStr(DT.Year);
 END;
 
 FUNCTION TimeStr: Str8;
 VAR
-  AmPm: Str2;
+  AMPM: Str2;
   Hour,
   Minute,
   Second,
   Sec100: Word;
 BEGIN
   GetTime(Hour,Minute,Second,Sec100);
-  ConvertAmPm(Hour,AmPm);
-  TimeStr := IntToStr(Hour)+':'+ZeroPad(IntToStr(Minute))+' '+AmPm;
+  ConvertAMPM(Hour,AMPM);
+  TimeStr := IntToStr(Hour)+':'+ZeroPad(IntToStr(Minute))+' '+AMPM;
 END;
 
 FUNCTION DateStr: Str10;
@@ -357,39 +356,39 @@ BEGIN
   IF (Year < 1985) THEN
      DayNum := 0
   ELSE
-  BEGIN
-    FOR YearCounter := 1985 TO (Year - 1) DO
-      IF (YearCounter MOD 4 = 0) THEN
-        Inc(TotalDayCount,366)
-      ELSE
-        Inc(TotalDayCount,365);
-    TotalDayCount := ((TotalDayCount + DayCount(Month,Year)) + (Day - 1));
-    DayNum := TotalDayCount;
-  END;
+    BEGIN
+      FOR YearCounter := 1985 TO (Year - 1) DO
+        IF (YearCounter MOD 4 = 0) THEN
+          Inc(TotalDayCount,366)
+        ELSE
+          Inc(TotalDayCount,365);
+      TotalDayCount := ((TotalDayCount + DayCount(Month,Year)) + (Day - 1));
+      DayNum := TotalDayCount;
+    END;
 END;
 
 (* Done - 10/25/07 - Lee Palmer *)
 FUNCTION Dat: Str160;
 VAR
   DT: DateTime;
-  AmPm: Str2;
+  AMPM: Str2;
   DayOfWeek,
   Sec100: Word;
 BEGIN
   GetDate(DT.Year,DT.Month,DT.Day,DayOfWeek);
   GetTime(DT.Hour,DT.Min,DT.Sec,Sec100);
-  ConvertAmPm(DT.Hour,AmPm);
+  ConvertAMPM(DT.Hour,AMPM);
   Dat := IntToStr(DT.Hour)+
          ':'+ZeroPad(IntToStr(DT.Min))+
-         ' '+AmPm+
+         ' '+AMPM+
          ' '+Copy(DayString[DayOfWeek],1,3)+
          ' '+Copy(MonthString[DT.Month],1,3)+
          ' '+IntToStr(DT.Day)+
          ' '+IntToStr(DT.Year);
 END;
 
-FUNCTION DateSuffix(DateNumber: Byte): STRING;
-(* LeeW: Returns appropriate suffix (ie. 'st', 'nd', 'rd') for number provided *)
+FUNCTION DateSuffix(DateNumber: Byte): Str2;
+{ LeeW: Returns appropriate suffix (ie. "st", "nd", "rd") for number provided }
 BEGIN
   CASE DateNumber OF
     1, 21, 31 : DateSuffix := 'st';
@@ -402,8 +401,9 @@ BEGIN
 END;
 
 FUNCTION TimeStamp: Str13;
+{ LeeW: Returns "[00:00:00AM] " }
 VAR
-  AmPm: Str2;
+  AMPM: Str2;
   Hour,
   Minute,
   Second,
@@ -412,6 +412,15 @@ BEGIN
   GetTime(Hour,Minute,Second,Sec100);
   ConvertAMPM(Hour,AMPM);
   TimeStamp := '['+ZeroPad(IntToStr(Hour))+':'+ZeroPad(IntToStr(Minute))+':'+ZeroPad(IntToStr(Second))+' '+AMPM+']';
+END;
+
+FUNCTION NumDaysBetween(Date1, Date2: LongInt): Str5;
+{ LeeW: Returns number of days between UNIXTIME dates }
+BEGIN
+  IF NOT (Date2 >= Date1) THEN
+    NumDaysBetween := IntToStr((Date1-Date2) DIV 86400)
+  ELSE
+    NumDaysBetween := IntToStr((Date2-Date1) DIV 86400);
 END;
 
 END.
