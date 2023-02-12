@@ -6,7 +6,7 @@ TODO: add user flag to force password change next logon
 03/13/2022 - Combined user statusflags msg & file lightbars into 1 - lightbars
 }
 CONST
-  Build = '1.25';
+  Build = '1.30';
 
 {$IFDEF MSDOS}
   OS = '/DOS';
