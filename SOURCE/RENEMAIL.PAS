@@ -89,6 +89,14 @@ VAR
 
   ParamFound: Boolean;
 
+FUNCTION IntToString(L: LongInt): STRING;
+VAR
+  S: STRING[11];
+BEGIN
+  Str(L,S);
+  IntToString := S;
+END;
+
 FUNCTION CenterStr(S: STRING): STRING;
 VAR
   Counter1: Byte;
@@ -120,6 +128,8 @@ PROCEDURE DisplayMain(FColor,Bcolor: Byte);
 VAR
   X,
   Y: Byte;
+  Year, Month, MDay, WDay: Word;
+
 BEGIN
   ClrScr;
 FColor:=8;
@@ -141,8 +151,9 @@ FColor:=8;
   FOR X := 2 TO 79 DO
     WriteCharXY(#205,X,4,FColor,Black);
   WriteCharXY(#185,80,4,FColor,Black);
+  GetDate(Year,Month,MDay,WDay);
   WriteStrXY(CenterStr('Renegade Echomail Interface v'+Ver),2,2,11,Black);
-  WriteStrXY(CenterStr('Copyright 2023 - The Renegade Development Team'),2,3,3,Black);
+  WriteStrXY(CenterStr('Copyright (c) 1991-'+IntToString(Year)+' The Renegade Development Team'),2,3,3,Black);
   FOR Y := 5 TO 21 DO
   BEGIN
     WriteCharXY(#186,1,Y,FColor,Black);
