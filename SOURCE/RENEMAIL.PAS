@@ -1859,7 +1859,7 @@ BEGIN
             FidoTxt := StripColor(MemMsgArea1.MAFlags,FidoTxt);
 
           FidoTxt := FidoTxt + #13;
-
+          IF Length(FidoTxt) < 81 THEN
           {$I-} BlockWrite(FidoFile,FidoTxt[1],Length(FidoTxt)); {$I+}
           LastError := IOResult;
           IF (LastError <> 0) THEN
