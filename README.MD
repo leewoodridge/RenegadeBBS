@@ -1,5 +1,5 @@
 # Renegade Bulletin Board System
-Copyright (c) 1991-2022 The Renegade Development Team ─ Cott Lang, Patrick Spence, Gary Hall, Jeff Herrings, T.J. McMillen, Chris Hoppman, Lee Palmer, and Lee Woodridge.
+Copyright (c) 1991-2023 The Renegade Development Team ─ Cott Lang, Patrick Spence, Gary Hall, Jeff Herrings, T.J. McMillen, Chris Hoppman, Lee Palmer, and Lee Woodridge.
 #
   * Added datesuffix, timestamp in timefunc.pas
   * Timestamps for user log entries
