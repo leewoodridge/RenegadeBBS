@@ -1,9 +1,9 @@
 {$A+,B-,D+,E-,F+,I-,L+,N-,O-,R-,S+,V-}
 {
  10/21/2021 - Removed: Color change for input longer than 2
- 10/31/2021 - Added commands: 
+ 10/31/2021 - Added commands:
                 > Toggle SysOp Availability (*T)
-                > Validation Editor (*S) 
+                > Validation Editor (*S)
                 > Color Scheme Editor (*G)
             - Added password check for all SysOp (*) commands
  11/15/2021 - Direct memory addressing for *T command only works in real mode (DOS)
@@ -108,7 +108,7 @@ USES
       inc(I);
     end;
     *)
-    
+
 PROCEDURE AutoExecCmd(AutoCmd: AStr);
 VAR
   NewMenuCmd: AStr;
@@ -149,10 +149,10 @@ BEGIN
       ELSE
         Cmd := '';
     END;
-    
+
   NewMenuCmd := '';
-  
-  REPEAT  
+
+  REPEAT
     (*IF NOT (HangUp) THEN { LeeW: Added check to prevent 'a' cmd after timeout }*)
       DoMenuExec(Cmd,NewMenuCmd)
   UNTIL (NewMenuCmd = '') OR (HangUp);
@@ -605,12 +605,11 @@ BEGIN
   CASE Cmd[1] OF
     '^' : CASE Cmd[2] OF { Command for testing }
             '^' : BEGIN
-                    
                   END;
           ELSE
             NoCmd := TRUE;
           END;
-  
+
     '$' : CASE Cmd[2] OF
             'D' : Deposit;
             'W' : Withdraw;
@@ -1054,17 +1053,17 @@ BEGIN
   LastCommandGood := NOT NoCmd;
   IF (LastCommandOvr) THEN
     LastCommandGood := FALSE;
-    
+
   IF ((CurMenu = General.NewUserInformationMenu) AND (Cmd='OQ')) THEN
     NoCmd := FALSE; {leew: quick and dirty fix}
-    
+
   IF (NoCmd) THEN
     (*IF (CoSysOp) THEN { LeeW: Why only CoSysOp? }*)
       BEGIN
         Print(lRGLngStr(260,TRUE)); {"Invalid command!"}
         SysOpLog('^8[E] ^1Invalid menu command '#196' C: "'+Cmd+'" P: "'+MenuOption+'"');
       END;
-      
+
   IF ((Cmd[1] + Cmd[2]) <> 'NW') THEN
     Update_Node('',FALSE);
   IF (NewMenuToLoad) THEN

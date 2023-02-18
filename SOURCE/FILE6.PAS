@@ -1,6 +1,6 @@
 {$A+,B-,D+,E-,F+,I-,L+,N-,O+,R-,S+,V-}
 {
- 06/13/2022	- LeeW: ln339,340,364 my bugfix attempt for batchdl error
+ 06/13/2022 - LeeW: ln339,340,364 my bugfix attempt for batchdl error
 }
 
 UNIT File6;
@@ -334,8 +334,8 @@ VAR
     IF (NOT ReadLog) THEN
     BEGIN
       SysOpLog('Start scan of: "^1BATCHDL.DAT^0"');
-	  Assign(FileAreaFile,General.DataPath+'FBASES.DAT'); {LeeW: Added}
-	  Reset(FileAreaFile); {LeeW: Added}
+      Assign(FileAreaFile,General.DataPath+'FBASES.DAT'); {LeeW: Added}
+      Reset(FileAreaFile); {LeeW: Added}
       Reset(BatchDLFile);
       RecNum := 1;
       WHILE (RecNum <= FileSize(BatchDLFile)) DO
@@ -359,7 +359,7 @@ VAR
         END;
         Inc(RecNum);
       END;
-	  Close(FileAreaFile); {LeeW: Added}
+      Close(FileAreaFile); {LeeW: Added}
       SysOpLog('End scan of: "^1BATCHDL.DAT^0"');
     END;
   END;

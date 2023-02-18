@@ -78,7 +78,7 @@ BEGIN
           HangUp := TRUE;
         END;
     END;
-    
+
   IF (NOT HangUp) THEN
     BEGIN
       PrintF('NEWUSER');

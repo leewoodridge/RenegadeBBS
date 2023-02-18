@@ -182,7 +182,7 @@ VAR
       QWKIndex := 0;
     END;
   END;
-  
+
   PROCEDURE ResetMsgAreaColors;
   VAR
     LastRecNum,
@@ -201,12 +201,12 @@ VAR
                 BEGIN
                   Seek(MsgAreaFile,(RecNum - 1));
                   Read(MsgAreaFile,MemMsgArea);
-                
+
                   MemMsgArea.Text_Color := General.Text_Color;
                   MemMsgArea.Quote_Color := General.Quote_Color;
                   MemMsgArea.Tear_Color := General.Tear_Color;
                   MemMsgArea.Origin_Color := General.Origin_Color;
-                
+
                   Seek(MsgAreaFile,(RecNum - 1));
                   Write(MsgAreaFile,MemMsgArea);
                 END;
@@ -217,12 +217,12 @@ VAR
               Reset(EMailFile);
               Seek(EMailFile,0);
               Read(EMailFile,MemMsgArea);
-              
+
               MemMsgArea.Text_Color := General.Text_Color;
               MemMsgArea.Quote_Color := General.Quote_Color;
               MemMsgArea.Tear_Color := General.Tear_Color;
               MemMsgArea.Origin_Color := General.Origin_Color;
-              
+
               Seek(EMailFile,0);
               Write(EMailFile,MemMsgArea);
               Close(EMailFile);
@@ -233,7 +233,7 @@ VAR
           END;
       END;
   END;
-  
+
   PROCEDURE ChangeMsgAreaDrive(Drive: Char; FirstRecNum: Integer);
   VAR
     LastRecNum,
@@ -636,7 +636,7 @@ VAR
                 END;
           'N' : BEGIN
                   REPEAT
-                    ConfigHeader('Message Colors',0);
+                    ConfigHeader('Message Colors',0,0);
                     PrintACR('^0(^11^0) Text   : '#29); SetC(Text_Color); PrintACR('Text');
                     PrintACR('^0(^12^0) Quote  : '#29); SetC(Quote_Color); PrintACR('Quote');
                     PrintACR('^0(^13^0) Tear   : '#29); SetC(Tear_Color); PrintACR('Tear');
@@ -1118,7 +1118,7 @@ VAR
     MCIAllowed := FALSE;
     Abort := FALSE;
     Next := FALSE;
-    {CLS;} ConfigHeader('Message Area Editor',0);
+    {CLS;} ConfigHeader('Message Area Editor',0,0);
     CASE DisplayType OF
       1 : PrintACR('^5<^4##^5> <^4Message Area Name^5>      <^4Flag^5>  <^4Read    ^5/ ^4Post    ^5/ ^4MCI ACS^5> '
                     +'<^4Max^5>  <^4A^5>');

@@ -468,9 +468,9 @@ VAR
           Abort := FALSE;
           Next := FALSE;
           IF (Editing) THEN
-            ConfigHeader('Editing Color Scheme #'+IntToStr(RecNumToEdit)+' Of '+IntToStr(NumSchemes),0)
+            ConfigHeader('Editing Color Scheme #'+IntToStr(RecNumToEdit)+' Of '+IntToStr(NumSchemes),0,0)
           ELSE
-            ConfigHeader('Inserting Color Scheme #'+IntToStr(RecNumToEdit)+' Of '+IntToStr(NumSchemes + 1),0);
+            ConfigHeader('Inserting Color Scheme #'+IntToStr(RecNumToEdit)+' Of '+IntToStr(NumSchemes + 1),0,0);
           PrintACR('^0(^11^0) Description   : ^1'+Scheme.Description);
           Prompt('^0(^12^0) System colors : ');
           ShowColors;
@@ -766,7 +766,7 @@ VAR
     Abort := FALSE;
     Next := FALSE;
     {CLS;}
-    ConfigHeader('Color Scheme Editor',0);
+    ConfigHeader('Color Scheme Editor',0,0);
     PrintACR('^5<^4##^5> <^4Description^5>                  <^4Colors^5>');
     HL;
     {PrintACR('^1###^2:^1'+PadLeftStr('Description',30)+'^2:^1Colors');

@@ -11,6 +11,7 @@ Lee Woodridge
             - Added ACS check
 
  should we combine rgquote to rgquote.pas??
+ - Add breakdown of active/inactive users at end of list
 }
 INTERFACE
 
@@ -466,7 +467,7 @@ BEGIN
   IF (NOT Abort) THEN
     PrintF(MenuOptions+'T');
   AllowContinue := FALSE;
-  
+
   SysOpLog('Viewed todays callers'+AOnOff(InWFCMenu,' from WFC menu',''));
   LastError := IOResult;
 END;
@@ -538,9 +539,9 @@ BEGIN
       UserColor(0);
     END;
   SysOpLog('Read Quote ('+AllCaps(MenuOption)+')');
-  
+
   {-}
-  
+
   IF (NOT General.UserAddQuote) OR (NOT AACS(General.AddQuoteACS)) AND (NOT HangUp) THEN
     PauseScr(FALSE)
   ELSE IF (PYNQ(lRGLngStr(179,TRUE),0,FALSE)) {"Would you like to add a quote?"} AND (NOT HangUp) THEN

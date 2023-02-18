@@ -8,7 +8,7 @@ Lee Woodridge
  10/12/2021 - Added Teleconf Normal(11),Anonymous(12),Global(13),Private(14) to MAIN
  11/01/2021 - All string files combined into RGLNG.TXT
             - #193 unused -- replace with something NOT UNTIL I FINISH MULTINODE CHAT
-            - Too many nested IF, ELSE IF statements causing internal stack overflow 
+            - Too many nested IF, ELSE IF statements causing internal stack overflow
                 - temp fixed by starting over after each section
  11/12/2021 - Added updateuserinfo strings (#234/235), Force batch DL (#236), Force batch UL (#237), Add quote prompt (#179)
  11/15/2021 - Added reading public messages list header (#238)
@@ -20,7 +20,7 @@ Lee Woodridge
  00/00/0000 - 271-272 download top files
  00/00/0000 - 273-274 voting
  00/00/0000 - 275 max attempts
- 04/27/2022 - 276 menu command no acs 
+ 04/27/2022 - 276 menu command no acs
  -
  add lightbar_continuous for continue lightbar prompt
  -
@@ -479,7 +479,7 @@ BEGIN
                 RgStrNum := 179;
               {// END OF NOTE, START OF MAIN }
               IF (S = 'BAUD_OVERRIDE_PW') THEN
-                RGStrNum := 180 
+                RGStrNum := 180
               ELSE IF (S = 'CALLER_LOGON') THEN
                 RGStrNum := 181
               ELSE IF (S = 'LOGON_AS_NEW') THEN
@@ -685,12 +685,12 @@ BEGIN
                 {// END OF COMB }
                 (*
               ELSE IF (S = '') THEN
-                RgStrNum := 
+                RgStrNum :=
                 *)
                 ;
-                
+
               {/}
-                
+
               IF (RGStrNum = -1) THEN
                 BEGIN
                   WriteLn('Error!');
@@ -735,5 +735,5 @@ BEGIN
               Erase(StrPointerFile);
               Erase(RGStrFile);
             END;
-    END;  
+    END;
 END.

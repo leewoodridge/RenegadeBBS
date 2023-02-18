@@ -129,7 +129,7 @@ END;
 PROCEDURE OneLiner_Add;
 VAR
   OneLinerList: OneLinerRecordType;
-  
+
   PROCEDURE AskOneLinerQuestions(VAR OneLinerList: OneLinerRecordType);
   BEGIN
     WHILE (NOT Abort) AND (NOT Hangup) DO
@@ -145,7 +145,7 @@ VAR
         EXIT;
       END;
   END;
-  
+
 BEGIN
   IF PYNQ(lRGLngStr(106,TRUE),0, FALSE) THEN {"Add a OneLiner?"}
     BEGIN

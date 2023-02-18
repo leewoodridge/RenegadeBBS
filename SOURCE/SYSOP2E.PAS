@@ -39,7 +39,7 @@ BEGIN
         BEGIN
           Abort := FALSE;
           Next := FALSE;
-          ConfigHeader('System Toggles',12);
+          ConfigHeader('System Toggles',1,2);
           PrintACR(PadLeftStr('^0(^1A^0) Mandatory voting          : ^1'+ShowOnOff(ForceVoting),39)+
                    PadLeftStr('^0(^1B^0) Phone # security question : ^1'+ShowOnOff(PhonePW),39));
           PrintACR(PadLeftStr('^0(^1C^0) Local security protection : ^1'+ShowOnOff(LocalSec),39)+
@@ -129,15 +129,15 @@ BEGIN
                   END;
           END;
         END;
-    
+
     {-}
-    
+
     IF (OnPage = 2) THEN
       WITH General DO
         BEGIN
           Abort := FALSE;
           Next := FALSE;
-          ConfigHeader('System Toggles',22);
+          ConfigHeader('System Toggles',2,2);
           PrintACR(PadLeftStr('^0(^1A^0) Newest OneLiners on top   : ^1'+ShowOnOff(OneLinersNewTop),39)+
                    PadLeftStr('^0(^1B^0) LastCallers in logon      : ^1'+ShowOnOff(LogonLastCallers),39));
           PrintACR(PadLeftStr('^0(^1C^0) OneLiners in logon        : ^1'+ShowOnOff(LogonOneLiners),39)+

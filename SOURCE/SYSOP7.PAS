@@ -80,7 +80,7 @@ BEGIN
   RecNumToList := 1;
   InputStr := '?';
   REPEAT
-    ConfigHeader('System Menus Configuration',0);
+    ConfigHeader('System Menus Configuration',0,0);
     IF (InputStr = '?') THEN
       DisplayMenus(RecNumToList,FALSE);
     Prt(DisplayStr+' (^1'+IntToStr(LowMenuNum)+'^2-^1'+IntToStr(HighMenuNum)+'^2)'+
@@ -384,7 +384,7 @@ VAR
                         Abort := FALSE;
                         Next := FALSE;
                         MCIAllowed := FALSE;
-                        ConfigHeader('Editing Menu #'+IntToStr(RecNumToModify)+' Of '+IntToStr(NumMenus),0);
+                        ConfigHeader('Editing Menu #'+IntToStr(RecNumToModify)+' Of '+IntToStr(NumMenus),0,0);
                         PrintACR('^0(^11^0) Menu Number    : ^1'+IntToStr(MenuNum));
                         PrintACR('^0(^12^0) Menu Title     : ^1'+LDesc[1]);
                         IF (LDesc[2] <> '') THEN
@@ -487,7 +487,7 @@ VAR
                                       [InteractiveEdit,NumbersOnly],0,3,Changed);
                       '9' : BEGIN
                               REPEAT
-                                ConfigHeader('Generic Menu Configuration',0);
+                                ConfigHeader('Generic Menu Configuration',0,0);
                                 PrintACR('^0(^1C^0) Number Of Columns : ^1'+IntToStr(GenCols));
                                 PrintACR('^0(^11^0) Bracket Color     : ^1'+IntToStr(GCol[1]));
                                 PrintACR('^0(^12^0) Command Color     : ^1'+IntToStr(GCol[2]));
@@ -544,9 +544,9 @@ VAR
                               REPEAT
                                 InputChar('%LF^2Toggle which menu flag? ('+DisplayMenuFlags(MenuFlags,'1','2')+'^2)'+
                                 ' [(^1?^2)Help,<^1CR^2>Quit]: ',Cmd1,^M'CDTNPAF12345?',[CapAll]);
-                                          
+
 { -- LeeW: indented to here! --}
-                                          
+
                                 CASE Cmd1 OF
                             'C','D','T','N','P','A','F','1'..'5' :
                                     ToggleMenuFlags(Cmd1,MenuFlags,Changed);
@@ -629,7 +629,7 @@ BEGIN
   REPEAT
     IF (Cmd <> '?') THEN
     begin
-    configheader('Menu Editor',0);
+    configheader('Menu Editor',0,0);
       DisplayMenus(RecNumToList,TRUE);
       end;
     InputChar('%LF^2Menu Editor [^1DIM^2,(^1?^2)Help,(^1Q^2)uit]: ',Cmd,'QDIM?'^M,[CapAll]);

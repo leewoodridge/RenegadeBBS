@@ -20,7 +20,7 @@ VAR
 BEGIN
   Abort := FALSE;
   Next := FALSE;
-  ConfigHeader('Archiver Editor',0);
+  ConfigHeader('Archiver Editor',0,0);
   PrintACR('^5<^4A^5> <^4##^5> <^4Ext^5> <^4Compression CmdLine^5>    <^4Decompression CmdLine^5>  <^4Success Code^5>');
   HL;
   RecNumToList := 1;
@@ -144,9 +144,9 @@ VAR
             Next := FALSE;
             {CLS;}
             IF (Editing) THEN
-              ConfigHeader('Editing Archiver #'+IntToStr(RecNumToEdit)+' Of '+IntToStr(NumArcs),0)
+              ConfigHeader('Editing Archiver #'+IntToStr(RecNumToEdit)+' Of '+IntToStr(NumArcs),0,0)
             ELSE
-              ConfigHeader('Inserting Archiver #'+IntToStr(RecNumToEdit)+' Of '+IntToStr(NumArcs + 1),0);
+              ConfigHeader('Inserting Archiver #'+IntToStr(RecNumToEdit)+' Of '+IntToStr(NumArcs + 1),0,0);
             PrintACR('^0(^11^0) Active                : ^1'+ShowYesNo(Active));
             PrintACR('^0(^12^0) File Extension        : ^1'+Ext);
             PrintACR('^0(^13^0) Interior List Method  : ^1'+DisplayArcStr(ListLine));

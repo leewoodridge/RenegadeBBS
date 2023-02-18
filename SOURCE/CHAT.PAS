@@ -1,6 +1,6 @@
 {$A+,B-,D+,E-,F+,I-,L+,N-,O+,R-,S+,V-}
 
-{ 
+{
 Lee Woodridge
  09/20/2021 - Combined line & splitscreen chat into CHAT.PAS
  10/03/2021 - Changed header for chatlog
@@ -44,7 +44,7 @@ USES
   EMail,
   Events,
   TimeFunc;
-  
+
 TYPE
   ChatStrArray = ARRAY [1..10] OF AStr;
   {
@@ -84,7 +84,7 @@ BEGIN
         PrintF('CHATOVR');
       IF (SysOpAvailable) OR (AACS(General.OverRideChat) AND PYNQ(^M^J'SysOp is not available. Override? ',0,FALSE)) THEN
       BEGIN
-        lStatus_Screen(100,'Press [SPACE] to chat or [ENTER] for silence.',FALSE,Reason);        
+        lStatus_Screen(100,'Press [SPACE] to chat or [ENTER] for silence.',FALSE,Reason);
         lRGLngStr(14,FALSE); { Print(FString.ChatCall1); }
         Counter := 0;
         Abort := FALSE;
@@ -468,7 +468,7 @@ VAR
 BEGIN
   {
   PrintF('SPLTCHAT');
-  IF NoFile THEN 
+  IF NoFile THEN
     BEGIN
       SysOpLog('SPLTCHAT.ANS file missing from MISC directory');
       EXIT;
@@ -543,7 +543,7 @@ VAR
       BEGIN
         InChat := False;
         Update_Screen;
-      END; 
+      END;
       *)
     IF (CPos < 79) THEN
       BEGIN
@@ -647,7 +647,7 @@ VAR
   END;
 
   PROCEDURE DoCarriageReturn(VAR CPos,XPos,YPos: Byte; VAR S: AStr);
-  VAR 
+  VAR
     i : Integer;
   BEGIN
     S[0] := Chr(CPos - 1);

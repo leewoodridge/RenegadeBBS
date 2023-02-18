@@ -45,7 +45,7 @@ VAR
   Dir: DirStr; { ^ }
   Name: NameStr; { ^ }
   Ext: ExtStr; { ^ }
-  
+
 BEGIN
   IF NOT (Exist(FSpec)) AND (FileSysOp) THEN
     BEGIN
@@ -53,16 +53,16 @@ BEGIN
       Prt('File name: ');
       InputMain(FSpec,50,[CapAll]);
     END;
-  
+
   { LeeW: Switch to InputPath for proper input validation eventually }
-  
+
   FSplit(FSpec,Dir,Name,Ext);
   IF Dir = '' THEN { If no path specified, assume file is in misc directory }
     FSpec := General.MiscPath+Name+Ext;
-  
+
   Assign(TextFile,FSpec);
   Reset(TextFile);
-  
+
   IF (IOResult <> 0) THEN
     BEGIN
       SysOpLog('File not found "'+Dir+Name+Ext+'" (Cmd: VI)'); { LeeW: Wording }
@@ -77,9 +77,9 @@ BEGIN
   MCIAllowed := FALSE; { LeeW: Should we allow? ... Would need to account for MCI length }
   SaveColorAllowed := ColorAllowed;
   ColorAllowed := TRUE; { Exo: For Pipe Codes }
-    
+
   CLS;
-  
+
   NumLines := 0;
   WHILE NOT EOF(TextFile) AND (NumLines < MaxLine) DO { AND NOT HangUp? }
     BEGIN
@@ -89,9 +89,9 @@ BEGIN
   Close(TextFile);
 
 { Well... that handles getting the file into memory...
-  but to scroll through using Up/Down & PgUp PgDn is a lot 
+  but to scroll through using Up/Down & PgUp PgDn is a lot
   harder, but not incredibly difficult. }
-  
+
   Done := False;
   Redraw := True;
   CurrentLine := 1;
@@ -111,15 +111,15 @@ BEGIN
             {Write(Lines[L], ' ':(80-Length(Lines[L])));}
           Redraw := False;
         END;
-  
+
       { LeeW: This only works right for ASCII text files now, ANSI display is all kinds of broken,
               MCIs and colors could be fairly easily added I think but ANSI would take a bit more doing ... }
-        
+
       Key := GetKey;
       OldLine := CurrentLine;
-      
+
       { LeeW: PgUp and PgDown don't work remotely on NetRunner, need to test w/ other terminals }
-      
+
       CASE Key OF
         F_UP: { Up }
           IF CurrentLine > 1 THEN
@@ -140,16 +140,16 @@ BEGIN
         27: { Escape }
           Done := True;
       END;
-      
+
       IF CurrentLine <> OldLine THEN
         Redraw := True;
-        
+
     END;
-    
+
     TempPause := SaveTempPause;
     MCIAllowed := SaveMCIAllowed;
     ColorAllowed := SaveColorAllowed;
-    
+
     FillChar(Lines,SizeOf(Lines),0); { LeeW: Clear all lines }
 END;
 
@@ -567,7 +567,7 @@ BEGIN
                     NL;
                     Print('   Enter "." on a separate line to exit insert mode.');
                     IF (OkANSI OR OkAvatar) THEN
-                      Print('^1   รรรรรรรรรรรรรรรรรรรรรรรรรรรรรรรรรรรรรรรรรรรรรรรรร^0');
+                      Print('^1   อออออออออออออออออออออออออออออออออออออออออออออออออ^0');
                     Dec(ThisUser.LineLen,6);
                     S := '';
                     WHILE (S <> '.') AND (S <> '.'+#1) AND (NOT Abort) AND (NOT HangUp) DO

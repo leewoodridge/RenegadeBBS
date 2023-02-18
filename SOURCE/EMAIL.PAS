@@ -3,7 +3,7 @@
  10/18/2021 - Added CoSysOp max mail waiting check
  03/20/2022 - added deleted user check to semail proc
             - if cosysop+ tries to email deleted user it will prompt them to proceed
- 
+
  smail proc seems like a disaster -- why massmail boolean-- isn't it always true???
 }
 UNIT EMail;
@@ -89,9 +89,9 @@ VAR
     IF ((NOT AACS1(User,UNum,General.CSOP)) AND (User.Waiting >= General.MaxWaiting)) OR
        ((AACS1(User,UNum1,General.CSOP)) AND (User.Waiting >= General.CSMaxWaiting)) OR
        (NoMail IN User.ACFlags) AND (NOT CoSysOp) THEN { LeeW: Added CoSysOp max waiting check }
-       
+
        { LeeW: this checks for deleted and locked out users later in proc }
-       
+
     BEGIN
       UNum1 := 0;
       lRGLngStr(46,FALSE); {"Unable to send mail to that user!"}
@@ -421,8 +421,8 @@ BEGIN
           lRGLngStr(263,FALSE);
           EmailOk := FALSE;
         END
-        
-      ELSE IF (AccountBalance < General.CreditEmail) AND (General.CreditEmail > 0) AND 
+
+      ELSE IF (AccountBalance < General.CreditEmail) AND (General.CreditEmail > 0) AND
               (NOT (FNoCredits IN ThisUser.ACFlags)) THEN
         BEGIN
           {NL;
@@ -430,7 +430,7 @@ BEGIN
           lRGLngStr(264,FALSE);
           EmailOk := FALSE;
         END
-        
+
       ELSE IF (PrivatePostsToday >= General.MaxPrivPost) AND (NOT CoSysOp) THEN
         BEGIN
           {NL;
@@ -438,7 +438,7 @@ BEGIN
           lRGLngStr(265,FALSE);
           EmailOk := FALSE;
         END
-        
+
       ELSE IF ((UNum = 1) AND (FeedbackPostsToday >= General.MaxFBack) AND (NOT CoSysOp)) THEN
         BEGIN
           {NL;
@@ -464,7 +464,7 @@ BEGIN
               EmailOk := FALSE;
             END;
         END
-        
+
       ELSE IF (NoMail IN User.ACFlags) AND (NOT CoSysOp) THEN
         BEGIN
           {NL;
@@ -472,7 +472,7 @@ BEGIN
           lRGLngStr(268,FALSE);
           EmailOk := FALSE;
         END
-        
+
       ELSE IF ((NOT AACS1(User,UNum,General.CSOP)) AND (User.Waiting >= General.MaxWaiting)) OR
               ((AACS1(User,UNum,General.CSOP)) AND (User.Waiting >= General.CSMaxWaiting))
               AND (NOT CoSysOp) THEN { LeeW: Added CoSysOp max waiting check }
@@ -482,7 +482,7 @@ BEGIN
           lRGLngStr(267,FALSE);
           EmailOk := FALSE;
         END;
-        
+
       IF (NOT EmailOk) THEN
         BEGIN
           {IF (InWFCMenu) THEN
@@ -538,7 +538,7 @@ BEGIN
           Include(MHeader.Status,NetMail);
           MHeader.NetAttribute := General.NetAttribute * [Intransit,Private,Crash,KillSent,Hold,Local];
           ChangeFlags(MHeader);
-          
+
           Counter1 := 0;
           Counter := 0;
           WHILE (Counter <= 19) AND (Counter1 = 0) DO
@@ -563,7 +563,7 @@ BEGIN
               IF (Counter >= 1) OR (Counter <= 20) THEN
                 Counter1 := (Counter - 1);
             END;
-            
+
           WITH MHeader.From DO
             BEGIN
               Zone := General.AKA[Counter1].Zone;

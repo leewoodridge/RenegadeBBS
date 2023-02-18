@@ -1,6 +1,10 @@
 {$A+,B-,D-,E-,F+,I-,L-,N-,O+,R-,S+,V-}
 
-UNIT TimeFunc;
+{
+ - Added DaysBetween FUNC, returned string, changed to int
+}
+
+UNIT TimeFunc; { Date & Time Functions }
 
 INTERFACE
 
@@ -42,7 +46,7 @@ FUNCTION DayNum(DateStr: Str10): Word;
 FUNCTION Dat: Str160;
 FUNCTION DateSuffix(DateNumber: Byte): Str2; { LeeW: Added - Returns "st", "nd", "rd", etc. }
 FUNCTION TimeStamp: Str13; { LeeW: Added - Returns "[00:00:00AM] " }
-FUNCTION NumDaysBetween(Date1, Date2: LongInt): Str5; { LeeW: Added - Returns number of days between UNIXTIME dates }
+FUNCTION DaysBetween(Date1, Date2: LongInt): Integer; { LeeW: Added - Returns number of days between UNIXTIME dates }
 
 IMPLEMENTATION
 
@@ -414,13 +418,13 @@ BEGIN
   TimeStamp := '['+ZeroPad(IntToStr(Hour))+':'+ZeroPad(IntToStr(Minute))+':'+ZeroPad(IntToStr(Second))+' '+AMPM+']';
 END;
 
-FUNCTION NumDaysBetween(Date1, Date2: LongInt): Str5;
+FUNCTION DaysBetween(Date1, Date2: LongInt): Integer;
 { LeeW: Returns number of days between UNIXTIME dates }
 BEGIN
   IF NOT (Date2 >= Date1) THEN
-    NumDaysBetween := IntToStr((Date1-Date2) DIV 86400)
+    DaysBetween := {IntToStr(}(Date1-Date2) DIV 86400{)}
   ELSE
-    NumDaysBetween := IntToStr((Date2-Date1) DIV 86400);
+    DaysBetween := {IntToStr(}(Date2-Date1) DIV 86400{)};
 END;
 
 END.

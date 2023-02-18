@@ -296,9 +296,9 @@ VAR
           Next := FALSE;
           {CLS;}
           IF (Editing) THEN
-            ConfigHeader('Editing Conference Record #'+IntToStr(RecNumToEdit)+' Of '+IntToStr(NumConfKeys),0)
+            ConfigHeader('Editing Conference Record #'+IntToStr(RecNumToEdit)+' Of '+IntToStr(NumConfKeys),0,0)
           ELSE
-            ConfigHeader('Inserting Conference Record #'+IntToStr(RecNumToEdit)+' Of '+IntToStr(NumConfKeys + 1),0);
+            ConfigHeader('Inserting Conference Record #'+IntToStr(RecNumToEdit)+' Of '+IntToStr(NumConfKeys + 1),0,0);
           {NL;}
           PrintACR('^0(^1A^0) Key         : ^1'+Key);
           PrintACR('^0(^1B^0) Description : ^1'+Name);
@@ -553,7 +553,7 @@ BEGIN
   REPEAT
     IF (Cmd <> '?') THEN
       BEGIN
-        ConfigHeader('Conference Editor',0);
+        ConfigHeader('Conference Editor',0,0);
         DisplayConferenceRecords(RecNumToList,TRUE);
       END;
     InputChar('%LF^2Conference Editor [^1DIMP^2,(^1?^2)Help,(^1Q^2)uit]: ',Cmd,'QDIMP?'^M,[CapAll]);

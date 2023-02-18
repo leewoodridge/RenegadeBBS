@@ -17,7 +17,7 @@
      - Allow toggle of new user application message to be mandatory or optional
      ''+PadRightStr('',23)+AOnOff((NewAppMsgMandatory),'Mandatory','Optional')
      - birthdate/ph# validation at logon bypass if set to '' but require to update -- is this fixed???
-     
+
 }
 
 UNIT SysOp2M; { New User Application Questions Toggles }
@@ -45,7 +45,7 @@ BEGIN
     Next := FALSE;
     WITH General DO
       BEGIN
-        ConfigHeader('New User Question Toggles',0);
+        ConfigHeader('New User Question Toggles',0,0);
         PrintACR(PadLeftStr('^0(^1A^0) User Name        : ^1'+ShowYesNo(AllowAlias),39)+
                  PadLeftStr('^0(^1N^0) Term Emulation   : ^1'+ShowYesNo(NewUserQToggles[15] = TRUE),39));
         PrintACR(PadLeftStr('^0(^1B^0) Real Name        : ^1'+ShowYesNo(NewUserQToggles[02] = TRUE),39)+
@@ -61,7 +61,7 @@ BEGIN
         PrintACR(PadLeftStr('^0(^1G^0) Phone Number     : ^1'+ShowYesNo(NewUserQToggles[07] = TRUE),39)+
                  PadLeftStr('^0(^1U^0) Hotkey Input     : ^1'+ShowYesNo(NewUserQToggles[21] = TRUE),39));
         PrintACR(PadLeftStr('^0(^1H^0) Birthdate        : ^1'+ShowYesNo(NewUserQToggles[08] = TRUE),39)+
-                 PadLeftStr('^0(^1V^0) Expert Mode      : ^1'+ShowYesNo(NewUserQToggles[22] = TRUE),39));        
+                 PadLeftStr('^0(^1V^0) Expert Mode      : ^1'+ShowYesNo(NewUserQToggles[22] = TRUE),39));
         PrintACR(PadLeftStr('^0(^1I^0) Gender           : ^1'+ShowYesNo(NewUserQToggles[09] = TRUE),39)+
                  PadLeftStr('^0(^1W^0) Lightbars        : ^1'+ShowYesNo(NewUserQToggles[23] = TRUE),39));
         PrintACR(PadLeftStr('^0(^1J^0) '+PadLeftStr(LRGLngStr(41,TRUE),15)+'  : ^1'+ShowYesNo(NewUserQToggles[10] = TRUE),39)+

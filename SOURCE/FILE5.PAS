@@ -1,7 +1,7 @@
 {$A+,B-,D+,E-,F+,I-,L+,N-,O+,R-,S+,V-}
 {
 leew: searchrec var in uploadall probably needs uncommented -- test
-enter blank desc WAS = jibberish, no longer... 
+enter blank desc WAS = jibberish, no longer...
 }
 UNIT File5;
 
@@ -784,7 +784,7 @@ BEGIN
       WHILE (FArea >= 1) AND (FArea <= NumFileAreas) AND (NOT Abort) AND (NOT HangUp) DO
         BEGIN
           UploadFiles(FArea,FileName,FArrayRecNum);
-          Inc(FArea);       
+          Inc(FArea);
           WKey;
         END;
       FileArea := SaveFileArea;

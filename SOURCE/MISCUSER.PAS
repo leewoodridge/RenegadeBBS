@@ -1,6 +1,6 @@
 {$A+,B-,D+,E-,F+,I-,L+,N-,O+,R-,S+,V-}
 {
- 00/00/2021 - SearchUser changed username string from astr to string[36] 
+ 00/00/2021 - SearchUser changed username string from astr to string[36]
  11/18/2021 - Moved finduser to logon.pas only place its used, doesn't seem like it'll be useful anywhere else
             - lfinduserws added search string before
 }
@@ -67,9 +67,9 @@ BEGIN
         BEGIN
           Read(UserIDXFile,UserIDX);
           Inc(Counter);
-          IF NOT (UserIDX.Deleted) AND (Pos(UserName,UserIDX.Name) <> 0) AND 
+          IF NOT (UserIDX.Deleted) AND (Pos(UserName,UserIDX.Name) <> 0) AND
              ((NOT UserIDX.RealName) OR (CoSysOp)) THEN
-            IF ((UserIDX.Name = UserName) OR (CoSysOp AND (UserIDX.Name = UserName))) AND 
+            IF ((UserIDX.Name = UserName) OR (CoSysOp AND (UserIDX.Name = UserName))) AND
                (UserIDX.number <= (MaxUsers - 1)) THEN
               UserNum := UserIDX.Number
             ELSE

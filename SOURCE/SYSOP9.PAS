@@ -20,7 +20,7 @@
     [TO DO]
      - aesthetics
      - test fa list longer than 1 page for pagination
-     
+
 }
 
 UNIT SysOp9; { File Area Editor }
@@ -48,7 +48,7 @@ TYPE
     LastRecNum,
     RecNumToEdit: Integer;
   END;
-  
+
 CONST
   DisplayType: Byte = 1;
 
@@ -121,9 +121,9 @@ VAR
       FAFlags := [];
     END;
   END;
-  
+
   { --- }
-  
+
   PROCEDURE ChangeFileAreaDrive(MCIVars1: MCIVarRecord);
   VAR
     RecNum: Integer;
@@ -176,7 +176,7 @@ VAR
   END;
 
 { --- }
-  
+
   PROCEDURE DeleteFileArea(TempMemFileArea1: FileAreaRecordType; MCIVars1: MCIVarRecord);
   VAR
     RecNum,
@@ -199,7 +199,7 @@ VAR
         Close(FileAreaFile);
         LastError := IOResult;
         Prompt('%LFFile area: '+TempMemFileArea1.AreaName); {LeeW: Was reporting wrong area name, was MemFileArea}
-        
+
         IF PYNQ('%LFAre you sure you want to delete it?',0,FALSE) THEN
         BEGIN
           Prompt('%LF[> Deleting file area ...');
@@ -251,10 +251,10 @@ VAR
       END;
     END;
   END;
-  
+
   { --- }
-  
-  PROCEDURE CheckFileArea(MemFileArea: FileAreaRecordType; MCIVars1: MCIVarRecord; 
+
+  PROCEDURE CheckFileArea(MemFileArea: FileAreaRecordType; MCIVars1: MCIVarRecord;
                           StartErrMsg, EndErrMsg: Byte; VAR Ok: Boolean);
   VAR
     Counter: Byte;
@@ -293,9 +293,9 @@ VAR
             END;
       END;
   END;
-  
+
   { --- }
-  
+
   PROCEDURE EditFileArea(TempMemFileArea1: FileAreaRecordType; VAR MemFileArea: FileAreaRecordType; VAR Cmd1: Char;
                          VAR MCIVars1: MCIVarRecord; VAR Changed: Boolean; Editing: Boolean);
   VAR
@@ -531,7 +531,7 @@ VAR
   END;
 
   { --- }
-  
+
   PROCEDURE InsertFileArea(TempMemFileArea1: FileAreaRecordType; MCIVars1: MCIVarRecord);
   VAR
     FileAreaScanFile: FILE OF Boolean;
@@ -622,9 +622,9 @@ VAR
       END;
     END;
   END;
-  
+
   { --- }
-  
+
   PROCEDURE ModifyFileArea(TempMemFileArea1: FileAreaRecordType; MCIVars1: MCIVarRecord);
   VAR
     FileAreaScanFile: FILE OF Boolean;
@@ -720,9 +720,9 @@ VAR
       END;
     END;
   END;
-  
+
   { --- }
-  
+
   PROCEDURE PositionFileArea(TempMemFileArea1: FileAreaRecordType; MCIVars1: MCIVarRecord);
   VAR
     RecNumToPosition,
@@ -792,7 +792,7 @@ VAR
       RecNumToList1 := 1;
     Abort := FALSE;
     Next := FALSE;
-    ConfigHeader('File Area Editor',0);
+    ConfigHeader('File Area Editor',0,0);
     CASE DisplayType OF
       1 : PrintACR('^5<^4##^5> <^4File Area Name^5>                  <^4##^5> <^4File Area Name^5>                  ');
       2 : PrintACR('^5<^4##^5> <^4File Area Name^5>      <^4Dat^5>    <^4DL Path^5>            <^4UL Path^5>            ');
@@ -833,9 +833,9 @@ VAR
     IF (NumFileAreas = 0) AND (NOT Abort) AND (NOT HangUp) THEN
       Messages(4,0,'file areas'); { "No file areas exist!" }
   END;
-  
+
   { --- }
-  
+
 BEGIN
   SaveTempPause := TempPause;
   TempPause := FALSE;
@@ -843,7 +843,7 @@ BEGIN
   Cmd := #0;
   REPEAT
     IF (Cmd <> '?') THEN
-      ListFileAreas(RecNumToList,MCIVars);    
+      ListFileAreas(RecNumToList,MCIVars);
     NL;
     InputChar('^2File Area Editor [^1CDIMPT^2,(^1?^2)Help,(^1Q^2)uit]: ',Cmd,'QCDIMPT?'^M,[CapAll]);
     CASE Cmd OF

@@ -14,7 +14,7 @@
     [DONE]
      - COMPATIABLE WITH 1.25
     [TO DO]
-     - 
+     -
 }
 PROGRAM RGUPDATE; { RENEGADE UPDATE UTILITY }
 
@@ -231,7 +231,7 @@ TYPE
     NewUserToggles:
       ARRAY [1..20] OF Byte;
     Macro:                             { sysop macros }
-      ARRAY [0..9] OF STRING[100]; 
+      ARRAY [0..9] OF STRING[100];
     Netattribute: NetAttribs;          { default netmail attribute }
     TimeAllow,                         { time allowance }
     CallAllow,                         { call allowance }
@@ -241,26 +241,28 @@ TYPE
     DLOneday,                          { Max number OF dload files in one day}
     DLKOneDay: SecurityRangeType;      { Max k downloaded in one day}
 
-    (*  
+    (*
     Logon_OneLiners,                { OneLiners during logon? }
     Logon_OneLiners_Add,            { Prompt user to add a OneLiner during logon? }
     Logon_Voting: Boolean;          { Prompt user to vote on unvoted topics during logon? }
-    
+
     AddQuoteACS,                    { Add A Quote }
     AddOneLinerACS: ACString;       { Add A OneLiner }
-    
+
     Logon_LastCallers: Boolean;     { Display Last Callers Information During Logon }
     DefNumOneLiners: Integer;       { Default Number Of OneLiners To Display If MenuOption = 0 }
     DefNumLastCallers: Integer;     { Default Number Of LastCallers To Display If MenuOption = 0}
     TimeStampLogs: Boolean;         { Apply TimeStamp To Log Files? }
-    
+
     DefSplitChat: Boolean;          { Use split chat as default? }
-    
+
+    ActThreshold: Integer;          { Number of days since last logon to consider user inactive }
+
     NewAppMsgMandatory: Boolean;    { Are we forcing new user to send message to SysOp or just prompting? }
     MaxAnswerAttempts: Byte;        { Max answer attempts for questions before giving up } {**BYTE! DAMNIT***}
     *)
   END;
-  
+
   OldACFlagType =(
     OldRLogon,                       { L - Limited to one call a day }
     OldRChat,                        { C - No SysOp paging }
@@ -321,7 +323,7 @@ TYPE
     ZipCode: STRING[10];          { zipcode            }
     PH: STRING[12];               { phone #            }
     ForgotPWAnswer: STRING[40];   {  }
-    UsrDefStr: 
+    UsrDefStr:
       ARRAY [1..3] OF STRING[35]; { definable strings  }
     Note: STRING[35];             { SysOp note         }
     LockedFile: STRING[8];        { print lockout msg  }
@@ -392,7 +394,7 @@ TYPE
     OldACFlags: OldACFlagSet;     { flags              }
     OldSFlags: OldStatusFlagSet;  { status flags       }
   END;
-  
+
 FUNCTION SqOutSp(s:STRING):STRING;
 BEGIN
   WHILE (Pos(' ',s)>0) DO
@@ -552,7 +554,7 @@ BEGIN
     NetMailACS := OldGeneral.NetMailACS;
     Invisible := OldGeneral.Invisible; {Remove?}
     FileAttachACS := OldGeneral.FileAttachACS;
-    ChangeVote := OldGeneral.ChangeVote;    
+    ChangeVote := OldGeneral.ChangeVote;
     UnUsedACS1 := OldGeneral.UnUsedACS1;
     UnUsedACS2 := OldGeneral.UnUsedACS2;
     MaxPrivPost := OldGeneral.MaxPrivPost;
@@ -719,6 +721,7 @@ BEGIN
     DefNumLastCallers := OldGeneral.DefNumLastCallers;
     TimeStampLogs := OldGeneral.TimeStampLogs;
     DefSplitChat := OldGeneral.DefSplitChat;
+    ActThreshold := OldGeneral.ActThreshold;
     NewAppMsgMandatory := OldGeneral.NewAppMsgMandatory;
     MaxAnswerAttempts := OldGeneral.MaxAnswerAttempts;
     *)
@@ -887,7 +890,7 @@ BEGIN
             Include(ACFlags,FNoDeletion);
 
           SFlags := [];
-          
+
           IF (OldLockedOut IN OldUser.OldSFlags) THEN
             Include(SFlags,LockedOut);
           IF (OldDeleted IN OldUser.OldSFlags) THEN

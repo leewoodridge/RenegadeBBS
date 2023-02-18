@@ -1,6 +1,6 @@
 {
 LeeW: search for ** to find proposed changes to data files
-TODO: add user flag to force password change next logon 
+TODO: add user flag to force password change next logon
 10/07/2021 - Updated names of user flags so they're intuitive; ARFlags, ACFlags, S(tatus)Flags
 12/02/2021 - Combined GeneralRec lightbar booleans, all lightbars either on or off now
 03/13/2022 - Combined user statusflags msg & file lightbars into 1 - lightbars
@@ -74,15 +74,15 @@ TYPE
 
   ACFlagType =
    (RLogon,                       { L - Limited to one call per day }
-    RChat,                        { C - No SysOp paging }
-    RValidate,                    { V - Posts are unvalidated }
+    RChat,                        { C - Can't page SysOp }
+    RValidate,                    { V - Posts are marked unvalidated }
     RUserList,                    { U - Can't list users }
-    RAMsg,                        { A - Can't leave automsg }
+    RAMsg,                        { A - Can't leave auto-message }
     RPostAn,                      { * - Can't post anonymously }
     RPost,                        { P - Can't post publicly }
     REmail,                       { E - Can't send private mail }
     RVoting,                      { K - Can't vote }
-    RMsg,                         { M - Forced email deletion }
+    RMsg,                         { M - Forced e-mail deletion }
 
     VT100,                        { Supports VT00 }
     HotKey,                       { hotkey input mode }
@@ -94,7 +94,8 @@ TYPE
     Alert,                        { Alert SysOp upon login }
     SMW,                          { Short message(s) waiting }
     NoMail,                       { Mailbox is closed }
-                                  { ** ^ ALL THESE MIDDLE ONES SHOULDN"T BE HERE -- MOVE }
+
+    (* VT100-NoMail shouldn't be here *)
 
     FNoDLRatio,                   { 1 - No UL/DL ratio }
     FNoPostRatio,                 { 2 - No post/call ratio }
@@ -103,26 +104,20 @@ TYPE
 
   ACFlagSet = SET OF ACFlagType;
 
-  StatusFlagType =
-    (LockedOut,                   { Is user locked out }
+  StatusFlagType = (
+    LockedOut,                    { Is user locked out }
     Deleted,                      { Is user deleted }
     TrapActivity,                 { Is users activity being logged }
     TrapSeparate,                 { Is activity log separate file }
     ChatAuto,                     { Is users chat being logged }
     ChatSeparate,                 { Is chat log separate file }
     SLogSeparate,                 { Is users SysOp log entries separate file }
-    
     CLSMsg,                       { Is user clearing screen between messages }
     RIP,                          { if RIP graphics can be used }
     FSEditor,                     { Is user using full-screen editor }
     AutoDetect,                   { Is user having emulation auto-detected }
-    LightBars, { LeeW: Was FileAreaLightBar -- they're all combined into 1 now }
-    
-{
- ** ONLY FLAGS RELATED TO USER ACCOUNT STATUS SHOULD BE HERE -- MOVE CLSMSG,RIP,FSEditor,
- AutoDetect,lightbars OUT!!!
- ALSO alert SHOULD BE HERE
-}
+    LightBars,                    { LeeW: Was FileAreaLightBar -- they're all combined into 1 now }
+
     UnUsedStatusFlag0, { LeeW: Was MsgAreaLightBar }
     UnUsedStatusFlag1,
     UnUsedStatusFlag2,
@@ -131,11 +126,45 @@ TYPE
 
   StatusFlagSet = SET OF StatusFlagType;
 
+(*
+  UserFlagType = (
+    { ACCOUNT STATUS / LOGGING }
+    Alert,                  { Alert SysOp when user logs on }
+    Locked,                 { Account is locked }
+    Deleted,                { Account is deleted }
+    ActivityLog,            { Log users activity } { IS THIS RELEVANT/NECESSARY ANYMORE? MAYBE REMOVE}
+    ActivityLogSeparate,    { Use a separate log file } {^}
+    ChatLog,                { Log users chat sessions }
+    ChatLogSeparate,        { Use a separate log file }
+    SysOpLogSeparate,       { Use a separate log file }
+    { PREFERENCES }
+    ScreenClear,            { Screen clearing }
+    ScreenPause,            { Screen pausing }
+    Novice,                 { Provide novice help }
+    HotKey,                 { Use hot-key input mode }
+    LightBars,              { Use light bars }
+    FSEditor,               { Use full-screen editor }
+    MailboxClosed,          { Mailbox is closed }
+    { OTHER }
+    SMW,                    { Short message(s) waiting }
+    { TERMINAL EMULATION }
+    AutoDetect,             { Auto-detect terminal emulation }
+    ANSI,                   { Supports ANSI emulation }
+    Color,                  { Supports color }
+    { ... }
+    UnUsedStatusFlag1,      {  }
+    UnUsedStatusFlag2,      {  }
+    UnUsedStatusFlag3       {  }
+    );
+
+  UserFlagSet = SET OF UserFlagType;
+*)
+
   ANonTyp =
    (ATNo,       { Anonymous posts not allowed }
     ATYes,      { Anonymous posts allowed }
-    ATForced,   { Forced anonymous }
-    ATDearAbby, { "Dear Abby"  }
+    ATForced,   { Anonymous posts mandatory }
+    ATDearAbby, { "Dear Abby" }
     ATAnyName); { Post under any name }
 
   NetAttr =
@@ -163,24 +192,24 @@ TYPE
   UserIDXRec = {$IFDEF WIN32} PACKED {$ENDIF} RECORD { USERS.IDX : Sorted names listing }
     Name: STRING[36]; { Users handle }
     Number,           { Users number }
-    Left,             { Left node }
-    Right: Integer;   { Right node }
-    RealName,         { Users real name }
-    Deleted: Boolean; { Deleted? }
+    Left,             { Alphabetical sorting }
+    Right: Integer;   { ^ }
+    RealName,         { Is this the users real name? }
+    Deleted: Boolean; { Is user deleted? }
   END;
 
   UserRecordType = {$IFDEF WIN32} PACKED {$ENDIF} RECORD { USERS.DAT : User records }
     Name,                        { User name }
     RealName: STRING[36];        { Real name }
     Street,                      { Street address }
-(*  Country: STRING[45];         { Country } **)  
+(*  Country: STRING[45];         { Country } *)
     CityState: STRING[30];       { City and state }
     CallerID: STRING[20];        { Caller ID/IP }
     ZipCode: STRING[10];         { Zip code }
     PH: STRING[12];              { Phone number }
     ForgotPWAnswer: STRING[40];  { Forgot password answer }
     UsrDefStr:                   { Answers to SysOp definable strings }
-      ARRAY [1..3] OF STRING[35]; 
+      ARRAY [1..3] OF STRING[35];
     Note: STRING[35];            { SysOp note }
     LockedFile: STRING[8];       { Lockout file filename }
     Vote: ARRAY [1..25] OF Byte; { Voting data }
@@ -199,21 +228,21 @@ TYPE
     OnToday,                     { Calls today }
     Illegal,                     { Illegal logons }
     DefArcType,                  { Default archive type (for QWK) }
-    ColorScheme,                 { Color scheme number }
-    UserStartMenu,               { Start menu number }
+    ColorScheme,                 { Color scheme }
+    UserStartMenu,               { Start menu }
     UnUsedByte1,                 { / }
     UnUsedByte2: Byte;           { / }
-    
+
     BirthDate,                   { Birth date }
-    FirstOn,                     { First online date }
-    LastOn,                      { Last online date }
+    FirstOn,                     { First call date }
+    LastOn,                      { Last call date }
     TTimeOn,                     { Total time online }
     LastQWK,                     { Last QWK packet date }
     Expiration,                  { Subscription expiration date }
     UnUsedUnixTime1,             { / }
     UnUsedUnixTime2: UnixTime;   { / }
 
-    UserID,                      { Permanent user ID }
+    UserID,                      { Permanent user ID } {THIS ISNT USED ANYWHERE??}
     TLToday,                     { Minutes left today }
     ForUsr,                      { Forward mail to user number }
     LastMsgArea,                 { Last message area number }
@@ -224,7 +253,7 @@ TYPE
     PasswordChanged,             { Number of days since last password change }
     UnUsedWord1,                 { / }
     UnUsedWord2: Word;           { / }
-    
+
     lCredit,                     { Credits }
     Debit,                       { Debits }
     PW,                          { Password }
@@ -249,7 +278,7 @@ TYPE
     UnUsedLongInt1,              { / }
     UnUsedLongInt2: LongInt;     { / }
 
-    TeleConfEcho,                { TeleConference echo? } (**REMOVE--UNUSEDor will be when teleconf finished**)
+    TeleConfEcho,                { TeleConference echo? } {TO BE REMOVED IN FUTURE}
     TeleConfInt,                 { TeleConference interrupt? } (**REMOVE--UNUSED**)
     GetOwnQWK,                   { Own messages in QWK? }
     ScanFilesQWK,                { New files in QWK? }
@@ -261,7 +290,7 @@ TYPE
     ACFlags: ACFlagSet;          { AC flags }
     SFlags: StatusFlagSet;       { Status flags }
   END; { END OF USERREC }
-  
+
   MsgStatusR =(
     MDeleted,
     Sent,
@@ -285,7 +314,7 @@ TYPE
   END;
 
   MHeaderRec = {$IFDEF WIN32} PACKED {$ENDIF} RECORD
-    From,                      { Sender } 
+    From,                      { Sender }
     MTO: FromToInfo;           { Receiver }
     Pointer: LongInt;          { starting record OF text }
     TextSize: Word;            { size OF text }
@@ -361,7 +390,7 @@ TYPE
     IRQ,                         { Functional MCI: %E = IRQ }
     Address: STRING[10];         { Functional MCI: %C = Comport address }
     AnswerOnRing: Byte;          { Answer after how many rings? }
-    MultiRing: Boolean;          { Answer Ringmaster or some other type OF multiple-ring system ONLY }
+    MultiRing: Boolean;          { Answer Ringmaster or some other type of multiple-ring system ONLY }
     NodeTelnetURL: STRING[65];   { Telnet URL } (** WHY IS THIS HERE? -- DELETE AND MOVE TO GENERALREC **)
   END;
 
@@ -441,7 +470,7 @@ TYPE
     ChangeVote,                     { ACS to change their vote }
     UnUsedACS1,                     { / }
     UnUsedACS2: ACString;           { / }
-    
+
     MaxPrivPost,                    { max email can send per call }
     MaxFBack,                       { max feedback per call }
     MaxPubPost,                     { max posts per call }
@@ -476,7 +505,7 @@ TYPE
     SwapTo,                         { Swap to where? }
     UnUsedByte1,                    { / }
     UnUsedByte2: Byte;              { / }
-    
+
     lLowTime,                       { SysOp chat hours start time }
     HiTime,                         { SysOp chat hours end time }
     DLLowTime,                      { Download hours start time }
@@ -500,13 +529,13 @@ TYPE
     BirthDateCheck,                 { Check users birthdate every # logons }
     UnUsedInteger1,                 { / }
     UnUsedInteger2: Integer;        { / }
-    
+
     MaxQWKTotal,                    { Maximum messages in a QWK packet }
     MaxQWKBase,                     { Maximum messages per area }
     DaysOnline,                     { Days online }
     UnUsedWord1,                    { / }
     UnUsedWord2: Word;              { / }
-    
+
     MinimumBaud,                    { Minimum baud rate to logon }
     MinimumDLBaud,                  { Minimum baud rate to download }
     MaxDepositEver,                 { Maximum minutes allowed in time bank }
@@ -525,7 +554,7 @@ TYPE
     MinSpaceForUpload,              { Minimum drive space required for uploads }
     UnUsedLongInt1,                 { / }
     UnUsedLongInt2: LongInt;        { / }
-    
+
     AllowAlias,                     { Allow handles? }
     PhonePW,                        { phone number password in logon? }
     LocalSec,                       { use local security? }
@@ -583,8 +612,8 @@ TYPE
       ARRAY [1..3] OF STRING[40];
 
     Aka:                            { 20 Addresses + 21st for UUCP address }
-      ARRAY [0..20] OF {$IFDEF WIN32} PACKED {$ENDIF} RECORD 
-        Zone,                           
+      ARRAY [0..20] OF {$IFDEF WIN32} PACKED {$ENDIF} RECORD
+        Zone,
         Net,
         Node,
         Point: Word;
@@ -595,7 +624,7 @@ TYPE
 
     Macro:                          { SysOp macros }
       ARRAY [0..9] OF STRING[100];
-      
+
     NetAttribute: NetAttribs;       { Default NetMail attributes }
 
     TimeAllow,                      { Time allowance }
@@ -605,9 +634,9 @@ TYPE
     PostRatio,                      { Posts per call ratio }
     DLOneday,                       { Max daily downloads (#) }
     DLKOneDay: SecurityRangeType;   { Max daily downloads (kB) }
-    
+
     { ** FIELDS BELOW HAVE BEEN ADDED AFTER V1.25 ** }
-    
+
     NewUserQToggles:                { Toggles for new user application questions }
       ARRAY [1..30] OF Boolean;
     OneLinersNewTop,                { Newest OneLiners on top? }
@@ -619,17 +648,21 @@ TYPE
     TopFilesDownload,               { Prompt user to download top files? }
     TimeStampLogs,                  { Apply TimeStamp To Log Files? }
     DefSplitChat: Boolean;          { Use split chat as default? }
-    
+
+    {---}
+
+    ActThreshold: Integer;          { Number of days since last logon to consider user inactive }
+
     (*
     { ** THINGS I INTEND TO IMPLEMENT ** }
-    
+
     DefNumOneLiners: SmallInt;      { Default Number Of OneLiners To Display If MenuOption = 0 }
     DefNumLastCallers: SmallInt;    { Default Number Of LastCallers To Display If MenuOption = 0}
-    
+
     NewAppMsgMandatory: Boolean;    { Are we forcing new user to send message to SysOp or just prompting? }
     MaxAnswerAttempts: Byte;        { Max answer attempts for questions before giving up }
     *)
-    
+
   END; { END OF GENERALREC }
 
   ShortMessageRecordType = {$IFDEF WIN32} PACKED {$ENDIF} RECORD { SHORTMSG.DAT : One-line messages }
@@ -649,10 +682,10 @@ TYPE
     Answers: ARRAY [1..25] OF {$IFDEF WIN32} PACKED {$ENDIF} RECORD
       Answer1,                  { answer description }
       Answer2: STRING[65];      { answer description #2 }
-(*    
+(*
       AnswerAuthor: STRING[36]; { Author Of Answer }
       ADateAdded: DateTime;     { Date & Time Answer Added }
-**)  
+**)
       NumVotedAnswer: Integer;  { # user's who picked this answer }
     END;
   END;
@@ -772,7 +805,7 @@ TYPE
     UK,                   { kBytes uploaded }
     DK: LongInt;          { kBytes downloaded }
     Reserved:             { Reserved }
-      ARRAY [1..17] OF Byte; 
+      ARRAY [1..17] OF Byte;
   END;
 
   EventFlagType =
@@ -902,7 +935,7 @@ TYPE
     LastRead: UnixTime; { Last read date }
   END;
 
-  SchemeRec = {$IFDEF WIN32} PACKED {$ENDIF} RECORD { SCHEME.DAT }
+  SchemeRec = {$IFDEF WIN32} PACKED {$ENDIF} RECORD { SCHEME.DAT - Color Schemes }
     Description: STRING[30]; { Color scheme description }
     Color:                   { Colors in scheme }
       ARRAY [1..200] OF Byte;
@@ -966,7 +999,7 @@ TYPE
 
   MenuRec = {$IFDEF WIN32} PACKED {$ENDIF} RECORD
     LDesc:                        { Menu Or Command Long Description ARRAY }
-      ARRAY [1..3] OF STRING[100];    
+      ARRAY [1..3] OF STRING[100];
     ACS: ACString;                { Access Requirements }
     NodeActivityDesc: STRING[50]; { Node activity description }
     CASE Menu: Boolean OF         { Menu Or Command - Variant section}

@@ -32,10 +32,10 @@ TYPE
 
   Top10UserArray = ARRAY [1..10] OF Top10UserRec;
   Top10FileArray = ARRAY [1..10] OF Top10FileRec;
-  
+
   Top10UserPtrType = ^Top10UserRec;
   Top10FilePtrType = ^Top10FileRec;
-  
+
   UserPtrType = ^UserRecordType;
   FilePtrType = ^FileInfoRecordType;
 

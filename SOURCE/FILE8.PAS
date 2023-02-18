@@ -309,7 +309,7 @@ BEGIN
   END;
 END;
 
-PROCEDURE Send(FileInfo: FileInfoRecordType; DirFileRecNum: Integer; DownloadPath: PathStr; 
+PROCEDURE Send(FileInfo: FileInfoRecordType; DirFileRecNum: Integer; DownloadPath: PathStr;
                VAR TransferFlags: TransferFlagSet);
 (*
 TYPE
@@ -380,12 +380,12 @@ BEGIN
             Include(TransferFlags,IsAutoLogOff);
           NL;
           Star('Ready to '+AOnOff(ProtocolNumber = -1,'view','send')+': ^1'+SQOutSp(FileInfo.FileName)+'.');
-          
+
           ExecProtocol(AOnOff(ProtocolNumber = -1,DownloadPath+SQOutSp(FileInfo.FileName),''),
                               TempDir+'UP\',FunctionalMCI(Protocol.EnvCmd,'','')+#13#10+General.ProtPath+
                               FunctionalMCI(Protocol.DLCmd,DownloadPath+SQOutSp(FileInfo.FileName),''),
                               0,ReturnCode,TransferTime);
-                              
+
           NL;
           Star('File '+AOnOff(ProtocolNumber = -1,'viewing','download')+' complete.');
 
@@ -413,12 +413,12 @@ BEGIN
               LIL := 0;
               SysOpLog('^1'+AOnOff(ProtocolNumber = -1,'Viewed','Downloaded')+' "^1'+SQOutSp(FileInfo.FileName)+
                        '^1" from ^1'+MemFileArea.AreaName+'.');
-                       
-              { 
-                LeeW: This totals record seems to be screwing everything up -- 
+
+              {
+                LeeW: This totals record seems to be screwing everything up --
                       Was it part of unfinished batch DL implementation?
               }
-              
+
               (*
               FillChar(Totals,SizeOf(Totals),0);
 
@@ -435,7 +435,7 @@ BEGIN
               IF (ChargeFilePoints(FileArea)) THEN
                 Inc(Totals.PointsDLRatio,FileInfo.FilePoints);
               *)
-              
+
               IF ((ThisUser.Downloads + 1{Totals.FilesDLRatio}) < 2147483647) THEN
                 Inc(ThisUser.Downloads{,Totals.FilesDLRatio})
               ELSE
@@ -485,7 +485,7 @@ BEGIN
               Star('File point(s)     : ^1'+FormatNumber({Totals.PointsDL}FileInfo.FilePoints));
               Star(AOnOff(ProtocolNumber = -1,'View time         ','Download time     ')+': ^1'+FormattedTime(TransferTime));
               Star('Transfer rate     : ^1'+FormatNumber(GetCPS(FileInfo.FileSize,Transfertime))+' cps');
-              
+
               SysOpLog('^1 - Totals:'+
                        ' '+FormatNumber({Totals.FilesDL}1)+' '+Plural('file',{Totals.FilesDL}1)+
                        ', '+ConvertBytes({Totals.BytesDL}FileInfo.FileSize,FALSE)+
@@ -493,7 +493,7 @@ BEGIN
                        ', '+FormattedTime(TransferTime)+
                        ', '+FormatNumber(GetCPS({Totals.BytesDL}FileInfo.FileSize,TransferTime))+' cps.');
               LIL := 0;
-              
+
               NL;
               Print('^1Download statistics (Charges):^0');
               NL;
@@ -530,7 +530,7 @@ BEGIN
   END;
 END;
 
-PROCEDURE Receive(FileName: Str12; UploadPath: PathStr; ResumeFile: Boolean; VAR UploadOk, KeyboardAbort, AddULBatch: Boolean; 
+PROCEDURE Receive(FileName: Str12; UploadPath: PathStr; ResumeFile: Boolean; VAR UploadOk, KeyboardAbort, AddULBatch: Boolean;
                   VAR TransferTime: LongInt);
 VAR
   ReturnCode,

@@ -253,7 +253,7 @@ VAR
   SaveWhereY,
   SaveTextAttr: Byte;
   SaveWindowOn: Boolean;
-  
+
 PROCEDURE Local_Input1(VAR S: STRING; MaxLen: Byte; LowerCase: Boolean);
 VAR
   C: Char;
@@ -291,7 +291,7 @@ BEGIN
   IF (WhereY <= Hi(WindMax) - Hi(WindMin)) THEN
     WriteLn;
 END;
-  
+
 BEGIN
   IF ((InWFCMenu OR (NOT General.WindowOn)) AND (WhichScreen < 99)) OR
     (General.NetworkMode AND NOT CoSysOp) THEN
@@ -1042,7 +1042,7 @@ VAR
   Infield_Last_Normal: Byte;
 TYPE
   Infield_Special_Function_Proc_Rec = PROCEDURE(c: Char);
-  
+
 CONST
   Infield_Seperators: SET OF Char = [' ','\','.'];
   Infield_Only_Allow_On: BOOLEAN = FALSE;
@@ -1053,7 +1053,7 @@ CONST
   Infield_Arrow_Exit_TypeDefs: BOOLEAN = FALSE;
   Infield_Normal_Exit_KeyDefs: BOOLEAN = FALSE;
   Infield_Normal_Exited: BOOLEAN = FALSE;
-  
+
   PROCEDURE infield1(x,y: Byte; VAR s: AStr; Len: Byte);
   VAR
     SaveS: AStr;
@@ -1067,13 +1067,13 @@ CONST
     Ins,
     Done,
     NoKeyYet: BOOLEAN;
-    
+
     Infield_Special_Function_Proc: Infield_Special_Function_Proc_Rec;
     Infield_Only_Allow,
     Infield_Special_Function_Keys,
     Infield_Arrow_Exit_Types,
     Infield_Normal_Exit_Keys: STRING;
-    
+
   PROCEDURE GoCPos;
   BEGIN
     GoToXY(x + p - 1,y);
@@ -1294,7 +1294,7 @@ END;
  *  ³ 1 ³   º 2 º   ° 3 °   ± 4 ±   ² 5 ²   Û 6 Û   º 7 º  ³ 8 ³
  *  ÀÄÄÄÙ   ÈÍÍÍ¼   °°°°°   ±±±±±   ²²²²²   ÛÛÛÛÛ   ÓÄÄÄ½  ÔÍÍÍ¾
  *}
- 
+
 PROCEDURE Box(LineType,TLX,TLY,BRX,BRY: Integer);
 VAR
   TL,TR,BL,BR,HLine,VLine: Char;
@@ -1409,9 +1409,9 @@ BEGIN
   ELSE
     Window(TLX,TLY,BRX,BRY);
 END;
-  
+
   {}
-  
+
   PROCEDURE Shd(i: Integer; b: Boolean);
   VAR
     C1: Char;

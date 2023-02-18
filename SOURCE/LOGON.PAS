@@ -1,6 +1,6 @@
 {$A+,B-,D+,E-,F+,I-,L+,N-,O+,R-,S+,V-}
 {
- 07/31/2022	- Removed inputfield from sysoppw prompt
+ 07/31/2022 - Removed inputfield from sysoppw prompt
 Added: Disabled forgotpw question for CoSysOp+
 Added: Won't prompt for SysOpPW if blank
         or phonepw if blank or toggle disabled
@@ -411,7 +411,7 @@ BEGIN
       Inc(Tries);
       IF (Tries >= General.MaxLogonTries) THEN
         BEGIN
-          IF (General.NewUserQToggles[14] = FALSE) OR (General.ForgotPWQuestion = '') OR (ThisUser.ForgotPWAnswer = '') OR 
+          IF (General.NewUserQToggles[14] = FALSE) OR (General.ForgotPWQuestion = '') OR (ThisUser.ForgotPWAnswer = '') OR
              (CoSysOp) THEN
             HangUp := TRUE
           ELSE
@@ -477,7 +477,7 @@ BEGIN
       HangUp := TRUE;
     END;
   IF (NOT FastLogon) AND (Ok) AND (NOT HangUp) AND (General.Birthdatecheck > 0) AND
-     (ThisUser.LoggedOn MOD General.Birthdatecheck = 0) AND (ThisUser.Birthdate <> -1869054590) AND 
+     (ThisUser.LoggedOn MOD General.Birthdatecheck = 0) AND (ThisUser.Birthdate <> -1869054590) AND
      (General.NewUserQToggles[08] = TRUE) THEN
     BEGIN
       lRGLngStr(187,FALSE); (*Prt('Please verify your date of birth (mm/dd/yyyy): ');*)

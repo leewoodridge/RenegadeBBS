@@ -19,7 +19,7 @@ Entry: DX = port number
 Exit: AX = 1954h if successful
 | BL = maximum function number supported
 | (not counting functions 7Eh and above)
-| BH = rev of FOSSIL doc supported 
+| BH = rev of FOSSIL doc supported
 This is used to tell the driver to begin operations, and to check that
 the driver is installed. This function should be called before any other
 communications calls are made. At this point all interrupts involved in
@@ -42,10 +42,10 @@ Exit: AL = Timer tick interrupt number
 AH = Ticks per second on interrupt number in AL
 DX = Approximate number of milliseconds per tick
 This is used to determine the parameters of the timer tick on any given
-machine. Three numbers are returned: 
+machine. Three numbers are returned:
 AL = Timer tick interrupt number
 AH = Ticks per second on interrupt number shown in AL
-DX = Milliseconds per tick (approximate) 
+DX = Milliseconds per tick (approximate)
 Applications can use this for critical timing (granularity of less than
 one second) or to set up code (such as a watchdog) that is executed on
 every timer tick. See function 16h (add/delete function from timer tick)
@@ -60,32 +60,32 @@ pending output has been sent. You should use this call with care. Flow
 control (documented below) can make your system hang on this call in a
 tight uninterruptible loop under the right circumstances.
 
-AH = 0Dh Keyboard read without wait 
+AH = 0Dh Keyboard read without wait
 Parameters:
 Entry: None
 Exit: AX = IBM-style scan code (Character available)
-= FFFFh (Character not available) 
+= FFFFh (Character not available)
 Return in AX the next character (non-destructive read ahead) from the
 keyboard; if nothing is currently in the keyboard buffer, return FFFFh in
 AX. Use IBM-style function key mapping in the high order byte. Scan
 codes for non-"function" keys are not specifically required, but may be
 included. Function keys return 00h in AL and the "scan code" in AH.
 
-AH = 0Eh Keyboard read with wait 
+AH = 0Eh Keyboard read with wait
 Parameters:
 Entry: None
 Exit: AX = IBM-style scan codeReturn in AX the next character from the keyboard; wait if no character
 is available. Keyboard mapping should be the same as function 0Dh.
 
-AH = 0Fh Enable or disable flow control 
+AH = 0Fh Enable or disable flow control
 Parameters:
 Entry: AL = Bit mask describing requested flow control
 DX = Port number
-Exit: None 
+Exit: None
 TRANSMIT flow control allows the "other end" to restrain the transmitter
 when you are over-running it. RECEIVE flow control tells the FOSSIL to
 attempt to DO just that if it is being overwhelmed.
-Two kinds of basic flow control are supported: 
+Two kinds of basic flow control are supported:
 Bit 0 = 1 Xon/Xoff on transmit
 Bit 1 = 1 CTS/RTS (CTS on transmit, RTS on receive)
 Bit 2 Reserved
@@ -96,13 +96,13 @@ DISABLE (value = 0), and calling this function. Bit 2 is reserved for
 DSR/DTR, but is not currently supported in any implementation.
 Enabling transmit Xon/Xoff will cause the FOSSIL to stop transmitting
 upon receiving an Xoff. The FOSSIL will resume transmitting when an Xon
-is received. 
+is received.
 Enabling CTS/RTS will cause the FOSSIL to cease transmitting when CTS is
 lowered. Transmission will resume when CTS is raised. The FOSSIL will
 drop RTS when the receive buffer reaches a predetermined percentage full
 The FOSSIL will raise RTS when the receive buffer empties below the
 predetermined percentage full. The point(s) at which this occurs is
-left to the individual FOSSIL implementor. 
+left to the individual FOSSIL implementor.
 | Enabling receive Xon/Xoff will cause the FOSSIL to send a Xoff when the
 | receive buffer reaches a pre-determined percentage full. An Xon will be
 | sent when the receive buffer empties below the pre-determined percentage
@@ -114,16 +114,16 @@ driver implementation that uses the high nibble as a control mask. If
 your application sets the high nibble to all ones, it will always work,
 regardless of the method used by any given driver.
 
-AH = 10h Extended Control-C / Control-K checking and transmit on/off 
+AH = 10h Extended Control-C / Control-K checking and transmit on/off
 Parameters:
 Entry: AL = Bit mask (see below)
 DX = Port number
 Exit: AX = 0001h - Control-C/K has been received
-= 0000h - Control-C/K has not been received 
+= 0000h - Control-C/K has not been received
 This is used for BBS operation, primarily. A bit mask is passed in AL
-with the following flags: 
+with the following flags:
 Bit 0 Enable/disable Control-C / Control-K checking
-Bit 1 Disable/enable the transmitter 
+Bit 1 Disable/enable the transmitter
 The Enable (bit 0 = 1) and Disable (Bit 0 = 0) Control-C/Control-K check
 function is meant primarily for BBS use. When the checking is enabled, a
 Control-C or Control-K received from the communications port will set a
@@ -134,13 +134,13 @@ value is used by the BBS software to determine whether output should be
 halted or not.
 The Disable (Bit 1 = 1) and Enable (Bit 1 = 0) Transmitter function lets
 the application restrain the asynchronous driver from output in much the
-same way as XON/XOFF would. 
+same way as XON/XOFF would.
 
-AH = 11h Set current cursor location. 
+AH = 11h Set current cursor location.
 Parameters:
 Entry: DH = Row (line)
 DL = Column
-Exit: None 
+Exit: None
 This function looks exactly like like INT 10h, subfunction 2, on the IBM
 PC. The cursor location is passed in DX: row in DH and column in DL. The
 function treats the screen as a coordinate system whose origin (0,0) is
@@ -155,7 +155,7 @@ Looks exactly like INT 10h, subfunction 3, on the IBM PC. The current
 cursor location (using the same coordinate system as function 16h) is
 passed back in DX.
 
-AH = 13h Single character ANSI write to screen. 
+AH = 13h Single character ANSI write to screen.
 Parameters:
 Entry: AL = Character to display
 Exit: None
@@ -164,21 +164,21 @@ that allows ANSI processing to occur (if available). This routine should
 not be used in such a way that DOS output (which is not re-entrant) can
 not be employed by some FOSSIL driver to perform the function (in fact,
 on the IBM PC that is likely to be how it's done). On some systems such
-as the DEC Rainbow this will be a very fast method of screen writing. 
+as the DEC Rainbow this will be a very fast method of screen writing.
 
-AH = 14h Enable or disable watchdog processing 
+AH = 14h Enable or disable watchdog processing
 Parameters:
 Entry: AL = 01h - Enable watchdog
 = 00h - Disable watchdog
 DX = Port number
-Exit: None 
+Exit: None
 When watchdog is enabled, the state of the carrier detect (CD) line on
 the comm port specified in DX should be constantly monitored. Should the
 state of that line become FALSE (carrier lost), the system should be re-
 booted, to enable the BBS (or other application) to start up again. This
-monitor is not affected by Init/Uninit etc. 
+monitor is not affected by Init/Uninit etc.
 
-AH = 15h Write character to screen using BIOS support routines 
+AH = 15h Write character to screen using BIOS support routines
 Parameters:
 Entry: AL = Character to display
 Exit: None
@@ -186,14 +186,14 @@ The character in AL is sent to the screen using BIOS-level Input/Output
 routines. This differs from function 13h in that DOS I/O CAN NOT be used,
 as this function might be called from driver level.
 
-AH = 16h Insert or delete a function from the timer tick chain 
+AH = 16h Insert or delete a function from the timer tick chain
 Parameter:
 Entry: AL = 01h - Add a function
 = 00h - Delete a function
 | ES = Segment of function
 DX = Offset of function
 Exit: AX = 0000h - Operation successful
-= FFFFh - Operation unsuccessful 
+= FFFFh - Operation unsuccessful
 This function is used to allow a central authority to manage the timer
 interrupts, so that as code is loaded and unloaded, the integrity of the
 "chain" is not compromised. Rather than using the traditional method of
@@ -208,7 +208,7 @@ first insinuated itself. At least 4 entries should be available in the
 driver's table (including one to be used by Watchdog if implemented that
 way).
 
-AH = 17h Reboot system 
+AH = 17h Reboot system
 Parameters:
 Entry: AL = 00h - "Cold boot"
 = 01h - "Warm boot"
@@ -229,7 +229,7 @@ whatever bootstrap is possible.
 | Exit: AX = Number of characters actually transferred
 | A "no-wait" block read of 0 to FFFFh characters from the FOSSIL inbound
 | ring buffer to the calling routine's buffer. ES:DI are left unchanged by
-| the call; the count of bytes actually transferred will be returned in AX. 
+| the call; the count of bytes actually transferred will be returned in AX.
 
 | AH = 1Ah Break begin or end
 | Parameters:
@@ -251,10 +251,10 @@ whatever bootstrap is possible.
 | DX = Port number
 | ES = Segment of user info buffer
 | DI = Offset into ES of user info buffer
-| Exit: AX = Number of bytes actually transferred 
+| Exit: AX = Number of bytes actually transferred
 | Transfer information about the driver and its current status to the user
 | for use in determining, at the application level, limits of the driver.
-| Designed to assist "generic" applications to adjust to "foreign" gear. 
+| Designed to assist "generic" applications to adjust to "foreign" gear.
 | The data structure currently returned by the driver is as follows (sorry
 | but you'll have to live with assembly syntax):
 | info equ $ ; define begin of structure
@@ -296,16 +296,16 @@ whatever bootstrap is possible.
 | modem code, database code, etc) to link into the INT 14h service for use
 | by multiple applications. The "error return" (BH=0 with AX=1954h) should
 | mean that another application layer has already been installed at that
-| particular code. Codes 80h through BFh should be supported. 
+| particular code. Codes 80h through BFh should be supported.
 | External application codes 80h-83h are reserved by FOSSIL developers for
 | re-organizing FOSSIL services by type (comm, screen, keyboard, system).
 | Installed application code will be entered, via a FAR call, from the INT
-| 14H dispatcher whenever it is entered with AH=(application code). 
+| 14H dispatcher whenever it is entered with AH=(application code).
 | If the value returned in AX from this function is not 1954h, the service
 | code that is trying to be installed should bring up its own INT 14h code
 | that can service INT 14h functions 7h-BFh (80h-BFh are "applications").
 
-| AH = 7Fh Remove an "external application" function 
+| AH = 7Fh Remove an "external application" function
 | Parameters:
 | Entry: AL = Code assigned to external application
 | DX = Offset of application entry point
@@ -316,7 +316,7 @@ whatever bootstrap is possible.
 | = 00h - Removal failed
 | Removes an application's entry into the table. Usually so it can remove
 | itself from memory. Error return means ES:DX did not match or that there
-| is no entry at the slot described by AL. 
+| is no entry at the slot described by AL.
 | An application that wants to remove itself from memory can issue the 7F
 | function to remove itself from the table, then, if it is successful, get
 | out of memory. If it had to install itself with an INT 14h dispatcher it

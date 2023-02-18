@@ -3,6 +3,7 @@
  00/00/0000 - Expanded clear field options
  00/00/0000 - If no separate log file, prompt to view normal SysOp log
  05/25/2022 - Username and RealName don't use CStuff if editing new user profile
+ 02/17/2023 - added IsActive func - LastOn date will indicate active/inactive user based on configuration in system variables
 }
 UNIT SysOp3;
 
@@ -50,6 +51,16 @@ PROCEDURE ShowUserInfo(DisplayType: Byte; UNum: Integer; CONST User: UserRecordT
 VAR
   Counter: Byte;
 
+  FUNCTION IsActive: Str2;
+  BEGIN
+    IF (General.ActThreshold=0) THEN
+      EXIT
+    ELSE IF (DaysBetween(User.LastOn,GetPackDateTime)<=General.ActThreshold) THEN
+      IsActive := '^9'
+    ELSE
+      IsActive := '^8';
+ END;
+
   PROCEDURE ShowUser(VAR Counter1: Byte);
   VAR
     S: AStr;
@@ -75,8 +86,7 @@ VAR
                                      Sex+IntToStr(AgeUser(BirthDate))+' ('+ToDate8(PD2Date(BirthDate))+')';
         7 : S := '^0F. SysOp note: ^1'+PadLeftStr(Note,29)+'^0 R. Phone num : ^1'+Ph;
         8 : S := '^0G. '+PadLeftStr(lRGLngStr(41,TRUE){FString.UserDefEd[1]},10)+': ^1'+PadLeftStr(UsrDefStr[1],29)+
-                                                              '^0 T. Last/1st  : ^1'+ToDate8(PD2Date(LastOn))+
-                                                              ' ('+ToDate8(PD2Date(FirstOn))+')';
+                 '^0 T. Last/1st  : ^1'+IsActive+ToDate8(PD2Date(LastOn))+'^0 / ^1'+ToDate8(PD2Date(FirstOn));
         9 : BEGIN
               S := '^0H. '+PadLeftStr(lRGLngStr(42,TRUE){FString.UserDefEd[2]},10)+': ^1'+PadLeftStr(UsrDefStr[2],29)+
                    '^0 V. Locked out: '+AOnOff(LockedOut IN SFlags,'^8'+LockedFile+'.ASC','^1Inactive');
@@ -1113,7 +1123,7 @@ BEGIN
                               IF PYNQ('^2Open mailbox?',0,FALSE) THEN
                                 Exclude(User.ACFlags,NoMail)
                             END
-                          ELSE 
+                          ELSE
                             IF PYNQ('^2Close mailbox?',0,FALSE) THEN
                               Include(User.ACFlags,NoMail);
                         END;(*CStuff(25,3,User); { Mailbox }*)

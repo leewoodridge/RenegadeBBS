@@ -1,6 +1,6 @@
 {$A+,B-,D+,E-,F+,I-,L+,N-,O+,R-,S+,V-}
 {
-change info showed in list... no warn, maybe 
+change info showed in list... no warn, maybe
 }
 UNIT SysOp6;
 
@@ -206,9 +206,9 @@ VAR
             Abort := FALSE;
             Next := FALSE;
             IF (Editing) THEN
-              ConfigHeader('Editing Event #'+IntToStr(RecNumToEdit)+' Of '+IntToStr(NumEvents),0)
+              ConfigHeader('Editing Event #'+IntToStr(RecNumToEdit)+' Of '+IntToStr(NumEvents),0,0)
             ELSE
-              ConfigHeader('Inserting Event #'+IntToStr(RecNumToEdit)+' Of '+IntToStr(NumEvents + 1),0);
+              ConfigHeader('Inserting Event #'+IntToStr(RecNumToEdit)+' Of '+IntToStr(NumEvents + 1),0,0);
             PrintACR('^0(^1A^0) Event Type            : ^1'+AOnOff(EventIsExternal IN EFlags,'External','Internal'));
             PrintACR('^0(^1B^0) Description           : ^1'+EventDescription);
             PrintACR('^0(^1C^0) Active                : ^1'+AOnOff(EventIsActive IN EFlags,'Active','Inactive'));
@@ -911,12 +911,12 @@ VAR
       RecNumToList1 := 1;
     Abort := FALSE;
     Next := FALSE;
-    ConfigHeader('Event Editor',0);
+    ConfigHeader('Event Editor',0,0);
     PrintACR('^5<^4A^5> <^4##^5> <^4Description^5>                  <^4Schedule^5>');
     HL;
     Reset(EventFile);
     NumDone := 0;
-    WHILE (NumDone < (PageLength - 5)) AND (RecNumToList1 >= 1) AND (RecNumToList1 <= NumEvents) AND 
+    WHILE (NumDone < (PageLength - 5)) AND (RecNumToList1 >= 1) AND (RecNumToList1 <= NumEvents) AND
           (NOT Abort) AND (NOT HangUp) DO
       BEGIN
         Seek(EventFile,(RecNumToList1 - 1));
@@ -924,7 +924,7 @@ VAR
         WITH Event DO
           PrintACR(' '+PadLeftStr(AOnOff(EventIsActive IN EFlags,'^9'+#251,'^8-'),3)+
                    ' ^1'+PadLeftInt(RecNumToList1,4)+
-                   ' ^0'+PadLeftStr(EventDescription,30)+               
+                   ' ^0'+PadLeftStr(EventDescription,30)+
                    ' ^5D: ^0'+PadLeftStr(AOnOff(EventDayOfMonth <> 0,
                                     IntToStr(EventDayOfMonth)+AllCaps(DateSuffix(EventDayOfMonth)), {Day of month}
                                     DaysEventActive(EventDays,'1','5'))+ {Days of week}

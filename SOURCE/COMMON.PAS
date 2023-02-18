@@ -13,7 +13,7 @@ Lee Woodridge
  ...        - Added: MCIPos/MCIPosArray to pull location data from ANSIs
  10/26/2021 - Fixed: lightbar yes/no question no longer eats itself if color codes/MCIs in string
  10/27/2021 - Moved: TeleconfCheck to MULTNODE
- 10/31/2021 - Added: LangStringArray to pass strings to lang file 
+ 10/31/2021 - Added: LangStringArray to pass strings to lang file
             - Added: %SA MCI - returns "available" or "unavailable" depending on SysOp chat availability
  11/01/2021 - Removed: RGNote, RGMain - All strings now in lRGLngStr
  11/03/2021 - moved savendescription to its proc, no need to be global
@@ -25,7 +25,7 @@ Lee Woodridge
             - %SC reporting +1 more caller, fixed?
  11/05/2021 - Removed ReDisplay from inputflags, unused, seems useless
               Added IsPassword inputflag, masks input, replaces getpassword proc
- 11/11/2021 - removed hungup, was nonfunctional, 
+ 11/11/2021 - removed hungup, was nonfunctional,
  11/16/2021 - Cleaned up printf proc, fixed bug where wasnt reporting nofile correctly
             - Cleaned up printfile, removed non-ansi files, as we're removing
  11/18/2021 - Removed YN proc, now just PYNQ -- MAXLEN PARAM CAN BE REMOVED, LOTS OF FILES TO EDIT IT OUT OF
@@ -36,9 +36,9 @@ Lee Woodridge
  04/21/2022 - Nested GetC inside SetC since it's the only proc that calls it
  06/05/2022 - exo added %EP null pause -- LeeW: I switched to getkey because readkey don't read remote input
  07/31/2022 - removed usercolor cmds from prt
- 
+
  [NOTES]
- 
+
  messing with ansig/pagelength ... check pagelength for wrong positioning
  clean up setc/getc
  inputmessage linelen param should be 79??? or 80 ... is 78
@@ -86,7 +86,7 @@ TYPE
   MemCmdRec = RECORD                   { COMMAND RECORD }
     LDesc: STRING[100];                { Long command description }
     ACS: ACString;                     { Access requirements }
-    NodeActivityDesc: STRING[50];	   { Node activity description }
+    NodeActivityDesc: STRING[50];      { Node activity description }
     CmdFlags: CmdFlagSet;              { Flags }
     SDesc: STRING[35];                 { Short command description }
     CKeys: STRING[14];                 { Execution key }
@@ -94,7 +94,7 @@ TYPE
     Options: STRING[50];               { Command parameters }
   END;
 
-  LightBarRecordType = RECORD	
+  LightBarRecordType = RECORD
     XPos,
     YPos: Byte;
     CmdToExec: Integer;
@@ -182,12 +182,12 @@ TYPE
   MCIBufferPtr = ^MCIBufferType;
 
   Multitasker =(
-    None,  { DOS 5 through 9 }
-    DV,
-    Win,
-    OS2,
-    Win32,
-    DOS5N);
+    None,   { DOS 5 - 9 }
+    DV,     { DesqView }
+    Win,    { Windows (16-Bit) }
+    OS2,    { OS/2 Warp }
+    Win32,  { Windows (32-Bit) }
+    DOS5N); { ... }
 
   InputFlagType =(
     { Formatting }
@@ -199,10 +199,10 @@ TYPE
     NoInputField,    { No MPL(#) - LeeW: Added }
     NoInputRange,    { Don't display valid input range after prompt (numeric input only) - LeeW: Added }
     NoLineFeed,      { No linefeed after <CR> pressed }
-    
+
     {AllowAbort}AllowEscape,     { ESC aborts, leaving unchanged }
     {AllowBlank,}    { Allow blank string, or a string of only spaces ???}
-    
+
     { Input type }
     NumbersOnly,     { Numeric values only }
     AllowNegative,   { Negative numbers allowed }
@@ -213,7 +213,7 @@ TYPE
     IsPath           { Valid full path characters only }
     ???
     *)
-    ); 
+    );
 
   InputFlagSet = SET OF InputFlagType;    {  }
   ValidationKeyType = SET OF '!'..'~';    (* Remove q and Q *)
@@ -224,16 +224,16 @@ CONST
   MCIBuffer: MCIBufferPtr = NIL;          { NIL }
 (*DieLater: Boolean = FALSE;              { IF TRUE, Renegade locks up ??? } *)
   F_HOME = 18176;                         { 256 * Scan code }
-  F_UP   = 18432;                         { ^ }
+  F_UP = 18432;                           { ^ }
   F_PGUP = 18688;                         { ^ }
   F_LEFT = 19200;                         { ^ }
   F_RIGHT = 19712;                        { ^ }
-  F_END  = 20224;                         { ^ }
+  F_END = 20224;                          { ^ }
   F_DOWN = 20480;                         { ^ }
   F_PGDN = 20736;                         { ^ }
-  F_INS  = 20992;                         { ^ }
-  F_DEL  = 21248;                         { ^ }
-  F_CTRLLEFT  = 29440;                    { ^ }
+  F_INS = 20992;                          { ^ }
+  F_DEL = 21248;                          { ^ }
+  F_CTRLLEFT = 29440;                     { ^ }
   F_CTRLRIGHT = 29696;                    { ^ }
   NoCallInitTime = (30 * 60);             { Time between modem initializations (30 minutes) }
   Tasker: Multitasker = None;             {  }
@@ -289,7 +289,7 @@ CONST
   MakeQWKFor: Integer = 0;                { Are we making a QWK packet only? }
   UpQWKFor: Integer = 0;                  { Are we uploading a QWK packet only? }
   PackBasesOnly: Boolean = FALSE;         { Are we packing message bases only? }
-  PackUsersOnly: Boolean = FALSE;         { Are we packing users only? -- LeeW: Added } 
+  PackUsersOnly: Boolean = FALSE;         { Are we packing users only? -- LeeW: Added }
   SortFilesOnly: Boolean = FALSE;         { Are we sorting file bases only? }
   FileBBSOnly: Boolean = FALSE;           { Are we verifying FILES.BBS only? }
   {}
@@ -325,7 +325,7 @@ CONST
   LastWFCX: Byte = 1;                     {  }
   LastWFCY: Byte = 1;                     {  }
   ANSIDetected: Boolean = FALSE;          {  }
-  
+
 VAR
   LangStringArray:                     { LeeW: Added - Strings to pass through the language file }
     ARRAY[0..9] OF STRING{[40]};
@@ -564,7 +564,7 @@ FUNCTION DisplayACFlags(Flags: ACFlagSet; C1,C2: Char): AStr;
 PROCEDURE ToggleACFlag(Flag: ACFlagType; VAR Flags: ACFlagSet);
 PROCEDURE ToggleACFlags(Flag: Char; VAR Flags: ACFlagSet; VAR Changed: Boolean);
 PROCEDURE ToggleStatusFlag(Flag: StatusFlagType; VAR SUFlags: StatusFlagSet);
-PROCEDURE ToggleStatusFlags(Flag: Char; VAR SUFlags: StatusFlagSet);
+(*PROCEDURE ToggleStatusFlags(Flag: Char; VAR SUFlags: StatusFlagSet);*)
 FUNCTION TACCH(Flag: Char): ACFlagType;
 { END OF UNSORTED }
 { Boolean checks }
@@ -741,12 +741,12 @@ BEGIN
       ToggleBack := TRUE;
       ToggleWindow(FALSE);
     END;
-  
+
   IF (OkANSI) AND (ComPortSpeed > 0) THEN
     SerialOut(#27+'['+IntToStr(Y)+';'+IntToStr(X)+'H');
   IF (WantOut) THEN
     GoToXY(X,Y);
-    
+
   IF (ToggleBack) THEN
     ToggleWindow(TRUE);
 END;
@@ -1587,16 +1587,7 @@ VAR
   Counter: Byte;
 BEGIN
   FOR Counter := Start TO Finish DO
-  BEGIN
     BackSpace;
-  {
-    IF (OutCom) THEN
-      SerialOut(^H' '^H);
-    IF (WantOut) THEN
-      Write(^H' '^H);
-      }
-      
-  END;
 END;
 
 FUNCTION Substitute(Src: STRING; CONST old,New: STRING): STRING;
@@ -1628,8 +1619,9 @@ END;
 
 PROCEDURE DOSANSI(CONST c:Char);
 VAR
-   i:Word;
-label Command;
+  i: Word;
+LABEL
+  Command;
 
 BEGIN
   IF (c = #27) AND (NextState IN [Waiting..In_Param]) THEN
@@ -1950,7 +1942,7 @@ BEGIN
 
   Com_Install;
 
-  IF (NOT LocalIOOnly) AND NOT (lockedport IN Liner.mflags) THEN
+  IF (NOT LocalIOOnly) AND NOT (LockedPort IN Liner.MFlags) THEN
     Com_Set_Speed(ComPortSpeed);
 
   Update_Screen;
@@ -2047,7 +2039,7 @@ END;
 
 FUNCTION Timer: LongInt;
 BEGIN
-  Timer := ((Ticks * 5) DIV 91);   { 2.5 times faster than Ticks DIV 18.2 }
+  Timer := ((Ticks * 5) DIV 91); { 2.5 times faster than Ticks DIV 18.2 }
 END;
 
 FUNCTION OkVT100: Boolean;
@@ -2328,10 +2320,10 @@ BEGIN
   StrLen := LennMCI(InString);
   IF (StrLen > MaxLen) THEN
     WHILE (StrLen > MaxLen) DO
-    BEGIN
-      InString[0] := Chr(MaxLen + (Length(InString) - StrLen));
-      StrLen := LennMCI(InString);
-    END
+      BEGIN
+        InString[0] := Chr(MaxLen + (Length(InString) - StrLen));
+        StrLen := LennMCI(InString);
+      END
     ELSE
       FOR Counter := StrLen TO (MaxLen - 1) DO
         InString := InString + ' ';
@@ -2383,9 +2375,7 @@ END;
 
 PROCEDURE Prt(CONST InString: STRING); {Prt>Prompt>PrintMain}
 BEGIN
-  {UserColor(0);}
   Prompt(InString);
-  {UserColor(0);}
 END;
 
 PROCEDURE MPL(MaxLen: Byte);
@@ -2568,7 +2558,7 @@ VAR
   I: Integer;
   C: Word;
   TempTimer: LongInt;
-  
+
 FUNCTION ChInKey: Char;
 VAR
   C: Char;
@@ -2576,38 +2566,38 @@ BEGIN
   C := #0;
   Chinkey := #0;
   IF (KeyPressed) THEN
-  BEGIN
-    C := ReadKey;
-    IF (NOT WColor) THEN
-      UserColor(General.SysOpColor);
-    WColor := TRUE;
-    IF (C = #0) THEN
-      IF (KeyPressed) THEN
-      BEGIN
-        C := ReadKey;
-        SKey1(C);
-        IF (C = #31) OR (C = #46) THEN
-          C := #1
-        ELSE IF (Buf <> '') THEN
-        BEGIN
-          C := Buf[1];
-          Buf := Copy(Buf,2,(Length(Buf) - 1));
-        END
-        ELSE
-          C := #0
-      END;
-    Chinkey := C;
-  END
+    BEGIN
+      C := ReadKey;
+      IF (NOT WColor) THEN
+        UserColor(General.SysOpColor);
+      WColor := TRUE;
+      IF (C = #0) THEN
+        IF (KeyPressed) THEN
+          BEGIN
+            C := ReadKey;
+            SKey1(C);
+            IF (C = #31) OR (C = #46) THEN
+              C := #1
+            ELSE IF (Buf <> '') THEN
+              BEGIN
+                C := Buf[1];
+                Buf := Copy(Buf,2,(Length(Buf) - 1));
+              END
+            ELSE
+              C := #0
+          END;
+      Chinkey := C;
+    END
   ELSE IF ((NOT Com_IsRecv_Empty) AND (InCom)) THEN
-  BEGIN
-    C := CInKey;
-    IF (WColor) THEN
-      UserColor(General.UserColor);
-    WColor := FALSE;
-    Chinkey := C;
-  END;
+    BEGIN
+      C := CInKey;
+      IF (WColor) THEN
+        UserColor(General.UserColor);
+      WColor := FALSE;
+      Chinkey := C;
+    END;
 END;
-  
+
 BEGIN
   {IF (DieLater) THEN
     ASM
@@ -2693,7 +2683,7 @@ BEGIN
                        Mov ax, 1000h
                        int 15h
                      END;
-   Win,Win32,DOS5N : ASM     (* Added Win32 & DOS5N *)
+   Win,Win32,DOS5N : ASM (* Added Win32 & DOS5N *)
                        Mov ax, 1680h
                        int 2Fh
                      END;
@@ -2709,14 +2699,14 @@ BEGIN
             END;
             LastTimeSlice := Ticks;
           END
-          
+
           ELSE IF (MultiNodeChat) AND (NOT InChat) AND (ABS(Ticks - LastCheckTimeSlice) > 9) THEN
           BEGIN
             LastCheckTimeSlice := Ticks;
             TeleConfCheck;
             LIL := 1;
           END;
-          
+
         END;
         IF (InChat) THEN
           C := Ord(ChInKey)
@@ -2835,7 +2825,7 @@ BEGIN
   ELSE
     Include(SUFlags,Flag);
 END;
-
+(*
 PROCEDURE ToggleStatusFlags(Flag: Char; VAR SUFlags: StatusFlagSet);
 BEGIN
   CASE Flag OF
@@ -2852,7 +2842,7 @@ BEGIN
     'K' : ToggleStatusFlag(AutoDetect,SUFlags);
   END;
 END;
-
+*)
 FUNCTION TACCH(Flag: Char): ACFlagType;
 BEGIN
   CASE Flag OF
@@ -2873,27 +2863,11 @@ BEGIN
   END;
 END;
 
-FUNCTION AOnOff(b: Boolean; CONST s1,s2:AStr): STRING; {ASSEMBLER;}
-{ASM
-  PUSH ds
-  Test b, 1
-  JZ   @@1
-  LDS  si, s1
-  JMP  @@2
-  @@1:   LDS  si, s2
-  @@2:   LES  di, @Result
-  XOR  Ch, Ch
-  MOV  cl, Byte ptr ds:[si]
-  MOV  Byte ptr es:[di], cl
-  Inc  di
-  Inc  si
-  CLD
-  REP  MOVSB
-  POP  ds}
+FUNCTION AOnOff(b: Boolean; CONST s1,s2:AStr): STRING;
 BEGIN
   IF (b) THEN
     AOnOff := s1
-  ELSE 
+  ELSE
     AOnOff := s2;
 END;
 
@@ -2917,21 +2891,21 @@ FUNCTION PYNQ(CONST InString: AStr; MaxLen: Byte; YN: Boolean): Boolean;
 VAR
   Cmd: Char;
   W: Word;
-  
+
   PROCEDURE PrintYesNo;
   BEGIN
-        IF (YN) THEN
-          BEGIN
-            Prt('^7'+lRGLngStr(96,TRUE)+'^0'); { Yes selected }
-            Prt('^6'+lRGLngStr(97,TRUE)+'^0'); 
-          END
-        ELSE
-          BEGIN
-            Prt('^6'+lRGLngStr(96,TRUE)+'^0'); 
-            Prt('^7'+lRGLngStr(97,TRUE)+'^0'); { No selected }
-          END;
+    IF (YN) THEN
+      BEGIN
+        Prt('^7'+lRGLngStr(96,TRUE)+'^0'); { Yes selected }
+        Prt('^6'+lRGLngStr(97,TRUE)+'^0');
+      END
+    ELSE
+      BEGIN
+        Prt('^6'+lRGLngStr(96,TRUE)+'^0');
+        Prt('^7'+lRGLngStr(97,TRUE)+'^0'); { No selected }
+      END;
   END;
-  
+
 BEGIN
   UserColor(2);
   Prompt(InString+' ');
@@ -2986,12 +2960,12 @@ VAR
 BEGIN
   StrLen := LennMCI(InString);
   IF (StrLen < ThisUser.LineLen) THEN
-  BEGIN
-    Counter := ((ThisUser.LineLen - StrLen) DIV 2);
-    Move(InString[1],InString[Counter + 1],Length(InString));
-    Inc(InString[0],Counter);
-    FillChar(InString[1],Counter,#32);
-  END;
+    BEGIN
+      Counter := ((ThisUser.LineLen - StrLen) DIV 2);
+      Move(InString[1],InString[Counter + 1],Length(InString));
+      Inc(InString[0],Counter);
+      FillChar(InString[1],Counter,#32);
+    END;
   Centre := InString;
 END;
 
@@ -3003,32 +2977,32 @@ BEGIN
     Exit;
   Cmd := Char(GetKey);
   IF (DisplayingMenu) AND (Pos(UpCase(Cmd),MenuKeys) > 0) THEN
-  BEGIN
-    MenuAborted := TRUE;
-    Abort := TRUE;
-    Buf := Buf + UpCase(Cmd);
-  END
+    BEGIN
+      MenuAborted := TRUE;
+      Abort := TRUE;
+      Buf := Buf + UpCase(Cmd);
+    END
   ELSE
     CASE UpCase(Cmd) OF
       ' ',^C,^X,^K :
-            Abort := TRUE;
+        Abort := TRUE;
       'N',^N :
-            IF (Reading_A_Msg) THEN
-            BEGIN
-              Abort := TRUE;
-              Next := TRUE;
-            END;
+        IF (Reading_A_Msg) THEN
+          BEGIN
+            Abort := TRUE;
+            Next := TRUE;
+          END;
       'P',^S :
-            Cmd := Char(GetKey);
+        Cmd := Char(GetKey);
       ELSE IF (Reading_A_Msg) OR (PrintingFile) THEN
         IF (Cmd <> #0) THEN
           Buf := Buf + Cmd;
     END;
   IF (Abort) THEN
-  BEGIN
-    Com_Purge_Send;
-    NL;
-  END;
+    BEGIN
+      Com_Purge_Send;
+      NL;
+    END;
 END;
 
 PROCEDURE PrintMain(CONST ss:STRING);
@@ -3140,7 +3114,7 @@ BEGIN
                         Inc(i,2);
                       END
                     (* LeeW: Added ANSI go to position MCI %XY00;00% *)
-                    ELSE IF (UpCase(s[i + 1]) = 'X') AND (UpCase(s[i + 2]) = 'Y') AND 
+                    ELSE IF (UpCase(s[i + 1]) = 'X') AND (UpCase(s[i + 2]) = 'Y') AND
                             (s[i + 5] = ';') AND (s[i + 8] = '%') THEN
                       BEGIN
                         cs := '';
@@ -4366,7 +4340,7 @@ BEGIN
                         Add := '';
                         Delay(200);
                         END;
-                    }   
+                    }
                 { 'H' : Add := PHours('Always allowed',General.DLLowTime,General.DLHiTime); }
                   'K' : Add := FormatNumber(DK);
                   'L' : Add := FormatNumber(Downloads);
@@ -4383,9 +4357,9 @@ BEGIN
           'E' : CASE UpCase(S[Index + 2]) OF
                   'D' : Add := AOnOff((Expiration = 0),'Never',ToDate8(PD2Date(Expiration)));
                   'P' : BEGIN { Blank pause }
-						  Add := Char(GetKey);
-						  Add := '';
-						END;
+                          Add := Char(GetKey);
+                          Add := '';
+                        END;
                   'S' : Add := FormatNumber(EmailSent);
                 { 'T' : Add := IntToStr(General.EventWarningTime); }
                   'W' : Add := FormatNumber(Waiting);
@@ -4502,7 +4476,7 @@ BEGIN
                   'L' : Add := ShowOnOff(LightBars in ThisUser.SFlags);  {LeeW: Added -- all lightbars combined to 1 now }
                   'N' : Add := ShowOnOff(NAvail IN NodeR.Status); {LeeW: Can we make this say 'Available'/'Not Available'?}
                   'Z' : Add := General.FileArcInfo[ThisUser.DefArcType].EXT;
-                  
+
                    END;
           'P' : CASE UpCase(S[Index + 2]) OF
                   {

@@ -1,6 +1,8 @@
 {$A+,B-,D-,E-,F+,I-,L-,N-,O+,R-,S+,V-}
 {
 removed macros, in their own submenu now
+
+- add activity threshjold page 2
 }
 UNIT SysOp2D;
 
@@ -17,6 +19,7 @@ USES
 PROCEDURE SystemGeneralVariables;
 VAR
   Cmd: Char;
+  OnPage,
   TempB,
   MinByte,
   MaxByte: Byte;
@@ -39,12 +42,14 @@ VAR
   END;
 
 BEGIN
+  OnPage := 1;
   REPEAT
+   IF (OnPage = 1) THEN
     WITH General DO
       BEGIN
         Abort := FALSE;
         Next := FALSE;
-        ConfigHeader('System Variables',0);
+        ConfigHeader('System Variables',1,2);
         PrintACR(PadLeftStr('^0(^1A^0) Max private sent per call : ^1'+IntToStr(MaxPrivPost),39)+
                  PadLeftStr('^0(^1B^0) Max feedback sent per call : ^1'+IntToStr(MaxFBack),39));
         PrintACR(PadLeftStr('^0(^1C^0) Max public posts per call : ^1'+IntToStr(MaxPubPost),39)+
@@ -71,8 +76,8 @@ BEGIN
                  PadLeftStr('^0(^1Y^0) TB max per day deposit     : ^1'+IntToStr(MaxDepositPerDay),39));
         PrintACR(PadLeftStr('^0(^1Z^0) TB max per day withdrawal : ^1'+IntToStr(MaxWithDrawalPerDay),39)+
                  PadLeftStr('',39));
-        InputChar('%LFSystem Variables [^1A^2-^1P^2,^1R^2-^1Z^2,(^1Q^2)uit^2]: ',Cmd,
-                  'QABCDEFGHIJKLMNOPRSTUVWXYZ1234567890'{^M},[CapAll]);
+        InputChar('%LFSystem Variables [^1A^2-^1P^2,^1R^2-^1Z^2,<^1CR^2>Page,(^1Q^2)uit^2]: ',Cmd,
+                  'QABCDEFGHIJKLMNOPRSTUVWXYZ1234567890'^M,[CapAll]);
         CASE Cmd OF
           'I' : BEGIN
                   NL;
@@ -261,6 +266,38 @@ BEGIN
                 END;
         END;
       END;
+
+    IF (OnPage = 2) THEN
+      WITH General DO
+        BEGIN
+          Abort := FALSE;
+          Next := FALSE;
+          MCIAllowed := FALSE;
+          ConfigHeader('System Variables',2,2);
+          PrintACR(PadLeftStr('^0(^1A^0) Inactivity Threshold (Days) : ^1'+IntToStr(ActThreshold),39){+
+                   PadLeftStr('^0(^1B^0) ...                         : ^1'+'.',39)});
+          MCIAllowed := TRUE;
+          NL;
+          InputChar('System Variables [^1A^2-^1A^2,<^1CR^2>Page,(^1Q^2)uit]: ',Cmd,
+                    'QA'^M,[CapAll]);
+          IF (Cmd IN ['A'{..'B'}]) THEN
+            BEGIN
+              NL;
+              CASE Cmd OF
+                'A' : InputInteger('Enter number of days since last logon to consider user inactive',General.ActThreshold,
+                                   [NumbersOnly],0,365,Changed);
+                {'B' : InputString('%LFNew ACS: ',AddOneLinerACS,(SizeOf(ACString)-1),[InterActiveEdit],Changed);}
+              END;
+            END;
+        END;
+
+        IF (Cmd = ^M) THEN
+          IF (OnPage = 1) THEN
+            OnPage := 2
+          ELSE
+            OnPage := 1;
+
+
   UNTIL (Cmd = 'Q') OR (HangUp);
 END;
 END.

@@ -32,7 +32,7 @@ BEGIN
           Abort := FALSE;
           Next := FALSE;
           MCIAllowed := FALSE;
-          ConfigHeader('ACS Settings',12);
+          ConfigHeader('ACS Settings',1,2);
           PrintACR(PadLeftStr('^0(^1A^0) Full SysOp       : ^1'+SOp,39)+' '+
                    PadLeftStr('^0(^1B^0) Full Co-SysOp    : ^1'+CSOp,39));
           PrintACR(PadLeftStr('^0(^1C^0) Msg Area SysOp   : ^1'+MSOp,39)+' '+
@@ -58,10 +58,10 @@ BEGIN
           PrintACR(PadLeftStr('^0(^1X^0) Mail file attach : ^1'+FileAttachACS,39)+' '+
                    PadLeftStr('^0(^1Y^0) SysOp PW at logon: ^1'+SPW,39));
           PrintACR(PadLeftStr('^0(^1Z^0) Last On Add      : ^1'+LastOnDatACS,39));
-        
+
         { PrintACR(PadLeftStr('^0(^1^0) : ^1'+ACSVAR,39)+' '+
                    PadLeftStr('^0(^1^0) : ^1'+ACSVAR,39)); }
-        
+
           MCIAllowed := TRUE;
           NL;
           InputChar('ACS Configuration [^1A^2-^1P^2,^1R^2-^1Z^2,<^1CR^2>Page,(^1Q^2)uit]: ',Cmd,
@@ -125,20 +125,20 @@ BEGIN
               END;
             END;
       END;
-      
+
     IF (OnPage = 2) THEN
       WITH General DO
         BEGIN
           Abort := FALSE;
           Next := FALSE;
           MCIAllowed := FALSE;
-          ConfigHeader('ACS Settings',22);
+          ConfigHeader('ACS Settings',2,2);
           PrintACR(PadLeftStr('^0(^1A^0) Add Quote        : ^1'+AddQuoteACS,39)+
                    PadLeftStr('^0(^1B^0) Add OneLiner     : ^1'+AddOneLinerACS,39));
-                   
+
         { PrintACR(PadLeftStr('^0(^1^0) : ^1'+ACSVAR,39)+' '+
                    PadLeftStr('^0(^1^0) : ^1'+ACSVAR,39)); }
-        
+
           MCIAllowed := TRUE;
           NL;
           InputChar('ACS Configuration [^1A^2-^1B^2,<^1CR^2>Page,(^1Q^2)uit]: ',Cmd,
@@ -151,13 +151,13 @@ BEGIN
               END;
             END;
         END;
-        
+
         IF (Cmd = ^M) THEN
           IF (OnPage = 1) THEN
             OnPage := 2
           ELSE
             OnPage := 1;
-                    
+
   UNTIL (Cmd = 'Q') OR (HangUp);
 END;
 END.

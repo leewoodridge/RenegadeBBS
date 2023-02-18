@@ -47,7 +47,7 @@ VAR
   Counter1: Integer;
   RecNum: LongInt;
   BSince: Boolean;
-  
+
   FUNCTION FindOnlyOnce: Boolean;
   VAR
  {DirInfo: SearchRec;}
@@ -72,7 +72,7 @@ VAR
     FOR Counter := 2 TO 14 DO
       UpdateArray[Counter] := FALSE; { Reset }
     AnyDone := FALSE; { Reset }
-      
+
     IF (ThisUser.RealName = '') AND (General.NewUserQToggles[02] = TRUE) THEN
       UpdateArray[2] := TRUE;
       {
@@ -100,14 +100,14 @@ VAR
     IF (ThisUser.ForgotPWAnswer = '') AND (General.ForgotPWQuestion <> '') AND
        (General.NewUserQToggles[14] = TRUE) THEN { Forgot PW Answer }
       UpdateArray[14] := TRUE;
-    
+
     { LeeW: Add check for a mandatory password change here }
-    
+
       {
     IF (ThisUser. = '') AND (General.NewUserQToggles[] = TRUE) THEN
       UpdateArray[] := TRUE;
       }
-      
+
     FOR Counter := 2 TO 14 DO
       IF (UpdateArray[Counter]) AND (NOT HangUp) THEN
         BEGIN
@@ -124,7 +124,7 @@ VAR
         Update_Screen;
         (*PauseScr(FALSE); { LeeW: Testing }*)
       END;
-      
+
   END;
 
   FUNCTION CheckBirthday: Boolean;
@@ -309,7 +309,7 @@ BEGIN
              '^0User Call # ^1'+IntToStr(ThisUser.OnToday)+'^0 (Today) ^1'+IntToStr(ThisUser.LoggedOn)+'^0 (Total) ';
              {add last call?}
   SL1(TempStr);
-  
+
     BEGIN { LOGGING INFO }
       { SYSOP }
       IF (SLogSeparate IN ThisUser.SFlags) THEN
@@ -335,14 +335,14 @@ BEGIN
       IF (ChatSeparate IN ThisUser.SFlags) THEN
         TempStr := 'CHAT'+IntToStr(UserNum)+'.LOG';
       TempStr1 := TempStr1+'^0CHAT: ^1'+TempStr;
-      
+
       SL1('^0Logging '+#196#196+' '+TempStr1);
-      
+
     END;
- 
+
   {TempStr := '';
   TempStr1 := '';}
- 
+
   SaveGeneral(FALSE);
   LastError := IOResult;
 
@@ -393,7 +393,7 @@ BEGIN
         Inc(Counter);
         PrintF('LOGON'+IntToStr(Counter));
       UNTIL (Counter = 9) OR (NoFile) OR (HangUp);
-      
+
       PrintF('SL'+IntToStr(ThisUser.SL));
       PrintF('DSL'+IntToStr(ThisUser.DSL));
 
@@ -410,13 +410,13 @@ BEGIN
 
     IF (General.LogonQuote) AND (NOT HangUp) THEN
       RGQuote('LGNQUOTE');
-      
+
     IF (General.LogonOneLiners) AND (NOT HangUp) THEN { LeeW: Added -- order? }
       OneLiners;
-    
+
     IF (General.LogonLastCallers) AND (NOT HangUp) THEN { LeeW: Added -- order? }
       TodaysCallers(0,'');
-      
+
     IF (CheckBirthday) AND (NOT HangUp) THEN
       BEGIN
         ShowBDay(IntToStr(UserNum));
@@ -441,15 +441,15 @@ BEGIN
       END;
 
     {NL;}
-    
+
     IF (General.AutoMInLogon) AND (NOT HangUp) THEN
       ReadAutoMsg;
-      
+
     {NL;}
-    
+
     IF (General.YourInfoInLogon) AND (NOT HangUp) THEN
       PrintF('YOURINFO');
-      
+
     {NL;}
 
     LIL := 0;
@@ -462,10 +462,10 @@ BEGIN
         {ELSE
           NL};
       END;
-      
+
     {-}
-    
-    IF ((General.LogonVoting) OR (General.ForceVoting)) AND (UnVotedTopics > 0) AND NOT (RVoting IN ThisUser.ACFlags) 
+
+    IF ((General.LogonVoting) OR (General.ForceVoting)) AND (UnVotedTopics > 0) AND NOT (RVoting IN ThisUser.ACFlags)
     AND NOT (HangUp) THEN
       BEGIN
         (*
@@ -493,9 +493,9 @@ BEGIN
         ELSE
           SysOpLog('Declined to vote on unvoted topics');
       END;
-    
+
     {-}
-    
+
     IF Exist(General.DataPath+'BATCHDL.DAT') AND (NOT HangUp) THEN
       BEGIN
         Assign(BatchDLFile,General.DataPath+'BATCHDL.DAT');
@@ -561,7 +561,7 @@ BEGIN
       PauseScr(FALSE); {LeeW: ???}
 *)
     {NL;}
-    
+
     Update_Screen;
   END;
 
@@ -586,7 +586,7 @@ BEGIN
           ReadMail;
       END;
 
-  IF (General.PasswordChange > 0) AND 
+  IF (General.PasswordChange > 0) AND
      ((DayNum(DateStr) - ThisUser.PasswordChanged) >= General.PasswordChange) AND (NOT HangUp) THEN
       BEGIN
         PrintF('PWCHANGE');
@@ -676,20 +676,20 @@ BEGIN
       SL1('^8[DISCONNECTED]^0');
 }
       {SL1('^2Read: ^1'+IntToStr(PublicReadThisCall)+'^2 / Time on: ^1'+IntToStr(TotTimeOn));}
-      
+
       SL1('^0Time: ^1'+IntToStr(TotTimeOn)+{' ('+IntToStr(ThisUser.TLToday)+'Left)'+}
           '^5 | ^0Posted: ^1'+IntToStr(PublicPostsToday)+'^5 | ^0Read: ^1'+IntToStr(PublicReadThisCall)+
           '^5 | ^0DL: ^1'+IntToStr(DownloadsToday)+' ^0(^1'+IntToStr(DownloadKBytesToday)+'^0 kB)'+
           '^5 | ^0UL: ^1'+IntToStr(UploadsToday)+' ^0(^1'+IntToStr(UploadKBytesToday)+'^0 kB)');
           { Stats for this call }
-      
+
     END;
-    
+
   LastError := IOResult;
 
   {SL1('^1Logoff node '+IntToStr(ThisNode)+' ^1'+'['+Dat+']');}
   SL1(' ^8* ^5Logoff Node ^4'+IntToStr(ThisNode)+'^5 '+'[ ^4'+Dat+'^5 ]^0');
-  
+
   SL1('^0-'); { Separator }
 
   Assign(HistoryFile,General.DataPath+'HISTORY.DAT');
@@ -738,7 +738,7 @@ BEGIN
     Inc(History.DK,DownloadKBytesToday)
   ELSE
     History.DK := 2147483647;
-    
+
   IF (Exist(StartDir+'\CRITICAL.ERR')) THEN
     BEGIN
       Inc(History.Errors);
@@ -750,12 +750,12 @@ BEGIN
     {
       CASE ComPortSpeed OF
         300 : Inc(History.UserBaud[1])
-        
+
         ELSE
           Inc(History.UserBaud[0]);
       END;
     }
-    
+
       {LeeW: Convert this to CASE statement? Add telnet? }
       IF (ComportSpeed = 300) THEN
         Inc(History.UserBaud[1])
@@ -926,7 +926,7 @@ BEGIN
                 Assign(F,General.LogsPath+'SYSOP'+IntToStr(Counter)+'.LOG');
                 Rename(F,General.LogsPath+'SYSOP'+IntToStr(Counter + 1)+'.LOG');
               END;
-              
+
           SL1('');
           SL1('^5ÄÄ ^4END OF DAY STATS ^5ÄÄ'); {LeeW: Added}
           SL1('');
@@ -940,7 +940,7 @@ BEGIN
           SL1('^0Uploads         : ^1'+IntToStr(History.Uploads)+'^0 / ^1'+ConvertKB(History.UK,FALSE));
           SL1('^0Critical Errors : ^1'+IntToStr(History.Errors));
           SL1('');
-          
+
           FillChar(History,SizeOf(History),0);
           History.Date := Date2PD(DateStr);
 

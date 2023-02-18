@@ -78,7 +78,7 @@ BEGIN
       BEGIN
         Abort := FALSE;
         Next := FALSE;
-        ConfigHeader('Main BBS Configuration',0);
+        ConfigHeader('Main BBS Configuration',0,0);
         PrintACR(PadLeftStr('^0(^1A^0) BBS Name          : ^1'+General.BBSName,79));
         PrintACR(PadLeftStr('^0(^1B^0) BBS Phone/ Telnet : ^1'+General.BBSPhone+'^0 / ^1'+Liner.NodeTelnetURL,79));
         PrintACR(PadLeftStr('^0(^1C^0) SysOps Name       : ^1'+General.SysOpName,39)+' '+
@@ -138,7 +138,7 @@ BEGIN
                 MinBaudDLLowTime,MinBaudDLHiTime);
           'I' : BEGIN
                   REPEAT
-                    ConfigHeader('System Passwords',0);
+                    ConfigHeader('System Passwords',0,0);
                     PrintACR('^0(^1A^0) SysOp Password             : ^1[NOT SHOWN]');
                     PrintACR('^0(^1B^0) New User Password          : ^1[NOT SHOWN]');
                     PrintACR('^0(^1C^0) Min Baud Override Password : ^1[NOT SHOWN]');
@@ -158,7 +158,7 @@ BEGIN
           'J' : InputByte('%LFNew pre-event warning time',EventWarningTime,[InteractiveEdit,NumbersOnly],0,255,Changed);
           'K' : BEGIN
                   REPEAT
-                    ConfigHeader('System Menus',0);
+                    ConfigHeader('System Menus',0,0);
                     PrintACR('^0(^11^0) Global Commands      : ^1'+IntToStr(General.GlobalMenu));
                     PrintACR('^0(^12^0) Default Start        : ^1'+IntToStr(General.AllStartMenu));
                     PrintACR('^0(^13^0) Shuttle Logon        : ^1'+IntToStr(General.ShuttleLogonMenu));

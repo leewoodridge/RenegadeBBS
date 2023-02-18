@@ -251,7 +251,7 @@ BEGIN
   WriteLn(' ------------------- |___/ ---------------');
   WriteLn(' B U L L E T I N   B O A R D   S Y S T E M');
   WriteLn(' -----------------------------------------');
-  
+
   GetIntVec($14,Interrupt14);
   FileMode := 66;
   ExitSave := ExitProc;
@@ -261,12 +261,12 @@ BEGIN
   UserOn := FALSE;
   UserNum := 0;
   GetDir(0,StartDir);
-  
+
   DATFilePath := GetEnv('RENEGADE');
   IF (DATFilePath <> '') THEN
     DATFilePath := BSlash(DATFilePath,TRUE);
-    
-  Write(' - Initializing RENEGADE.DAT ... ');   
+
+  Write(' - Initializing RENEGADE.DAT ... ');
   Assign(ByteFile,DATFilePath+'RENEGADE.DAT');
   Reset(ByteFile);
   LastError := IOResult;
@@ -293,7 +293,7 @@ BEGIN
   ReadP; { Read command-line parameters }
 
   Write(' - Initializing RENEGADE.OVR ... ');
-  OvrFileMode := 0; { Read only }  
+  OvrFileMode := 0; { Read only }
   OvrInit('RENEGADE.OVR');
   IF (OvrResult <> OvrOK) THEN
     BEGIN
@@ -478,11 +478,11 @@ BEGIN
             NeedToHangUp := TRUE;
       END;
   UNTIL (DoneDay);
-  
+
   SL1('');
   SL1('^0Renegade '+General.Version+' Node ^1'+IntToStr(ThisNode)+'^0 Shut Down On ^1'+Dat+'^0'); {LeeW: Added}
   SL1('');
-  
+
   Window(1,1,MaxDisplayCols,MaxDisplayRows);
   TextBackGround(0);
   TextColor(7);
@@ -497,7 +497,7 @@ BEGIN
         DoPhoneHangUp(FALSE);
       WriteLn('Done!');
     END;
-  
+
   Write(' - Releasing memory ... ');
   FreeMem(MemCmd,MaxCmds * SizeOf(MemCmdRec));
   IF (MCIBuffer <> NIL) THEN
@@ -507,8 +507,8 @@ BEGIN
       IF (MemEventArray[Counter1] <> NIL) THEN
         Dispose(MemEventArray[Counter1]);
   WriteLn('Done!');
-        
-  
+
+
   IF (General.Multinode) THEN
     BEGIN
       Write(' - Merging log files ... ');
@@ -532,27 +532,27 @@ BEGIN
       Kill(TempDir+'TEMPLOG.'+IntToStr(ThisNode));
       WriteLn('Done!');
     END;
-     
+
   IF (NewEchoMail) AND (ExitErrorLevel = 0) THEN {LeeW: Shouldn't this check against ExitNormal instead of 0?}
     ExitErrorLevel := 2;
-    
+
   Write(' - Resetting node status ... ');
   LoadNode(ThisNode);
   Noder.Status := [];
   SaveNode(ThisNode);
   WriteLn('Done!');
-  
+
   Write(' - Purging temporary directory ... ');
   PurgeDir(TempDir,FALSE);
   IF (LastError = 0) THEN
     WriteLn('Done!')
   ELSE
     WriteLn('Failure!'); { LeeW: Give more info }
-  
+
   Write(' - Unloading communications driver ... ');
   Com_DeInstall;
   WriteLn('Done!');
-  
+
   WriteLn('');
   WriteLn('Exiting with errorlevel ',ExitErrorLevel);
   WriteLn('');

@@ -17,7 +17,7 @@
                 - Changed menu options order, aesthetic redesign
                 - Indent, Clean-up, etc
                 - updated color codes to new scheme format
-                - can now scroll through the nodes with "[" and "]", 
+                - can now scroll through the nodes with "[" and "]",
                 - Added "?" help cmd
                 - Moving fore and back in nodes or quitting will prompt you to save if you made changes
                 - Advancing to a node that doesn't exist will now prompt to add.
@@ -122,7 +122,7 @@ BEGIN
           BEGIN
             Abort := FALSE;
             Next := FALSE;
-            ConfigHeader('Modem / Node #'+IntToStr(NodeNum)+' Configuration',0);
+            ConfigHeader('Modem / Node #'+IntToStr(NodeNum)+' Configuration',0,0);
             PrintACR(PadLeftStr('^0(^1A^0) Com Port         : ^1'+IntToStr(ComPort),39)+
                      PadLeftStr('^0(^1B^0) IRQ              : ^1'+IRQ,39));
             PrintACR(PadLeftStr('^0(^1C^0) I/O Address      : ^1'+Address,39)+
@@ -173,7 +173,7 @@ BEGIN
                   Messages(9,0,'') {"This can only be changed locally"}
                 ELSE
                   BEGIN
-                    ConfigHeader('Node '+IntToStr(NodeNum)+' Maximum Baud Rate',0);
+                    ConfigHeader('Node '+IntToStr(NodeNum)+' Maximum Baud Rate',0,0);
                     Print('^0(^11^0) 2400');
                     Print('^0(^12^0) 9600');
                     Print('^0(^13^0) 19200');
@@ -205,7 +205,7 @@ BEGIN
                             [NumbersOnly,InterActiveEdit],0,255,Changed);
           'J' : BEGIN
                   REPEAT
-                    ConfigHeader('Modem Command Strings',0);
+                    ConfigHeader('Modem Command Strings',0,0);
                     PrintACR('^0(^11^0) Modem Init     : ^1'+Init);
                     PrintACR('^0(^12^0) Modem Answer   : ^1'+Answer);
                     PrintACR('^0(^13^0) Modem Hang Up  : ^1'+HangUp);
@@ -223,7 +223,7 @@ BEGIN
                 END;
           'K' : BEGIN
                   REPEAT
-                    ConfigHeader('Modem Result Codes',0);
+                    ConfigHeader('Modem Result Codes',0,0);
                     PrintACR(PadLeftStr('^0(^1A^0) NO CARRIER    : ^1'+NoCarrier,39)+
                              PadLeftStr('^0(^1B^0) RELIABLE      : ^1'+Reliable,39));
                     PrintACR(PadLeftStr('^0(^1C^0) OK            : ^1'+Ok,39)+
@@ -266,7 +266,7 @@ BEGIN
                          LogonACS,(SizeOf(LogonACS)-1),[InterActiveEdit],Changed);
           'M' : InputPath('^2%LFEnter path to write door interface files to:%LF',
                           DoorPath,TRUE,FALSE,Changed);
-          ']', '[', 'Q' : 
+          ']', '[', 'Q' :
                 BEGIN
                   IF (Changed) THEN
                     IF PYNQ('^2%LFSave settings for node '+IntToStr(NodeNum)+'? ',0,TRUE) THEN
@@ -290,7 +290,7 @@ BEGIN
                       ELSE
                         Inc(NodeNum);
                     END
-                  ELSE IF (Cmd = '[') AND (NodeNum > 1) THEN 
+                  ELSE IF (Cmd = '[') AND (NodeNum > 1) THEN
                     BEGIN
                       IF NOT Exist(General.DataPath+'NODE'+IntToStr(NodeNum-1)+'.DAT') THEN
                         BEGIN
@@ -310,6 +310,6 @@ BEGIN
                 END;
         END;
       END;
-  UNTIL (Cmd = 'Q') OR (HangUp);  
+  UNTIL (Cmd = 'Q') OR (HangUp);
 END;
 END.

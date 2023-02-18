@@ -1055,7 +1055,7 @@ BEGIN
     BEGIN
       LoadHeader(MsgNum,MHeader);
       IF (LastReadRecord.LastRead < MHeader.Date) AND NOT (MDeleted IN MHeader.Status) THEN {leew: added mdeleted}
-      
+
       { add this instead
           CantBeSeen := (NOT MsgSysOp) AND ((UnValidated IN MHeader.Status) OR (MDeleted IN MHeader.Status) OR
                   ((Prvt IN MHeader.Status) AND NOT (ToYou(MHeader) OR FromYou(MHeader))));

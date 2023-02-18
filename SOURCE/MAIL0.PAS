@@ -791,7 +791,7 @@ BEGIN
             SetC(MemMsgArea.Tear_Color)
           ELSE
             SetC(MemMsgArea.Text_Color);
-            
+
           PrintACR(MsgTxtStr);
         UNTIL (TempTextSize >= MHeader.TextSize) OR (Abort) OR (HangUp);
       END;

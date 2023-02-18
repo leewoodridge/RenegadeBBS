@@ -24,11 +24,11 @@ PROCEDURE DLX(FileInfo: FileInfoRecordType; DirFileRecNum: Integer; VAR Transfer
 FUNCTION DLInTime: Boolean;
 FUNCTION BatchDLQueuedFiles(TransferFlags: TransferFlagSet): Boolean;
 PROCEDURE DL(CONST FileName: Str12; TransferFlags: TransferFlagSet);
-PROCEDURE GetFileDescription(VAR FileInfo: FileInfoRecordType; VAR ExtendedArray: ExtendedDescriptionArray; 
+PROCEDURE GetFileDescription(VAR FileInfo: FileInfoRecordType; VAR ExtendedArray: ExtendedDescriptionArray;
                              VAR NumExtDesc: Byte; VAR ToSysOp: Boolean);
 PROCEDURE WriteFV(FileInfo: FileInfoRecordType;DirFileRecNum: Integer; ExtendedArray: ExtendedDescriptionArray);
 PROCEDURE UpdateFileInfo(VAR FileInfo: FileInfoRecordType; CONST FN: Str12; VAR GotPts: Integer);
-PROCEDURE ArcStuff(VAR Ok,Convt: Boolean; VAR FSize,ConvTime: LongInt; ITest: Boolean; CONST FilePath: AStr; 
+PROCEDURE ArcStuff(VAR Ok,Convt: Boolean; VAR FSize,ConvTime: LongInt; ITest: Boolean; CONST FilePath: AStr;
                    VAR FileName: Str12; VAR Descr: AStr);
 PROCEDURE DownloadFile(FileName: Str12; TransferFlags: TransferFlagSet);
 PROCEDURE UploadFile;
@@ -1392,7 +1392,7 @@ BEGIN
           ELSE
             REPEAT
               UL(DirInfo.Name,TRUE,AddULBatch);
-              FindNext(DirInfo);    
+              FindNext(DirInfo);
 UNTIL (DOSError <> 0) OR (Abort) OR (HangUp);
         END;
       END;
@@ -1416,7 +1416,7 @@ BEGIN
 
   FillChar(LightBarArray,SizeOf(LightBarArray),0);
   LightBarCounter := 0;
-  
+
   IF (ShowScan) THEN
     ScanChar := lRGLngStr(55,TRUE);
 

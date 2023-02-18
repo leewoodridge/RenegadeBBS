@@ -22,7 +22,7 @@
             - Removed DisplayKey param from InputChar (was unused)
             - Replaced all calls to LOneK to InputChar (UGH!)
  04/26/2022 - Cleaning up InputPath
- 
+
 todo:
 add inputvalidation for inputformatted, maybe have it pass '' if incomplete? --PARAMS for AllowIncomplete
 inputflags : add different types like dir, filename etc, notabortable, askblank
@@ -64,7 +64,7 @@ call common.makedir???
 VAR
   TempDirPath: Str40;
   CurDir: PathStr;
-  Counter: Byte;  
+  Counter: Byte;
 BEGIN
   REPEAT
     TempDirPath := DirPath;
@@ -102,7 +102,7 @@ BEGIN
           BEGIN
             ChDir(CurDir);
             TempDirPath := BSlash(TempDirPath,TRUE);
-            IF (CreateDir) AND (Length(TempDirPath) > 3) AND (NOT ExistDir(TempDirPath)) AND 
+            IF (CreateDir) AND (Length(TempDirPath) > 3) AND (NOT ExistDir(TempDirPath)) AND
                PYNQ('%LFDirectory does not exist, create it? ',0,FALSE) THEN
                     FOR Counter := 2 to Length(TempDirPath) DO
                       IF (TempDirPath[Counter] = '\') THEN
@@ -122,7 +122,7 @@ BEGIN
           END;
       END;
   UNTIL (TempDirPath <> '') OR (AllowExit) OR (HangUp);
-  
+
   {IF (TempDirPath <> '') THEN
     TempDirPath := BSlash(TempDirPath,TRUE);}
   IF (TempDirPath <> DirPath) THEN
@@ -389,16 +389,16 @@ VAR
   SaveInputStr: AStr;
 BEGIN
   Changed := FALSE;
-  Prt(S);  
+  Prt(S);
   SaveInputStr := InputStr;
   InputMain(SaveInputStr,MaxLen,InputFlags);
-  
+
   IF (SaveInputStr = '') OR (Length(SQOutSp(SaveInputStr)) = 0) THEN
     IF NOT (NoBlankPrompt IN InputFlags) AND PYNQ('Blank String?',0,FALSE) THEN
       SaveInputStr := ''
     ELSE
-	  IF (SaveInputStr = '') THEN
-		SaveInputStr := InputStr;
+      IF (SaveInputStr = '') THEN
+        SaveInputStr := InputStr;
 
   IF (SaveInputStr <> InputStr) THEN
     Changed := TRUE;
@@ -459,10 +459,10 @@ BEGIN
   IF (AllowNegative IN InputFlags) THEN
     Inc(MaxLen); {For the "-"}
   IF (NOT (NoInputField IN InputFlags)) AND (OkANSI) THEN
-    MPL(MaxLen); 
+    MPL(MaxLen);
   IF (IsPassword IN InputFlags) THEN
     Echo := FALSE;
-    
+
   FirstKey := FALSE;
   IF (NOT (InterActiveEdit IN InputFlags)) OR (IsPassword IN InputFlags) OR NOT (OkANSI OR OkAvatar) THEN
     BEGIN
@@ -496,7 +496,7 @@ BEGIN
 
     IF (FirstKey) AND (C = 32) THEN { SPACE - Clears field }
       C := 24;
-    
+
     IF (C = 27) AND (AllowEscape IN InputFlags) THEN { ESC - Aborts }
       BEGIN
         S := SaveS;
@@ -609,9 +609,9 @@ BEGIN
     END;
     S[0] := Chr(Cl);
   UNTIL (c = 13) OR (HangUp);
-  
+
   UserColor(0);
-  
+
   {
   IF ((Redisplay IN InputFlags) AND (S = '')) THEN
     BEGIN
@@ -619,13 +619,13 @@ BEGIN
       MPrompt(S);
     END;
   }
-    
+
   IF (IsPassword IN InputFlags) THEN
     Echo := TRUE;
-    
+
   IF (NOT (NoLineFeed IN InputFlags)) THEN
     NL;
-    
+
   MLC := '';
   SetCursor(FALSE);
 END;

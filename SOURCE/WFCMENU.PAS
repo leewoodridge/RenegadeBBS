@@ -418,10 +418,10 @@ BEGIN
           Write(PadRightStr(TimeStr,8));
           GoToXY(68,1);
           Write(DateStr);
-          
+
         { GoToXY(59,1);
           Write('V'+Build); }
-          
+
           Assign(HistoryFile,General.DataPath+'HISTORY.DAT');
           IF (NOT Exist(General.DataPath+'HISTORY.DAT')) THEN
             BEGIN
@@ -496,7 +496,7 @@ BEGIN
               IF (L < General.MinSpaceForUpload) OR (L < General.MinSpaceForPost) THEN
                 TextAttr := 156;
              Write(PadRightInt(Errors,5));
-             
+
            { Write(PadRightStr(ConvertKB(L,FALSE),8));
              TextAttr := 19; }
 

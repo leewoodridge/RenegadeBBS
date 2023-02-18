@@ -11,8 +11,8 @@
  05/25/2022 - Added input validation to address
  05/30/2022 - Added separate user editor prompts (EXCEPT mailbox--thats in SYSOP3)
  06/05/2022 - Exo removed print forgot pw question
- 
- 
+
+
 --
 TODO:
 minor aesthetic work, mostly for user editor prompts
@@ -74,15 +74,15 @@ VAR
       END
     ELSE
       Prt('Enter New User Name: '); { Prompt for user editor }
-      
+
     InputMain(TmpName,(SizeOf(User.Name)-1),[CapAll]);
     WHILE (TmpName[1] IN [' ','0'..'9']) AND (Length(TmpName) > 0) DO
       Delete(TmpName,1,1);
     WHILE (TmpName[Length(TmpName)] = ' ') DO
       Dec(TmpName[0]);
-      
+
     { Invalid checks start here }
-      
+
     IF ((Pos(' ',TmpName) = 0) AND (How <> 3) AND NOT (General.AllowAlias)) THEN
       BEGIN
         Done1 := FALSE;
@@ -112,7 +112,7 @@ VAR
           END
         ELSE
           Done1 := TRUE;
-        
+
         IF (How<>3) THEN { Don't check for blacklisted names if in user editor }
           BEGIN
             Assign(TextFile,General.MiscPath+'TRASHCAN.TXT');
@@ -140,7 +140,7 @@ VAR
               END;
           END;
       END;
-    
+
     IF (Done1) THEN
       BEGIN
         IF (How = 2) THEN
@@ -175,7 +175,7 @@ VAR
           Buf := IEMSIRec.UserName;
           IEMSIRec.UserName := '';
         END;
-        
+
     IF (How<>3) THEN
       lRGLngStr(197,FALSE) {"Enter real name"}
     ELSE
@@ -185,7 +185,7 @@ VAR
       Delete(TmpRealName,1,1);
     WHILE (TmpRealName[Length(TmpRealName)] = ' ') DO
       Dec(TmpRealName[0]);
-    
+
     IF (TmpRealName='') OR ((Pos(' ',TmpRealName) = 0) AND (How <> 3)) THEN
       BEGIN
         Done1 := FALSE;
@@ -195,7 +195,7 @@ VAR
             SL1('Invalid real name: '+TmpRealName+' (single word)' );
           END;
       END
-    ELSE 
+    ELSE
       BEGIN
         UNum := SearchUser(TmpRealName,TRUE);
         IF (UNum > 0) AND (UNum <> UserNum) THEN
@@ -220,7 +220,7 @@ VAR
           END
         ELSE
           User.RealName := TmpRealName;
-      END;    
+      END;
   END;
 
   PROCEDURE AskCountry;
@@ -245,7 +245,7 @@ VAR
   PROCEDURE AskAddress;
   VAR
     TmpAddress: STRING[30];
-    
+
     FUNCTION AddressOK(S: STRING): Boolean;
     VAR
       I: Integer;
@@ -268,17 +268,17 @@ VAR
       ELSE
         AddressOK := FALSE;
     END;
-    
+
   BEGIN
     TmpAddress := User.Street;
-    
+
     IF (How<>3) THEN
       lRGLngStr(199,FALSE) {"Enter address"}
     ELSE
       Prompt('Enter New Address: '); { Prompt for user editor }
-    
+
     InputString('',TmpAddress,(SizeOf(User.Street)-1),[CapWords],Changed);
-    
+
     IF AddressOK(TmpAddress) OR (How=3) THEN { Check for 1 letter, 1 number, 1 space }
       BEGIN
         IF (How=2) AND (User.Street<>TmpAddress) THEN
@@ -296,7 +296,7 @@ VAR
     IF ((How <> 1) OR (TmpCountryCode=0)) AND (How<>3) THEN
       AskCountry;
     {/}
-    
+
     IF (How = 3) THEN { User editor }
       BEGIN
         Prt('Enter New City & State: '); { Prompt for user editor }
@@ -306,7 +306,7 @@ VAR
         Done1 := TRUE;
         Exit;
       END;
-    
+
     CASE TmpCountryCode OF
       1, 2  : BEGIN
                 lRGLngStr(200,FALSE); {"Enter city name"}
@@ -350,9 +350,9 @@ VAR
         AskCountry;
         NL;
       END;
-      
+
     TmpZipCode := User.ZipCode;
-      
+
     CASE TmpCountryCode OF
       1 : BEGIN
             IF (How<>3) THEN
@@ -405,7 +405,7 @@ VAR
       Prompt('Enter New Phone Number: ') { Prompt for user editor }
     ELSE
       lRGLngStr(205,FALSE); {"Enter phone number"}
-      
+
     CASE TmpCountryCode OF
       1, 2 :  BEGIN
                 InputFormatted('',TmpPhone,'(###)###-####',(How <> 1));
@@ -416,7 +416,7 @@ VAR
                 InputMain(TmpPhone,SizeOf(User.Ph)-1,[NumbersOnly]);
               END;
     END;
-    IF (TmpPhone <> '') AND ((TmpCountryCode = 1) OR (TmpCountryCode = 2)) OR 
+    IF (TmpPhone <> '') AND ((TmpCountryCode = 1) OR (TmpCountryCode = 2)) OR
        ((TmpCountryCode = 3) AND (Length(TmpPhone) > 5)) THEN
       BEGIN
         IF (How = 2) AND (User.Ph <> TmpPhone) THEN
@@ -436,7 +436,7 @@ VAR
     BadDate: Boolean;
   BEGIN
     BadDate := FALSE;
-    
+
     TmpDate := PD2Date(User.BirthDate); {Why?}
     GetYear(CurYear);
     IF (How = 1) AND (IEMSIRec.BDate <> '') THEN
@@ -444,14 +444,14 @@ VAR
         Buf := IEMSIRec.BDate;
         IEMSIRec.BDate := '';
       END;
-      
+
       IF (How=3) THEN
         Prompt('^2Enter birth date: ') { For user editor }
       ELSE
         lRGLngStr(206,FALSE); {"Enter date of birth"}
-      
+
       InputFormatted('',TmpDate,'##/##/####',(How<>1));
-      
+
       IF (TmpDate <> '') AND NOT (HangUp) THEN
         BEGIN
           TmpMonth := StrToInt(Copy(TmpDate,1,2));
@@ -473,7 +473,7 @@ VAR
             BadDate := TRUE;
           IF (TmpYear < (CurYear - 100)) THEN
             BadDate := TRUE;
-          
+
           IF (BadDate) THEN
             BEGIN
               IF (How <> 3) THEN { Suppress error in user editor }
@@ -497,7 +497,7 @@ VAR
       Prompt('^2Enter Gender [(^1M^2)ale,(^1F^2)emale]: ') { For user editor }
     ELSE
       lRGLngStr(207,FALSE); {"Are you (M)ale or (F)emale?"}
-  
+
     IF (How=1) THEN
       BEGIN
         User.Sex := #0;
@@ -645,10 +645,10 @@ VAR
     Exclude(User.ACFlags,VT100);
     Exclude(User.SFlags,RIP);
   { Exclude(User.SFlags,AutoDetect); }
-    
+
     IF (How<>3) THEN
       PrintF('TERMINAL');
-      
+
     IF (How = 3) THEN
       Prompt('^2Enable ANSI terminal emulation?') { For user editor }
     ELSE
@@ -658,17 +658,17 @@ VAR
       Include(User.ACFlags,ANSI)
     ELSE
       Exclude(User.ACFlags,ANSI);
-      
+
     IF (How = 3) THEN
       Prompt('^2Auto-detect terminal emulation at logon?') { For user editor }
     ELSE
       lRGLngStr(214,FALSE); {"Auto-detect?"}
-      
-    IF PYNQ('',0,TRUE) THEN 
+
+    IF PYNQ('',0,TRUE) THEN
       Include(User.SFlags,AutoDetect)
     ELSE
       Exclude(User.SFlags,AutoDetect);
-    
+
     IF (ANSI IN User.ACFlags) THEN
       Include(User.SFlags,FSEditor)
     ELSE
@@ -829,7 +829,7 @@ VAR
         Done1 := TRUE;
       END;
   END;
-  
+
   PROCEDURE ToggleHotKey;
   BEGIN
     IF (How = 1) THEN
@@ -855,7 +855,7 @@ VAR
         Done1 := TRUE;
       END;
   END;
-  
+
   PROCEDURE ToggleExpert;
   BEGIN
     IF (How = 1) THEN
@@ -956,11 +956,11 @@ VAR
           END;
       END;
   END;
-  
+
   PROCEDURE ToggleMailBox;
   VAR
     OpenString: STRING[65];
-    
+
     PROCEDURE ForwardMail;
     VAR
       TmpUser: UserRecordType; { The user we're forwarding to }
@@ -981,21 +981,21 @@ VAR
           ELSE
             BEGIN
               User.ForUsr := TmpUNum;
-              
+
               LangStringArray[0] := Caps(TmpUser.Name);
               LangStringArray[1] := IntToStr(TmpUNum);
-              
+
               lRGLngStr(177,FALSE); {"Mail is being forwarded to"}
               SysOpLog('Forwarding mail to: '+Caps(TmpUser.Name)+' #'+IntToStr(TmpUNum));
             END;
         END;
     END;
-    
+
   BEGIN
     IF (User.ForUsr <> 0) THEN
       lRGLngStr(225,FALSE) {"Open mailbox?" Mail is being forwarded }
     ELSE
-      lRGLngStr(226,FALSE); {"Open mailbox?" Mail is not being forwarded }      
+      lRGLngStr(226,FALSE); {"Open mailbox?" Mail is not being forwarded }
     IF (NoMail IN User.ACFlags) THEN
       BEGIN
         IF PYNQ('',0,FALSE) THEN
@@ -1025,12 +1025,12 @@ VAR
       BEGIN
         lRGLngStr(175,FALSE); { Mail forwarding info }
         lRGLngStr(228,FALSE); {"Forward mail?"}
-        IF PYNQ('',0,FALSE) THEN 
+        IF PYNQ('',0,FALSE) THEN
           ForwardMail;
       END;
     Done1 := TRUE;
   END;
-  
+
   PROCEDURE CfgQWK;
   VAR
     TmpDefArcType: Char;
@@ -1050,18 +1050,18 @@ VAR
         END;
     IF (How <> 1) THEN
       ValidKeys := ValidKeys+^M; { Allow abort }
-      
+
     IF (How<>3) THEN
       InputChar(lRGLngStr(230,TRUE),TmpDefArcType,ValidKeys,[CapAll]) {"Select archive format"}
     ELSE
       InputChar('Select archive format: ',TmpDefArcType,ValidKeys,[CapAll]); {"Select archive format"}
-    
+
     IF (StrToInt(TmpDefArcType) <> User.DefArcType) AND (TmpDefArcType <> ^M) THEN
       BEGIN
         User.DefArcType := StrToInt(TmpDefArcType);
       END;
     {/}
-    
+
     IF (How<>3) THEN
       BEGIN
         User.GetOwnQWK := PYNQ(lRGLngStr(231,TRUE),0,FALSE); {"Own replies?"}
@@ -1076,7 +1076,7 @@ VAR
       END;
     Done1 := TRUE;
   END;
-  
+
   { --- }
 
   PROCEDURE WW(Num: Byte);

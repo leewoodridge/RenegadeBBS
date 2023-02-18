@@ -12,9 +12,9 @@
 {   -----------------------------------------   }
 {
     [DONE]
-     - 
+     -
     [TO-DO]
-     - 
+     -
 }
 
 UNIT SysOp2N; { SysOp Macros }
@@ -28,12 +28,12 @@ IMPLEMENTATION
 USES
   Common,
   SysOp2;
-  
+
 PROCEDURE SysOpMacroConfiguration;
 VAR
   TempB: Byte;
   Cmd: Char;
-  
+
   PROCEDURE DisplayMacro(CONST S: AStr; MaxLen: Byte);
   VAR
     TempStr: AStr;
@@ -113,7 +113,7 @@ BEGIN
       BEGIN
         Abort := FALSE;
         Next := FALSE;
-        ConfigHeader('SysOp Macro Configuration',0);
+        ConfigHeader('SysOp Macro Configuration',0,0);
         FOR TempB := 0 TO 8 DO
           BEGIN
             Prompt('^0(^1'+IntToStr(TempB+1)+'^0) F'+IntToStr(TempB+1)+' Macro  : ^1');

@@ -1,14 +1,15 @@
 {$A+,B-,D-,E-,F+,I-,L-,N-,O+,R-,S+,V-}
 {
 Lee Woodridge
- 09/24/2021 - Added ConfigHeader('MENU TITLE'); procedure
- 10/21updating color codes
+ 09/24/2021 - Added ConfigHeader procedure
+ 10/21/2021 - Updating color codes
+ 02/17/2023 - Changed ConfigHeader parameters
 }
 UNIT SysOp2; { System Configuration Main Menu }
 
 INTERFACE
 
-PROCEDURE ConfigHeader(s: STRING; b: BYTE); { LeeW: Added - Standardized header for all system configuration menus }
+PROCEDURE ConfigHeader(s: STRING; b1,b2: BYTE); { LeeW: Added - Standardized header for all system configuration menus }
 PROCEDURE HL; { LeeW: Added - Horizontal line to User.LineLen ** MOVE TO COMMON??? }
 PROCEDURE SystemConfigurationEditor;
 
@@ -33,9 +34,9 @@ USES
   SysOp2M, { New User Toggles }
   SysOp2N, { SysOp Macros }
   SysOp2O; { GetSecRange }
-  
-  
-  PROCEDURE ConfigHeader(s: STRING; b: BYTE);
+
+
+  PROCEDURE ConfigHeader(s: STRING; b1,b2: BYTE);
   VAR
     PageNum: STRING[3];
   BEGIN
@@ -43,17 +44,17 @@ USES
     Prompt('^5'+#196+#243+' ^4'+s+'^5 '+#242);
     REPEAT
       Prompt(#196);
-    UNTIL WhereX = ThisUser.LineLen-8;
-    IF (b <> 0) THEN
+    UNTIL WhereX = ThisUser.LineLen-(6+Length(IntToStr(b1))+Length(IntToStr(b2)));
+    IF (b1<>0) AND (b2<>0) THEN
       BEGIN
-        PageNum := IntToStr(b);
-        Print('^5'+#243+' ^4'+PageNum[1]+'^5/^4'+PageNum[2]+'^5 '+#242#196);
+
+        Print('^5'+#243+' ^4'+IntToStr(b1)+'^5/^4'+IntToStr(b2)+'^5 '+#242#196);
       END
     ELSE
       Print(#196#196#196#196#196#196#196#196);
     NL;
   END;
-  
+
   PROCEDURE HL;
   BEGIN
     Prompt('^5');
@@ -73,7 +74,7 @@ BEGIN
       BEGIN
         Abort := FALSE;
         Next := FALSE;
-        ConfigHeader('System Configuration',0);
+        ConfigHeader('System Configuration',0,0);
         PrintACR(PadLeftStr('^0(^1A^0) Main BBS Configuration',39)+
                  PadLeftStr('^0(^1B^0) Modem/Node Configuration',39));
         PrintACR(PadLeftStr('^0(^1C^0) System ACS Settings',39)+

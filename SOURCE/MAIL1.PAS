@@ -240,7 +240,7 @@ BEGIN
                Inc(CKeyPos);
                Dec(RP);
              END;
-        ^P : IF (OkANSI OR OkAvatar) AND (CKeyPos < (StrLen - 1)) THEN 
+        ^P : IF (OkANSI OR OkAvatar) AND (CKeyPos < (StrLen - 1)) THEN
         {LeeW: This doesn't seem to work?
         prints '^#' but doesn't actually change color???}
              BEGIN
@@ -1331,12 +1331,12 @@ VAR
       TempMsgTo: Str36;
       UNum: Integer;
     BEGIN
-    
+
       IF (MsgTo1 <> '') THEN {LeeW: Quick and dirty fix for jibberish data}
         TempMsgTo := MsgTo1
       ELSE
         TempMsgTo := '';
-    
+
       lRGLngStr(34,FALSE); { Print(FString.default + ^M^J); }
       IF (Pub) AND (NOT (MAInternet IN MemMsgArea.MAFlags)) THEN
         BEGIN
@@ -1374,12 +1374,12 @@ VAR
     VAR
       TempMsgSubj: Str40;
     BEGIN
-    
+
       IF (MsgSubj1 <> '') THEN
         TempMsgSubj := MsgSubj1
       ELSE
         TempMsgSubj := '';
-    
+
       IF (MHeader.FileAttached = 0) AND (NOT CantAbort2) THEN
         BEGIN
           InputString('^2Subject: ',TempMsgSubj,40,[InteractiveEdit,NoBlankPrompt,NoLineFeed],Changed);
