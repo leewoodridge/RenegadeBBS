@@ -54,7 +54,7 @@ VAR
   FUNCTION IsActive: Str2;
   BEGIN
     IF (General.ActThreshold=0) THEN
-      EXIT
+      IsActive := ''
     ELSE IF (DaysBetween(User.LastOn,GetPackDateTime)<=General.ActThreshold) THEN
       IsActive := '^9'
     ELSE
