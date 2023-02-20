@@ -567,3 +567,23 @@ $
 $Your_Public_Msgs_Read
 %LFRead your new public messages now?
 $
+
+-------------------------- >8 --------------------------
+The following language strings have been added since version 1.3, please update your language file RGLNG.TXT accordingly and run RGLNG update utility and confirm successfull execution. Thank you!
+-------------------------- >8 --------------------------
+
+$SysOp_Available
+available
+$
+
+$SysOp_Unavailable
+unavailable
+$
+
+$Multinode_Available
+available
+$
+
+$Multinode_Unavailable
+unavailable
+$
