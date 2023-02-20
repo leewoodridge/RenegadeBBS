@@ -38,7 +38,8 @@ Lee Woodridge
  07/31/2022 - Removed usercolor cmds from prt
  02/17/2023 - Multi-node and SysOp "Available/Unavailable" strings now in language file
  02/19/2023 - MyDelay proc commented out, UNUSED
-            - Now using ConvertKB for Downloaded/Uploaded xB MCI for "1GB" instead of "1,048,576kB" -- We should probably be using this EVERYWHERE, no?
+            - Now using ConvertKB for Downloaded/Uploaded xB MCI for "1GB" instead of "1,048,576kB"
+               -- We should probably be using this EVERYWHERE, no?
 
  [NOTES]
  - messing with ANSIG/PageLength ... check pagelength for wrong positioning
