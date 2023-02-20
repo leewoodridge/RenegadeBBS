@@ -542,7 +542,7 @@ BEGIN
       'I' : InsertHistoryRecord(TempHistory,Cmd,RecNumToList);
       'M' : ModifyHistoryRecord(TempHistory,Cmd,RecNumToList);
       '?' : BEGIN
-			  NL;
+              NL;
               LCmds(20,1,'Delete History Date','Insert History Date');
               LCmds(20,1,'Modify History Date','Quit');
             END;

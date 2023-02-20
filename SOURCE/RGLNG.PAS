@@ -21,13 +21,14 @@ Lee Woodridge
  00/00/0000 - 273-274 voting
  00/00/0000 - 275 max attempts
  04/27/2022 - 276 menu command no acs
+ 02/17/2023 - 282-286 - Multi-node and SysOp availability strings
  -
- add lightbar_continuous for continue lightbar prompt
- -
-bug where if a string is empty, like:
-$TEST_STRING
-$
-it will use the NEXT STRING below instead of printing/passing blank string
+ [NOTES]
+ - add lightbar_continuous for continue lightbar prompt
+ - bug where if a string is empty, like:
+    $TEST_STRING
+    $
+    it will use the NEXT STRING below instead of printing/passing blank string
 }
 PROGRAM RGLNG;
 
@@ -50,7 +51,7 @@ VAR
   RGStrNum: LongInt;
   Done,
   Found: Boolean;
-  i: integer; {leew: added}
+  i: integer; { leew: added -- total # of strings compiled }
 
 FUNCTION AllCaps(S: STRING): STRING;
 VAR
@@ -682,6 +683,14 @@ BEGIN
                 RgStrNum := 280
               ELSE IF (S = 'YOUR_PUBLIC_MSGS_READ') THEN
                 RgStrNum := 281
+              ELSE IF (S = 'SYSOP_AVAILABLE') THEN
+                RgStrNum := 282
+              ELSE IF (S = 'SYSOP_UNAVAILABLE') THEN
+                RgStrNum := 283
+              ELSE IF (S = 'MULTINODE_AVAILABLE') THEN
+                RgStrNum := 284
+              ELSE IF (S = 'MULTINODE_UNAVAILABLE') THEN
+                RgStrNum := 285
                 {// END OF COMB }
                 (*
               ELSE IF (S = '') THEN

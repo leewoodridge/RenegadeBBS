@@ -18,31 +18,32 @@ Lee Woodridge
  11/01/2021 - Removed: RGNote, RGMain - All strings now in lRGLngStr
  11/03/2021 - moved savendescription to its proc, no need to be global
  11/04/2021 - Nested ChInKey in GetKey since its the only proc that calls it
-            - sorting funcs and procs
-            - moved input procs to COMMON3, more to do still
+            - Sorting funcs and procs ...
+            - Moved input procs to COMMON3 -- More to do still
             - dielater const/killme pointer commented out, does nothing afaik
             - %TU reporting +1 extra user. maybe counting new user config? fixed?
             - %SC reporting +1 more caller, fixed?
  11/05/2021 - Removed ReDisplay from inputflags, unused, seems useless
               Added IsPassword inputflag, masks input, replaces getpassword proc
- 11/11/2021 - removed hungup, was nonfunctional,
- 11/16/2021 - Cleaned up printf proc, fixed bug where wasnt reporting nofile correctly
-            - Cleaned up printfile, removed non-ansi files, as we're removing
+ 11/11/2021 - Removed HungUp, was nonfunctional,
+ 11/16/2021 - Cleaned up PrintF proc, fixed bug where wasnt reporting nofile correctly
+            - Cleaned up PrintFile, removed non-ANSI files, as we're removing
  11/18/2021 - Removed YN proc, now just PYNQ -- MAXLEN PARAM CAN BE REMOVED, LOTS OF FILES TO EDIT IT OUT OF
             - removed all instances of [displayvalue] from input cmds, and replaced with interactiveedit
                if interactiveedit is used and user no support ansi then it will show current value at end of prompt "...[123]"
- 11/23/2021 - increased number parameter of plural from byte to integer
- 04/15/2022 - added timestamplogs toggle
+ 11/23/2021 - Increased number parameter of plural from byte to integer
+ 04/15/2022 - Added SysOp log timestamps toggle
  04/21/2022 - Nested GetC inside SetC since it's the only proc that calls it
- 06/05/2022 - exo added %EP null pause -- LeeW: I switched to getkey because readkey don't read remote input
- 07/31/2022 - removed usercolor cmds from prt
+ 06/05/2022 - Exo added %EP null pause -- LeeW: I switched to getkey because readkey don't read remote input
+ 07/31/2022 - Removed usercolor cmds from prt
+ 02/17/2023 - Multi-node and SysOp "Available/Unavailable" strings now in language file
+ 02/19/2023 - MyDelay proc commented out, UNUSED
+            - Now using ConvertKB for Downloaded/Uploaded xB MCI for "1GB" instead of "1,048,576kB" -- We should probably be using this EVERYWHERE, no?
 
  [NOTES]
-
- messing with ansig/pagelength ... check pagelength for wrong positioning
- clean up setc/getc
- inputmessage linelen param should be 79??? or 80 ... is 78
- make avail\unavail mci string be conf through lang
+ - messing with ANSIG/PageLength ... check pagelength for wrong positioning
+ - Clean up SetC/GetC
+ - inputmessage linelen param should be 79??? or 80 ... is 78
 *)
 UNIT Common;
 
@@ -396,7 +397,7 @@ VAR
   Changed: Boolean;                    { Global changed - LeeW: Added }
 
   { Voting Variables }
-  VotingFile: FILE OF VotingRecordType; {  }
+  VotingFile: FILE OF VotingRecordType; { VOTING.DAT? }
   Topic: VotingRecordType;              {  }
   NumVotes: Byte;                       {  }
 
@@ -411,7 +412,7 @@ VAR
   ConfSystem: Boolean;                          { is the conference system enabled? }
 
   { Validation Variables }
-  ValidationFile: FILE OF ValidationRecordType; {  }
+  ValidationFile: FILE OF ValidationRecordType; { VALIDATE.DAT? }
   Validation: ValidationRecordType;             {  }
   NumValKeys: Byte;                             {  }
   ValKeys: ValidationKeyType;                   {  }
@@ -440,7 +441,7 @@ VAR
   NumSchemes: Integer;           {  }
 
   { Event Variables }
-  EventFile: FILE OF EventRecordType; {  }
+  EventFile: FILE OF EventRecordType; { EVENTS.DAT? }
   MemEventArray:                      {  }
     ARRAY [1..MaxEvents] OF ^EventRecordType;
   Event: EventRecordType;             {  }
@@ -468,7 +469,7 @@ VAR
   NewScanFileArea: Boolean;                 { New scan this base? }
 
   { Batch Download Variables }
-  BatchDLFile: FILE OF BatchDLRecordType; {  }
+  BatchDLFile: FILE OF BatchDLRecordType; { BATCHDL.DAT? }
   BatchDL: BatchDLRecordType;             {  }
   NumBatchDLFiles: Byte;                  { # files IN DL batch queue }
   BatchDLSize,                            {  }
@@ -476,13 +477,13 @@ VAR
   BatchDLTime: LongInt;                   {  }
 
   { Batch Upload Variables }
-  BatchULFile: FILE OF BatchULRecordType; {  }
+  BatchULFile: FILE OF BatchULRecordType; { BATCHUL.DAT? }
   BatchULF: FILE;                         {  }
   BatchUL: BatchULRecordType;             {  }
   NumBatchULFiles: Byte;                  { # files IN UL batch queue }
 
   { Message Variables }
-  EmailFile: FILE OF MessageAreaRecordType;   {  }
+  EmailFile: FILE OF MessageAreaRecordType;   { MEMAIL.DAT? }
   MsgAreaFile: FILE OF MessageAreaRecordType; { MBASES.DAT }
   MemMsgArea: MessageAreaRecordType;          { MsgArea IN memory }
   MsgHdrF: FILE OF MHeaderRec;                { *.HDR }
@@ -497,7 +498,7 @@ VAR
   Msg_On: Word;                               { current message being Read }
 
   { Menu Variables }
-  MenuFile: FILE OF MenuRec; {  }
+  MenuFile: FILE OF MenuRec; { MENUS.DAT? }
   MenuR: MenuRec;            {  }
   MemMenu: MemMenuRec;       { Menu information }
   MemCmd: MemCmdPointer;     { Command information }
@@ -4342,7 +4343,7 @@ BEGIN
                         END;
                     }
                 { 'H' : Add := PHours('Always allowed',General.DLLowTime,General.DLHiTime); }
-                  'K' : Add := FormatNumber(DK);
+                  'K' : Add := {FormatNumber}ConvertKB(DK,FALSE);
                   'L' : Add := FormatNumber(Downloads);
                   'S' : Add := IntToStr(DSL);
                   'T' : BEGIN
@@ -4450,14 +4451,14 @@ BEGIN
                           Add := '0';
                 END;
           'O' : CASE UpCase(S[Index + 2]) OF
-                  '1' : IF (RIP IN SFlags) THEN
+                  '1' : {IF (RIP IN SFlags) THEN
                           Add := 'RIP'
                         ELSE IF (Avatar IN ACFlags) THEN
                           Add := 'Avatar'
-                        ELSE IF (ANSI IN ACFlags) THEN
+                        ELSE} IF (ANSI IN ACFlags) THEN
                           Add := 'ANSI'
-                        ELSE IF (VT100 IN ACFlags) THEN
-                          Add := 'VT-100'
+                        {ELSE IF (VT100 IN ACFlags) THEN
+                          Add := 'VT-100'}
                         ELSE
                           Add := 'None';
                   '2' : Add := IntToStr(LineLen)+'x'+IntToStr(PageLen);
@@ -4474,7 +4475,8 @@ BEGIN
                           Add := 'Open';
                   '9' : Add := ShowOnOff(Color IN ACFlags);
                   'L' : Add := ShowOnOff(LightBars in ThisUser.SFlags);  {LeeW: Added -- all lightbars combined to 1 now }
-                  'N' : Add := ShowOnOff(NAvail IN NodeR.Status); {LeeW: Can we make this say 'Available'/'Not Available'?}
+                  'N' : Add := AOnOff((NAvail IN NodeR.Status),lRGLngStr(284,TRUE),lRGLngStr(285,TRUE));
+                  { ^ "Available/Unavailable"}
                   'Z' : Add := General.FileArcInfo[ThisUser.DefArcType].EXT;
 
                    END;
@@ -4520,7 +4522,7 @@ BEGIN
                   '1' : Add := lRGLngStr(41,TRUE); {FString.UserDefEd[Ord(S[Index + 2]) - 48]; }
                   '2' : Add := lRGLngStr(42,TRUE); {FString.UserDefEd[Ord(S[Index + 2]) - 48]; }
                   '3' : Add := lRGLngStr(43,TRUE); {FString.UserDefEd[Ord(S[Index + 2]) - 48]; }
-                  'A' : Add := AOnOff((SysOpAvailable), 'available','unavailable' );
+                  'A' : Add := AOnOff((SysOpAvailable),lRGLngStr(282,TRUE),lRGLngStr(283,TRUE)); {"Available/Unavailable"}
                   'C' : Add := FormatNumber(General.CallerNum-1);
                   'L' : Add := IntToStr(SL);
                   'N' : Add := General.SysOpName;
@@ -4545,7 +4547,7 @@ BEGIN
                   'B' : Add := ToDate8(PD2Date(BirthDate));
                   'C' : Add := IntToStr(OnToday);
                 { 'F' : Add := FormatNumber(Feedback); }
-                  'K' : Add := FormatNumber(UK);
+                  'K' : Add := {FormatNumber}ConvertKB(UK,FALSE);
                   'L' : Add := FormatNumber(Uploads);
                 { 'M' : Add := IntToStr(MaxUsers - 1); }
                   'N' : Add := Caps(Name);
@@ -4600,7 +4602,7 @@ VAR
   C1,
   C2: Comp;
 BEGIN
-  C2 := 0.0;                                (* RGCMD *)
+  C2 := 0.0; (* RGCMD *)
   SwapVectors;
   Exec(GetEnv('RGCMD'),' /C DIR '+DrivePath[1]+': > FREE.TXT');
   SwapVectors;
@@ -4649,7 +4651,7 @@ BEGIN
   Str(L,S);
   IntToStr := S;
 END;
-
+{
 PROCEDURE MyDelay(WaitFor: LongInt);
 VAR
   CheckMS: LongInt;
@@ -4658,4 +4660,5 @@ BEGIN
   REPEAT
   UNTIL (Ticks > CheckMS);
 END;
+}
 END.

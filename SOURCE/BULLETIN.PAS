@@ -9,8 +9,8 @@ Lee Woodridge
  12/10/2021 - fixed case issue for ~to and ~tl in lastcaller mci, MAYBE
  04/18/2022 - Cleaned up IF statements in RGQuote
             - Added ACS check
-
- should we combine rgquote to rgquote.pas??
+ [NOTES]
+ - should we combine rgquote to rgquote.pas??
  - Add breakdown of active/inactive users at end of list
 }
 INTERFACE
