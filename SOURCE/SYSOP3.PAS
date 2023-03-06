@@ -4,6 +4,7 @@
  00/00/0000 - If no separate log file, prompt to view normal SysOp log
  05/25/2022 - Username and RealName don't use CStuff if editing new user profile
  02/17/2023 - added IsActive func - LastOn date will indicate active/inactive user based on configuration in system variables
+ 03/06/2023 - Attributes deleted users one-liners to new user template (which displays as anonymous)
 }
 UNIT SysOp3;
 
@@ -716,11 +717,12 @@ VAR
       END;
     Close(MsgHdrF);
     InitMsgArea(SaveReadMsgArea);
+    {Print('^0 - Users private messages have been removed');}
   END;
 
   PROCEDURE KillUserVotes;
   VAR
-    Counter1: Byte;
+    Counter1: Integer;
   BEGIN
     Assign(VotingFile,General.DataPath+'VOTING.DAT');
     Reset(VotingFile);
@@ -740,6 +742,31 @@ VAR
         Close(VotingFile);
       END;
     LastError := IOResult;
+    {Print('^0 - Users voting records have been removed');}
+  END;
+
+  PROCEDURE KillUserOneLiner; { Attributes deleted users one-liners to new user template (which displays as anonymous) }
+  VAR
+    Counter1: Integer; { Record number }
+  BEGIN
+    Assign(OneLinerListFile,General.DataPath+'ONELINER.DAT');
+    Reset(OneLinerListFile);
+    IF (IOResult = 0) THEN
+      BEGIN
+        FOR Counter1 := 0 TO FileSize(OneLinerListFile) DO { Records are 0 to FileSize!}
+            BEGIN
+              Seek(OneLinerListFile,(Counter1));
+              Read(OneLinerListFile,OneLineRec);
+              IF (OneLineRec.UserID=UNum) THEN
+                BEGIN
+                  Seek(OneLinerListFile,(Counter1));
+                  OneLineRec.UserID := 0{-2147483647}; { New user template }
+                  OneLineRec.Anonymous := TRUE;
+                  Write(OneLinerListFile,OneLineRec);
+                END;
+            END;
+        Close(OneLinerListFile);
+      END;
   END;
 
   PROCEDURE ChangeRecords(On: Byte);
@@ -1449,6 +1476,7 @@ BEGIN
                               User.Waiting := 0;
                               KillUserMail;
                               KillUserVotes;
+                              KillUserOneLiner; {LeeW: Testing}
                             END
                             ELSE
                               Save := Save1;

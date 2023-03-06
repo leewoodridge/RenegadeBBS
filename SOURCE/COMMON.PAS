@@ -39,7 +39,8 @@ Lee Woodridge
  02/17/2023 - Multi-node and SysOp "Available/Unavailable" strings now in language file
  02/19/2023 - MyDelay proc commented out, UNUSED
             - Now using ConvertKB for Downloaded/Uploaded xB MCI for "1GB" instead of "1,048,576kB"
-               -- We should probably be using this EVERYWHERE, no?
+                -- We should probably be using this EVERYWHERE, no?
+ 02/20/2023 - Moved OneLiners record variables here from ONELINERS.PAS
 
  [NOTES]
  - messing with ANSIG/PageLength ... check pagelength for wrong positioning
@@ -352,7 +353,7 @@ VAR
   ComPortSpeed: LongInt;               { com port rate }
   LastError: Integer;                  { Results from last IOResult, when needed }
   General: GeneralRecordType;          { configuration information }
-  DirInfo: SearchRec;                  {  }
+  DirInfo: SearchRec;                  { *USING GLOBAL VAR FOR THIS HAS CAUSED PROBLEMS FOR SOME PROCS, INVESTIGATE * }
   Buf: STRING[255];                    { macro buffer }
   MLC: STRING[255];                    { multiline FOR chat }
   ChatReason,                          { last chat reason }
@@ -396,6 +397,10 @@ VAR
   MQArea,                              { Change message area quick input (MenuCmd M#) }
   VQArea,                              { Vote on topic quick input (MenuCmd V#) }
   Changed: Boolean;                    { Global changed - LeeW: Added }
+
+  { OneLiner Variables }
+  OneLinerListFile: FILE OF OneLinerRecordType; { ONELINER.DAT }
+  OneLineRec: OneLinerRecordType;
 
   { Voting Variables }
   VotingFile: FILE OF VotingRecordType; { VOTING.DAT? }

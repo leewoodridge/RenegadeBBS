@@ -5,7 +5,7 @@ Lee Woodridge
             - Indented, formatting, cleanup
             - oneliner_view now ONLY views, oneliner_add now ONLY adds
             - renamed ONELE to ONELT to keep with standard format
-            - All strings added to RGLNG
+            - most strings added to RGLNG
             - OneLiner_Random prints a random oneliner, but I don't know how to make the func store it
  10/08/2021 - Change SysOp to AACS(General.AnonPubRead) to see anonymous posters names
  10/19/2021 - Added SysOpLog error message if ONELM.EXT is missing
@@ -14,6 +14,10 @@ Lee Woodridge
  05/16/2022 - Fixed reading oneliner data file out of range
             - Changed Counter var type from byte to integer (need negatives)
             - removed unused var Counter2
+ 03/06/2023 - deleted users have their attribution set as anonymous
+
+ notes:
+ put anonymous and deleted strings in lang
 }
 UNIT OneLiner;
 
@@ -25,27 +29,12 @@ USES
     TimeFunc,
     Mail1;
 
-TYPE
-  OneLinerRecordType = {$IFDEF WIN32} PACKED {$ENDIF} RECORD
-    RecordNum  : LongInt;
-    OneLiner   : STRING[55];
-    UserID     : LongInt;
-    UserName   : STRING[36];
-    DateAdded,
-    DateEdited : UnixTime;
-    Anonymous  : Boolean;
-  END;
-
 PROCEDURE OneLiners; { View and prompt to add }
 PROCEDURE OneLiner_Add; { Only add }
 PROCEDURE OneLiner_View; { Only view }
 FUNCTION OneLiner_Random: STRING; { Display a random OneLiner }
 
 IMPLEMENTATION
-
-VAR
-  OneLinerListFile: FILE OF OneLinerRecordType;
-  OneLineRec: OneLinerRecordType;
 
 FUNCTION OneLinerListMCI(CONST S: ASTR; Data1,Data2: Pointer): STRING;
 VAR
@@ -71,7 +60,7 @@ BEGIN
           END;
     'U' : CASE S[2] OF
             '#' : BEGIN { User ID }
-                    IF (OneLinerListPtr^.Anonymous) THEN
+                    IF (OneLinerListPtr^.Anonymous) OR (OneLinerListPtr^.UserID = 0) THEN
                       OneLinerListMCI := '';
                     IF (OneLinerListPtr^.Anonymous) AND (AACS(General.AnonPubRead)) THEN
                       OneLinerListMCI := '#' + IntToStr(OneLinerListPtr^.UserID);
@@ -79,7 +68,7 @@ BEGIN
                       OneLinerListMCI := '#' + IntToStr(OneLinerListPtr^.UserID);
                   END;
             '1' : BEGIN { User ID Without # }
-                    IF (OneLinerListPtr^.Anonymous) THEN
+                    IF (OneLinerListPtr^.Anonymous) OR (OneLinerListPtr^.UserID = 0) THEN
                       OneLinerListMCI := '';
                     IF (OneLinerListPtr^.Anonymous) AND (AACS(General.AnonPubRead)) THEN
                       OneLinerListMCI := IntToStr(OneLinerListPtr^.UserID);
@@ -91,7 +80,10 @@ BEGIN
                     IF (OneLinerListPtr^.Anonymous) THEN
                       OneLinerListMCI := 'Anon';
                     IF (OneLinerListPtr^.Anonymous) AND (AACS(General.AnonPubRead)) THEN
-                      OneLinerListMCI := Caps(User.Name) + ' ^4(^5A^4)';
+                      IF (OneLinerListPtr^.UserID = 0) THEN
+                        OneLinerListMCI := 'Deleted'
+                      ELSE
+                        OneLinerListMCI := Caps(User.Name) + ' ^4(^5A^4)';
                     IF (NOT OneLinerListPtr^.Anonymous) THEN
                       OneLinerListMCI := Caps(User.Name);
                   END;
@@ -100,6 +92,9 @@ BEGIN
                     IF (OneLinerListPtr^.Anonymous) THEN
                       OneLinerListMCI := 'anon';
                     IF (OneLinerListPtr^.Anonymous) AND (AACS(General.AnonPubRead)) THEN
+                      IF (OneLinerListPtr^.UserID = 0) THEN
+                        OneLinerListMCI := 'deleted'
+                      ELSE
                       OneLinerListMCI := ToLower(User.Name) + ' ^4(^5a^4)';
                     IF (NOT OneLinerListPtr^.Anonymous) THEN
                       OneLinerListMCI := ToLower(User.Name);
@@ -109,6 +104,9 @@ BEGIN
                     IF (OneLinerListPtr^.Anonymous) THEN
                       OneLinerListMCI := 'Anon';
                     IF (OneLinerListPtr^.Anonymous) AND (AACS(General.AnonPubRead)) THEN
+                      IF (OneLinerListPtr^.UserID = 0) THEN
+                        OneLinerListMCI := 'Del'
+                      ELSE
                       OneLinerListMCI := Copy(User.Name,1,2) + ' ^4(^5A^4)';
                     IF (NOT OneLinerListPtr^.Anonymous) THEN
                       OneLinerListMCI := Copy(User.Name,1,2);
@@ -118,6 +116,9 @@ BEGIN
                     IF (OneLinerListPtr^.Anonymous) THEN
                       OneLinerListMCI := 'anon';
                     IF (OneLinerListPtr^.Anonymous) AND (AACS(General.AnonPubRead)) THEN
+                      IF (OneLinerListPtr^.UserID = 0) THEN
+                        OneLinerListMCI := 'del'
+                      ELSE
                       OneLinerListMCI := ToLower(Copy(User.Name,1,2)) + ' ^4(^5a^4)';
                     IF (NOT OneLinerListPtr^.Anonymous) THEN
                       OneLinerListMCI := ToLower(Copy(User.Name,1,2));
@@ -132,7 +133,7 @@ VAR
 
   PROCEDURE AskOneLinerQuestions(VAR OneLinerList: OneLinerRecordType);
   BEGIN
-    WHILE (NOT Abort) AND (NOT Hangup) DO
+    WHILE (NOT Abort) AND (NOT HangUp) DO
       BEGIN
         lRGLngStr(105,FALSE); {"Enter your OneLiner"}
         InputMain(OneLinerList.OneLiner,(SizeOf(OneLinerList.OneLiner) - 1),[InterActiveEdit,NoInputField]);
@@ -174,7 +175,7 @@ BEGIN
               IF (Exist(General.DataPath+'ONELINER.DAT')) THEN
                 Reset(OneLinerListFile)
               ELSE
-                Rewrite(OneLinerListFile);
+                ReWrite(OneLinerListFile);
               Seek(OneLinerListFile,FileSize(OneLinerListFile));
               OneLinerList.UserID := UserNum;
               OneLinerList.DateAdded := GetPackDateTime;

@@ -4,6 +4,7 @@ TODO: add user flag to force password change next logon
 10/07/2021 - Updated names of user flags so they're intuitive; ARFlags, ACFlags, S(tatus)Flags
 12/02/2021 - Combined GeneralRec lightbar booleans, all lightbars either on or off now
 03/13/2022 - Combined user statusflags msg & file lightbars into 1 - lightbars
+02/20/2023 - Moved OneLiners record info here from ONELINERS.PAS
 }
 CONST
   Build = '1.30';
@@ -289,6 +290,8 @@ TYPE
     ARFlags: ARFlagSet;          { AR flags }
     ACFlags: ACFlagSet;          { AC flags }
     SFlags: StatusFlagSet;       { Status flags }
+
+    (*AutoSig: ARRAY [1..3] OF STRING[80]; { Automatic signature }*)
   END; { END OF USERREC }
 
   MsgStatusR =(
@@ -668,6 +671,16 @@ TYPE
   ShortMessageRecordType = {$IFDEF WIN32} PACKED {$ENDIF} RECORD { SHORTMSG.DAT : One-line messages }
     Msg: AStr;       {  }
     Destin: Integer; {  }
+  END;
+
+  OneLinerRecordType = {$IFDEF WIN32} PACKED {$ENDIF} RECORD
+    RecordNum  : LongInt;
+    OneLiner   : STRING[55];
+    UserID     : LongInt; {-2147483647 = deleted}
+    UserName   : STRING[36];
+    DateAdded,
+    DateEdited : UnixTime;
+    Anonymous  : Boolean;
   END;
 
   VotingRecordType = {$IFDEF WIN32} PACKED {$ENDIF} RECORD { VOTING.DAT : Voting records }
