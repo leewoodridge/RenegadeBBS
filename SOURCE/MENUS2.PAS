@@ -1,6 +1,7 @@
 {$A+,B-,D+,E-,F+,I-,L+,N-,O+,R-,S+,V-}
 {
-11/15/2021 added slog loaded menu entry -- REMOVE GLOBAL, others???
+ 11/15/2021 - Added SysOp log "Loaded Menu #0 (Name)" entry
+ 03/08/2023 - Log entry no longer reports Global, AllStart, Shuttle, NewUserInfo, ReadingMessages, or ListingFiles menus
 }
 UNIT Menus2;
 
@@ -31,134 +32,138 @@ BEGIN
   Reset(MenuFile);
   MenuNum := 1;
   WHILE (MenuNum <= NumMenus) AND (NOT FoundMenu) DO
-  BEGIN
-    Seek(MenuFile,MenuRecNumArray[MenuNum]);
-    Read(MenuFile,MenuR);
-    IF (MenuR.MenuNum = CurMenu) THEN
     BEGIN
-      FallBackMenu := MenuR.FallBack;
-      FoundMenu := TRUE;
-    END;
-    Inc(MenuNum);
-  END;
-  Dec(MenuNum);
-  IF (NOT FoundMenu) THEN
-  BEGIN
-    NL;
-    Print('That menu is missing, dropping to fallback ...');
-    SysOpLog('Menu #'+IntToStr(CurMenu)+' is missing - Dropping to FallBack #'+IntToStr(FallBackMenu));
-    IF (FallBackMenu > 0) THEN
-    BEGIN
-      FoundMenu := FALSE;
-      MenuNum := 1;
-      WHILE (MenuNum <= NumMenus) AND (NOT FoundMenu) DO
-      BEGIN
-        Seek(MenuFile,MenuRecNumArray[MenuNum]);
-        Read(MenuFile,MenuR);
-        IF (MenuR.MenuNum = FallBackMenu) THEN
+      Seek(MenuFile,MenuRecNumArray[MenuNum]);
+      Read(MenuFile,MenuR);
+      IF (MenuR.MenuNum = CurMenu) THEN
         BEGIN
-          CurMenu := FallBackMenu;
           FallBackMenu := MenuR.FallBack;
           FoundMenu := TRUE;
         END;
-        Inc(MenuNum);
-      END;
-      Dec(MenuNum);
+      Inc(MenuNum);
     END;
-    IF (FallBackMenu = 0) OR (NOT FoundMenu) THEN
+  Dec(MenuNum);
+  IF (NOT FoundMenu) THEN
     BEGIN
       NL;
-      Print('Emergency System shutdown. Please call back later.');
-      NL;
-      Print('Critical error; hanging up.');
-      IF (FallBackMenu = 0) THEN
-        SysOpLog('FallBack menu is set to ZERO - Hung user up.')
-      ELSE
-        SysOpLog('FallBack #'+IntToStr(FallBackMenu)+' is MISSING - Hung user up.');
-      HangUp := TRUE;
+      Print('That menu is missing, dropping to fallback ...');
+      SysOpLog('Menu #'+IntToStr(CurMenu)+' is missing - Dropping to FallBack #'+IntToStr(FallBackMenu));
+      IF (FallBackMenu > 0) THEN
+        BEGIN
+          FoundMenu := FALSE;
+          MenuNum := 1;
+          WHILE (MenuNum <= NumMenus) AND (NOT FoundMenu) DO
+            BEGIN
+              Seek(MenuFile,MenuRecNumArray[MenuNum]);
+              Read(MenuFile,MenuR);
+              IF (MenuR.MenuNum = FallBackMenu) THEN
+                BEGIN
+                  CurMenu := FallBackMenu;
+                  FallBackMenu := MenuR.FallBack;
+                  FoundMenu := TRUE;
+                END;
+              Inc(MenuNum);
+            END;
+          Dec(MenuNum);
+        END;
+      IF (FallBackMenu = 0) OR (NOT FoundMenu) THEN { LeeW: Couldn't we just go back to AllStart in this case? }
+        BEGIN
+          NL;
+          Print('Emergency System shutdown. Please call back later.');
+          NL;
+          Print('Critical error; hanging up.');
+          IF (FallBackMenu = 0) THEN
+            SysOpLog('FallBack menu is set to ZERO - Hung user up.')
+          ELSE
+            SysOpLog('FallBack #'+IntToStr(FallBackMenu)+' is MISSING - Hung user up.');
+          HangUp := TRUE;
+        END;
     END;
-  END;
   IF (FoundMenu) THEN
-  BEGIN
-    Seek(MenuFile,MenuRecNumArray[MenuNum]);
-    Read(MenuFile,MenuR);
-    WITH MemMenu DO
     BEGIN
-      FOR Counter := 1 TO 3 DO
-        LDesc[Counter] := MenuR.LDesc[Counter];
-      ACS := MenuR.ACS;
-      NodeActivityDesc := MenuR.NodeActivityDesc;
-      MenuFlags := MenuR.MenuFlags;
-      LongMenu := MenuR.LongMenu;
-      MenuNum := MenuR.MenuNum;
-      MenuPrompt := MenuR.MenuPrompt;
-      Password := MenuR.Password;
-      FallBack := MenuR.FallBack;
-      Directive := MenuR.Directive;
-      ForceHelpLevel := MenuR.ForceHelpLevel;
-      GenCols := MenuR.GenCols;
-      FOR Counter := 1 TO 3 DO
-        GCol[Counter] := MenuR.GCol[Counter];
-    END;
-
-    Update_Node(MemMenu.NodeActivityDesc,TRUE);
-    SysOpLog('Loaded Menu #'+IntToStr(CurMenu)+' ('+MemMenu.LDesc[1]+')'); { LeeW: Added }
-
-    MQArea := FALSE;
-    FQArea := FALSE;
-    VQArea := FALSE;
-    RQArea := FALSE;
-    MenuKeys := '';
-    NumCmds := 1;
-    WHILE (NumCmds <= CmdNumArray[MenuNum]) DO
-    BEGIN
+      Seek(MenuFile,MenuRecNumArray[MenuNum]);
       Read(MenuFile,MenuR);
-      WITH MemCmd^[NumCmds] DO
-      BEGIN
-        LDesc := MenuR.LDesc[1];
-        ACS := MenuR.ACS;
-        NodeActivityDesc := MenuR.NodeActivityDesc;
-        CmdFlags := MenuR.CmdFlags;
-        SDesc := MenuR.SDesc;
-        CKeys := MenuR.CKeys;
-        IF (CKeys = 'ENTER') THEN
-          TempCkeys := #13
-        ELSE IF (CKeys = 'UP_ARROW') THEN
-          TempCkeys := #255
-        ELSE IF (CKeys = 'DOWN_ARROW') THEN
-          TempCkeys := #254
-        ELSE IF (CKeys = 'LEFT_ARROW') THEN
-          TempCkeys := #253
-        ELSE IF (CKeys = 'RIGHT_ARROW') THEN
-          TempCkeys := #252
-        ELSE IF (Length(CKeys) > 1) THEN
-          TempCkeys := '/'
-        ELSE
-          TempCkeys := UpCase(CKeys[1]);
-        IF (Pos(TempCkeys,MenuKeys) = 0) THEN
-          MenuKeys := MenuKeys + TempCkeys;
-        CmdKeys := MenuR.CmdKeys;
-        IF (CmdKeys = 'M#') THEN
-          MQArea := TRUE
-        ELSE IF (CmdKeys = 'F#') THEN
-          FQArea := TRUE
-        ELSE IF (CmdKeys = 'V#') THEN
-          VQArea := TRUE
-        ELSE IF (CmdKeys = 'R#') THEN
-          RQArea := TRUE;
-        Options := MenuR.Options;
-      END;
-      Inc(NumCmds);
+      WITH MemMenu DO
+        BEGIN
+          FOR Counter := 1 TO 3 DO
+            LDesc[Counter] := MenuR.LDesc[Counter];
+          ACS := MenuR.ACS;
+          NodeActivityDesc := MenuR.NodeActivityDesc;
+          MenuFlags := MenuR.MenuFlags;
+          LongMenu := MenuR.LongMenu;
+          MenuNum := MenuR.MenuNum;
+          MenuPrompt := MenuR.MenuPrompt;
+          Password := MenuR.Password;
+          FallBack := MenuR.FallBack;
+          Directive := MenuR.Directive;
+          ForceHelpLevel := MenuR.ForceHelpLevel;
+          GenCols := MenuR.GenCols;
+          FOR Counter := 1 TO 3 DO
+            GCol[Counter] := MenuR.GCol[Counter];
+        END;
+
+      Update_Node(MemMenu.NodeActivityDesc,TRUE);
+
+      WITH General DO
+        IF NOT (MemMenu.MenuNum IN [GlobalMenu,AllStartMenu,ShuttleLogonMenu,NewUserInformationMenu,MessageReadMenu,
+                                    FileListingMenu]) THEN
+          SysOpLog('Loaded Menu '+MemMenu.LDesc[1]+' (#'+IntToStr(MemMenu.MenuNum)+')'); { LeeW: Added }
+
+      MQArea := FALSE;
+      FQArea := FALSE;
+      VQArea := FALSE;
+      RQArea := FALSE;
+      MenuKeys := '';
+      NumCmds := 1;
+      WHILE (NumCmds <= CmdNumArray[MenuNum]) DO
+        BEGIN
+          Read(MenuFile,MenuR);
+          WITH MemCmd^[NumCmds] DO
+            BEGIN
+              LDesc := MenuR.LDesc[1];
+              ACS := MenuR.ACS;
+              NodeActivityDesc := MenuR.NodeActivityDesc;
+              CmdFlags := MenuR.CmdFlags;
+              SDesc := MenuR.SDesc;
+              CKeys := MenuR.CKeys;
+              IF (CKeys = 'ENTER') THEN
+                TempCkeys := #13
+              ELSE IF (CKeys = 'UP_ARROW') THEN
+                TempCkeys := #255
+              ELSE IF (CKeys = 'DOWN_ARROW') THEN
+                TempCkeys := #254
+              ELSE IF (CKeys = 'LEFT_ARROW') THEN
+                TempCkeys := #253
+              ELSE IF (CKeys = 'RIGHT_ARROW') THEN
+                TempCkeys := #252
+              ELSE IF (Length(CKeys) > 1) THEN
+                TempCkeys := '/'
+              ELSE
+                TempCkeys := UpCase(CKeys[1]);
+              IF (Pos(TempCkeys,MenuKeys) = 0) THEN
+                MenuKeys := MenuKeys + TempCkeys;
+              CmdKeys := MenuR.CmdKeys;
+              IF (CmdKeys = 'M#') THEN
+                MQArea := TRUE
+              ELSE IF (CmdKeys = 'F#') THEN
+                FQArea := TRUE
+              ELSE IF (CmdKeys = 'V#') THEN
+                VQArea := TRUE
+              ELSE IF (CmdKeys = 'R#') THEN
+                RQArea := TRUE;
+              Options := MenuR.Options;
+            END;
+          Inc(NumCmds);
+        END;
     END;
-  END;
   Dec(NumCmds);
   Close(MenuFile);
   LastError := IOResult;
   IF (GlobalCmds > 0) THEN
-  BEGIN
-    Move(MemCmd^[((MaxCmds - GlobalCmds) + 1)],MemCmd^[(NumCmds + 1)],(GlobalCmds * Sizeof(MemCmdRec)));
-    Inc(NumCmds,GlobalCmds);
-  END;
+    BEGIN
+      Move(MemCmd^[((MaxCmds - GlobalCmds) + 1)],MemCmd^[(NumCmds + 1)],(GlobalCmds * Sizeof(MemCmdRec)));
+      Inc(NumCmds,GlobalCmds);
+    END;
 END;
 
 PROCEDURE ShowCmds(MenuOption: Str50);
@@ -259,14 +264,14 @@ VAR
   BEGIN
     j := Pos(AllCaps(Keys),AllCaps(Desc));
     IF (j <> 0) AND (Pos('^',Desc) = 0) THEN
-    BEGIN
-      Insert('^'+IntToStr(GColors[3]),Desc,((j + Length(Keys) + 1)));
-      Insert('^'+IntToStr(GColors[1]),Desc,j + Length(Keys));
-      IF (acc) THEN
-        Insert('^'+IntToStr(GColors[2]),Desc,j);
-      IF (j <> 1) THEN
-        Insert('^'+IntToStr(GColors[1]),Desc,j - 1);
-    END;
+      BEGIN
+		Insert('^'+IntToStr(GColors[3]),Desc,((j + Length(Keys) + 1)));
+		Insert('^'+IntToStr(GColors[1]),Desc,j + Length(Keys));
+		IF (Acc) THEN
+          Insert('^'+IntToStr(GColors[2]),Desc,j);
+		IF (j <> 1) THEN
+          Insert('^'+IntToStr(GColors[1]),Desc,j - 1);
+      END;
     GenColored := '^'+IntToStr(GColors[3])+Desc;
   END;
 
@@ -307,25 +312,25 @@ VAR
     TempStr := '';
     FOR CmdToList := 1 TO NumCmds DO
       IF (MemCmd^[CmdToList].CKeys <> 'GTITLE') THEN
-      BEGIN
-        Inc(OnLin);
-        IF (OnLin <> NumCols) THEN
-          TempStr := TempStr + PadLeftStr(MemCmd^[CmdToList].SDesc,ColSiz)
-        ELSE
         BEGIN
-          TempStr := TempStr + MemCmd^[CmdToList].SDesc;
-          OnLin := 0;
-          Len := LennMCI(TempStr);
-          IF (Len > MaxRight) THEN
-            MaxRight := Len;
-          TempStr := '';
-        END;
-      END
+          Inc(OnLin);
+          IF (OnLin <> NumCols) THEN
+            TempStr := TempStr + PadLeftStr(MemCmd^[CmdToList].SDesc,ColSiz)
+          ELSE
+            BEGIN
+              TempStr := TempStr + MemCmd^[CmdToList].SDesc;
+              OnLin := 0;
+              Len := LennMCI(TempStr);
+              IF (Len > MaxRight) THEN
+                MaxRight := Len;
+              TempStr := '';
+            END;
+        END
       ELSE
-      BEGIN
-        TempStr := '';
-        OnLin := 0;
-      END;
+        BEGIN
+          TempStr := '';
+          OnLin := 0;
+        END;
   END;
 
   PROCEDURE DoMenuTitles(MaxRight: Byte);
@@ -334,30 +339,28 @@ VAR
     ShownAlready: Boolean;
   BEGIN
     IF (ClrScrBefore IN MemMenu.MenuFlags) THEN
-    BEGIN
-      CLS;
-      {
-      NL;
-      NL;
-      }
-    END;
+      BEGIN
+        CLS;
+      { NL;
+        NL; }
+      END;
     IF (NOT (NoMenuTitle IN MemMenu.MenuFlags)) THEN
-    BEGIN
-      ShownAlready := FALSE;
-      FOR Counter1 := 1 TO 3 DO
-        IF (MemMenu.LDesc[Counter1] <> '') THEN
-        BEGIN
-          IF (NOT ShownAlready) THEN
-          BEGIN
-            NL;
-            ShownAlready := TRUE;
-          END;
-          IF (DontCenter IN MemMenu.MenuFlags) THEN
-            PrintACR(MemMenu.LDesc[Counter1])
-          ELSE
-            PrintACR(TCentered(MaxRight,MemMenu.LDesc[Counter1]));
-        END;
-    END;
+      BEGIN
+        ShownAlready := FALSE;
+        FOR Counter1 := 1 TO 3 DO
+          IF (MemMenu.LDesc[Counter1] <> '') THEN
+            BEGIN
+              IF (NOT ShownAlready) THEN
+                BEGIN
+                  NL;
+                  ShownAlready := TRUE;
+                END;
+              IF (DontCenter IN MemMenu.MenuFlags) THEN
+                PrintACR(MemMenu.LDesc[Counter1])
+              ELSE
+                PrintACR(TCentered(MaxRight,MemMenu.LDesc[Counter1]));
+            END;
+      END;
     NL;
   END;
 
@@ -376,20 +379,20 @@ VAR
       Dec(NumCmds,GlobalCmds);
     CmdToList := 0;
     WHILE (CmdToList < NumCmds) AND (NOT Abort) AND (NOT HangUp) DO
-    BEGIN
-      Inc(CmdToList);
-      CmdNotHid := FALSE;
-      Acc := OkSecurity(CmdToList,CmdNotHid);
-      IF (((Acc) OR (UnHidden IN MemCmd^[CmdToList].CmdFlags)) AND (NOT (Hidden IN MemCmd^[CmdToList].CmdFlags))) THEN
-        IF (MemCmd^[CmdToList].CKeys = 'GTITLE') THEN
-        BEGIN
-          PrintACR(MemCmd^[CmdToList].LDesc);
-          IF (MemCmd^[CmdToList].Options <> '') THEN
-            NewGColors(MemCmd^[CmdToList].Options);
-        END
-        ELSE IF (MemCmd^[CmdToList].LDesc <> '') THEN
-          PrintACR(GenColored(MemCmd^[CmdToList].CKeys,MemCmd^[CmdToList].LDesc,Acc));
-    END;
+      BEGIN
+        Inc(CmdToList);
+        CmdNotHid := FALSE;
+        Acc := OkSecurity(CmdToList,CmdNotHid);
+        IF (((Acc) OR (UnHidden IN MemCmd^[CmdToList].CmdFlags)) AND (NOT (Hidden IN MemCmd^[CmdToList].CmdFlags))) THEN
+          IF (MemCmd^[CmdToList].CKeys = 'GTITLE') THEN
+            BEGIN
+              PrintACR(MemCmd^[CmdToList].LDesc);
+              IF (MemCmd^[CmdToList].Options <> '') THEN
+                NewGColors(MemCmd^[CmdToList].Options);
+            END
+          ELSE IF (MemCmd^[CmdToList].LDesc <> '') THEN
+            PrintACR(GenColored(MemCmd^[CmdToList].CKeys,MemCmd^[CmdToList].LDesc,Acc));
+      END;
     IF (NoGlobalDisplayed IN MemMenu.MenuFlags) OR (NoGlobalUsed IN MemMenu.MenuFlags) THEN
       Inc(NumCmds,GlobalCmds);
   END;
@@ -415,41 +418,41 @@ VAR
       Dec(NumCmds,GlobalCmds);
     CmdToList := 0;
     WHILE (CmdToList < NumCmds) AND (NOT Abort) AND (NOT HangUp) DO
-    BEGIN
-      Inc(CmdToList);
-      CmdNotHid := FALSE;
-      Acc := OkSecurity(CmdToList,CmdNotHid);
-      IF (((Acc) OR (UnHidden IN MemCmd^[CmdToList].CmdFlags)) AND (NOT (Hidden IN MemCmd^[CmdToList].CmdFlags))) THEN
       BEGIN
-        IF (MemCmd^[CmdToList].CKeys = 'GTITLE') THEN
-        BEGIN
-          IF (OnLin <> 0) THEN
-            PrintACR(TempStr);
-          PrintACR(TCentered(MaxRight,MemCmd^[CmdToList].LDesc));
-          TempStr := '';
-          OnLin := 0;
-          IF (MemCmd^[CmdToList].Options <> '') THEN
-            NewGColors(MemCmd^[CmdToList].Options);
-        END
-        ELSE
-        BEGIN
-          IF (MemCmd^[CmdToList].SDesc <> '') THEN
+        Inc(CmdToList);
+        CmdNotHid := FALSE;
+        Acc := OkSecurity(CmdToList,CmdNotHid);
+        IF (((Acc) OR (UnHidden IN MemCmd^[CmdToList].CmdFlags)) AND (NOT (Hidden IN MemCmd^[CmdToList].CmdFlags))) THEN
           BEGIN
-            Inc(OnLin);
-            TempStr1 := GenColored(MemCmd^[CmdToList].CKeys,MemCmd^[CmdToList].SDesc,Acc);
-            IF (OnLin <> NumCols) THEN
-              TempStr1 := PadLeftStr(TempStr1,ColSiz);
-            TempStr := TempStr + TempStr1;
+            IF (MemCmd^[CmdToList].CKeys = 'GTITLE') THEN
+              BEGIN
+                IF (OnLin <> 0) THEN
+                  PrintACR(TempStr);
+                PrintACR(TCentered(MaxRight,MemCmd^[CmdToList].LDesc));
+                TempStr := '';
+                OnLin := 0;
+                IF (MemCmd^[CmdToList].Options <> '') THEN
+                  NewGColors(MemCmd^[CmdToList].Options);
+              END
+            ELSE
+              BEGIN
+                IF (MemCmd^[CmdToList].SDesc <> '') THEN
+                  BEGIN
+                    Inc(OnLin);
+                    TempStr1 := GenColored(MemCmd^[CmdToList].CKeys,MemCmd^[CmdToList].SDesc,Acc);
+                    IF (OnLin <> NumCols) THEN { LeeW: Why aren't we limiting length of last menu option string on the line? }
+                      TempStr1 := PadLeftStr(TempStr1,ColSiz+1);
+                    TempStr := TempStr + TempStr1;
+                  END;
+                IF (OnLin = NumCols) THEN
+                  BEGIN
+                    OnLin := 0;
+                    PrintACR(TempStr);
+                    TempStr := '';
+                  END;
+              END;
           END;
-          IF (OnLin = NumCols) THEN
-          BEGIN
-            OnLin := 0;
-            PrintACR(TempStr);
-            TempStr := '';
-          END;
-        END;
       END;
-    END;
     IF (NoGlobalDisplayed IN MemMenu.MenuFlags) OR (NoGlobalUsed IN MemMenu.MenuFlags) THEN
       Inc(NumCmds,GlobalCmds);
     IF (OnLin > 0) THEN
@@ -488,12 +491,12 @@ BEGIN
           NoFile := TRUE;
           TempStr := MemMenu.Directive;
           IF (TempStr <> '') THEN
-          BEGIN
-            IF (Pos('@S',TempStr) > 0) THEN
-              PrintF(Substitute(TempStr,'@S',IntToStr(ThisUser.SL)));
-            IF (NoFile) THEN
-              PrintF(Substitute(TempStr,'@S',''));
-          END;
+            BEGIN
+              IF (Pos('@S',TempStr) > 0) THEN
+                PrintF(Substitute(TempStr,'@S',IntToStr(ThisUser.SL)));
+              IF (NoFile) THEN
+                PrintF(Substitute(TempStr,'@S',''));
+            END;
           DisplayingMenu := FALSE;
         END;
     3 : BEGIN
@@ -501,14 +504,14 @@ BEGIN
           NoFile := TRUE;
           TempStr := MemMenu.LongMenu;
           IF (TempStr <> '') THEN
-          BEGIN
-            IF (Pos('@C',TempStr) <> 0) THEN
-              PrintF(Substitute(TempStr,'@C',CurrentConf));
-            IF (NoFile) AND (Pos('@S',TempStr) <> 0) THEN
-              PrintF(Substitute(TempStr,'@S',IntToStr(ThisUser.SL)));
-            IF (NoFile) THEN
-              PrintF(Substitute(TempStr,'@S',''));
-          END;
+            BEGIN
+              IF (Pos('@C',TempStr) <> 0) THEN
+                PrintF(Substitute(TempStr,'@C',CurrentConf));
+              IF (NoFile) AND (Pos('@S',TempStr) <> 0) THEN
+                PrintF(Substitute(TempStr,'@S',IntToStr(ThisUser.SL)));
+              IF (NoFile) THEN
+                PrintF(Substitute(TempStr,'@S',''));
+            END;
           DisplayingMenu := FALSE;
         END;
   END;
