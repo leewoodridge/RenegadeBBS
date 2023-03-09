@@ -265,11 +265,11 @@ VAR
     j := Pos(AllCaps(Keys),AllCaps(Desc));
     IF (j <> 0) AND (Pos('^',Desc) = 0) THEN
       BEGIN
-		Insert('^'+IntToStr(GColors[3]),Desc,((j + Length(Keys) + 1)));
-		Insert('^'+IntToStr(GColors[1]),Desc,j + Length(Keys));
-		IF (Acc) THEN
+        Insert('^'+IntToStr(GColors[3]),Desc,((j + Length(Keys) + 1)));
+        Insert('^'+IntToStr(GColors[1]),Desc,j + Length(Keys));
+        IF (Acc) THEN
           Insert('^'+IntToStr(GColors[2]),Desc,j);
-		IF (j <> 1) THEN
+        IF (j <> 1) THEN
           Insert('^'+IntToStr(GColors[1]),Desc,j - 1);
       END;
     GenColored := '^'+IntToStr(GColors[3])+Desc;
