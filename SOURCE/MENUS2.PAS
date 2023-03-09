@@ -1,7 +1,9 @@
 {$A+,B-,D+,E-,F+,I-,L+,N-,O+,R-,S+,V-}
 {
- 11/15/2021 - Added SysOp log "Loaded Menu #0 (Name)" entry
+ 11/15/2021 - Added SysOp log "Loaded Menu Name (#0)" entry
  03/08/2023 - Log entry no longer reports Global, AllStart, Shuttle, NewUserInfo, ReadingMessages, or ListingFiles menus
+
+ MENUCMD "*=" & ShowCmds PROC -- can these be removed??, undocumented, seems useless
 }
 UNIT Menus2;
 

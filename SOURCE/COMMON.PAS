@@ -41,6 +41,7 @@ Lee Woodridge
             - Now using ConvertKB for Downloaded/Uploaded xB MCI for "1GB" instead of "1,048,576kB"
                 -- We should probably be using this EVERYWHERE, no?
  02/20/2023 - Moved OneLiners record variables here from ONELINERS.PAS
+ 03/08/2023 - Added Cursor proc, toggles cursor display locally AND remotely, nested local CursorOn assembly code from myIO in
 
  [NOTES]
  - messing with ANSIG/PageLength ... check pagelength for wrong positioning
@@ -190,7 +191,7 @@ TYPE
     Win,    { Windows (16-Bit) }
     OS2,    { OS/2 Warp }
     Win32,  { Windows (32-Bit) }
-    DOS5N); { ... }
+    DOS5N); { Novell DOS? }
 
   InputFlagType =(
     { Formatting }
@@ -586,6 +587,7 @@ FUNCTION OkAvatar: Boolean; { Does user support Avatar terminal emulation? }
 FUNCTION OkRIP: Boolean; { Does user support RIP graphics? }
 FUNCTION OkVT100: Boolean; { Does user support VT-100 terminal emulation? }
 { ANSI procedures }
+PROCEDURE Cursor(Show: Boolean); { Control cursor display }
 PROCEDURE BackErase(Len: Byte);
 PROCEDURE Clear_EOL; { ANSI Clear to end of line }
 PROCEDURE ANSIG(X,Y: Byte); { ANSI go to position }
@@ -728,6 +730,36 @@ USES
 PROCEDURE InputPath(S: AStr; VAR DirPath: Str40; CreateDir,AllowExit: Boolean; VAR Changed: Boolean);
 BEGIN
   Common3.InputPath(S,DirPath,CreateDir,AllowExit,Changed);
+END;
+
+PROCEDURE Cursor(Show: Boolean);
+
+  PROCEDURE CursorASM(B: Boolean); Assembler;
+  ASM
+    CMP B, 1
+    JE @ON
+    MOV CH, 9
+    MOV CL, 0
+    JMP @GO
+    @ON:
+    MOV CH, 6
+    MOV CL, 7
+    @GO:
+    MOV AH,1
+    INT 10H
+  END;
+
+BEGIN
+  IF (OutCom) AND (OkANSI) THEN
+    IF (Show) THEN
+      SerialOut(#27'[?25h')
+    ELSE
+      SerialOut(#27'[?25l');
+  IF (WantOut) THEN
+    IF (Show) THEN
+      CursorASM(TRUE)
+    ELSE
+      CursorASM(FALSE);
 END;
 
 PROCEDURE Clear_EOL;
@@ -1922,7 +1954,7 @@ BEGIN
 
   Com_DeInstall;
 
-  CursorOn(TRUE);
+  Cursor(TRUE);
 
   SwapVectors;
 
@@ -2923,7 +2955,9 @@ BEGIN
         BEGIN
           REPEAT
             PrintYesNo;
+            Cursor(FALSE);
             W := GetKey;
+            Cursor(TRUE);
             IF ((W = 89) OR (W = 121)) OR ((W=F_LEFT) AND (YN=FALSE)) THEN
               YN := TRUE;
             IF ((W = 78) OR (W = 110)) OR ((W=F_RIGHT) AND (YN=TRUE)) THEN
@@ -4328,11 +4362,11 @@ BEGIN
                   {
                   '+' : BEGIN
                           Add := '';
-                          CursorOn(TRUE);
+                          Cursor(TRUE);
                         END;
                   '-' : BEGIN
                           Add := '';
-                          CursorOn(FALSE);
+                          Cursor(FALSE);
                         END;
                   }
                 END;

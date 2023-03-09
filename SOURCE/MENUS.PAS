@@ -402,7 +402,7 @@ BEGIN
 
     UNTIL ((GotCmd) OR (HangUp));
 
-    CursorOn(TRUE);
+    Cursor(TRUE);
 
     UserColor(0);
 
@@ -953,7 +953,7 @@ BEGIN
           END;
     '*' : IF (CheckPW) THEN { LeeW: Added }
             CASE Cmd[2] OF
-              '=' : ShowCmds(MenuOption);
+              '=' : ShowCmds(MenuOption); { LeeW: Is this needed? }
               'B' : BEGIN
                       SysOpLog('* Message Area Editor');
                       MessageAreaEditor;
@@ -1055,7 +1055,7 @@ BEGIN
     LastCommandGood := FALSE;
 
   IF ((CurMenu = General.NewUserInformationMenu) AND (Cmd='OQ')) THEN
-    NoCmd := FALSE; {leew: quick and dirty fix}
+    NoCmd := FALSE; { LeeW: Quick and dirty fix }
 
   IF (NoCmd) THEN
     (*IF (CoSysOp) THEN { LeeW: Why only CoSysOp? }*)

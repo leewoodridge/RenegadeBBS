@@ -1,6 +1,7 @@
 {$A+,B-,D+,E-,F+,I-,L+,N-,O+,R+,S-,V-}
 {
  04/18/2022 - gutted this, some parts moved to common2
+ 03/08/2023 - removed CursorOn proc, integrated into new Cursor proc in COMMON
 }
 
 UNIT MyIO;
@@ -20,7 +21,6 @@ VAR
   MaxDisplayCols: Byte;
 
 PROCEDURE Update_Logo(VAR Addr1,Addr2; BlkLen: Integer);
-PROCEDURE CursorOn(b: BOOLEAN);
 PROCEDURE SaveScreen(VAR Wind: WindowRec);
 PROCEDURE RemoveWindow(VAR Wind: WindowRec);
 
@@ -28,21 +28,6 @@ IMPLEMENTATION
 
 USES
   CRT;
-
-PROCEDURE CursorOn(b: BOOLEAN); ASSEMBLER;
-ASM
-  cmp b, 1
-  je @turnon
-  mov ch, 9
-  mov cl, 0
-  jmp @goforit
-  @turnon:
-  mov ch, 6
-  mov cl, 7
-  @goforit:
-  mov ah,1
-  int 10h
-END;
 
 PROCEDURE SaveScreen(VAR Wind: WindowRec);
 BEGIN

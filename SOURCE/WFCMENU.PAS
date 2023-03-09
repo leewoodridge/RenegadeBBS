@@ -401,7 +401,7 @@ BEGIN
   Window(1,1,MaxDisplayCols,MaxDisplayRows);
   LastWFCX := 1;
   LastWFCY := 1;
-  CursorOn(FALSE);
+  Cursor(FALSE);
   ClrScr;
   IF (AnswerBaud > 0) THEN
     Exit;
@@ -733,14 +733,14 @@ VAR
                 ' from node '+IntToStr(ThisNode));
             IF (EventIsShell IN EFlags) THEN
             BEGIN
-              CursorOn(TRUE);
+              Cursor(TRUE);
               EventLastDate := Date2PD(DateStr);
               Reset(EventFile);
               Seek(EventFile,(EventNum - 1));
               Write(EventFile,MemEventArray[EventNum]^);
               Close(EventFile);
               ShellDOS(FALSE,EventShellPath+'.BAT',RCode);
-              CursorOn(FALSE);
+              Cursor(FALSE);
               SL1('Returned from '+EventDescription+' on '+DateStr+' '+TimeStr);
               DoPhoneHangup(TRUE);
               InitModem;
@@ -748,7 +748,7 @@ VAR
             END
             ELSE IF (EventIsErrorLevel IN EFlags) THEN
             BEGIN
-              CursorOn(TRUE);
+              Cursor(TRUE);
               DoneDay := TRUE;
               ExitErrorLevel := EventErrorLevel;
               EventLastDate := Date2PD(DateStr);
@@ -756,7 +756,7 @@ VAR
               Seek(EventFile,(EventNum - 1));
               Write(EventFile,MemEventArray[EventNum]^);
               Close(EventFile);
-              CursorOn(FALSE);
+              Cursor(FALSE);
             END
             ELSE IF (EventIsSortFiles IN EFlags) THEN
             BEGIN
@@ -765,7 +765,7 @@ VAR
               Seek(EventFile,(EventNum - 1));
               Write(EventFile,MemEventArray[EventNum]^);
               Close(EventFile);
-              CursorOn(FALSE);
+              Cursor(FALSE);
               SortFilesOnly := TRUE;
               Sort;
               SortFilesOnly := FALSE;
@@ -779,7 +779,7 @@ VAR
               Seek(EventFile,(EventNum - 1));
               Write(EventFile,MemEventArray[EventNum]^);
               Close(EventFile);
-              CursorOn(FALSE);
+              Cursor(FALSE);
               PackAllBases;
               InitModem;
               WFCDraw;
@@ -791,7 +791,7 @@ VAR
               Seek(EventFile,(EventNum - 1));
               Write(EventFile,MemEventArray[EventNum]^);
               Close(EventFile);
-              CursorOn(FALSE);
+              Cursor(FALSE);
               CheckFilesBBS;
               InitModem;
               WFCDraw;
@@ -827,7 +827,7 @@ BEGIN
     WFCMessage := 'Modem off hook - paging SysOp';
   Randomize;
   TextAttr := CurrentColor;
-  CursorOn(FALSE);
+  Cursor(FALSE);
   LastMinute := (Timer - 61);
   CheckForConnection := FALSE;
 
@@ -962,7 +962,7 @@ BEGIN
       END;
 
       C := UpCase(C);
-      CursorOn(TRUE);
+      Cursor(TRUE);
       IF (NOT SysOpOn) THEN
         CASE C OF
           'Q' : BEGIN
@@ -1225,7 +1225,7 @@ BEGIN
         END;
       END;
     END;
-    CursorOn(FALSE);
+    Cursor(FALSE);
   UNTIL ((InCom) OR (C = ' ') OR (DoneDay));
 
   UploadKBytesToday := 0;
@@ -1277,7 +1277,7 @@ BEGIN
     WantOut := TRUE;
 
   IF (WantOut) THEN
-    CursorOn(TRUE);
+    Cursor(TRUE);
 
   SaveGeneral(TRUE);
 

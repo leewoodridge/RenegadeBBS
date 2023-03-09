@@ -311,7 +311,7 @@ BEGIN
   SecondRow := (FirstRow + 1);
   TextAttr := 120;
   LastScreenSwap := 0;
-  CursorOn(FALSE);
+  Cursor(FALSE);
   Clear_Status_Box;
   IF (WhichScreen < 99) THEN
     General.CurWindow := WhichScreen;
@@ -522,7 +522,7 @@ BEGIN
     Window(1,3,MaxDisplayCols,MaxDisplayRows)
   ELSE
     Window(1,1,MaxDisplayCols,MaxDisplayRows - 2);
-  CursorOn(TRUE);
+  Cursor(TRUE);
   IF (NOT SaveWindowOn) THEN
     ToggleWindow(FALSE);
   GoToXY(SaveWhereX,SaveWhereY);
@@ -594,11 +594,11 @@ BEGIN
       119 : BEGIN                                              { CTRL-HOME     }
               SaveScreen(Wind);
               Update_Logo(SYSKEY,ScreenAddr[0],SYSKEY_LENGTH);
-              CursorOn(FALSE);
+              Cursor(FALSE);
               C := ReadKey;
               IF (C = #0) THEN
                 C := ReadKey;
-              CursorOn(TRUE);
+              Cursor(TRUE);
               RemoveWindow(Wind);
               GoToXY(SaveWhereX,SaveWhereY);
               Update_Screen;
@@ -846,12 +846,12 @@ BEGIN
              Window(1,1,MaxDisplayCols,MaxDisplayRows);
              ClrScr;
              WantOut := FALSE;
-             CursorOn(FALSE);
+             Cursor(FALSE);
            END
            ELSE
            BEGIN
              WantOut := TRUE;
-             CursorOn(TRUE);
+             Cursor(TRUE);
              WriteLn('Local display on.');
              Update_Screen;
            END;
@@ -1473,7 +1473,7 @@ END;
       END;
     Write(' ');
     TextBackGround(0);
-    CursorOn(i IN [1..4]);
+    Cursor(i IN [1..4]);
     IF (b) THEN
       BEGIN
         GoToXY(26,12);
@@ -1497,7 +1497,7 @@ END;
   VAR
     Counter: Byte;
   BEGIN
-    CursorOn(FALSE);
+    Cursor(FALSE);
     TextColor(Scheme.Color[5]); { Border Color }
     Box(1,18,6,68,13);
     Window(19,7,67,12);
@@ -1677,7 +1677,7 @@ BEGIN
     UNTIL (Done);
     GoToXY(SaveWhereX,SaveWhereY);
     TextAttr := SaveTextAttr;
-    CursorOn(TRUE);
+    Cursor(TRUE);
     NewCompTables;
     SaveURec(ThisUser,UserNum);
 END;
