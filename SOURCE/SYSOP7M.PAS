@@ -1,10 +1,14 @@
 {$A+,B+,D+,E+,F+,I+,L+,N-,O+,R-,S+,V-}
+{
+ 03/09/2023 - Aesthetic updates
+}
 UNIT SysOp7M;
 
 INTERFACE
 
 USES
-  Common;
+  Common,
+  SysOp2; {ConfigHeader/HL}
 
 PROCEDURE CommandEditor(MenuToModify,MenuNumber: Integer; MenuName: AStr);
 PROCEDURE LoadMenuPointers;
@@ -26,21 +30,21 @@ BEGIN
     CmdNumArray[RecNum] := 0;
   Reset(MenuFile);
   RecNum := 0;
-  WHILE NOT Eof(MenuFile) DO
-  BEGIN
-    Read(MenuFile,MenuR);
-    IF (MenuR.Menu = FALSE) THEN
-      Inc(NumCmds)
-    ELSE
+  WHILE NOT EOF(MenuFile) DO
     BEGIN
-      Inc(NumMenus);
-      MenuRecNumArray[NumMenus] := RecNum;
-      IF (NumMenus > 1) THEN
-        CmdNumArray[NumMenus - 1] := NumCmds;
-      NumCmds := 0;
+      Read(MenuFile,MenuR);
+      IF (MenuR.Menu = FALSE) THEN
+        Inc(NumCmds)
+      ELSE
+        BEGIN
+          Inc(NumMenus);
+          MenuRecNumArray[NumMenus] := RecNum;
+          IF (NumMenus > 1) THEN
+            CmdNumArray[NumMenus - 1] := NumCmds;
+          NumCmds := 0;
+        END;
+      Inc(RecNum);
     END;
-    Inc(RecNum);
-  END;
   CmdNumArray[NumMenus] := NumCmds;
 END;
 
@@ -90,17 +94,17 @@ VAR
   BEGIN
     FillChar(MenuR,SizeOf(MenuR),0);
     WITH MenuR DO
-    BEGIN
-      LDesc[1] := '<< New Command >>';
-      ACS := '';
-      NodeActivityDesc := '';
-      Menu := FALSE;
-      CmdFlags := [];
-      SDesc := '(XXX)New Cmd';
-      CKeys := 'XXX';
-      CmdKeys := '-L';
-      Options := '';
-    END;
+      BEGIN
+        LDesc[1] := '<< New Command >>';
+        ACS := '';
+        NodeActivityDesc := '';
+        Menu := FALSE;
+        CmdFlags := [];
+        SDesc := '(XXX)New Cmd';
+        CKeys := 'XXX';
+        CmdKeys := '-L';
+        Options := '';
+      END;
   END;
 
   FUNCTION GetRecNum(NumCmds: Integer): Integer;
@@ -108,7 +112,7 @@ VAR
     R: REAL;
   BEGIN
     R := (NumCmds / 3);
-    IF (Frac(r) = 0.0) THEN
+    IF (Frac(R) = 0.0) THEN
       GetRecNum := Trunc(R)
     ELSE
       GetRecNum := (Trunc(R) + 1);
@@ -234,25 +238,22 @@ VAR
                 Abort := FALSE;
                 Next := FALSE;
                 MCIAllowed := FALSE;
-                CLS;
-                Print('^1'+MenuName+' #'+IntToStr(MenuNumber));
-                Print('^1Command #'+IntToStr(RecNumToModify)+' of '+IntToStr(CmdNumArray[MenuToModify]));
-                NL;
-                PrintACR('^01. Long descript : ^1'+LDesc[1]);
-                PrintACR('^02. Short descript: ^1'+SDesc);
-                PrintACR('^03. Menu keys     : ^1'+CKeys);
-                PrintACR('^04. ACS required  : ^1"'+ACS+'"');
-                PrintACR('^05. CmdKeys       : ^1'+CmdKeys);
-                PrintACR('^06. Options       : ^1'+Options+'^0');
+                ConfigHeader('Editing Command',RecNumToModify,CmdNumArray[MenuToModify]); { MenuName / MenuNumber }
+                PrintACR('^0(^11^0) Long Description  : ^1'+LDesc[1]);
+                PrintACR('^0(^12^0) Short Description : ^1'+SDesc);
+                PrintACR('^0(^13^0) Menu Keys         : ^1'+CKeys);
+                PrintACR('^0(^14^0) ACS Required      : ^1"'+ACS+'"');
+                PrintACR('^0(^15^0) Cmd Keys          : ^1'+CmdKeys);
+                PrintACR('^0(^16^0) Options           : ^1'+Options{+'^0'});
                 IF (General.MultiNode) THEN
-                  PrintACR('^0N. Node activity : ^1'+NodeActivityDesc);
-                PrintACR('^0T. Flags         : ^1'+DisplayCmdFlags(CmdFlags,'5','1'));
+                  PrintACR('^0(^1N^0) Node Activity     : ^1'+NodeActivityDesc);
+                PrintACR('^0(^1T^0) Flags             : ^1'+DisplayCmdFlags(CmdFlags,'1','0'));
                 MCIAllowed := TRUE;
               END;
               IF (General.MultiNode) THEN
-                InputChar('%LFModify menu [^1?^2=^1Help^2]: ',Cmd1,'Q123456NT[]FJL?'^M,[CapAll])
+                InputChar(#10'Command Editor [^1123456NT^2,(^1?^2)Help,(^1Q^2)uit]: ',Cmd1,'Q123456NT[]FJL?'^M,[CapAll])
               ELSE
-                InputChar('%LFModify menu [^1?^2=^1Help^2]: ',Cmd1,'Q123456T[]FJL?'^M,[CapAll]);
+                InputChar(#10'Command Editor [^1123456T^2,(^1?^2)Help,(^1Q^2)uit]: ',Cmd1,'Q123456T[]FJL?'^M,[CapAll]);
               CASE Cmd1 OF
                 '1' : InputString('%LF^0New long description:%LF^2: ',LDesc[1],(SizeOf(LDesc[1]) - 1),
                 [InteractiveEdit,NoInputField],Changed);
@@ -414,29 +415,29 @@ BEGIN
       Abort := FALSE;
       Next := FALSE;
       MCIAllowed := FALSE;
-      CLS;
-      PrintACR('^1###^2:^1Short Desc.           ^1###^2:^1Short Desc.           ^1###^2:^1Short Desc.');
-      PrintACR('^2===:===================== ===:===================== ===:=====================');
+      ConfigHeader('Command Editor',0,0);
+      PrintACR('^5ó^4###^5³^4Short Description^5ò   ^5ó^4###^5³^4Short Description^5ò   ^5ó^4###^5³^4Short Description^5ò');
+      HL;
       Reset(MenuFile);
       RecNumToList := 1;
       WHILE (RecNumToList <= GetRecNum(CmdNumArray[MenuToModify])) AND (NOT Abort) AND (NOT HangUp) DO
       BEGIN
         Seek(MenuFile,(RecNumToList + MenuRecNumArray[MenuToModify]));
         Read(MenuFile,MenuR);
-        TempS := '^1'+PadRightStr(IntToStr(RecNumToList),3)+' ^1'+PadLeftStr(MenuR.SDesc,21)+' ';
+        TempS := '^1 '+PadRightStr(IntToStr(RecNumToList),3)+' ^0'+PadLeftStr(MenuR.SDesc,21)+' ';
         Counter := (RecNumToList + GetRecNum(CmdNumArray[MenuToModify]));
         IF (Counter <= CmdNumArray[MenuToModify]) THEN
         BEGIN
           Seek(MenuFile,(Counter + MenuRecNumArray[MenuToModify]));
           Read(MenuFile,MenuR);
-          TempS := TempS + '^1'+PadRightStr(IntToStr(Counter),3)+' ^1'+PadLeftStr(MenuR.SDesc,21)+' ';
+          TempS := TempS + '^1'+PadRightStr(IntToStr(Counter),3)+' ^0'+PadLeftStr(MenuR.SDesc,21)+' ';
         END;
         Counter := (Counter + GetRecNum(CmdNumArray[MenuToModify]));
         IF (Counter <= CmdNumArray[MenuToModify]) THEN
         BEGIN
           Seek(MenuFile,Counter + MenuRecNumArray[MenuToModify]);
           Read(MenuFile,MenuR);
-          TempS := TempS + '^1'+PadRightStr(IntToStr(Counter),3)+' ^1'+PadLeftStr(MenuR.SDesc,21);
+          TempS := TempS + '^1'+PadRightStr(IntToStr(Counter),3)+' ^0'+PadLeftStr(MenuR.SDesc,21);
         END;
         PrintACR(TempS);
         Inc(RecNumToList);
@@ -445,7 +446,8 @@ BEGIN
         Print('*** No commands defined ***');
       MCIAllowed := TRUE;
     END;
-    InputChar('%LFCommand editor [^1?^2=^1Help^2]: ',Cmd,'QDILMPSX?'^M,[CapAll]);
+    NL;
+    InputChar('^2Command Editor [^1DILMPS^2,(^1?^2)Help,(^1Q^2)uit]: ',Cmd,'DILMPS?Q'^M,[CapAll]);
     CASE Cmd OF
       'D' : DeleteCommand;
       'I' : InsertCommand;

@@ -1,6 +1,7 @@
 {$A+,B-,D+,E-,F+,I-,L+,N-,O+,R-,S+,V-}
 {
-10/21 added desc to color scheme #s
+ 10/21/2021 - Added desc to color scheme #s
+ 03/09/2023 - Nested ShowColors in ColorConfig proc
 }
 UNIT SysOp2J;
 
@@ -89,6 +90,20 @@ VAR
   Cmd: Char;
   RecNumToList: Integer;
   SaveTempPause: Boolean;
+
+  PROCEDURE ShowColors;
+  VAR
+    Counter: Byte;
+  BEGIN
+    FOR Counter := 1 TO 10 DO
+      BEGIN
+        SetC(Scheme.Color[Counter]);
+        Prompt(IntToStr(Counter - 1));
+        SetC(7);
+        Prompt(' ');
+      END;
+    NL;
+  END;
 
   PROCEDURE SystemColors(VAR TempScheme1: SchemeRec; Cmd1: Char; VAR Changed: Boolean);
   VAR

@@ -119,17 +119,17 @@ BEGIN
   Done := FALSE;
   Counter := 1;
   WHILE (Counter <= NumCmds) AND (NewMenuCmd = '') AND (NOT Done) AND (NOT HangUp) DO
-  BEGIN
-    IF (MemCmd^[Counter].Ckeys = AutoCmd) then
-      IF (AACS(MemCmd^[Counter].ACS)) THEN
-      BEGIN
-        NewMenuCmd := AutoCmd;
-        DoMenuCommand(Done,
-                      MemCmd^[Counter].CmdKeys,
-                      MemCmd^[Counter].Options,
-                      NewMenuCmd,
-                      MemCmd^[Counter].NodeActivityDesc);
-      END;
+    BEGIN
+      IF (MemCmd^[Counter].Ckeys = AutoCmd) then
+        IF (AACS(MemCmd^[Counter].ACS)) THEN
+          BEGIN
+            NewMenuCmd := AutoCmd;
+            DoMenuCommand(Done,
+                          MemCmd^[Counter].CmdKeys,
+                          MemCmd^[Counter].Options,
+                          NewMenuCmd,
+                          MemCmd^[Counter].NodeActivityDesc);
+          END;
     Inc(Counter);
   END;
 END;

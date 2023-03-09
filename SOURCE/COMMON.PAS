@@ -42,6 +42,7 @@ Lee Woodridge
                 -- We should probably be using this EVERYWHERE, no?
  02/20/2023 - Moved OneLiners record variables here from ONELINERS.PAS
  03/08/2023 - Added Cursor proc, toggles cursor display locally AND remotely, nested local CursorOn assembly code from myIO in
+ 03/09/2023 - Moved ShowColors from here to SysOp2J
 
  [NOTES]
  - messing with ANSIG/PageLength ... check pagelength for wrong positioning
@@ -633,10 +634,10 @@ PROCEDURE SerialOut(s: STRING);
 PROCEDURE SL1(s: AStr); { Write entry to SysOp log }
 PROCEDURE SysOpLog(s: AStr); { Write entry to SysOp log with indent (user actions) }
 PROCEDURE InitTrapFile;
-PROCEDURE OutTrap(c: Char); {leew: was missing}
+PROCEDURE OutTrap(c: Char); { LeeW: Was missing }
 { Color stuff }
-(*FUNCTION GetC(c: Byte): STRING;*)
-PROCEDURE ShowColors;
+(*FUNCTION GetC(c: Byte): STRING;
+PROCEDURE ShowColors;*)
 PROCEDURE SetC(C: Byte);
 PROCEDURE UserColor(Color: Byte);
 FUNCTION StripColor(CONST InString: STRING): STRING; { Returns string with all color codes removed }
@@ -750,7 +751,7 @@ PROCEDURE Cursor(Show: Boolean);
   END;
 
 BEGIN
-  IF (OutCom) AND (OkANSI) THEN
+  IF (OkANSI) THEN
     IF (Show) THEN
       SerialOut(#27'[?25h')
     ELSE
@@ -781,7 +782,7 @@ BEGIN
       ToggleWindow(FALSE);
     END;
 
-  IF (OkANSI) AND (ComPortSpeed > 0) THEN
+  IF (OkANSI) AND (ComPortSpeed>0) THEN
     SerialOut(#27+'['+IntToStr(Y)+';'+IntToStr(X)+'H');
   IF (WantOut) THEN
     GoToXY(X,Y);
@@ -802,7 +803,7 @@ BEGIN
   ToLower := S;
 END;
 
-PROCEDURE Toggle(VAR TheVar: Boolean); {LeeW: Added, instead of writing "x := not x" everywhere}
+PROCEDURE Toggle(VAR TheVar: Boolean); {LeeW: Added, instead of writing "X := NOT X" everywhere}
 BEGIN
   TheVar := NOT TheVar;
 END;
@@ -820,8 +821,9 @@ BEGIN
       Exit;
     END;
   CheckPW := FALSE;
-  lRGLngStr(33,FALSE); {"SysOp Password:"}
-  InputMain(Password,SizeOf(Password)-1,[IsPassword]); {GetPassword(Password,20);}
+
+  InputString(lRGLngStr(33,TRUE),Password,SizeOf(Password)-1,[IsPassword],Changed);
+
   IF (Password = General.SysOpPW) THEN
     CheckPW := TRUE
   ELSE IF (InCom) AND (Password <> '') THEN
@@ -990,20 +992,6 @@ END;
 PROCEDURE DTR(Status: Boolean);
 BEGIN
   Common4.DTR(Status);
-END;
-
-PROCEDURE ShowColors;
-VAR
-  Counter: Byte;
-BEGIN
-  FOR Counter := 1 TO 10 DO
-  BEGIN
-    SetC(Scheme.Color[Counter]);
-    Prompt(IntToStr(Counter - 1));
-    SetC(7);
-    Prompt(' ');
-  END;
-  NL;
 END;
 
 FUNCTION CheckDriveSpace(S,Path: AStr; MinSpace: Integer): Boolean;

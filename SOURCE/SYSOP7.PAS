@@ -384,7 +384,7 @@ VAR
                         Abort := FALSE;
                         Next := FALSE;
                         MCIAllowed := FALSE;
-                        ConfigHeader('Editing Menu #'+IntToStr(RecNumToModify)+' Of '+IntToStr(NumMenus),0,0);
+                        ConfigHeader('Editing Menu',RecNumToModify,NumMenus);
                         PrintACR('^0(^11^0) Menu Number    : ^1'+IntToStr(MenuNum));
                         PrintACR('^0(^12^0) Menu Title     : ^1'+LDesc[1]);
                         IF (LDesc[2] <> '') THEN
@@ -412,10 +412,10 @@ VAR
                       END;
                     NL;
                     IF (General.MultiNode) THEN
-                      InputChar('^2Menu Editor [^11^2-^19^2,^1NT^2,(^1?^2)Help,(^1C^2)ommand Editor,(^1Q^2)uit]: ',Cmd1,
+                      InputChar('^2Menu Editor [^1123456789NT^2,(^1C^2)ommand Editor,(^1?^2)Help,(^1Q^2)uit]: ',Cmd1,
                                 'Q123456789CNT[]FJL?'^M,[CapAll])
                     ELSE
-                      InputChar('^2Menu Editor [^11^2-^19^2,^1T^2,(^1?^2)Help,(^1C^2)ommand Editor,(^1Q^2)uit]: ',Cmd1,
+                      InputChar('^2Menu Editor [^11^2-^19^2,^1T^2,(^1C^2)ommand Editor,(^1?^2)Help,(^1Q^2)uit]: ',Cmd1,
                                 'Q123456789CT[]FJL?'^M,[CapAll]);
                     CASE Cmd1 OF
                       '1' : BEGIN
@@ -642,8 +642,8 @@ BEGIN
       '?' : BEGIN
               NL;
               Print('^0<^1CR^0>Refresh/Next Page');
-              LCmds(12,1,'Delete Menu','Insert Menu');
-              LCmds(12,1,'Modify Menu','');
+              LCmds3(12,1,'Delete Menu','Insert Menu','Modify Menu');
+              {LCmds(12,1,'Modify Menu','');}
             END;
     END;
     IF (CMD <> ^M) THEN
