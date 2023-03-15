@@ -17,7 +17,7 @@
      - nested findtasker and shareloaded in init
      04/18/2022 replaced infield with readln
     [TO DO]
-     - 
+     -
 }
 UNIT Boot;
 
@@ -33,10 +33,9 @@ USES
   CRT,
   DOS,
   Common,
-  MyIO,
   MiscUser,
   TimeFunc;
-  
+
 FUNCTION ErrorCodeHelp(ErrorCode: Byte): STRING;
 BEGIN
   CASE ErrorCode OF
@@ -155,9 +154,9 @@ VAR
               S2 := DirName;
               Write('New '+DirDesc+' path: ');
               (*InField(S2,40); {input}*)
-              
+
               ReadLn(S2);
-              
+
               S2 := AllCaps(SQOutSp(S2));
               IF (DirName = S2) OR (S2 = '') THEN
                 BEGIN
@@ -191,7 +190,7 @@ VAR
       END;
     IF (AnyDone) THEN
       SaveGeneral(FALSE);
-      
+
     TempDir := Copy(General.TempPath,1,Length(General.TempPath) - 1)+IntToStr(ThisNode)+'\';
     IF (NOT ExistDir(TempDir)) THEN
       MkDir(Copy(TempDir,1,Length(TempDir) - 1));
@@ -357,7 +356,7 @@ BEGIN { INITP1 }
   Close(SysOpLogFile);
 
   Assign(SysOpLogFile1,General.LogsPath+'SLOGXXXX.LOG');
-  
+
   SL1('');
   SL1('^0Renegade '+General.Version+' Node ^1'+IntToStr(ThisNode)+'^0 Loaded On ^1'+Dat+'^0');
   SL1('');
@@ -872,7 +871,7 @@ END; { INITP1 }
 PROCEDURE Init;
 VAR
   Node: Byte;
-  
+
 PROCEDURE FindTaskerType;
 VAR
   D5,
@@ -995,7 +994,7 @@ BEGIN
   END;
   ShareLoaded := (T_Al = $FF);
 END;
-  
+
 BEGIN
   IF (DateStr = '01-01-1980') THEN
     BEGIN

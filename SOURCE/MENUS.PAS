@@ -20,9 +20,9 @@ INTERFACE
 USES
   CRT,
   Common,
+  Common3, {test}
   Events,
-  SysOp2J,
-  MyIO;
+  SysOp2J;
 
 PROCEDURE AutoExecCmd(AutoCmd: AStr);
 PROCEDURE MenuExec;
@@ -605,6 +605,8 @@ BEGIN
   CASE Cmd[1] OF
     '^' : CASE Cmd[2] OF { Command for testing }
             '^' : BEGIN
+            tempstr:='This is a test of new input field!';
+                    NewInput('Prompt:',tempstr,34,20,[{NumbersOnly,AllowNegative}],Changed);
                   END;
           ELSE
             NoCmd := TRUE;

@@ -28,8 +28,7 @@ INTERFACE
 USES
   Common,
   Common2, {togglewindow}
-  Menus2,
-  MyIO;
+  Menus2;
 
 PROCEDURE RequestSysOpChat(CONST MenuOption: Str50);
 PROCEDURE ChatFileLog(b: Boolean);

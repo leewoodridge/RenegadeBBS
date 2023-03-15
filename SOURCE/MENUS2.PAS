@@ -2,7 +2,8 @@
 {
  11/15/2021 - Added SysOp log "Loaded Menu Name (#0)" entry
  03/08/2023 - Log entry no longer reports Global, AllStart, Shuttle, NewUserInfo, ReadingMessages, or ListingFiles menus
-
+ 03/09/2023 - Error messages now using Messages PROC
+[NOTES]
  MENUCMD "*=" & ShowCmds PROC -- can these be removed??, undocumented, seems useless
 }
 UNIT Menus2;
@@ -188,7 +189,7 @@ BEGIN
   IF (MenuOption = '') THEN
     Exit;
   IF (NumCmds = 0) THEN
-    Print('*** No commands on this menu ***')
+    Messages(4,0,'commands') { "No commands exist!" } (*Print('*** No commands on this menu ***')*)
   ELSE
   BEGIN
     AllowAbort := TRUE;

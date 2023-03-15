@@ -5,28 +5,18 @@ UNIT ExecBat;
 INTERFACE
 
 USES
-  Common,
-  MyIO;
+  Common;
 
-PROCEDURE ExecWindow(VAR Ok: Boolean;
-                     CONST Dir,
-                     BatLine: AStr;
-                     OkLevel: Integer;
-                     VAR RCode: Integer);
-PROCEDURE ExecBatch(VAR Ok: Boolean;
-                    Dir,
-                    BatLine: AStr;
-                    OkLevel: Integer;
-                    VAR RCode: Integer;
-                    Windowed: Boolean);
+PROCEDURE ExecWindow(VAR Ok: Boolean;CONST Dir,BatLine: AStr;OkLevel: Integer;VAR RCode: Integer);
+PROCEDURE ExecBatch(VAR Ok: Boolean;Dir,BatLine: AStr;OkLevel: Integer;VAR RCode: Integer;Windowed: Boolean);
 PROCEDURE Shel(CONST s: AStr);
 PROCEDURE Shel2(x: Boolean);
 
 IMPLEMENTATION
 
 USES
-  Crt,
-  Dos;
+  CRT,
+  DOS;
 
 VAR
   CurInt21: Pointer;

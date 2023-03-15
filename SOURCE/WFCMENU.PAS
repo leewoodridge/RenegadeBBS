@@ -29,7 +29,6 @@ USES
   Menus2,
   MsgPack,
   MultNode,
-  MyIO,
   SysOp1,
   SysOp2,
   SysOp3,

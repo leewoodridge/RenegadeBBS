@@ -15,12 +15,13 @@
      - Removed all strings from FAE language file and the proc
      - Removed all MCIs from FAEMCI and the proc
      - 12/8/2021 deleting file area reports correct name/sysop log
-                - file area list prints to bottom of pagelen now
+     - file area list prints to bottom of pagelen now
      - 't' to toggle display is now working again
+     - 03/09/2023 error messages now using messages proc
+     - aesthetic changes
     [TO DO]
      - aesthetics
      - test fa list longer than 1 page for pagination
-
 }
 
 UNIT SysOp9; { File Area Editor }
@@ -36,7 +37,7 @@ USES
   File0,
   File2,
   SysOp2K,
-  SysOp2; { configheader and hl }
+  SysOp2; { ConfigHeader/HL }
 
 PROCEDURE FileAreaEditor;
 TYPE
@@ -129,7 +130,7 @@ VAR
     RecNum: Integer;
   BEGIN
     IF (NumFileAreas = 0) THEN
-      Prompt('%LFNo file areas exist!%LF%PA') {messages()}
+      Messages(4,0,'file areas') { "No file areas exist!" } (*Prompt('%LFNo file areas exist!%LF%PA')*)
     ELSE
     BEGIN
       MCIVars1.FirstRecNum := -1;
@@ -141,7 +142,7 @@ VAR
         IF (MCIVars1.LastRecNum >= 1) AND (MCIVars1.LastRecNum <= NumFileAreas) THEN
         BEGIN
           IF (MCIVars1.FirstRecNum > MCIVars1.LastRecNum) OR (MCIVars1.LastRecNum < MCIVars1.FirstRecNum) THEN
-            Prompt('%LF^8Invalid record number order!^0%LF%PA')
+            Messages(8,0,'') { "No commands exist!" }(*Prompt('%LF^8Invalid record number order!^0%LF%PA')*)
           ELSE
           BEGIN
             InputChar('%LFChange to which drive? (^1A^2-^1Z^2): ',MCIVars1.Drive,'ABCDEFGHIJKLMNOPQRSTUVWXYZ'^M,[CapAll]);
@@ -186,7 +187,7 @@ VAR
     Ok2: Boolean;
   BEGIN
     IF (NumFileAreas = 0) THEN
-      Prompt('%LFNo file areas exist!%LF%PA')
+      Messages(4,0,'file areas') { "No file areas exist!" } (*Prompt('%LFNo file areas exist!%LF%PA')*)
     ELSE
     BEGIN
       RecNumToDelete := -1;
@@ -311,32 +312,31 @@ VAR
         BEGIN
           Abort := FALSE;
           Next := FALSE;
-          CLS;
+          {CLS;}
           IF (Editing) THEN
-            Prompt('^1Editing file area '+IntToStr(MCIVars1.RecNumToEdit)+' of '+IntToStr(NumFileAreas))
+            ConfigHeader('Editing File Area',MCIVars1.RecNumToEdit,NumFileAreas)
           ELSE
-            Prompt('^1Inserting file area '+IntToStr(MCIVars1.RecNumToEdit)+' of '+IntToStr(NumFileAreas + 1));
-          NL;
-          PrintACR('^1(^01^1) Area Name    : ^0'+MemFileArea.AreaName);
-          PrintACR('^1(^02^1) File Name    : ^0'+MemFileArea.FileName+' ^1(^0'+GetDirPath(MemFileArea)+'.*^1)');
-          PrintACR('^1(^03^1) DL Path      : ^0'+MemFileArea.DLPath);
-          PrintACR('^1(^04^1) UL Path      : ^0'+MemFileArea.ULPath);
-          PrintACR('^1(^05^1) Area ACS     : ^0'+AOnOff((MemFileArea.ACS = ''),'*None*',MemFileArea.ACS));
-          PrintACR('^1(^06^1) DL/UL ACS    : ^0'+AOnOff((MemFileArea.DLACS = ''),'*None*',MemFileArea.DLACS)+
-          '^1 / ^0'+AOnOff((MemFileArea.ULACS = ''),'*None*',MemFileArea.ULACS));
-          PrintACR('^1(^07^1) Max Files    : ^0'+IntToStr(MemFileArea.MaxFiles));
-          PrintACR('^1(^08^1) Password     : ^0'+AOnOff((MemFileArea.Password = ''),'*None*',MemFileArea.Password));
-          PrintACR('^1(^09^1) Arc/Cmt Type : ^0'+AOnOff((MemFileArea.ArcType = 0),'*None*',
-          General.FileArcInfo[MemFileArea.ArcType].Ext)+'^1 / ^0'+AOnOff((MemFileArea.CmtType = 0),'*None*',
+            ConfigHeader('Inserting File Area',MCIVars1.RecNumToEdit,NumFileAreas+1);
+          {NL;}
+          PrintACR('^0(^11^0) Area Name    : ^1'+MemFileArea.AreaName);
+          PrintACR('^0(^12^0) File Name    : ^1'+MemFileArea.FileName+' ^0(^1'+GetDirPath(MemFileArea)+'.*^0)');
+          PrintACR('^0(^13^0) DL Path      : ^1'+MemFileArea.DLPath);
+          PrintACR('^0(^14^0) UL Path      : ^1'+MemFileArea.ULPath);
+          PrintACR('^0(^15^0) Area ACS     : ^1'+AOnOff((MemFileArea.ACS = ''),'*None*',MemFileArea.ACS));
+          PrintACR('^0(^16^0) DL/UL ACS    : ^1'+AOnOff((MemFileArea.DLACS = ''),'*None*',MemFileArea.DLACS)+
+          '^0 / ^1'+AOnOff((MemFileArea.ULACS = ''),'*None*',MemFileArea.ULACS));
+          PrintACR('^0(^17^0) Max Files    : ^1'+IntToStr(MemFileArea.MaxFiles));
+          PrintACR('^0(^18^0) Password     : ^1'+AOnOff((MemFileArea.Password = ''),'*None*',MemFileArea.Password));
+          PrintACR('^0(^19^0) Arc/Cmt Type : ^1'+AOnOff((MemFileArea.ArcType = 0),'*None*',
+          General.FileArcInfo[MemFileArea.ArcType].Ext)+'^0 / ^1'+AOnOff((MemFileArea.CmtType = 0),'*None*',
           IntToStr(MemFileArea.CmtType)));
-          PrintACR('^1(^0T^1) Flags        : ^0'+DisplayFAFlags(MemFileArea.FAFlags,'5','1'));
+          PrintACR('^0(^1T^0) Flags        : '+DisplayFAFlags(MemFileArea.FAFlags,'1','0'));
         END;
-        IF (NOT Editing) THEN
-          CmdStr := '123456789T'
-        ELSE
-          CmdStr := '123456789T[]FJL';
         NL;
-        InputChar('^1Modify File Area Menu [(^0?^1)Help,(^0Q^1)uit]: ',Cmd1,'Q?'+CmdStr+^M,[CapAll]);
+        IF (NOT Editing) THEN
+          InputChar('Modify File Area Menu [^1123456789T^2,(^1Q^2)uit]: ',Cmd1,'Q123456789T'^M,[CapAll])
+        ELSE
+          InputChar('Modify File Area Menu [(^1?^2)Help,(^1Q^2)uit]: ',Cmd1,'Q?123456789T[]{};'^M,[CapAll]);
         CASE Cmd1 OF
           '1' : REPEAT
                   TempMemFileArea1.AreaName := MemFileArea.AreaName;
@@ -485,49 +485,43 @@ VAR
                   Dec(MCIVars1.RecNumToEdit)
                 ELSE
                 BEGIN
-                  Prompt('%LF^8You are at the first valid record!^0');
+                  Messages(2,0,''); {First valid record!}
                   Cmd1 := #0;
                 END;
           ']' : IF (MCIVars1.RecNumToEdit < NumFileAreas) THEN
                   Inc(MCIVars1.RecNumToEdit)
                 ELSE
                 BEGIN
-                  Prompt('%LF^8You are at the last valid record!^0');
+                  Messages(3,0,''); {Last valid record!}
                   Cmd1 := #0;
                 END;
-          'F' : IF (MCIVars1.RecNumToEdit <> 1) THEN
+          '{' : IF (MCIVars1.RecNumToEdit <> 1) THEN
                   MCIVars1.RecNumToEdit := 1
                 ELSE
                 BEGIN
-                  Prompt('%LF^8You are at the first valid record!^0');
+                  Messages(2,0,''); {First valid record!}
                   Cmd1 := #0;
                 END;
-          'J' : BEGIN
+          ';' : BEGIN
                   InputInteger('%LFJump to entry?',MCIVars1.RecNumToEdit,[Numbersonly],1,NumFileAreas,Changed);
                   IF (MCIVars1.RecNumToEdit < 1) OR (MCIVars1.RecNumToEdit > NumFileAreas) THEN
                     Cmd1 := #0;
                 END;
-          'L' : IF (MCIVars1.RecNumToEdit <> NumFileAreas) THEN
+          '}' : IF (MCIVars1.RecNumToEdit <> NumFileAreas) THEN
                   MCIVars1.RecNumToEdit := NumFileAreas
                 ELSE
                 BEGIN
-                  Prompt('%LF^8You are at the last valid record!^0');
+                  Messages(3,0,''); {Last valid record!}
                   Cmd1 := #0;
                 END;
           '?' : BEGIN
-                  PrintACR('%LF^0<^1CR^0>Redisplay current screen');
-                  PrintACR('^11-9,T^0:Modify item');
-                  IF (NOT Editing) THEN
-                    PrintACR('^0(^1Q^0)uit and save')
-                  ELSE
-                  BEGIN
-                    PrintACR('^0(^1[^0)Back entry          ^0(^1]^0)Forward entry');
-                    PrintACR('^0(^1F^0)irst entry in list  ^0(^1J^0)ump to entry');
-                    PrintACR('^0(^1L^0)ast entry in list   ^0(^1Q^0)uit and save');
-                    END;
+                  NL;
+                  LCmds(18,1,'[ Previous Record','] Next Record');
+                  LCmds(18,1,'{ First Record','} Last Record');
+                  LCmds(18,1,'; Jump To Record','');
                 END;
         END;
-      UNTIL (Pos(Cmd1,'Q[]FJL') <> 0) OR (HangUp);
+      UNTIL (Pos(Cmd1,'Q[]{};') <> 0) OR (HangUp);
   END;
 
   { --- }
@@ -543,7 +537,8 @@ VAR
     Changed: Boolean;
   BEGIN
     IF (NumFileAreas = MaxFileAreas) THEN
-      Prompt('%LF^8No more then '+IntToStr(MaxFileAreas)+' file areas can exist!^0%LF%PA')
+      Messages(5,MaxFileAreas,'file areas') { "No more than 0 file areas can exist!" }
+      (*Prompt('%LF^8No more then '+IntToStr(MaxFileAreas)+' file areas can exist!^0%LF%PA')*)
     ELSE
     BEGIN
       RecNumToInsertBefore := -1;
@@ -636,7 +631,7 @@ VAR
     Changed: Boolean;
   BEGIN
     IF (NumFileAreas = 0) THEN
-      Prompt('%LF^8No file areas exist!^0%LF%PA')
+      Messages(4,0,'file areas') { "No file areas exist!" } (*Prompt('%LF^8No file areas exist!^0%LF%PA')*)
     ELSE
     BEGIN
       MCIVars1.RecNumToEdit := -1;
@@ -731,9 +726,9 @@ VAR
     RecNum2: Integer;
   BEGIN
     IF (NumFileAreas = 0) THEN
-      Prompt('%LF^8No file areas exist!^0%LF%PA')
+      Messages(4,0,'file areas') { "No file areas exist!" }
     ELSE IF (NumFileAreas = 1) THEN
-      Prompt('%LF^8No file areas to position!^0%LF%PA')
+      Messages(6,0,'file areas') { "No file areas to position!" }
     ELSE
     BEGIN
       RecNumToPosition := -1;

@@ -48,6 +48,9 @@ Lee Woodridge
  - messing with ANSIG/PageLength ... check pagelength for wrong positioning
  - Clean up SetC/GetC
  - inputmessage linelen param should be 79??? or 80 ... is 78
+ [TODO]
+ - record navigation [previous,]next,{first,}last,;jump
+ - use messages for common stuff, first last, none etc
 *)
 UNIT Common;
 
@@ -56,7 +59,6 @@ INTERFACE
 USES
   CRT,
   DOS,
-  MyIO,
   TimeFunc;
 
 {$I RECORDS.INC}
@@ -65,6 +67,10 @@ CONST
   StrLen = 119;
 
 TYPE
+
+  WindowRec = ARRAY[0..8000] OF Byte; { LeeW: Moved from MyIO }
+  ScreenType = ARRAY [0..3999] OF Byte; { ^ }
+
   MCIPos = RECORD  { LeeW: Added - Array of MCI positioning data taken from ANSIs }
     X,       { X (horizontal) axis }
     Y: Byte; { Y (vertical) axis }
@@ -332,6 +338,16 @@ CONST
   ANSIDetected: Boolean = FALSE;          {  }
 
 VAR
+
+  Wind: WindowRec; { LeeW: Moved from MyIO }
+  MonitorType: Byte ABSOLUTE $0000:$0449;
+  ScreenAddr: ScreenType ABSOLUTE $B800:$0000;
+  ScreenSize: Integer;
+  MaxDisplayRows,
+  MaxDisplayCols: Byte; { ^ }
+
+
+
   LangStringArray:                     { LeeW: Added - Strings to pass through the language file }
     ARRAY[0..9] OF STRING{[40]};
   MCIPosRecArray:                      { LeeW: Added - MCI positioning records "%00-09" }
@@ -527,12 +543,17 @@ VAR
   (* LastCommand: STRING[255];  { Last command and parameter ("CMD;PARAM") - LeeW: Added 03/23/2022 } *)
 
 {UNSORTED}
+
+PROCEDURE Update_Logo(VAR Addr1,Addr2; BlkLen: Integer); { LeeW: Moved from MyIO}
+PROCEDURE SaveScreen(VAR Wind: WindowRec);
+PROCEDURE RemoveWindow(VAR Wind: WindowRec); {^}
+
 FUNCTION Timer: LongInt;
 PROCEDURE NewCompTables;
 PROCEDURE Update_Screen;
 PROCEDURE lStatus_Screen(WhichScreen: Byte; Message: AStr; OneKey: Boolean; VAR Answer: AStr);
 FUNCTION VerLine(B: Byte): STRING; { Renegade BBS version information }
-PROCEDURE Toggle(VAR TheVar: Boolean); { Toggles a boolean } { LeeW: Added }
+PROCEDURE Toggle(VAR V: Boolean); { Toggles a boolean } { LeeW: Added }
 FUNCTION PHours(CONST DisplayStr: AStr; LoTime,HiTime: Integer): AStr; {**move to timefunc}
 PROCEDURE WriteWFC(c: Char);
 PROCEDURE AdjustBalance(Adjustment: LongInt); { Add or subtract from users credits/debits }
@@ -728,6 +749,75 @@ USES
   SysOp12,
   Vote;
 
+
+PROCEDURE SaveScreen(VAR Wind: WindowRec);
+BEGIN
+  Move(ScreenAddr[0],Wind[0],ScreenSize);
+END;
+
+PROCEDURE RemoveWindow(VAR Wind: WindowRec);
+BEGIN
+  Move(Wind[0],ScreenAddr[0],ScreenSize);
+END;
+
+PROCEDURE Update_Logo(VAR Addr1,Addr2; BlkLen: Integer);
+BEGIN
+  INLINE (
+    $1E/
+    $C5/$B6/ADDR1/
+    $C4/$BE/ADDR2/
+    $8B/$8E/BLKLEN/
+    $E3/$5B/
+    $8B/$D7/
+    $33/$C0/
+    $FC/
+    $AC/
+    $3C/$20/
+    $72/$05/
+    $AB/
+    $E2/$F8/
+    $EB/$4C/
+    $3C/$10/
+    $73/$07/
+    $80/$E4/$F0/
+    $0A/$E0/
+    $EB/$F1/
+    $3C/$18/
+    $74/$13/
+    $73/$19/
+    $2C/$10/
+    $02/$C0/
+    $02/$C0/
+    $02/$C0/
+    $02/$C0/
+    $80/$E4/$8F/
+    $0A/$E0/
+    $EB/$DA/
+    $81/$C2/$A0/$00/
+    $8B/$FA/
+    $EB/$D2/
+    $3C/$1B/
+    $72/$07/
+    $75/$CC/
+    $80/$F4/$80/
+    $EB/$C7/
+    $3C/$19/
+    $8B/$D9/
+    $AC/
+    $8A/$C8/
+    $B0/$20/
+    $74/$02/
+    $AC/
+    $4B/
+    $32/$ED/
+    $41/
+    $F3/$AB/
+    $8B/$CB/
+    $49/
+    $E0/$AA/
+    $1F);
+END;
+
 PROCEDURE InputPath(S: AStr; VAR DirPath: Str40; CreateDir,AllowExit: Boolean; VAR Changed: Boolean);
 BEGIN
   Common3.InputPath(S,DirPath,CreateDir,AllowExit,Changed);
@@ -803,9 +893,9 @@ BEGIN
   ToLower := S;
 END;
 
-PROCEDURE Toggle(VAR TheVar: Boolean); {LeeW: Added, instead of writing "X := NOT X" everywhere}
+PROCEDURE Toggle(VAR V: Boolean); {LeeW: Added, instead of writing "X := NOT X" everywhere}
 BEGIN
-  TheVar := NOT TheVar;
+  V := NOT V;
 END;
 
 FUNCTION UpdateCRC32(CRC: LongInt; VAR Buffer; Len: Word): LongInt; EXTERNAL;
@@ -1307,7 +1397,8 @@ BEGIN
      9 : MsgStr := '^8This can only be changed locally!^0'
   END;
   PrintACR(MsgStr);
-  PauseScr(FALSE);
+  IF (MsgNum<>4) THEN
+    PauseScr(FALSE);
 END;
 
 

@@ -1,5 +1,7 @@
 {$A+,B-,D+,E-,F+,I-,L+,N-,O+,R-,S+,V-}
-
+{
+ 03/09/2023 - Error messages now using Messages PROC
+}
 UNIT SysOp1;
 
 INTERFACE
@@ -46,31 +48,31 @@ VAR
 
   PROCEDURE InitProtocolVars(VAR Protocol: ProtocolRecordType);
   VAR
-    Counter: BYTE;
+    Counter: Byte;
   BEGIN
     FillChar(Protocol,SizeOf(Protocol),0);
     WITH Protocol DO
-    BEGIN
-      PRFlags := [ProtXferOkCode];
-      CKeys := '!';
-      Description := '<< New Protocol >>';
-      ACS := '';
-      TempLog := '';
-      DLoadLog := '';
-      ULoadLog := '';
-      DLCmd := '';
-      ULCmd := '';
-      FOR Counter := 1 TO 6 DO
       BEGIN
-        DLCode[Counter] := '';
-        ULCode[Counter] := '';
+        PRFlags := [ProtXferOkCode];
+        CKeys := '!';
+        Description := '<< New Protocol >>';
+        ACS := '';
+        TempLog := '';
+        DLoadLog := '';
+        ULoadLog := '';
+        DLCmd := '';
+        ULCmd := '';
+        FOR Counter := 1 TO 6 DO
+          BEGIN
+            DLCode[Counter] := '';
+            ULCode[Counter] := '';
+          END;
+        EnvCmd := '';
+        DLFList := '';
+        MaxChrs := 127;
+        TempLogPF := 0;
+        TempLogPS := 0;
       END;
-      EnvCmd := '';
-      DLFList := '';
-      MaxChrs := 127;
-      TempLogPF := 0;
-      TempLogPS := 0;
-    END;
   END;
 
   PROCEDURE DeleteProtocol(TempProtocol1: ProtocolRecordType; RecNumToDelete: Integer);
@@ -257,9 +259,9 @@ VAR
           Next := FALSE;
           CLS;
           IF (Editing) THEN
-            ConfigHeader('Editing Protocol #'+IntToStr(RecNumToEdit)+' Of '+IntToStr(NumProtocols),0,0)
+            ConfigHeader('Editing Protocol',RecNumToEdit,NumProtocols)
           ELSE
-            ConfigHeader('Inserting Protocol #'+IntToStr(RecNumToEdit)+' Of '+IntToStr(NumProtocols + 1),0,0);
+            ConfigHeader('Inserting Protocol',RecNumToEdit,NumProtocols + 1);
           PrintACR('^0(^1!^0) Type/protocl: ^1'+
                    AOnOff(ProtActive IN PRFlags,'Active','INACTIVE')+' - '+
                    AOnOff(ProtIsBatch IN PRFlags,'Batch','Single')+
@@ -798,7 +800,8 @@ VAR
     Close(ProtocolFile);
     LastError := IOResult;
     IF (NumProtocols = 0) THEN
-      Print('*** No protocols defined ***'); {leew: messages!}
+    Messages(4,0,'protocols'); { "No protocols exist!" }
+      (*Print('*** No protocols defined ***'); {leew: messages!}*)
   END;
 
 BEGIN

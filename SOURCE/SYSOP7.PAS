@@ -1,6 +1,7 @@
 {$A+,B+,D+,E+,F+,I+,L+,N-,O+,R-,S+,V-}
 {
-12/17/2021 aesthetic changes
+ 12/17/2021 - aesthetic changes
+ 03/09/2023 - Error messages now using Messages PROC
 
 menu titles not saving if last line blank
 }
@@ -60,7 +61,7 @@ BEGIN
   MCIAllowed := TRUE;
   AllowContinue := FALSE;
   IF (NumMenus = 0) THEN
-     Print('*** No menus defined ***'); {leew: messages!}
+     Messages(4,0,'menus'); { "No commands exist!" } (*Print('*** No menus defined ***'); {leew: messages!}*)
   {
   IF (DisplayListNum) THEN
     PrintACR('%LF^0[Users start at menu number: ^1'+IntToStr(General.AllStartMenu)+'^0]');
@@ -408,15 +409,16 @@ VAR
                         PrintACR('^0 '#196' This menu contains ^1'+IntToStr(CmdNumArray[RecNumToModify])+'^0 '
                                  +Plural('command',CmdNumArray[RecNumToModify]));
                         IF (NumMenus = 0) THEN
-                          Print('*** No menus defined ***'); {LeeW: Messages!}
+                          Messages(4,0,'menus'); { "No commands exist!" }
+                          (*Print('*** No menus defined ***'); {LeeW: Messages!}*)
                       END;
                     NL;
                     IF (General.MultiNode) THEN
                       InputChar('^2Menu Editor [^1123456789NT^2,(^1C^2)ommand Editor,(^1?^2)Help,(^1Q^2)uit]: ',Cmd1,
-                                'Q123456789CNT[]FJL?'^M,[CapAll])
+                                '123456789CNT[]{};?Q'^M,[CapAll])
                     ELSE
                       InputChar('^2Menu Editor [^11^2-^19^2,^1T^2,(^1C^2)ommand Editor,(^1?^2)Help,(^1Q^2)uit]: ',Cmd1,
-                                'Q123456789CT[]FJL?'^M,[CapAll]);
+                                '123456789CT[]{};?Q'^M,[CapAll]);
                     CASE Cmd1 OF
                       '1' : BEGIN
                               REPEAT
@@ -577,19 +579,19 @@ VAR
                         Messages(3,0,'');
                         Cmd1 := #0;
                       END;
-                'F' : IF (RecNumToModify <> 1) THEN
+                '{' : IF (RecNumToModify <> 1) THEN
                         RecNumToModify := 1
                       ELSE
                       BEGIN
                         Messages(2,0,'');
                         Cmd1 := #0;
                       END;
-                'J' : BEGIN
+                ';' : BEGIN
                         InputInteger('%LFJump to entry?',RecNumToModify,[NumbersOnly],1,NumMenus,Changed);
                         IF (RecNumToModify < 1) AND (RecNumToModify > NumMenus) THEN
                           Cmd1 := #0;
                       END;
-                'L' : IF (RecNumToModify <> NumMenus) THEN
+                '}' : IF (RecNumToModify <> NumMenus) THEN
                         RecNumToModify := NumMenus
                       ELSE
                       BEGIN
@@ -597,12 +599,10 @@ VAR
                         Cmd1 := #0;
                       END;
                 '?' : BEGIN
-                        Print('%LF^0<^1CR^0>Redisplay screen');
-                        Print('^11-9,C,N,T^0:Modify item');
-                        LCmds(16,1,'[Back entry',']Forward entry');
-                        LCmds(16,1,'Command Editor','First entry in list');
-                        LCmds(16,1,'Jump to entry','Last entry in list');
-                        LCmds(16,1,'Quit and save','');
+                        NL;
+                        LCmds(16,1,'[ Previous Menu','] Next Menu');
+                        LCmds(16,1,'{ First Menu','} Last Menu');
+                        LCmds(16,1,'; Jump To Menu','');
                       END;
               END;
             UNTIL (Pos(Cmd1,'QC[]FJL') <> 0) OR (HangUp);

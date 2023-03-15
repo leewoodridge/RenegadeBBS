@@ -2,6 +2,7 @@
 {
  10/21/2021 - Added desc to color scheme #s
  03/09/2023 - Nested ShowColors in ColorConfig proc
+ 03/09/2023 - Error messages now using Messages PROC
 }
 UNIT SysOp2J;
 
@@ -483,9 +484,9 @@ VAR
           Abort := FALSE;
           Next := FALSE;
           IF (Editing) THEN
-            ConfigHeader('Editing Color Scheme #'+IntToStr(RecNumToEdit)+' Of '+IntToStr(NumSchemes),0,0)
+            ConfigHeader('Editing Color Scheme',RecNumToEdit,NumSchemes)
           ELSE
-            ConfigHeader('Inserting Color Scheme #'+IntToStr(RecNumToEdit)+' Of '+IntToStr(NumSchemes + 1),0,0);
+            ConfigHeader('Inserting Color Scheme',RecNumToEdit,NumSchemes+1);
           PrintACR('^0(^11^0) Description   : ^1'+Scheme.Description);
           Prompt('^0(^12^0) System colors : ');
           ShowColors;
@@ -496,12 +497,11 @@ VAR
           PrintACR('^0(^17^0) Offline mail screen');
           PrintACR('^0(^18^0) Private mail listing');
         END;
-        IF (NOT Editing) THEN
-          CmdStr := '12345678'
-        ELSE
-          CmdStr := '12345678[]FJL';
         NL;
-        InputChar('^2Color Scheme Editor [^11^2-^18^2,(^1?^2)Help,(^1Q^2)uit]: ',Cmd1,'Q?'+CmdStr++^M,[CapAll]);
+        IF (NOT Editing) THEN
+          InputChar('^2Color Scheme Editor [^11^2-^18^2,(^1Q^2)uit]: ',Cmd1,'12345678Q'^M,[CapAll])
+        ELSE
+          InputChar('^2Color Scheme Editor [^11^2-^18^2,(^1?^2)Help,(^1Q^2)uit]: ',Cmd1,'12345678[]{}?Q;'^M,[CapAll]);
         CASE Cmd1 OF
           '1' : REPEAT
                   TempScheme1.Description := Description;
@@ -532,19 +532,19 @@ VAR
                   Messages(3,0,'');
                   Cmd1 := #0;
                 END;
-          'F' : IF (RecNumToEdit <> 1) THEN
+          '{' : IF (RecNumToEdit <> 1) THEN
                   RecNumToEdit := 1
                 ELSE
                 BEGIN
                   Messages(2,0,'');
                   Cmd1 := #0;
                 END;
-          'J' : BEGIN
+          ';' : BEGIN
                   InputInteger('%LFJump to entry?',RecNumToEdit,[NumbersOnly],1,NumSchemes,Changed);
                   IF (RecNumToEdit < 1) OR (RecNumToEdit > NumSchemes) THEN
                     Cmd1 := #0;
                 END;
-          'L' : IF (RecNumToEdit <> NumSchemes) THEN
+          '}' : IF (RecNumToEdit <> NumSchemes) THEN
                   RecNumToEdit := NumSchemes
                 ELSE
                 BEGIN
@@ -552,19 +552,13 @@ VAR
                   Cmd1 := #0;
                 END;
           '?' : BEGIN
-                  Print('%LF^0<^1CR^0>Redisplay current screen');
-                  Print('^11^0-^18^0:Modify item');
-                  IF (NOT Editing) THEN
-                    LCmds(20,1,'Quit and save','')
-                  ELSE
-                  BEGIN
-                    LCmds(20,1,'[Back entry',']Forward entry');
-                    LCmds(20,1,'First entry in list','Jump to entry');
-                    LCmds(20,1,'Last entry in list','Quit and save');
-                  END;
+                  NL;
+                  LCmds(18,1,'[ Previous Record','] Next Record');
+                  LCmds(18,1,'{ First Record','} Last Record');
+                  LCmds(18,1,'; Jump To Record','');
                 END;
         END;
-      UNTIL (Pos(Cmd1,'Q[]FJL') <> 0) OR (HangUp);
+      UNTIL (Pos(Cmd1,'Q[]{};') <> 0) OR (HangUp);
   END;
 
   PROCEDURE InsertScheme(TempScheme1: SchemeRec; Cmd1: Char; RecNumToInsertBefore: Integer);
@@ -804,7 +798,8 @@ VAR
     Close(SchemeFile);
     LastError := IOResult;
     IF (NumSchemes = 0) THEN
-      Print('*** No color schemes defined ***');
+    Messages(4,0,'color schemes'); { "No color schemes exist!" }
+      (*Print('*** No color schemes defined ***');*)
   END;
 
 BEGIN

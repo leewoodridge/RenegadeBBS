@@ -1,5 +1,7 @@
 {$A+,B-,D+,E-,F+,I-,L+,N-,O+,R-,S+,V-}
-
+{
+ 03/09/2023 - Error messages now using Messages PROC
+}
 UNIT SysOp2K;
 
 INTERFACE
@@ -144,9 +146,9 @@ VAR
             Next := FALSE;
             {CLS;}
             IF (Editing) THEN
-              ConfigHeader('Editing Archiver #'+IntToStr(RecNumToEdit)+' Of '+IntToStr(NumArcs),0,0)
+              ConfigHeader('Editing Archiver',RecNumToEdit,NumArcs)
             ELSE
-              ConfigHeader('Inserting Archiver #'+IntToStr(RecNumToEdit)+' Of '+IntToStr(NumArcs + 1),0,0);
+              ConfigHeader('Inserting Archiver',RecNumToEdit,NumArcs+1);
             PrintACR('^0(^11^0) Active                : ^1'+ShowYesNo(Active));
             PrintACR('^0(^12^0) File Extension        : ^1'+Ext);
             PrintACR('^0(^13^0) Interior List Method  : ^1'+DisplayArcStr(ListLine));

@@ -1,5 +1,7 @@
 {$A+,B-,D+,E-,F+,I-,L+,N-,O+,R-,S+,V-}
-
+{
+ 03/09/2023 - Error messages now using Messages PROC
+}
 UNIT Archive1;
 
 INTERFACE
@@ -171,7 +173,7 @@ BEGIN
     Inc(RecNum);
   END;
   IF (RecNum1 = 0) THEN
-    Prompt('* No archive formats available *');
+    Messages(4,0,'archive formats'); { "No archive formats exist!" }(*Prompt('* No archive formats available *');*)
   NL;
 END;
 

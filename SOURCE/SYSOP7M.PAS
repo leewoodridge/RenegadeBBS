@@ -1,6 +1,7 @@
 {$A+,B+,D+,E+,F+,I+,L+,N-,O+,R-,S+,V-}
 {
  03/09/2023 - Aesthetic updates
+            - Error messages now using Messages PROC
 }
 UNIT SysOp7M;
 
@@ -251,9 +252,9 @@ VAR
                 MCIAllowed := TRUE;
               END;
               IF (General.MultiNode) THEN
-                InputChar(#10'Command Editor [^1123456NT^2,(^1?^2)Help,(^1Q^2)uit]: ',Cmd1,'Q123456NT[]FJL?'^M,[CapAll])
+                InputChar(#10'Command Editor [^1123456NT^2,(^1?^2)Help,(^1Q^2)uit]: ',Cmd1,'123456NT[]{};?Q'^M,[CapAll])
               ELSE
-                InputChar(#10'Command Editor [^1123456T^2,(^1?^2)Help,(^1Q^2)uit]: ',Cmd1,'Q123456T[]FJL?'^M,[CapAll]);
+                InputChar(#10'Command Editor [^1123456T^2,(^1?^2)Help,(^1Q^2)uit]: ',Cmd1,'123456T[]{};?Q'^M,[CapAll]);
               CASE Cmd1 OF
                 '1' : InputString('%LF^0New long description:%LF^2: ',LDesc[1],(SizeOf(LDesc[1]) - 1),
                 [InteractiveEdit,NoInputField],Changed);
@@ -311,19 +312,19 @@ VAR
                         Messages(3,0,'');
                         Cmd1 := #0;
                       END;
-                'F' : IF (RecNumToModify <> 1) THEN
+                '{' : IF (RecNumToModify <> 1) THEN
                         RecNumToModify := 1
                       ELSE
                       BEGIN
                         Messages(2,0,'');
                         Cmd1 := #0;
                       END;
-                'J' : BEGIN
+                ';' : BEGIN
                         InputInteger('%LFJump to entry',RecNumToModify,[NumbersOnly],1,CmdNumArray[MenuToModify],Changed);
                         IF (RecNumToModify < 1) and (RecNumToModify > CmdNumArray[MenuToModify]) THEN
                           Cmd1 := #0;
                       END;
-                'L' : IF (RecNumToModify <> CmdNumArray[MenuToModify]) THEN
+                '}' : IF (RecNumToModify <> CmdNumArray[MenuToModify]) THEN
                         RecNumToModify := CmdNumArray[MenuToModify]
                       ELSE
                       BEGIN
@@ -331,14 +332,13 @@ VAR
                         Cmd1 := #0;
                       END;
                 '?' : BEGIN
-                        Print('%LF^0<^1CR^0>Redisplay screen');
-                        Print('^11-6,N,T^0:Modify item');
-                        LCmds(20,1,'[Back entry',']Forward entry');
-                        LCmds(20,1,'First entry in list','Jump to entry');
-                        LCmds(20,1,'Last entry in list','Quit and save');
+                        NL;
+                        LCmds(19,1,'[ Previous Command','] Next Command');
+                        LCmds(19,1,'{ First Command','} Last Command');
+                        LCmds(19,1,'; Jump To Command','');
                       END;
               END;
-            UNTIL (Pos(Cmd1,'Q[]FJL') <> 0) OR (HangUp);
+            UNTIL (Pos(Cmd1,'Q[]{};') <> 0) OR (HangUp);
           IF (Changed) THEN
           BEGIN
             Seek(MenuFile,(MenuRecNumArray[MenuToModify] + SaveRecNumToModify));
@@ -443,7 +443,7 @@ BEGIN
         Inc(RecNumToList);
       END;
       IF (CmdNumArray[MenuToModify] = 0) THEN
-        Print('*** No commands defined ***');
+        Messages(4,0,'commands'); { "No commands exist!" } (*Print('*** No commands defined ***');*)
       MCIAllowed := TRUE;
     END;
     NL;

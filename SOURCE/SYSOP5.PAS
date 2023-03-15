@@ -2,6 +2,7 @@
 {
 02/16/2023 - Aesthetic changes
            - dl/ul data size now in most reasonable units, not always kB
+ 03/09/2023 - Error messages now using Messages PROC
 
  - Add pagination
  - Finish indenting
@@ -518,7 +519,7 @@ VAR
     Close(HistoryFile);
     LastError := IOResult;
     IF (NumHistoryDates = 0) THEN
-      Print('*** No history dates defined ***');
+      Messages(4,0,'history dates'); { "No history dates exist!" }(*Print('*** No history dates defined ***');*)
   END;
 
 BEGIN

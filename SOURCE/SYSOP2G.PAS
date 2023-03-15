@@ -1,6 +1,6 @@
 {$A+,B-,D+,E-,F+,I-,L+,N-,O+,R-,S+,V-}
 {
-
+ 03/09/2023 - Error messages now using Messages PROC
 }
 UNIT SysOp2G;
 
@@ -70,7 +70,7 @@ BEGIN
   TempStr := '';
   NumOnline := 0;
   ConfigHeader('Validation Editor',0,0);
-  PrintACR('^5<^4##^5> <^4K^5/^4Description>                    ^5<^4##^5> <^4K^5/^4Description^5>'); { List header }
+  PrintACR('^5<^4##^5> <^4K^5/^4Description^5>                    ^5<^4##^5> <^4K^5/^4Description^5>'); { List header }
   HL;
   Reset(ValidationFile);
   NumDone := 0;
@@ -484,9 +484,9 @@ VAR
             Abort := FALSE;
             Next := FALSE;
             IF (Editing) THEN
-              ConfigHeader('Editing Validation Record #'+IntToStr(RecNumToEdit)+' Of '+IntToStr(NumValKeys),0,0)
+              ConfigHeader('Editing Validation Level',RecNumToEdit,NumValKeys)
             ELSE
-              ConfigHeader('Inserting Validation Record #'+IntToStr(RecNumToEdit)+' Of '+IntToStr(NumValKeys + 1),0,0);
+              ConfigHeader('Inserting Validation Level',RecNumToEdit,NumValKeys+1);
           PrintACR('^0(^1A^0) Key         : ^1'+Key);
           PrintACR('^0(^1B^0) Description : ^1'+Description);
           PrintACR('^0(^1C^0) Message     : ^1'+AOnOff(UserMsg='','*None*',UserMsg));

@@ -8,8 +8,7 @@ UNIT Common2;
 INTERFACE
 
 USES
-  Common,
-  MyIO;
+  Common;
 
 PROCEDURE BiosScroll(Up: Boolean); {LeeW: Added}
 PROCEDURE SKey1(VAR C: Char);
