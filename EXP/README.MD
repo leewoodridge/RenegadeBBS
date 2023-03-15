@@ -1,1 +1,3 @@
-
+I'm using this folder to store experimental code for review ...
+-
+COMMON3.PAS, LN 636+ - Code for a new input proc w/ scrolling text field
