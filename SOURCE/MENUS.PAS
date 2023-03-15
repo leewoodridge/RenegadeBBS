@@ -605,8 +605,8 @@ BEGIN
   CASE Cmd[1] OF
     '^' : CASE Cmd[2] OF { Command for testing }
             '^' : BEGIN
-                  { tempstr:='This is a test of new input field!';
-                    NewInput('Prompt:',tempstr,34,20,[{NumbersOnly,AllowNegative}],Changed); }
+                 (* tempstr:='This is a test of new input field!';
+                    NewInput('Prompt:',tempstr,34,20,[{NumbersOnly,AllowNegative}],Changed); *)
                   END;
           ELSE
             NoCmd := TRUE;
