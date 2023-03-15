@@ -1,7 +1,9 @@
 {$A+,B-,D+,E-,F+,I-,L+,N-,O+,R-,S-,V-}
 {
-11/5/2021 Nested Local_Input1 in lStatus_screen
-04/15/2022 - alt+s no more, alt-c will use whichever chat is configured as default (as long as ansiok)
+ 11/05/2021 - Nested Local_Input1 in lStatus_screen
+ 04/15/2022 - alt+s no more, alt-c will use whichever chat is configured as default (as long as ansiok)
+ 03/15/2023 - indented
+            - nested gp in shd
 }
 UNIT Common2;
 
@@ -153,21 +155,21 @@ CONST
     'H','o','u','r','s',':',#25,#6 ,'M','a','i','l',' ',':',#25,#6 ,'O',
     'v','e','r','l','a','y','s',':',#25,#7 ,#24);
 
-PROCEDURE BiosScroll(up: Boolean); ASSEMBLER;
+PROCEDURE BiosScroll(Up: Boolean); ASSEMBLER;
 ASM
-  Mov cx,0
-  Mov dh,MaxDisplayRows
-  Mov dl,MaxDisplayCols
-  Mov bh,7
-  Mov al,2
-  Cmp up,1
-  Je @Up
-  Mov ah,7
-  Jmp @go
-  @up:
-  Mov ah,6
-  @Go:
-  Int 10h
+  MOV CX,0
+  MOV DH,MaxDisplayRows
+  MOV DL,MaxDisplayCols
+  MOV BH,7
+  MOV AL,2
+  CMP UP,1
+  JE @UP
+  MOV AH,7
+  JMP @GO
+  @UP:
+  MOV AH,6
+  @GO:
+  INT 10H
 END;
 
 PROCEDURE CPR(c1,c2: Byte);
@@ -175,21 +177,21 @@ VAR
   Flag: ACFlagType;
 BEGIN
   FOR Flag := RLogon TO RMsg DO
-  BEGIN
-    IF (Flag IN ThisUser.ACFlags) THEN
-      TextAttr := c1
-    ELSE
-      TextAttr := c2;
-    Write(Copy('LCVUA*PEKM',(Ord(Flag) + 1),1));
-  END;
+    BEGIN
+      IF (Flag IN ThisUser.ACFlags) THEN
+        TextAttr := c1
+      ELSE
+        TextAttr := c2;
+      Write(Copy('LCVUA*PEKM',(Ord(Flag) + 1),1));
+    END;
   FOR Flag := FNoDLRatio TO FNoDeletion DO
-  BEGIN
-    IF (Flag IN ThisUser.ACFlags) THEN
-      TextAttr := c1
-    ELSE
-      TextAttr := c2;
-    Write(Copy('1234',(Ord(Flag) - 19),1));
-  END;
+    BEGIN
+      IF (Flag IN ThisUser.ACFlags) THEN
+        TextAttr := c1
+      ELSE
+        TextAttr := c2;
+      Write(Copy('1234',(Ord(Flag) - 19),1));
+    END;
 END;
 
 PROCEDURE Clear_Status_Box;
@@ -265,25 +267,25 @@ BEGIN
       C := UpCase(C);
     IF (C IN [#32..#255]) THEN
       IF (B <= MaxLen) THEN
-      BEGIN
-        S[B] := C;
-        Inc(B);
-        Write(C);
-      END
+        BEGIN
+          S[B] := C;
+          Inc(B);
+          Write(C);
+        END
       ELSE
     ELSE
       CASE C of
-        ^H : IF (B > 1) THEN
-             BEGIN
-               Write(^H' '^H);
-               C := ^H;
-               Dec(B);
-             END;
-     ^U,^X : WHILE (B <> 1) DO
-             BEGIN
-               Write(^H' '^H);
-               Dec(B);
-             END;
+        ^H    : IF (B > 1) THEN
+                  BEGIN
+                    Write(^H' '^H);
+                    C := ^H;
+                    Dec(B);
+                  END;
+        ^U,^X : WHILE (B <> 1) DO
+                  BEGIN
+                    Write(^H' '^H);
+                    Dec(B);
+                  END;
       END;
   UNTIL (C IN [^M,^N]);
   S[0] := Chr(B - 1);
@@ -315,207 +317,205 @@ BEGIN
   IF (WhichScreen < 99) THEN
     General.CurWindow := WhichScreen;
   CASE WhichScreen OF
-    1 : WITH ThisUser DO
-        BEGIN
-          Update_Logo(Win1,ScreenAddr[(FirstRow - 1) * 160],WIN1_LENGTH);
-          GoToXY(02,FirstRow);
-          Write(Caps(Name));
-          GoToXY(33,FirstRow);
-          FOR C := 'A' TO 'Z' DO
-          BEGIN
-            IF (C IN ARFlags) THEN
-              TextAttr := 116
-            ELSE
+    1   : WITH ThisUser DO
+            BEGIN
+              Update_Logo(Win1,ScreenAddr[(FirstRow - 1) * 160],WIN1_LENGTH);
+              GoToXY(02,FirstRow);
+              Write(Caps(Name));
+              GoToXY(33,FirstRow);
+              FOR C := 'A' TO 'Z' DO
+                BEGIN
+                  IF (C IN ARFlags) THEN
+                    TextAttr := 116
+                  ELSE
+                    TextAttr := 120;
+                  Write(C);
+                END;
               TextAttr := 120;
-            Write(C);
+              GoToXY(65,FirstRow);
+              IF (TempSysOp) THEN
+                BEGIN
+                  TextAttr := 244;
+                  Write(255);
+                  TextAttr := 120;
+                END
+              ELSE
+                Write(SL);
+              GoToXY(75,FirstRow);
+              Write(NSL DIV 60);
+              GoToXY(02,SecondRow);
+              Write(RealName+' #'+IntToStr(UserNum));
+              GoToXY(33,SecondRow);
+              CPR(116,120);
+              TextAttr := 120;
+              GoToXY(54,SecondRow);
+              Write(ActualSpeed);
+              GoToXY(65,SecondRow);
+              IF (TempSysOp) THEN
+                BEGIN
+                  TextAttr := 244;
+                  Write(255);
+                  TextAttr := 120;
+                END
+              ELSE
+                Write(DSL);
+              GoToXY(75,SecondRow);
+              Write(ThisNode);
+            END;
+    2   : WITH ThisUser DO
+            BEGIN
+              Update_Logo(Win2,ScreenAddr[(FirstRow - 1) * 160],WIN2_LENGTH);
+              GoToXY(02,FirstRow);
+              Write(Street);
+              GoToXY(33,FirstRow);
+              Write(Ph);
+              GoToXY(55,FirstRow);
+              Write(ToDate8(PD2Date(Firston)));
+              GoToXY(71,FirstRow);
+              IF (OKRIP) THEN
+                Write('RIP')
+              ELSE IF (OKAvatar) THEN
+                Write('AVATAR')
+              ELSE IF (OkANSI) THEN
+                Write('ANSI')
+              ELSE IF (OkVT100) THEN
+                Write('VT-100')
+              ELSE
+                Write('NONE');
+              GoToXY(02,SecondRow);
+              Write(PadLeftStr(Citystate+' '+Zipcode,26));
+              GoToXY(33,SecondRow);
+              Write(ToDate8(PD2Date(BirthDate)),', ');
+              Write(Sex+' ',AgeUser(ThisUser.BirthDate));
+              GoToXY(55,SecondRow);
+              Write(ToDate8(PD2Date(Laston)));
+              GoToXY(71,SecondRow);
+              IF (FSEditor IN SFlags) THEN
+                Write('FullScrn')
+              ELSE
+                Write('Regular');
+            END;
+    3   : WITH ThisUser DO
+            BEGIN
+              Update_Logo(Win3,ScreenAddr[(FirstRow - 1) * 160],WIN3_LENGTH);
+              GoToXY(06,FirstRow);
+              Write(Loggedon);
+              GoToXY(16,FirstRow);
+              Write(OnToday);
+              GoToXY(26,FirstRow);
+              Write(MsgPost);
+              GoToXY(36,FirstRow);
+              Write(Feedback);
+              GoToXY(46,FirstRow);
+              Write(IntToStr(Downloads)+'/'+ConvertKB(DK,FALSE));
+              GoToXY(64,FirstRow);
+              IF (Downloads > 0) THEN
+                Write((Uploads / Downloads) * 100:3:0,'%')
+              ELSE
+                Write(0);
+              GoToXY(75,FirstRow);
+              Write(NSL DIV 60);
+              GoToXY(06,SecondRow);
+              Write(TTimeon);
+              GoToXY(16,SecondRow);
+              Write(ThisUser.lCredit - ThisUser.Debit);
+              GoToXY(26,SecondRow);
+              Write(EmailSent);
+              GoToXY(36,SecondRow);
+              Write(TimeBank);
+              GoToXY(46,SecondRow);
+              Write(IntToStr(Uploads)+'/'+ConvertKB(UK,FALSE));
+              GoToXY(64,SecondRow);
+              IF (Loggedon > 0) THEN
+                Write((Msgpost / Loggedon) * 100:3:0,'%')
+              ELSE
+                Write(0);
+              GoToXY(75,SecondRow);
+              Write(ThisNode);
+            END;
+    4   : BEGIN
+            Assign(HistoryFile,General.DataPath+'HISTORY.DAT');
+            Reset(HistoryFile);
+            IF (IOResult = 2) THEN
+              ReWrite(HistoryFile)
+            ELSE
+              BEGIN
+                Seek(HistoryFile,FileSize(HistoryFile) - 1);
+                Read(HistoryFile,History);
+              END;
+            Close(HistoryFile);
+            WITH History DO
+              BEGIN
+                Update_Logo(Win4,ScreenAddr[(FirstRow - 1) * 160],WIN4_LENGTH);
+                GoToXY(20,FirstRow);
+                Write(Callers);
+                GoToXY(34,FirstRow);
+                Write(Email);
+                GoToXY(45,FirstRow);
+                Write(IntToStr(Downloads)+'/'+ConvertKB(DK,FALSE));
+                GoToXY(72,FirstRow);
+                Write(NewUsers);
+                GoToXY(20,SecondRow);
+                Write(Posts);
+                GoToXY(34,SecondRow);
+                Write(Feedback);
+                GoToXY(45,SecondRow);
+                Write(IntToStr(Uploads)+'/'+ConvertKB(UK,FALSE));
+                IF (Active > 9999) THEN
+                  Active := 9999;
+                GoToXY(72,SecondRow);
+                Write(Active,' min');
+              END;
           END;
-          TextAttr := 120;
-          GoToXY(65,FirstRow);
-          IF (TempSysOp) THEN
-          BEGIN
-            TextAttr := 244;
-            Write(255);
-            TextAttr := 120;
-          END
-          ELSE
-            Write(SL);
-          GoToXY(75,FirstRow);
-          Write(NSL DIV 60);
-          GoToXY(02,SecondRow);
-          Write(RealName+' #'+IntToStr(UserNum));
-          GoToXY(33,SecondRow);
-          CPR(116,120);
-          TextAttr := 120;
-          GoToXY(54,SecondRow);
-          Write(ActualSpeed);
-          GoToXY(65,SecondRow);
-          IF (TempSysOp) THEN
-          BEGIN
-            TextAttr := 244;
-            Write(255);
-            TextAttr := 120;
-          END
-          ELSE
-            Write(DSL);
-          GoToXY(75,SecondRow);
-          Write(ThisNode);
-        END;
-    2 : WITH ThisUser DO
-        BEGIN
-          Update_Logo(Win2,ScreenAddr[(FirstRow - 1) * 160],WIN2_LENGTH);
-          GoToXY(02,FirstRow);
-          Write(Street);
-          GoToXY(33,FirstRow);
-          Write(Ph);
-          GoToXY(55,FirstRow);
-          Write(ToDate8(PD2Date(Firston)));
-          GoToXY(71,FirstRow);
-          IF (OKRIP) THEN
-            Write('RIP')
-          ELSE IF (OKAvatar) THEN
-            Write('AVATAR')
-          ELSE IF (OkANSI) THEN
-            Write('ANSI')
-          ELSE IF (OkVT100) THEN
-            Write('VT-100')
-          ELSE
-            Write('NONE');
-          GoToXY(02,SecondRow);
-          Write(PadLeftStr(Citystate+' '+Zipcode,26));
-          GoToXY(33,SecondRow);
-          Write(ToDate8(PD2Date(BirthDate)),', ');
-          Write(Sex+' ',AgeUser(ThisUser.BirthDate));
-          GoToXY(55,SecondRow);
-          Write(ToDate8(PD2Date(Laston)));
-          GoToXY(71,SecondRow);
-          IF (FSEditor IN SFlags) THEN
-            Write('FullScrn')
-          ELSE
-            Write('Regular');
-        END;
-    3 : WITH ThisUser DO
-        BEGIN
-          Update_Logo(Win3,ScreenAddr[(FirstRow - 1) * 160],WIN3_LENGTH);
-          GoToXY(06,FirstRow);
-          Write(Loggedon);
-          GoToXY(16,FirstRow);
-          Write(OnToday);
-          GoToXY(26,FirstRow);
-          Write(MsgPost);
-          GoToXY(36,FirstRow);
-          Write(Feedback);
-          GoToXY(46,FirstRow);
-          Write(IntToStr(Downloads)+'/'+ConvertKB(DK,FALSE));
-          GoToXY(64,FirstRow);
-          IF (Downloads > 0) THEN
-            Write((Uploads / Downloads) * 100:3:0,'%')
-          ELSE
-            Write(0);
-          GoToXY(75,FirstRow);
-          Write(NSL DIV 60);
-          GoToXY(06,SecondRow);
-          Write(TTimeon);
-          GoToXY(16,SecondRow);
-          Write(ThisUser.lCredit - ThisUser.Debit);
-          GoToXY(26,SecondRow);
-          Write(EmailSent);
-          GoToXY(36,SecondRow);
-          Write(TimeBank);
-          GoToXY(46,SecondRow);
-          Write(IntToStr(Uploads)+'/'+ConvertKB(UK,FALSE));
-          GoToXY(64,SecondRow);
-          IF (Loggedon > 0) THEN
-            Write((Msgpost / Loggedon) * 100:3:0,'%')
-          ELSE
-            Write(0);
-          GoToXY(75,SecondRow);
-          Write(ThisNode);
-        END;
-    4 : BEGIN
-          Assign(HistoryFile,General.DataPath+'HISTORY.DAT');
-          Reset(HistoryFile);
-          IF (IOResult = 2) THEN
-            ReWrite(HistoryFile)
-          ELSE
-          BEGIN
-            Seek(HistoryFile,FileSize(HistoryFile) - 1);
-            Read(HistoryFile,History);
+    5   : WITH History DO
+            BEGIN
+              Update_Logo(Win5,ScreenAddr[(FirstRow - 1) * 160],WIN5_LENGTH);
+              GoToXY(20,FirstRow);
+              Write(General.CallerNum);
+              GoToXY(31,FirstRow);
+              Write(General.TotalDloads + Downloads);
+              GoToXY(45,FirstRow);
+              Write(General.DaysOnline + 1);
+              GoToXY(58,FirstRow);
+              Write(General.NumUsers);
+              GoToXY(74,FirstRow);
+              Write(ConvertKB(DiskKbFree(StartDir),FALSE));
+              GoToXY(20,SecondRow);
+              Write(General.TotalPosts + Posts);
+              GoToXY(31,SecondRow);
+              Write(General.TotalUloads + Uploads);
+              GoToXY(45,SecondRow);
+              Write((General.TotalUsage + Active) DIV 60);
+              LoadURec(User,1);
+              GoToXY(58,SecondRow);
+              IF (User.Waiting > 0) THEN
+                TextAttr := 244;
+              Write(User.Waiting);
+              TextAttr := 120;
+              GoToXY(74,SecondRow);
+              CASE OverlayLocation OF
+                0 : Write('Disk');
+                1 : Write('EMS');
+                2 : Write('XMS');
+              END;
+            END;
+    100 : BEGIN
+            GoToXY((MaxDisplayCols - Length(Message)) DIV 2,FirstRow);
+            Write(Message);
+            LastScreenSwap := Timer;
           END;
-          Close(HistoryFile);
-          WITH History DO
-          BEGIN
-            Update_Logo(Win4,ScreenAddr[(FirstRow - 1) * 160],WIN4_LENGTH);
-            GoToXY(20,FirstRow);
-            Write(Callers);
-            GoToXY(34,FirstRow);
-            Write(Email);
-            GoToXY(45,FirstRow);
-            Write(IntToStr(Downloads)+'/'+ConvertKB(DK,FALSE));
-            GoToXY(72,FirstRow);
-            Write(NewUsers);
-            GoToXY(20,SecondRow);
-            Write(Posts);
-            GoToXY(34,SecondRow);
-            Write(Feedback);
-            GoToXY(45,SecondRow);
-            Write(IntToStr(Uploads)+'/'+ConvertKB(UK,FALSE));
-            IF (Active > 9999) THEN
-              Active := 9999;
-            GoToXY(72,SecondRow);
-            Write(Active,' min');
+    99  : BEGIN
+            GoToXY(1,FirstRow);
+            Write(Message);
+            IF (OneKey) THEN
+              Answer := UpCase(ReadKey)
+            ELSE
+              BEGIN
+                GoToXY(2,(FirstRow + 1));
+                Write('> ');
+                Local_Input1(Answer,MaxDisplayCols - 4,FALSE);
+              END;
           END;
-        END;
-    5 : WITH History DO
-        BEGIN
-          Update_Logo(Win5,ScreenAddr[(FirstRow - 1) * 160],WIN5_LENGTH);
-          GoToXY(20,FirstRow);
-          Write(General.CallerNum);
-          GoToXY(31,FirstRow);
-          Write(General.TotalDloads + Downloads);
-          GoToXY(45,FirstRow);
-          Write(General.DaysOnline + 1);
-          GoToXY(58,FirstRow);
-          Write(General.NumUsers);
-          GoToXY(74,FirstRow);
-          Write(ConvertKB(DiskKbFree(StartDir),FALSE));
-          GoToXY(20,SecondRow);
-          Write(General.TotalPosts + Posts);
-          GoToXY(31,SecondRow);
-          Write(General.TotalUloads + Uploads);
-          GoToXY(45,SecondRow);
-          Write((General.TotalUsage + Active) DIV 60);
-          LoadURec(User,1);
-          GoToXY(58,SecondRow);
-          IF (User.Waiting > 0) THEN
-            TextAttr := 244;
-          Write(User.Waiting);
-          TextAttr := 120;
-          GoToXY(74,SecondRow);
-          CASE OverlayLocation OF
-            0 : Write('Disk');
-            1 : Write('EMS');
-            2 : Write('XMS');
-          END;
-        END;
-    100 :
-        BEGIN
-          GoToXY((MaxDisplayCols - Length(Message)) DIV 2,FirstRow);
-          Write(Message);
-          LastScreenSwap := Timer;
-        END;
-    99 :
-        BEGIN
-          GoToXY(1,FirstRow);
-          Write(Message);
-          IF (OneKey) THEN
-            Answer := UpCase(ReadKey)
-          ELSE
-          BEGIN
-            GoToXY(2,(FirstRow + 1));
-            Write('> ');
-            Local_Input1(Answer,MaxDisplayCols - 4,FALSE);
-          END;
-        END;
   END;
   IF (General.IsTopWindow) THEN
     Window(1,3,MaxDisplayCols,MaxDisplayRows)
@@ -553,91 +553,88 @@ BEGIN
   SaveWhereY := WhereY;
   SaveTextAttr := TextAttr;
   CASE Ord(C) OF
-    120..129 :
-          BEGIN  {ALT-1 TO ALT-0}
-            GetDir(0,S);
-            ChDir(StartDir);
-            SaveScreen(Wind);
-            ClrScr;
-            SaveTimer := Timer;
-            i := (Ord(C) - 119);
-            IF (i = 10) THEN
-              i := 0;
-            ShellDOS(FALSE,'GLOBAT'+Chr(i + 48),RetCode);
-            Com_Flush_Recv;
-            FreeTime := ((FreeTime + Timer) - SaveTimer);
-            RemoveWindow(Wind);
-            GoToXY(SaveWhereX,SaveWhereY);
-            ChDir(S);
-          END;
-    104..108 :
-          lStatus_Screen(((Ord(C) - 104) + 1),'',FALSE,S);   { ALT F1-F5     }
-    114 : RunError(255);                                     { CTRL-PRTSC    }
-     36 : BEGIN
-            SaveScreen(Wind);
-            SysOpShell;                                       { ALT-J         }
-            RemoveWindow(Wind);
-          END;
-     32 : BEGIN                                               { ALT-D         }
-            lStatus_Screen(99,'Dump screen to what file: ',FALSE,S);
-            IF (S <> '') THEN
-              ScreenDump(S);
-            Update_Screen;
-          END;
-     59..68 :
-          Buf := General.Macro[Ord(C) - 59];                { F1 - F10      }
+    120..129  : BEGIN { ALT-1 TO ALT-0 }
+                  GetDir(0,S);
+                  ChDir(StartDir);
+                  SaveScreen(Wind);
+                  ClrScr;
+                  SaveTimer := Timer;
+                  i := (Ord(C) - 119);
+                  IF (i = 10) THEN
+                    i := 0;
+                  ShellDOS(FALSE,'GLOBAT'+Chr(i + 48),RetCode);
+                  Com_Flush_Recv;
+                  FreeTime := ((FreeTime + Timer) - SaveTimer);
+                  RemoveWindow(Wind);
+                  GoToXY(SaveWhereX,SaveWhereY);
+                  ChDir(S);
+                END;
+    104..108  : lStatus_Screen(((Ord(C) - 104) + 1),'',FALSE,S); { ALT F1-F5 }
+    114       : RunError(255); { CTRL-PRTSC }
+    36        : BEGIN { ALT-J }
+                  SaveScreen(Wind);
+                  SysOpShell;
+                  RemoveWindow(Wind);
+                END;
+    32        : BEGIN { ALT-D }
+                  lStatus_Screen(99,'Dump screen to what file: ',FALSE,S);
+                  IF (S <> '') THEN
+                    ScreenDump(S);
+                  Update_Screen;
+                END;
+     59..68   : Buf := General.Macro[Ord(C) - 59]; { F1 - F10 }
   END;
   IF (NOT InWFCMenu) THEN
-  BEGIN
-    CASE Ord(C) OF
-      119 : BEGIN                                              { CTRL-HOME     }
-              SaveScreen(Wind);
-              Update_Logo(SYSKEY,ScreenAddr[0],SYSKEY_LENGTH);
-              Cursor(FALSE);
-              C := ReadKey;
-              IF (C = #0) THEN
+    BEGIN
+      CASE Ord(C) OF
+        119 : BEGIN { CTRL-HOME }
+                SaveScreen(Wind);
+                Update_Logo(SYSKEY,ScreenAddr[0],SYSKEY_LENGTH);
+                Cursor(FALSE);
                 C := ReadKey;
-              Cursor(TRUE);
-              RemoveWindow(Wind);
-              GoToXY(SaveWhereX,SaveWhereY);
-              Update_Screen;
-            END;
-       34 : BEGIN                                             { ALT-G         }
-              lStatus_Screen(99,'Log options - [T]rap activity [C]hat buffering',TRUE,S);
-              C1 := S[1];
-              WITH ThisUser DO
-                CASE C1 OF
-                  'C' : BEGIN
-                          lStatus_Screen(99,'Auto Chat buffering - [O]ff [S]eparate [M]ain (Chat.LOG)',TRUE,S);
-                          C1 := S[1];
-                          IF (C1 IN ['O','S','M']) THEN
-                            ChatFileLog(FALSE);
-                          CASE C1 OF
-                            'O' : BEGIN
-                                    Exclude(ThisUser.SFlags,ChatAuto);
-                                    Exclude(ThisUser.SFlags,ChatSeparate);
-                                  END;
-                            'S' : BEGIN
-                                    Include(ThisUser.SFlags,ChatAuto);
-                                    Include(ThisUser.SFlags,ChatSeparate);
-                                  END;
-                            'M' : BEGIN
-                                    Include(ThisUser.SFlags,ChatAuto);
-                                    Exclude(ThisUser.SFlags,ChatSeparate);
-                                  END;
-                          END;
-                          IF (C1 IN ['S','M']) THEN
-                            ChatFileLog(TRUE);
-                        END;
-                  'T' : BEGIN
-                          lStatus_Screen(99,'Activity Trapping - [O]ff [S]eperate [M]ain (TRAP.LOG)',TRUE,S);
-                          C1 := S[1];
-                          IF (C1 IN ['O','S','M']) THEN
-                            IF (Trapping) THEN
-                            BEGIN
-                              Close(TrapFile);
-                              Trapping := FALSE;
+                IF (C = #0) THEN
+                  C := ReadKey;
+                Cursor(TRUE);
+                RemoveWindow(Wind);
+                GoToXY(SaveWhereX,SaveWhereY);
+                Update_Screen;
+              END;
+        34  : BEGIN { ALT-G }
+                lStatus_Screen(99,'Log options - [T]rap activity [C]hat buffering',TRUE,S);
+                C1 := S[1];
+                WITH ThisUser DO
+                  CASE C1 OF
+                    'C' : BEGIN
+                            lStatus_Screen(99,'Auto Chat buffering - [O]ff [S]eparate [M]ain (Chat.LOG)',TRUE,S);
+                            C1 := S[1];
+                            IF (C1 IN ['O','S','M']) THEN
+                              ChatFileLog(FALSE);
+                            CASE C1 OF
+                              'O' : BEGIN
+                                      Exclude(ThisUser.SFlags,ChatAuto);
+                                      Exclude(ThisUser.SFlags,ChatSeparate);
+                                    END;
+                              'S' : BEGIN
+                                      Include(ThisUser.SFlags,ChatAuto);
+                                      Include(ThisUser.SFlags,ChatSeparate);
+                                    END;
+                              'M' : BEGIN
+                                      Include(ThisUser.SFlags,ChatAuto);
+                                      Exclude(ThisUser.SFlags,ChatSeparate);
+                                    END;
                             END;
+                            IF (C1 IN ['S','M']) THEN
+                              ChatFileLog(TRUE);
+                          END;
+                    'T' : BEGIN
+                            lStatus_Screen(99,'Activity Trapping - [O]ff [S]eperate [M]ain (TRAP.LOG)',TRUE,S);
+                            C1 := S[1];
+                            IF (C1 IN ['O','S','M']) THEN
+                              IF (Trapping) THEN
+                                BEGIN
+                                  Close(TrapFile);
+                                  Trapping := FALSE;
+                                END;
                             CASE C1 OF
                               'O' : BEGIN
                                       Exclude(ThisUser.SFlags,TrapActivity);
@@ -654,244 +651,240 @@ BEGIN
                             END;
                             IF (C1 IN ['S','M']) THEN
                               InitTrapFile;
-                        END;
-                END;
+                          END;
+                  END;
                 Update_Screen;
-            END;
-       20 : BEGIN                                             { ALT-T         }
-              IF (General.WindowOn) THEN
-                BiosScroll(General.IsTopWindow);
-              General.IsTopWindow := NOT General.IsTopWindow;
-              Update_Screen;
-            END;
-            (*
-       31 : IF (NOT InChat) THEN                              { ALT-S   }                   { ALT-A         }
-              SysOpSplitChat
-            ELSE
-            BEGIN
-              InChat := FALSE;
-              ChatReason := '';
-            END;
-*)
-       47 : IF (UserOn) THEN
-            BEGIN                              { ALT-V         }
-              S[1] := #0;
-              lStatus_Screen(99,'Enter the validation level (!-~) for this user.',TRUE,S);
-              IF (S[1] IN ['!'..'~']) THEN
-              BEGIN
-                AutoValidate(ThisUser,UserNum,S[1]);
-                lStatus_Screen(100,'This user has been validated.',FALSE,S);
-              END
-              ELSE
-                Update_Screen;
-            END;
-       18 : IF (UserOn) THEN
-            BEGIN                            { ALT-E         }
-              Wait(TRUE);
-              SaveScreen(Wind);
-              ChangeUserDataWindow;
-              RemoveWindow(Wind);
-              Update_Screen;
-              Wait(FALSE);
-           END;
-      17 : IF (UserOn) THEN
-           BEGIN
-             SaveScreen(Wind);
-             ChangeUserDataWindow;                         { ALT-W         }
-             RemoveWindow(Wind);
-             Update_Screen;
-           END;
-      49 : IF (UserOn) THEN                                                 { ALT-N         }
-           BEGIN
-             i := ((General.CurWindow MOD 5) + 1);
-             lStatus_Screen(i,'',FALSE,S);
-           END;
-      23 : IF (ComPortSpeed > 0) AND (NOT Com_Carrier) THEN                                                 { ALT-I         }
-             lStatus_Screen(100,'No carrier detected!',FALSE,S)
-           ELSE IF (ComPortSpeed > 0) THEN
-           BEGIN
-             IF (OutCom) THEN
-                IF (InCom) THEN
-                  InCom := FALSE
-                ELSE IF (Com_Carrier) THEN
-                  InCom := TRUE;
-             IF (InCom) THEN
-               lStatus_Screen(100,'User keyboard ON.',FALSE,S)
-             ELSE
-               lStatus_Screen(100,'User keyboard OFF.',FALSE,S);
-             Com_Flush_Recv;
-           END;
-      16 : BEGIN                                             { ALT-Q         }
-             ChatCall := FALSE;
-             ChatReason := '';
-             Exclude(ThisUser.ACFlags,Alert);
-             Update_Screen;
-           END;
-      35 : HangUp := TRUE;                                     { ALT-H         }
-      24 : BEGIN                                             { ALT-O         }
-             ConfSystem := (NOT ConfSystem);
-             IF (ConfSystem) THEN
-               lStatus_Screen(100,'The conference system has been turned ON.',FALSE,S)
-             ELSE
-               lStatus_Screen(100,'The conference system has been turned OFF.',FALSE,S);
-             NewCompTables;
-           END;
-     130 : BEGIN                                            { ALT-MINUS     }
-             SaveInChat := InChat;
-             InChat := TRUE;
-             Dec(ThisUser.TLToday,5);
-             TLeft;
-             InChat := SaveInChat;
-           END;
-     131 : BEGIN                                                { ALT-PLUS      }
-             SaveInChat := InChat;
-             InChat := TRUE;
-             Inc(ThisUser.TLToday,5);
-             TimeWarn := FALSE;
-             TLeft;
-             InChat := SaveInChat;
-           END;
-      50 : IF (UserOn) THEN                                                 { ALT-M         }
-           BEGIN
-             TempSysOp := NOT TempSysOp;
-             IF (TempSysOp) THEN
-               lStatus_Screen(100,'Temporary SysOp access granted.',FALSE,S)
-             ELSE
-               lStatus_Screen(100,'Normal access restored',FALSE,S);
-             NewCompTables;
-           END;
-
-      30 : ToggleWindow(TRUE);                               { ALT-A }
-      31 : ToggleWindow(TRUE);                               { ALT-S }
-
-      46 :  IF (NOT InChat) THEN { ALT-C }
-              BEGIN
-                IF (OkANSI) AND (General.DefSplitChat) THEN
-                  SysOpSplitChat
-                ELSE
-                  SysOpLineChat;
-              END
-            ELSE
-              BEGIN
-                InChat := FALSE;
-                ChatReason := '';
               END;
+        20  : BEGIN { ALT-T }
+                IF (General.WindowOn) THEN
+                  BiosScroll(General.IsTopWindow);
+                General.IsTopWindow := NOT General.IsTopWindow;
+                Update_Screen;
+              END;
+     (* 31  : IF (NOT InChat) THEN { ALT-S } { ALT-A }
+                SysOpSplitChat
+              ELSE
+                BEGIN
+                  InChat := FALSE;
+                  ChatReason := '';
+                END; *)
+        47  : IF (UserOn) THEN
+                BEGIN { ALT-V }
+                  S[1] := #0;
+                  lStatus_Screen(99,'Enter the validation level (!-~) for this user.',TRUE,S);
+                  IF (S[1] IN ['!'..'~']) THEN
+                    BEGIN
+                      AutoValidate(ThisUser,UserNum,S[1]);
+                      lStatus_Screen(100,'This user has been validated.',FALSE,S);
+                    END
+                  ELSE
+                    Update_Screen;
+                END;
+        18  : IF (UserOn) THEN
+                BEGIN { ALT-E }
+                  Wait(TRUE);
+                  SaveScreen(Wind);
+                  ChangeUserDataWindow;
+                  RemoveWindow(Wind);
+                  Update_Screen;
+                  Wait(FALSE);
+                END;
+        17  : IF (UserOn) THEN
+                BEGIN { ALT-W }
+                  SaveScreen(Wind);
+                  ChangeUserDataWindow;
+                  RemoveWindow(Wind);
+                  Update_Screen;
+                END;
+        49  : IF (UserOn) THEN
+                BEGIN { ALT-N }
+                  i := ((General.CurWindow MOD 5) + 1);
+                  lStatus_Screen(i,'',FALSE,S);
+                END;
+        23  : IF (ComPortSpeed > 0) AND (NOT Com_Carrier) THEN { ALT-I }
+                lStatus_Screen(100,'No carrier detected!',FALSE,S)
+              ELSE IF (ComPortSpeed > 0) THEN
+                BEGIN
+                  IF (OutCom) THEN
+                    IF (InCom) THEN
+                      InCom := FALSE
+                    ELSE IF (Com_Carrier) THEN
+                      InCom := TRUE;
+                  IF (InCom) THEN
+                    lStatus_Screen(100,'User keyboard ON.',FALSE,S)
+                  ELSE
+                    lStatus_Screen(100,'User keyboard OFF.',FALSE,S);
+                  Com_Flush_Recv;
+                END;
+        16  : BEGIN { ALT-Q }
+                ChatCall := FALSE;
+                ChatReason := '';
+                Exclude(ThisUser.ACFlags,Alert);
+                Update_Screen;
+              END;
+        35  : HangUp := TRUE; { ALT-H }
+        24  : BEGIN { ALT-O }
+                ConfSystem := (NOT ConfSystem); {Toggle}
+                IF (ConfSystem) THEN
+                  lStatus_Screen(100,'The conference system has been turned ON.',FALSE,S)
+                ELSE
+                  lStatus_Screen(100,'The conference system has been turned OFF.',FALSE,S);
+                NewCompTables;
+              END;
+        130 : BEGIN { ALT-MINUS }
+                SaveInChat := InChat;
+                InChat := TRUE;
+                Dec(ThisUser.TLToday,5);
+                TLeft;
+                InChat := SaveInChat;
+              END;
+        131 : BEGIN { ALT-PLUS }
+                SaveInChat := InChat;
+                InChat := TRUE;
+                Inc(ThisUser.TLToday,5);
+                TimeWarn := FALSE;
+                TLeft;
+                InChat := SaveInChat;
+              END;
+        50  : IF (UserOn) THEN { ALT-M }
+                BEGIN
+                  TempSysOp := NOT TempSysOp;
+                  IF (TempSysOp) THEN
+                    lStatus_Screen(100,'Temporary SysOp access granted.',FALSE,S)
+                  ELSE
+                    lStatus_Screen(100,'Normal access restored',FALSE,S);
+                  NewCompTables;
+                END;
+        30  : ToggleWindow(TRUE); { ALT-A }
+        31  : ToggleWindow(TRUE); { ALT-S }
 
-      72,                                                  { Arrow up    }
-      75,                                                  { Arrow left  }
-      77,                                                  { Arrow Right }
-      80 : IF ((InChat) OR (Write_Msg)) THEN                                                 { Arrow Down  }
-           BEGIN
-             IF (OKAvatar) THEN
-               Buf := Buf + ^V
-             ELSE
-               Buf := Buf + ^[+'[';
-             CASE Ord(C) OF
-               72 : IF (OKAvatar) THEN
-                      Buf := Buf + ^C
-                    ELSE
-                      Buf := Buf + 'A';
-               75 : IF (OKAvatar) THEN
-                      Buf := Buf + ^E
-                    ELSE
-                      Buf := Buf + 'D';
-               77 : IF (OKAvatar) THEN
-                      Buf := Buf + ^F
-                    ELSE
-                      Buf := Buf + 'C';
-               80 : IF (OKAvatar) THEN
-                      Buf := Buf + ^D
-                    ELSE
-                      Buf := Buf + 'B';
-             END;
-           END;
-      22 : IF (ComPortSpeed > 0) AND (OutCom) THEN                                                  { ALT-U         }
-           BEGIN
-             lStatus_Screen(100,'User screen and keyboard OFF',FALSE,S);
-             OutCom := FALSE;
-             InCom := FALSE;
-           END
-           ELSE IF (ComPortSpeed > 0) AND (Com_Carrier) THEN
-           BEGIN
-             lStatus_Screen(100,'User screen and keyboard ON',FALSE,S);
-             OutCom := TRUE;
-             InCom := TRUE;
-           END;
-      37 : BEGIN                                                  { ALT-K        }
-             lStatus_Screen(99,'Display what HangUp file (HANGUPxx) :',FALSE,S);
-             IF (S <> '') THEN
-             BEGIN
-               NL;
-               NL;
-               InCom := FALSE;
-               PrintF('HangUp'+S);
-               SysOpLog('Displayed HangUp file HangUp'+S);
-               HangUp := TRUE;
-             END;
-             Update_Screen;
-           END;
-      48 : BEGIN                                                   { ALT-B         }
-             BeepEnd := NOT BeepEnd;
-             lStatus_Screen(100,'SysOp next '+ShowOnOff(BeepEnd),FALSE,S);
-             SaveInChat := InChat;
-             InChat := TRUE;
-             TLeft;
-             InChat := SaveInChat;
-           END;
-      38 : IF (WantOut) THEN                                                 { ALT-L         }
-           BEGIN
-             TextColor(11);
-             TextBackGround(0);
-             Window(1,1,MaxDisplayCols,MaxDisplayRows);
-             ClrScr;
-             WantOut := FALSE;
-             Cursor(FALSE);
-           END
-           ELSE
-           BEGIN
-             WantOut := TRUE;
-             Cursor(TRUE);
-             WriteLn('Local display on.');
-             Update_Screen;
-           END;
-      44 : BEGIN                                                  { ALT-Z         }
-             lStatus_Screen(100,'Waking up user ...',FALSE,S);
-             REPEAT
-               OutKey(^G);
-               Delay(500);
-               ASM
-                Int 28h
-               END;
-               CheckHangUp;
-             UNTIL ((NOT Empty) OR (HangUp));
-             Update_Screen;
-           END;
-      19 : lStatus_Screen(100,'Chat request: '+ChatReason,FALSE,S);{ ALT-R         }
-      25 : BEGIN                                             { ALT-P         }
-             lStatus_Screen(99,'Print what file: ',FALSE,S);
-             IF (S <> '') THEN
-             BEGIN
-               NL;
-               NL;
-               PrintF(S);
-               SysOpLog('Displayed file '+S);
-             END;
-             Update_Screen;
-           END;
-      33 : BEGIN                                                  { ALT-F         }
-             Randomize;
-             S := '';
-             FOR i := 1 TO Random(50) DO
-             BEGIN
-               C1 := Chr(Random(255));
-               IF NOT (C1 IN [#3,'^','@']) THEN
-                 S := S + C1;
-             END;
-             Prompt(S);
-          END;
+        46  : IF (NOT InChat) THEN { ALT-C }
+                BEGIN
+                  IF (OkANSI) AND (General.DefSplitChat) THEN
+                    SysOpSplitChat
+                  ELSE
+                    SysOpLineChat;
+                END
+              ELSE
+                BEGIN
+                  InChat := FALSE;
+                  ChatReason := '';
+                END;
+        72, { Arrow Up }
+        75, { Arrow Left }
+        77, { Arrow Right }
+        80  : IF ((InChat) OR (Write_Msg)) THEN { Arrow Down }
+                BEGIN
+                  IF (OKAvatar) THEN
+                    Buf := Buf + ^V
+                  ELSE
+                    Buf := Buf + ^[+'[';
+                  CASE Ord(C) OF
+                    72  : IF (OKAvatar) THEN
+                            Buf := Buf + ^C
+                          ELSE
+                            Buf := Buf + 'A';
+                    75  : IF (OKAvatar) THEN
+                            Buf := Buf + ^E
+                          ELSE
+                            Buf := Buf + 'D';
+                    77  : IF (OKAvatar) THEN
+                            Buf := Buf + ^F
+                          ELSE
+                            Buf := Buf + 'C';
+                    80  : IF (OKAvatar) THEN
+                            Buf := Buf + ^D
+                          ELSE
+                            Buf := Buf + 'B';
+                  END;
+                END;
+        22  : IF (ComPortSpeed > 0) AND (OutCom) THEN { ALT-U }
+                BEGIN
+                  lStatus_Screen(100,'User screen and keyboard OFF',FALSE,S);
+                  OutCom := FALSE;
+                  InCom := FALSE;
+                END
+              ELSE IF (ComPortSpeed > 0) AND (Com_Carrier) THEN
+                BEGIN
+                  lStatus_Screen(100,'User screen and keyboard ON',FALSE,S);
+                  OutCom := TRUE;
+                  InCom := TRUE;
+                END;
+        37  : BEGIN { ALT-K }
+                lStatus_Screen(99,'Display what HangUp file (HANGUPxx) :',FALSE,S);
+                IF (S <> '') THEN
+                  BEGIN
+                    NL;
+                    NL;
+                    InCom := FALSE;
+                    PrintF('HangUp'+S);
+                    SysOpLog('Displayed HangUp file HangUp'+S);
+                    HangUp := TRUE;
+                  END;
+                Update_Screen;
+              END;
+        48  : BEGIN { ALT-B         }
+                BeepEnd := NOT BeepEnd;
+                lStatus_Screen(100,'SysOp next '+ShowOnOff(BeepEnd),FALSE,S);
+                SaveInChat := InChat;
+                InChat := TRUE;
+                TLeft;
+                InChat := SaveInChat;
+              END;
+        38  : IF (WantOut) THEN { ALT-L }
+                BEGIN
+                  TextColor(11);
+                  TextBackGround(0);
+                  Window(1,1,MaxDisplayCols,MaxDisplayRows);
+                  ClrScr;
+                  WantOut := FALSE;
+                  Cursor(FALSE);
+                END
+              ELSE
+                BEGIN
+                  WantOut := TRUE;
+                  Cursor(TRUE);
+                  WriteLn('Local display on.');
+                  Update_Screen;
+                END;
+        44  : BEGIN { ALT-Z }
+                lStatus_Screen(100,'Waking up user ...',FALSE,S);
+                REPEAT
+                  OutKey(^G);
+                  Delay(500);
+                  ASM
+                    INT 28H
+                  END;
+                  CheckHangUp;
+                UNTIL ((NOT Empty) OR (HangUp));
+                Update_Screen;
+              END;
+        19  : lStatus_Screen(100,'Chat request: '+ChatReason,FALSE,S); { ALT-R }
+        25  : BEGIN { ALT-P }
+                lStatus_Screen(99,'Print what file: ',FALSE,S);
+                IF (S <> '') THEN
+                  BEGIN
+                    NL;
+                    NL;
+                    PrintF(S);
+                    SysOpLog('Displayed file '+S);
+                  END;
+                Update_Screen;
+              END;
+        33  : BEGIN { ALT-F }
+                Randomize;
+                S := '';
+                FOR i := 1 TO Random(50) DO
+                  BEGIN
+                    C1 := Chr(Random(255));
+                    IF NOT (C1 IN [#3,'^','@']) THEN
+                      S := S + C1;
+                  END;
+                Prompt(S);
+              END;
+      END;
     END;
-  END;
-  { any processed keys no longer used should be here }
+  { Any processed keys no longer used should be here }
   IF (Ord(C) IN [16..20,22..25,30,32..38,44,47..50,104..108,114,119..131]) THEN
     C := #0;
   TextAttr := SaveTextAttr;
@@ -907,20 +900,20 @@ BEGIN
   Assign(GeneralF,DatFilePath+'RENEGADE.DAT');
   Reset(GeneralF);
   IF (x) THEN
-  BEGIN
-    SaveWindowOn := General.WindowOn;
-    SaveIsTopWindow := General.IsTopWindow;
-    SaveCurWindow := General.CurWindow;
-    Read(GeneralF,General);
-    General.WindowOn := SaveWindowOn;
-    General.IsTopWindow := SaveIsTopWindow;
-    General.CurWindow := SaveCurWindow;
-    Inc(General.CallerNum,TodayCallers);
-    TodayCallers := 0;
-    Inc(General.NumUsers,lTodayNumUsers);
-    lTodayNumUsers := 0;
-    Seek(GeneralF,0);
-  END;
+    BEGIN
+      SaveWindowOn := General.WindowOn;
+      SaveIsTopWindow := General.IsTopWindow;
+      SaveCurWindow := General.CurWindow;
+      Read(GeneralF,General);
+      General.WindowOn := SaveWindowOn;
+      General.IsTopWindow := SaveIsTopWindow;
+      General.CurWindow := SaveCurWindow;
+      Inc(General.CallerNum,TodayCallers);
+      TodayCallers := 0;
+      Inc(General.NumUsers,lTodayNumUsers);
+      lTodayNumUsers := 0;
+      Seek(GeneralF,0);
+    END;
   Write(GeneralF,General);
   Close(GeneralF);
   LastError := IOResult;
@@ -936,88 +929,64 @@ BEGIN
     Exit;
   SaveCurrentColor := CurrentColor;
   IF ((NSL <= 0) AND (ChopTime <> 0)) THEN
-  BEGIN
-    SysOpLog('Logged user off for system event');
-    NL;
-    NL;
-    Print('^G^8Shutting down for System Event.'^G);
-    NL;
-    HangUp := TRUE;
-  END;
-  IF (NOT InChat) AND NOT (FNoCredits IN ThisUser.ACFlags) AND (General.CreditMinute > 0) AND (UserOn) AND (CreditTime > 0) AND
-    (AccountBalance > ((NSL DIV 60) + 1) * General.CreditMinute) AND (NOT HangUp) THEN
-  BEGIN
-    CreditTime := 0;
-    IF (AccountBalance < ((NSL DIV 60) + 1) * General.CreditMinute) THEN
-      Inc(CreditTime, NSL - (AccountBalance DIV General.CreditMinute) * 60);
-  END;
+    BEGIN
+      SysOpLog('Logged user off for system event');
+      NL;
+      NL;
+      Print('^G^8Shutting down for System Event.'^G);
+      NL;
+      HangUp := TRUE;
+    END;
   IF (NOT InChat) AND NOT (FNoCredits IN ThisUser.ACFlags) AND (General.CreditMinute > 0) AND (UserOn) AND
-     (AccountBalance < (NSL DIV 60) * General.CreditMinute) AND
-     (NOT InVisEdit) AND (NOT HangUp) THEN
-  BEGIN
-    Print(^M^J^G^G'^8Note: ^9Your online time has been adjusted due to insufficient account balance.');
-    Inc(CreditTime, NSL - (AccountBalance DIV General.CreditMinute) * 60);
-  END;
+     (CreditTime > 0) AND (AccountBalance > ((NSL DIV 60) + 1) * General.CreditMinute) AND (NOT HangUp) THEN
+    BEGIN
+      CreditTime := 0;
+      IF (AccountBalance < ((NSL DIV 60) + 1) * General.CreditMinute) THEN
+        Inc(CreditTime, NSL - (AccountBalance DIV General.CreditMinute) * 60);
+    END;
+  IF (NOT InChat) AND NOT (FNoCredits IN ThisUser.ACFlags) AND (General.CreditMinute > 0) AND (UserOn) AND
+     (AccountBalance < (NSL DIV 60) * General.CreditMinute) AND (NOT InVisEdit) AND (NOT HangUp) THEN
+    BEGIN
+      Print(^M^J^G^G'^8Note: ^9Your online time has been adjusted due to insufficient account balance.');
+      Inc(CreditTime, NSL - (AccountBalance DIV General.CreditMinute) * 60);
+    END;
   IF (NOT TimeWarn) AND (NOT InChat) AND (NSL < 180) AND (UserOn) AND (NOT InVisEdit) AND (NOT HangUp) THEN
-  BEGIN
-    Print(^M^J^G^G'^8Warning: ^9You have less than '+IntToStr(NSL DIV 60 + 1)+' '+
-          Plural('minute',NSL DIV 60 + 1)+' remaining online!'^M^J);
-    SetC(SaveCurrentColor);
-    TimeWarn := TRUE;
-  END;
+    BEGIN
+      Print(^M^J^G^G'^8Warning: ^9You have less than '+IntToStr(NSL DIV 60 + 1)+' '+
+            Plural('minute',NSL DIV 60 + 1)+' remaining online!'^M^J);
+      SetC(SaveCurrentColor);
+      TimeWarn := TRUE;
+    END;
   IF (NOT InChat) AND (NSL <= 0) AND (UserOn) AND (NOT HangUp) THEN
-  BEGIN
-    NL;
-    TimedOut := TRUE;
-    PrintF('NOTLEFT');
-    IF (NoFile) THEN
-      Print('^8You have used up all of your time.');
-    NL;
-    HangUp := TRUE;
-  END;
+    BEGIN
+      NL;
+      TimedOut := TRUE;
+      PrintF('NOTLEFT');
+      IF (NoFile) THEN
+        Print('^8You have used up all of your time.');
+      NL;
+      HangUp := TRUE;
+    END;
   CheckHangUp;
   IF (WantOut) AND (General.WindowOn) AND (General.CurWindow = 1) AND (NOT InWFCMenu) AND NOT
-    (General.NetworkMode AND NOT CoSysOp) AND (LastScreenSwap = 0) THEN
-  BEGIN
-    TextAttr := 120;
-    SaveWhereX := WhereX;
-    SaveWhereY := WhereY;
-    Window(1,1,MaxDisplayCols,MaxDisplayRows);
-    IF (General.IsTopWindow) THEN
-      GoToXY(75, 1)
-    ELSE
-      GoToXY(75,(MaxDisplayRows - 1));
-    Write(NSL DIV 60,' ');
-    IF (General.IsTopWindow) THEN
-      Window(1,3,MaxDisplayCols,MaxDisplayRows)
-    ELSE
-      Window(1,1,MaxDisplayCols,(MaxDisplayRows - 2));
-    GoToXY(SaveWhereX,SaveWhereY);
-    TextAttr := SaveCurrentColor;
-  END;
-END;
-
-PROCEDURE gp(i,j: Integer);
-VAR
-  x: Byte;
-BEGIN
-  CASE j OF
-    0 : GoToXY(58,8);
-    1 : GoToXY(20,7);
-    2 : GoToXY(20,8);
-    3 : GoToXY(20,9);
-    4 : GoToXY(20,10);
-    5 : GoToXY(36,7);
-    6 : GoToXY(36,8);
-  END;
-  IF (j IN [1..4]) THEN
-    x := 5
-  ELSE
-    x := 3;
-  IF (i = 2) THEN
-    Inc(x);
-  IF (i > 0) THEN
-    GoToXY((WhereX + x),WhereY);
+     (General.NetworkMode AND NOT CoSysOp) AND (LastScreenSwap = 0) THEN
+    BEGIN
+      TextAttr := 120;
+      SaveWhereX := WhereX;
+      SaveWhereY := WhereY;
+      Window(1,1,MaxDisplayCols,MaxDisplayRows);
+      IF (General.IsTopWindow) THEN
+        GoToXY(75, 1)
+      ELSE
+        GoToXY(75,(MaxDisplayRows - 1));
+      Write(NSL DIV 60,' ');
+      IF (General.IsTopWindow) THEN
+        Window(1,3,MaxDisplayCols,MaxDisplayRows)
+      ELSE
+        Window(1,1,MaxDisplayCols,(MaxDisplayRows - 2));
+      GoToXY(SaveWhereX,SaveWhereY);
+      TextAttr := SaveCurrentColor;
+    END;
 END;
 
 PROCEDURE ChangeUserDataWindow;
@@ -1415,6 +1384,30 @@ END;
   VAR
     C1: Char;
     Counter: Byte;
+
+PROCEDURE gp(i,j: Integer);
+VAR
+  x: Byte;
+BEGIN
+  CASE j OF
+    0 : GoToXY(58,8);
+    1 : GoToXY(20,7);
+    2 : GoToXY(20,8);
+    3 : GoToXY(20,9);
+    4 : GoToXY(20,10);
+    5 : GoToXY(36,7);
+    6 : GoToXY(36,8);
+  END;
+  IF (j IN [1..4]) THEN
+    x := 5
+  ELSE
+    x := 3;
+  IF (i = 2) THEN
+    Inc(x);
+  IF (i > 0) THEN
+    GoToXY((WhereX + x),WhereY);
+END;
+
   BEGIN
     gp(0,i);
     IF (b) THEN
