@@ -1,11 +1,14 @@
 {$A+,B-,D-,E-,F+,I-,L-,N-,O+,R-,S+,V-}
-
+{
+ - There's got to be a better way to do page numbering than "StrToInt(Copy(IntToStr(DisplayValue),1,1))+1" ...
+}
 UNIT SysOp2O;
 
 INTERFACE
 
 USES
-  Common;
+  Common,
+  SysOp2; {ConfigHeader,HL}
 
 PROCEDURE GetSecRange(CONST DisplayType: LongInt; VAR Sec: SecurityRangeType);
 
@@ -22,7 +25,7 @@ VAR
 
   PROCEDURE ShowSecRange(Start: Byte);
   VAR
-    TempStr: AStr;
+    TempStr: AStr;    
     LineNum,
     Counter1: Byte;
     SecNum: Integer;
@@ -32,19 +35,19 @@ VAR
     LineNum := 0;
     REPEAT
       TempStr := '';
-      FOR Counter1 := 0 TO 7 DO
-      BEGIN
-        SecNum := Start + LineNum + Counter1 * 20;
-        IF (SecNum <= 255) THEN
+      FOR Counter1 := 0 TO 5 DO
         BEGIN
-          TempStr := TempStr + '^0'+PadLeftInt(SecNum,3)+':^1'+PadLeftInt(Sec[SecNum],5);
-          IF (Counter1 <> 7) THEN
-            TempStr := TempStr + ' ';
+          SecNum := Start + LineNum + Counter1 * 18;
+          IF (SecNum <= 255) THEN
+            BEGIN
+              TempStr := TempStr + ' ^1'+PadLeftInt(SecNum,4)+' ^0'+PadLeftInt(Sec[SecNum],6);
+              IF (Counter1 <> 7) THEN
+                TempStr := TempStr + ' ';
+            END;
         END;
-      END;
       PrintACR(TempStr);
       Inc(LineNum);
-    UNTIL (LineNum > 19) OR (Abort) OR (HangUp);
+    UNTIL (LineNum > 17) OR (Abort) OR (HangUp);
   END;
 
 BEGIN
@@ -52,41 +55,44 @@ BEGIN
   Next := FALSE;
   DisplayValue := 0;
   REPEAT
-    CLS;
     CASE DisplayType OF
-      1 : Print('^1Time limitations:^0');
-      2 : Print('^1Call allowance per day:^0');
-      3 : Print('^1UL/DL # files ratio (# files can DL per UL):^0');
-      4 : Print('^1UL/DL K-bytes ratio (#k can DL per 1k UL):^0');
-      5 : Print('^1Post/Call ratio (posts per 100 calls) to have Z ACS flag set:^0');
-      6 : Print('^1Maximum number of downloads in one day:^0');
-      7 : Print('^1Maximum amount of downloads (in kbytes) in one day:^0');
+      1 : ConfigHeader('Maximum Time Per '+AOnOff(General.PerCall,'Call','Day'),StrToInt(Copy(IntToStr(DisplayValue)
+                       ,1,1))+1,3);
+      2 : ConfigHeader('Maximum Calls Per Day',StrToInt(Copy(IntToStr(DisplayValue),1,1))+1,3);
+      3 : ConfigHeader('Maximum Download Ratio ^5(^4# DL Per 1 UL^5)',StrToInt(Copy(IntToStr(DisplayValue),1,1))+1,3);
+      4 : ConfigHeader('Maximum Download Ratio ^5(^4kB DL Per 1kB UL^5)',StrToInt(Copy(IntToStr(DisplayValue),1,1))+1,3);
+      5 : ConfigHeader('Minimum Posts Per 100 Calls For "ZZ" ACS Flag',StrToInt(Copy(IntToStr(DisplayValue),1,1))+1,3);
+      6 : ConfigHeader('Maximum Downloads Per Day ^5(^4#^5)',StrToInt(Copy(IntToStr(DisplayValue),1,1))+1,3);
+      7 : ConfigHeader('Maximum Downloads Per Day ^5(^4kB^5)',StrToInt(Copy(IntToStr(DisplayValue),1,1))+1,3);
     END;
-    NL;
+    PrintACR('^5<^4SL ^5/ ^4Value^5> <^4SL ^5/ ^4Value^5> <^4SL ^5/ ^4Value^5> ...');
+    HL;
     ShowSecRange(DisplayValue);
-    InputChar('%LFRange settings [^1S^2=^1Set^2,^1T^2=^1Toggle^2,^1Q^2=^1Quit^2]: ',Cmd,'QST'^M,[CapAll]);
+    NL;
+    InputChar('Modify Values [(^1S^2)et,<^1CR^2>Page,(^1Q^2)uit]: ',Cmd,'QS'^M,[CapAll]);
     CASE Cmd OF
       'S' : BEGIN
               FromValue := -1;
-              InputInteger('%LFFrom?',FromValue,[NumbersOnly],0,255,Changed);
+              InputInteger('%LFEnter Lowest SL',FromValue,[NumbersOnly],0,255,Changed);
               IF (FromValue >= 0) AND (FromValue <= 255) THEN
-              BEGIN
-                ToValue := -1;
-                InputInteger('%LFTo?',ToValue,[NumbersOnly],0,255,Changed);
-                IF (ToValue >= 0) AND (ToValue <= 255) THEN
                 BEGIN
-                  NewValue := -1;
-                  InputLongInt('%LFValue to set?',NewValue,[NumbersOnly],0,32767,Changed);
-                  IF (NewValue >= 0) AND (NewValue <= 32767) THEN
-                    FOR Counter := FromValue TO ToValue DO
-                      Sec[Counter] := NewValue;
+                  ToValue := -1;
+                  InputInteger('%LFEnter Highest SL',ToValue,[NumbersOnly],0,255,Changed);
+                  IF (ToValue >= 0) AND (ToValue <= 255) THEN
+                    BEGIN
+                      NewValue := -1;
+                      InputLongInt('%LFEnter New Value',NewValue,[NumbersOnly],0,32767,Changed);
+                      IF (NewValue >= 0) AND (NewValue <= 32767) THEN
+                        FOR Counter := FromValue TO ToValue DO
+                          Sec[Counter] := NewValue;
+                    END;
                 END;
-              END;
             END;
-      'T' : IF (DisplayValue = 0) THEN
-              DisplayValue := 160
-            ELSE
-              DisplayValue := 0;
+      ^M  : CASE DisplayValue OF
+              0   : DisplayValue := 108;
+              108 : DisplayValue := 216;
+              216 : DisplayValue := 0;
+            END;
     END;
   UNTIL (Cmd = 'Q') OR (HangUp);
 END;
