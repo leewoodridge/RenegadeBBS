@@ -22,13 +22,18 @@
             - Removed DisplayKey param from InputChar (was unused)
             - Replaced all calls to LOneK to InputChar (UGH!)
  04/26/2022 - Cleaning up InputPath
+ 04/22/2023 - Creating NewInput ...
 
-todo:
-add inputvalidation for inputformatted, maybe have it pass '' if incomplete? --PARAMS for AllowIncomplete
-inputflags : add different types like dir, filename etc, notabortable, askblank
-SHOULD BLANK PROMPT BE IN MAIN OR PRINTSTRING--main
-!!!AFTER ALL CALLS TO MPL MUST RESET COLOR TO 0 USERCOLOR(0);!!!
+[TODO]
+ - add inputvalidation for inputformatted, maybe have it pass '' if incomplete? --PARAMS for AllowIncomplete
+ - inputflags : add different types like dir, filename etc, notabortable, askblank
+ - SHOULD BLANK PROMPT BE IN MAIN OR PRINTSTRING--main
+[NOTES]
+ - AFTER MPL MUST RESET COLOR TO 0 USERCOLOR(0);
 }
+
+{ Byte = 0 .. 255 | Integer = -32768 .. 32767 | LongInt = -2147483648 .. 2147483647 | Word = 0 .. 65535 }
+
 UNIT Common3; { INPUT PROCS }
 
 INTERFACE
@@ -36,18 +41,20 @@ INTERFACE
 USES
   Common;
 
-PROCEDURE InputMain(VAR S: STRING; MaxLen: Byte; InputFlags: InputFlagSet); { MAIN INPUT PROCEDURE }
 PROCEDURE MPL(MaxLen: Byte); { Print input field }
-{ Byte = 0 .. 255 | Integer = -32768 .. 32767 | LongInt = -2147483648 .. 2147483647 | Word = 0 .. 65535 }
+{/}
 PROCEDURE InputByte(S: AStr; VAR B: Byte; InputFlags: InputFlagSet; LowNum,HighNum: Byte; VAR Changed: Boolean);
+PROCEDURE InputChar(S: AStr; VAR C: Char; ValidKeys: AStr; InputFlags: InputFlagSet);
 PROCEDURE InputInteger(S: AStr; VAR I: Integer; InputFlags: InputFlagSet; LowNum,HighNum: Integer; VAR Changed: Boolean);
 PROCEDURE InputLongInt(S: AStr; VAR L: LongInt; InputFlags: InputFlagSet; LowNum,HighNum: LongInt; VAR Changed: Boolean);
-PROCEDURE InputWord(S: AStr; VAR W: Word; InputFlags: InputFlagSet; LowNum,HighNum: Word; VAR Changed: Boolean);
-{/}
-PROCEDURE InputChar(S: AStr; VAR C: Char; ValidKeys: AStr; InputFlags: InputFlagSet);
 PROCEDURE InputString(S: AStr; VAR InputStr: AStr; MaxLen: Byte; InputFlags: InputFlagSet; VAR Changed: Boolean);
+PROCEDURE InputWord(S: AStr; VAR W: Word; InputFlags: InputFlagSet; LowNum,HighNum: Word; VAR Changed: Boolean);
+{...}
 PROCEDURE InputFormatted(S: AStr; VAR InputStr: STRING; Format: STRING; Abortable: Boolean);
 PROCEDURE InputPath(S: AStr; VAR DirPath: Str40; CreateDir,AllowExit: Boolean; VAR Changed: Boolean);
+{/}
+PROCEDURE InputMain(VAR S: STRING; MaxLen: Byte; InputFlags: InputFlagSet); { MAIN INPUT PROCEDURE }
+PROCEDURE NewInput(VAR InputStr: AStr; InputLen, FieldLen: Byte; InputFlags: InputFlagSet; VAR Changed: Boolean);
 
 IMPLEMENTATION
 
@@ -629,4 +636,146 @@ BEGIN
   MLC := '';
   SetCursor(FALSE);
 END;
+
+{ --- EXPERIMENTAL INPUT W/ SCROLLING FIELD --- }
+
+PROCEDURE NewInput(VAR InputStr: AStr; InputLen, FieldLen: Byte; InputFlags: InputFlagSet; VAR Changed: Boolean);
+VAR
+  FieldPos, { Current position in field }
+  StartPos, { X-Axis input field starting position }
+  StringPos: Byte; { Current position in string }
+  InsertMode: Boolean; { Are we inserting? }
+  KeyInput: Word; { Input }
+  NewStr: STRING; { Current state of the string that we're modifying }
+
+  PROCEDURE GoLeft;
+  BEGIN
+    IF (FieldPos>1) THEN
+      Dec(FieldPos)
+    ELSE
+      BEGIN
+        ANSIG(StartPos,WhereY);
+        Prompt(Copy(NewStr,StringPos-1,FieldLen))
+      END;
+    Dec(StringPos);
+  END;
+
+  PROCEDURE GoRight;
+  BEGIN
+    IF NOT (FieldPos>FieldLen) THEN
+      Inc(FieldPos)
+    ELSE
+      BEGIN
+        ANSIG(StartPos,WhereY);
+        Prompt(Copy(NewStr,StringPos-(FieldLen-1),FieldLen))
+      END;
+    Inc(StringPos);
+  END;
+
+  PROCEDURE GoBackspace;
+  BEGIN
+    Dec(StringPos);
+    Delete(NewStr,StringPos,1);
+    IF (FieldPos>1) THEN
+      BEGIN
+        Dec(FieldPos);
+        Backspace;
+        IF (StringPos<Length(NewStr)) THEN
+          Prompt(Copy(NewStr+' ',StringPos,FieldLen-FieldPos+1));
+      END;
+  END;
+
+  PROCEDURE GoDelete;
+  BEGIN
+    Delete(NewStr,StringPos,1);
+    Prompt(Copy(NewStr+' ',StringPos,FieldLen-FieldPos+1));
+  END;
+
+  PROCEDURE GoUpdateString;
+  BEGIN
+    {CapAll}
+    IF (CapAll IN InputFlags) OR (IsPassword IN InputFlags) THEN
+      KeyInput := Ord(UpCase(Char(KeyInput)))
+    {CapWords}
+    ELSE IF (CapWords IN InputFlags) THEN
+      IF (StringPos > 1) THEN
+        BEGIN
+          IF (NewStr[StringPos - 1] IN [#32..#64]) THEN
+            KeyInput := Ord(UpCase(Char(KeyInput)))
+          ELSE IF (KeyInput IN [Ord('A')..Ord('Z')]) THEN
+            Inc(KeyInput,32);
+        END
+      ELSE
+        KeyInput := Ord(UpCase(Char(KeyInput)));
+    {NumbersOnly/AllowNegative}
+    IF ((NumbersOnly IN InputFlags) AND (AllowNegative IN InputFlags) AND NOT (KeyInput IN [45,48..57])) OR
+       ((NumbersOnly IN InputFlags) AND NOT (AllowNegative IN InputFlags) AND NOT (KeyInput IN [48..57])) THEN
+      EXIT;
+    {Only allow "-" in first position}
+    IF (AllowNegative IN InputFlags) AND ((StringPos<>1)OR(NewStr[1]='-')) AND (KeyInput=45) THEN
+      EXIT;
+    {/}
+    IF (InsertMode) THEN
+      BEGIN {Insert}
+        Insert(Char(KeyInput),NewStr,StringPos);
+        NewStr := Copy(NewStr,1,InputLen); {Truncate}
+        Prompt(Copy(NewStr,StringPos,FieldLen-FieldPos+1));
+      END
+    ELSE
+      BEGIN {OverWrite}
+        NewStr[StringPos] := Char(KeyInput);
+        Prompt(Char(KeyInput));
+      END;
+    {/}
+    IF (StringPos<=Length(NewStr)) THEN
+      GoRight;
+  END;
+
+BEGIN
+  IF (FieldLen<1) THEN
+    EXIT;
+  StartPos := WhereX;
+  IF (AllowNegative IN InputFlags) THEN
+    Inc(InputLen); {For the "-"}
+  IF (NOT (NoInputField IN InputFlags)) AND (OkANSI) THEN
+    MPL(FieldLen);
+  IF (IsPassword IN InputFlags) THEN
+    Echo := FALSE;
+  NewStr := InputStr;
+  Prompt(Copy(NewStr,1,FieldLen));
+  StringPos := 1;
+  FieldPos := 1;
+  Changed := FALSE;
+  REPEAT
+    ANSIG(StartPos+FieldPos-1,WhereY);
+    KeyInput := GetKey;
+    CASE KeyInput OF
+      8       : IF (StringPos>1) THEN {Backspace}
+                  GoBackspace;
+      32..255 : IF (StringPos <= InputLen) THEN {Printable characters}
+                  GoUpdateString;
+      F_DEL   : GoDelete; {Delete}
+      F_END   : WHILE (StringPos <= Length(NewStr)) DO {End}
+                  GoRight;
+      F_HOME  : WHILE (StringPos > 1) DO {Home}
+                  GoLeft;
+      F_INS   : Toggle(InsertMode); {Insert}
+      F_LEFT  : IF (StringPos>1) THEN {Left Arrow}
+                  GoLeft;
+      F_RIGHT : IF (StringPos<=Length(NewStr)) THEN {Right Arrow}
+                  GoRight;
+    END;
+  UNTIL (KeyInput IN [13{Enter},27{Escape}]) OR (HangUp);
+  {/}
+  IF (NewStr<>InputStr) AND (KeyInput<>27) THEN
+    BEGIN
+      Changed := TRUE;
+      InputStr := NewStr;
+    END;
+  UserColor(0);
+  Echo := TRUE;
+  IF NOT (NoLineFeed IN InputFlags) THEN
+    NL;
+END;
+
 END.
