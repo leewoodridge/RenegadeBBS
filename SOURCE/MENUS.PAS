@@ -749,6 +749,10 @@ BEGIN
                     Print(MenuOption);
                     HangUp := TRUE;
                   END;
+            'Q' : BEGIN  {Hang Up User Then Quit BBS to DOS - Exo 11/8/23}
+                  HangUp := TRUE;
+		                QuitAfterDone := TRUE;
+                  END;
           ELSE
             NoCmd := TRUE;
           END;
