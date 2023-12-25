@@ -743,6 +743,11 @@ BEGIN
                     HangUp := TRUE;
                     {HungUp := FALSE;}
                   END;
+            'D' : BEGIN {Display GOODBYE.ANS/.ASC on slow Logoff without yes/no prompt - Exo 12/25/23}
+                    CLS;
+                    PrintF('GOODBYE');
+                    HangUp := TRUE;
+                  END;
             'I' : HangUp := TRUE;
             'M' : BEGIN
                     NL;
@@ -751,7 +756,7 @@ BEGIN
                   END;
             'Q' : BEGIN  {Hang Up User Then Quit BBS to DOS - Exo 11/8/23}
                   HangUp := TRUE;
-		                QuitAfterDone := TRUE;
+		  QuitAfterDone := TRUE;
                   END;
           ELSE
             NoCmd := TRUE;
