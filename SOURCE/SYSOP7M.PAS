@@ -2,6 +2,7 @@
 {
  03/09/2023 - Aesthetic updates
             - Error messages now using Messages PROC
+ 01/20/2024 - Fixed prompt colors (there's probably more still...)
 }
 UNIT SysOp7M;
 
@@ -264,7 +265,7 @@ VAR
                 '4' : InputString('%LFNew ACS: ',ACS,(SizeOf(ACS) - 1),[InterActiveEdit],Changed);
                 '5' : BEGIN
                         REPEAT
-                          Prt('%LFNew command keys [^1?^2=^1List^2]: ');
+                          Prt('%LF^2New command keys [(^1?^2)^1List^2]: ');
                           InputMain(TempS1,2,[CapAll]);
                           IF (TempS1 = '?') THEN
                           BEGIN
@@ -285,7 +286,7 @@ VAR
                                   (SizeOf(NodeActivityDesc) - 1),[InteractiveEdit],Changed);
                 'T' : BEGIN
                         REPEAT
-                          InputChar('%LFToggle which flag? ('+DisplayCmdFlags(CmdFlags,'5','4')+')'+
+                          InputChar('%LF^2Toggle which flag? ('+DisplayCmdFlags(CmdFlags,'5','4')+')'+
                                 ' [^1?^2=^1Help^2,^1<CR>^2=^1Quit^2]: ',Cmd1,^M'HU?',[CapAll]);
                           CASE Cmd1 OF
                             'H','U' :
