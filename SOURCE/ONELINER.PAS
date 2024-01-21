@@ -19,6 +19,8 @@ Lee Woodridge
             - Added OneLiner Editor (MNUCMD 1E)
  01/21/2024 - Reversed order of OneLiners in editor (Newest at top)
             - Added SysOp log entry for editing OneLiner
+ ***   01/21/2024  - Bug found that if new oneliner.dat does not have 25 lines, it will display trash in editor.  ***
+
 
  [NOTES]
  - Put anonymous and deleted strings in lang
@@ -329,9 +331,9 @@ PROCEDURE DrawUI;
 BEGIN
   CLS;
   ANSIG(1,1);
-  Print('^5 ÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄ ^4One-Liner Editor ^5ÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄ[^4'#30'^5]Ä');
+  Print('^5 Ã„Ã„Ã„Ã„Ã„Ã„Ã„Ã„Ã„Ã„Ã„Ã„Ã„Ã„Ã„Ã„Ã„Ã„Ã„Ã„Ã„Ã„Ã„Ã„Ã„Ã„Ã„Ã„Ã„Ã„ ^4One-Liner Editor ^5Ã„Ã„Ã„Ã„Ã„Ã„Ã„Ã„Ã„Ã„Ã„Ã„Ã„Ã„Ã„Ã„Ã„Ã„Ã„Ã„Ã„Ã„Ã„Ã„Ã„Ã„[^4'#30'^5]Ã„');
   ANSIG(1,23);
-  Print('^5 ÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄ[^4'#31'^5]Ä');
+  Print('^5 Ã„Ã„Ã„Ã„Ã„Ã„Ã„Ã„Ã„Ã„Ã„Ã„Ã„Ã„Ã„Ã„Ã„Ã„Ã„Ã„Ã„Ã„Ã„Ã„Ã„Ã„Ã„Ã„Ã„Ã„Ã„Ã„Ã„Ã„Ã„Ã„Ã„Ã„Ã„Ã„Ã„Ã„Ã„Ã„Ã„Ã„Ã„Ã„Ã„Ã„Ã„Ã„Ã„Ã„Ã„Ã„Ã„Ã„Ã„Ã„Ã„Ã„Ã„Ã„Ã„Ã„Ã„Ã„Ã„Ã„Ã„Ã„Ã„Ã„[^4'#31'^5]Ã„');
   Print(Centre('^0<^1'#30#31'^0>Scroll (^1E^0)dit <^1DEL^0>Delete <^1ESC^0/^1Q^0)uit'));
 END;
 
