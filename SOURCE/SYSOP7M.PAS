@@ -286,8 +286,8 @@ VAR
                                   (SizeOf(NodeActivityDesc) - 1),[InteractiveEdit],Changed);
                 'T' : BEGIN
                         REPEAT
-                          InputChar('%LF^2Toggle which flag? ('+DisplayCmdFlags(CmdFlags,'5','4')+')'+
-                                ' [^1?^2=^1Help^2,^1<CR>^2=^1Quit^2]: ',Cmd1,^M'HU?',[CapAll]);
+                          InputChar('%LF^2Toggle which flag? ('+DisplayCmdFlags(CmdFlags,'1','0')+'^2)'+
+                                ' [(^1?^2)Help^2,^2<^1CR^2>Quit]: ',Cmd1,^M'HU?',[CapAll]);
                           CASE Cmd1 OF
                             'H','U' :
                                     ToggleCmdFlags(Cmd1,CmdFlags,Changed);
