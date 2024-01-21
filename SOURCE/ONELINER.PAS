@@ -18,6 +18,7 @@ Lee Woodridge
  07/08/2023 - Nested view/add into oneliners proc
             - Added OneLiner Editor (MNUCMD 1E)
  01/21/2024 - Reversed order of OneLiners in editor (Newest at top)
+            - Added SysOp log entry for editing OneLiner
 
  [NOTES]
  - Put anonymous and deleted strings in lang
@@ -305,7 +306,8 @@ VAR
   LineNum: Integer; { Line number we're on (0 - 20) }
   W: Word; { Input }
   UserTmp: UserRecordType; { Author information }
-
+  StrTmp: STRING[55]; { Original OneLiner for SysOp log }
+  
 PROCEDURE UpdateArray;
 VAR
   Counter: Integer;
@@ -330,7 +332,7 @@ BEGIN
   Print('^5 컴컴컴컴컴컴컴컴컴컴컴컴컴컴컴 ^4One-Liner Editor ^5컴컴컴컴컴컴컴컴컴컴컴컴컴[^4'#30'^5]�');
   ANSIG(1,23);
   Print('^5 컴컴컴컴컴컴컴컴컴컴컴컴컴컴컴컴컴컴컴컴컴컴컴컴컴컴컴컴컴컴컴컴컴컴컴컴컴[^4'#31'^5]�');
-  Print(Centre('^0<^1'#30#31'^0>Scroll (^1E^0)dit <^1DEL^0>Delete <^1ESC^0>Quit'));
+  Print(Centre('^0<^1'#30#31'^0>Scroll (^1E^0)dit <^1DEL^0>Delete <^1ESC^0/^1Q^0)uit'));
 END;
 
 PROCEDURE DrawList;
@@ -357,6 +359,7 @@ BEGIN { OneLiners_Edit }
   IF (FileSize(OneLinerListFile)=0) THEN
     BEGIN
       lRGLngStr(109,FALSE); { "No OneLiners" }
+      PauseScr(FALSE);
       EXIT;
     END;
   
@@ -432,19 +435,24 @@ BEGIN { OneLiners_Edit }
         Read(OneLinerListFile,OneLineRec);
         ANSIG(1,24);
         Clear_EOL;
+        StrTmp := OneLineRec.OneLiner; { Original OneLiner for SysOp log }
         InputString('',OneLineRec.OneLiner,(SizeOf(OneLineRec.OneLiner) - 1),[InterActiveEdit,NoInputField],Changed);
         IF (Changed) THEN
           BEGIN
             Seek(OneLinerListFile,RecNum);
             Write(OneLinerListFile,OneLineRec);
+            LastError := IOResult;
             {}
+            LoadURec(UserTmp,OneLineRec.UserID); { Get user data }
+            SysOpLog('* Edited OneLiner "'+StrTmp+'" by '+UserTmp.Name+' to "'+OneLineRec.OneLiner+'"');
+            {}
+            StrTmp := ''; { Clear }
             UpdateArray;
           END;
-          
         { Reset }
         RecNum := FileSize(OneLinerListFile)-1;
         LineNum := 0;
-        
+        {}
         DrawUI;
         DrawList;
       END;
@@ -473,15 +481,14 @@ BEGIN { OneLiners_Edit }
             {}
             UpdateArray;
           END;
-          
         { Reset }
         RecNum := FileSize(OneLinerListFile)-1;
         LineNum := 0;
-        
+        {}
         DrawUI;
         DrawList;         
       END;
-  UNTIL (W=27{ESC}) OR (HangUp);
+  UNTIL (W=27{ESC}) OR (W=113{q}) OR (W=81{Q}) OR (HangUp);
   Close(OneLinerListFile);
   TempPause := TRUE;
   ToggleWindow(TRUE);
