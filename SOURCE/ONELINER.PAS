@@ -17,9 +17,10 @@ Lee Woodridge
  03/06/2023 - deleted users have their attribution set as anonymous
  07/08/2023 - Nested view/add into oneliners proc
             - Added OneLiner Editor (MNUCMD 1E)
+ 01/21/2024 - Reversed order of OneLiners in editor (Newest at top)
 
- notes:
-  - put anonymous and deleted strings in lang
+ [NOTES]
+ - Put anonymous and deleted strings in lang
 }
 UNIT OneLiner;
 
@@ -27,7 +28,7 @@ INTERFACE
 
 USES
     Common,
-    common2, {togglewindow}
+    Common2, {ToggleWindow}
     CRT,
     TimeFunc,
     Mail1;
@@ -300,37 +301,10 @@ PROCEDURE OneLiners_Edit;
 VAR
   Line: ARRAY[0..100] OF STRING[79]; { The OneLiners }
   Counter,
-  RecNum, { Record number we're on }
-  RecOld, { Delete }
-  LineNum: Integer; { Line number we're on (0-20) }
+  RecNum, { Record number we're on (0 - FileSize(OneLinerListFile)-1) }
+  LineNum: Integer; { Line number we're on (0 - 20) }
   W: Word; { Input }
   UserTmp: UserRecordType; { Author information }
-
-PROCEDURE DrawList;
-VAR
-  Counter: Integer;
-BEGIN
-  ANSIG(1,2);
-  FOR Counter := 0 TO 20 DO
-    IF Line[Counter] <> '' THEN
-      BEGIN
-        IF RecNum = Counter THEN
-          Prt('^1')
-        ELSE
-          Prt('^0');
-        Print(PadLeftStr(Line[Counter],79));
-      END;
-END;
-
-PROCEDURE DrawUI;
-BEGIN
-  CLS;
-  ANSIG(1,1);
-  Print('^5 ÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄ ^4One-Liner Editor ^5ÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄ[^4'#30'^5]Ä');
-  ANSIG(1,23);
-  Print('^5 ÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄ[^4'#31'^5]Ä');
-  Print(Centre('^0<^1'#30#31'^0>Scroll (^1E^0)dit <^1DEL^0>Delete <^1ESC^0>Quit'));
-END;
 
 PROCEDURE UpdateArray;
 VAR
@@ -349,7 +323,33 @@ BEGIN
     END;
 END;
 
+PROCEDURE DrawUI;
 BEGIN
+  CLS;
+  ANSIG(1,1);
+  Print('^5 ÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄ ^4One-Liner Editor ^5ÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄ[^4'#30'^5]Ä');
+  ANSIG(1,23);
+  Print('^5 ÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄ[^4'#31'^5]Ä');
+  Print(Centre('^0<^1'#30#31'^0>Scroll (^1E^0)dit <^1DEL^0>Delete <^1ESC^0>Quit'));
+END;
+
+PROCEDURE DrawList;
+VAR
+  Counter: Integer;
+BEGIN
+  ANSIG(1,2);
+  FOR Counter := FileSize(OneLinerListFile)-1 DOWNTO FileSize(OneLinerListFile)-21 DO
+    IF Line[Counter] <> '' THEN
+      BEGIN
+        IF RecNum = Counter THEN
+          Prt('^1')
+        ELSE
+          Prt('^0');
+        Print(PadLeftStr(Line[Counter],79));
+      END;
+END;
+
+BEGIN { OneLiners_Edit }
   Assign(OneLinerListFile,General.DataPath+'ONELINER.DAT');
   Reset(OneLinerListFile);
 
@@ -363,7 +363,7 @@ BEGIN
   TempPause := FALSE;
   ToggleWindow(FALSE);
   
-  RecNum := 0;
+  RecNum := FileSize(OneLinerListFile)-1;
   LineNum := 0;
 
   UpdateArray;
@@ -373,14 +373,14 @@ BEGIN
   REPEAT
     Cursor(FALSE);
     W := GetKey; { Input }
-    IF (W = F_UP) AND (RecNum > 0) THEN
+    IF (W = F_DOWN) AND (RecNum > 0) THEN
       BEGIN
         Dec(RecNum);
-        IF (LineNum > 0) THEN
+        IF (LineNum < 20) THEN
           BEGIN
-            Dec(LineNum);
+            Inc(LineNum);
             { No page shift }
-            ANSIG(1,LineNum+3);
+            ANSIG(1,LineNum+1);
             Print('^0'+Line[RecNum+1]);
             ANSIG(1,LineNum+2);
             Print('^1'+Line[RecNum]);
@@ -388,7 +388,7 @@ BEGIN
         ELSE
           BEGIN { Page shift }
             ANSIG(1,2);
-            FOR Counter := RecNum TO RecNum+20 DO
+            FOR Counter := RecNum+20 DOWNTO RecNum DO
               BEGIN
                 IF RecNum = Counter THEN
                   Prt('^1')
@@ -399,14 +399,14 @@ BEGIN
           END;
       END;
     
-    IF (W = F_DOWN) AND (RecNum < FileSize(OneLinerListFile)-1) THEN
+    IF (W = F_UP) AND (RecNum < FileSize(OneLinerListFile)-1) THEN
       BEGIN
         Inc(RecNum);
-        IF (LineNum < 20) THEN
+        IF (LineNum > 0) THEN
           BEGIN
-            Inc(LineNum);
+            Dec(LineNum);
             { No page shift }
-            ANSIG(1,LineNum+1);
+            ANSIG(1,LineNum+3);
             Print('^0'+Line[RecNum-1]);
             ANSIG(1,LineNum+2);
             Print('^1'+Line[RecNum]);
@@ -414,7 +414,7 @@ BEGIN
         ELSE
           BEGIN { Page shift }
             ANSIG(1,2); { First entry }
-            FOR Counter := RecNum-20 TO RecNum DO
+            FOR Counter := RecNum DOWNTO RecNum-20 DO
               BEGIN
                 IF RecNum = Counter THEN
                   Prt('^1')
@@ -440,6 +440,11 @@ BEGIN
             {}
             UpdateArray;
           END;
+          
+        { Reset }
+        RecNum := FileSize(OneLinerListFile)-1;
+        LineNum := 0;
+        
         DrawUI;
         DrawList;
       END;
@@ -470,9 +475,9 @@ BEGIN
           END;
           
         { Reset }
-        RecNum := 0;
+        RecNum := FileSize(OneLinerListFile)-1;
         LineNum := 0;
-		
+        
         DrawUI;
         DrawList;         
       END;
