@@ -12,6 +12,7 @@
  04/26/2022 - Menu command error and SysOp log now executes for all users, not just CoSysOp+
  04/27/2022 - Menu command error messages use language file now (Invalid/NoACS)
  09/05/2022 - Added menu command VI - scrolling text viewer
+ 07/09/2023 - Added menu command 1E - OneLiner editor
 }
 UNIT Menus;
 
@@ -675,6 +676,7 @@ BEGIN
           END;
     '1' : CASE Cmd[2] OF
             'L' : OneLiners;
+            'E' : OneLiners_Edit;
           ELSE
             NoCmd := TRUE;
           END;
@@ -755,8 +757,8 @@ BEGIN
                     HangUp := TRUE;
                   END;
             'Q' : BEGIN  {Hang Up User Then Quit BBS to DOS - Exo 11/8/23}
-                  HangUp := TRUE;
-		  QuitAfterDone := TRUE;
+                    HangUp := TRUE;
+                    QuitAfterDone := TRUE;
                   END;
           ELSE
             NoCmd := TRUE;

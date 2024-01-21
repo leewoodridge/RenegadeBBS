@@ -15,9 +15,11 @@ Lee Woodridge
             - Changed Counter var type from byte to integer (need negatives)
             - removed unused var Counter2
  03/06/2023 - deleted users have their attribution set as anonymous
+ 07/08/2023 - Nested view/add into oneliners proc
+            - Added OneLiner Editor (MNUCMD 1E)
 
  notes:
- put anonymous and deleted strings in lang
+  - put anonymous and deleted strings in lang
 }
 UNIT OneLiner;
 
@@ -25,13 +27,13 @@ INTERFACE
 
 USES
     Common,
+    common2, {togglewindow}
     CRT,
     TimeFunc,
     Mail1;
 
-PROCEDURE OneLiners; { View and prompt to add }
-PROCEDURE OneLiner_Add; { Only add }
-PROCEDURE OneLiner_View; { Only view }
+PROCEDURE OneLiners; { View/Prompt to add }
+PROCEDURE OneLiners_Edit; { Edit/Delete }
 FUNCTION OneLiner_Random: STRING; { Display a random OneLiner }
 
 IMPLEMENTATION
@@ -127,6 +129,100 @@ BEGIN
     END;
 END;
 
+FUNCTION OneLiner_Random: STRING;
+VAR
+  OneLinerList: OneLinerRecordType;
+  Rand: Byte;
+BEGIN
+  OneLiner_Random := '';
+  IF (NOT ReadBuffer('ONELM')) THEN
+    BEGIN
+      SysOpLog('^8[!]^0 Tried to view oneliners, but ^1ONELM.EXT^0 was missing!');
+      EXIT;
+    END;
+  Assign(OneLinerListFile,General.DataPath+'ONELINER.DAT');
+  Reset(OneLinerListFile);
+  REPEAT
+    Rand := Random(10{FileSize(OneLinerListFile)???});
+  UNTIL (Rand>0) AND (Rand<FileSize(OneLinerListFile));
+  Seek(OneLinerListFile,(Rand));
+  Read(OneLinerListFile,OneLinerList);
+  DisplayBuffer(OneLinerListMCI,@OneLinerList,NIL);
+  Close(OneLinerListFile);
+  LastError := IOResult;
+END;
+
+PROCEDURE OneLiners;
+
+PROCEDURE OneLiner_View;
+VAR
+  OneLinerList: OneLinerRecordType;
+  Counter: Integer; { Need negatives }
+BEGIN
+{Counter2 := 1;}
+  Assign(OneLinerListFile,General.DataPath+'ONELINER.DAT');
+  Reset(OneLinerListFile);
+  LastError := IOResult;
+  IF (LastError = 2) THEN
+    ReWrite(OneLinerListFile);
+  IF (NOT ReadBuffer('ONELM')) THEN
+    BEGIN
+      SysOpLog('^8[!]^0 Tried to view OneLiners, but ^1ONELM.EXT^0 was missing!');
+      EXIT;
+    END;
+  AllowContinue := TRUE;
+  Abort := FALSE;
+  PrintF('ONELH');
+  IF (NoFile) THEN
+    BEGIN
+      lRGLngStr(108,FALSE);
+      UserColor(5);
+      WHILE WhereX < ThisUser.LineLen DO
+        Prt(lRGLngStr(11,TRUE)); {"-"}
+      NL;
+      UserColor(0);
+    END;
+  IF (FileSize(OneLinerListFile)=0) THEN
+    BEGIN
+      lRGLngStr(109,FALSE); { No OneLiners }
+    END
+  ELSE
+    BEGIN
+      IF General.OneLinersNewTop THEN
+        FOR Counter := (FileSize(OneLinerListFile)) DOWNTO (FileSize(OneLinerListFile)-9) DO { LeeW: Newest at top }
+          BEGIN
+            IF (Counter<1) THEN
+              Break;
+            Seek(OneLinerListFile,(Counter-1));
+            Read(OneLinerListFile,OneLinerList);
+            DisplayBuffer(OneLinerListMCI,@OneLinerList,NIL);
+          END
+      ELSE
+        FOR Counter := (FileSize(OneLinerListFile)-9) TO (FileSize(OneLinerListFile)) DO { LeeW: Newest at bottom }
+          BEGIN
+            IF (Counter<1) THEN
+              Continue;
+            Seek(OneLinerListFile,(Counter-1));
+            Read(OneLinerListFile,OneLinerList);
+            DisplayBuffer(OneLinerListMCI,@OneLinerList,NIL);
+          END;
+    END;
+  Close(OneLinerListFile);
+  LastError := IOResult;
+  IF (NOT Abort) THEN
+    PrintF('ONELT');
+  IF (NoFile) THEN
+    BEGIN
+      UserColor(5);
+      WHILE WhereX < ThisUser.LineLen DO
+        Prompt(lRGLngStr(11,TRUE)); {"-"}
+      NL;
+      UserColor(0);
+    END;
+  AllowContinue := FALSE;
+  SysOpLog('Read OneLiners');
+END;
+
 PROCEDURE OneLiner_Add;
 VAR
   OneLinerList: OneLinerRecordType;
@@ -190,105 +286,201 @@ BEGIN
     END;
 END;
 
-PROCEDURE OneLiner_View;
-VAR
-  OneLinerList: OneLinerRecordType;
-  Counter: Integer; { Need negatives }
-BEGIN
-{Counter2 := 1;}
-  Assign(OneLinerListFile,General.DataPath+'ONELINER.DAT');
-  Reset(OneLinerListFile);
-  LastError := IOResult;
-  IF (LastError = 2) THEN
-    ReWrite(OneLinerListFile);
-  IF (NOT ReadBuffer('ONELM')) THEN
-    BEGIN
-      SysOpLog('^8[!]^0 Tried to view OneLiners, but ^1ONELM.EXT^0 was missing!');
-      EXIT;
-    END;
-  AllowContinue := TRUE;
-  Abort := FALSE;
-  PrintF('ONELH');
-  IF (NoFile) THEN
-    BEGIN
-      lRGLngStr(108,FALSE);
-      UserColor(5);
-      WHILE WhereX < ThisUser.LineLen DO
-        Prt(lRGLngStr(11,TRUE)); {"-"}
-      NL;
-      UserColor(0);
-    END;
-  IF (FileSize(OneLinerListFile)=0) THEN
-    BEGIN
-     lRGLngStr(109,FALSE); { No OneLiners }
-    END
-  ELSE
-    BEGIN
-      IF General.OneLinersNewTop THEN
-        FOR Counter := (FileSize(OneLinerListFile)) DOWNTO (FileSize(OneLinerListFile)-9) DO { LeeW: Newest at top }
-          BEGIN
-            IF (Counter<1) THEN
-              Break;
-            Seek(OneLinerListFile,(Counter-1));
-            Read(OneLinerListFile,OneLinerList);
-            DisplayBuffer(OneLinerListMCI,@OneLinerList,NIL);
-          END
-      ELSE
-        FOR Counter := (FileSize(OneLinerListFile)-9) TO (FileSize(OneLinerListFile)) DO { LeeW: Newest at bottom }
-          BEGIN
-            IF (Counter<1) THEN
-              Continue;
-            Seek(OneLinerListFile,(Counter-1));
-            Read(OneLinerListFile,OneLinerList);
-            DisplayBuffer(OneLinerListMCI,@OneLinerList,NIL);
-          END;
-    END;
-  Close(OneLinerListFile);
-  LastError := IOResult;
-  IF (NOT Abort) THEN
-    PrintF('ONELT');
-  IF (NoFile) THEN
-    BEGIN
-      UserColor(5);
-      WHILE WhereX < ThisUser.LineLen DO
-        Prompt(lRGLngStr(11,TRUE)); {"-"}
-      NL;
-      UserColor(0);
-    END;
-  AllowContinue := FALSE;
-  SysOpLog('Read OneLiners');
-END;
-
-FUNCTION OneLiner_Random: STRING;
-VAR
-  OneLinerList: OneLinerRecordType;
-  Rand: Byte;
-BEGIN
-  OneLiner_Random := '';
-  IF (NOT ReadBuffer('ONELM')) THEN
-    BEGIN
-      SysOpLog('^8[!]^0 Tried to view oneliners, but ^1ONELM.EXT^0 was missing!');
-      EXIT;
-    END;
-  Assign(OneLinerListFile,General.DataPath+'ONELINER.DAT');
-  Reset(OneLinerListFile);
-  REPEAT
-    Rand := Random(10{FileSize(OneLinerListFile)???});
-  UNTIL (Rand>0) AND (Rand<FileSize(OneLinerListFile));
-  Seek(OneLinerListFile,(Rand));
-  Read(OneLinerListFile,OneLinerList);
-  DisplayBuffer(OneLinerListMCI,@OneLinerList,NIL);
-  Close(OneLinerListFile);
-  LastError := IOResult;
-END;
-
-PROCEDURE OneLiners;
-BEGIN
+BEGIN { OneLiners }
   OneLiner_View;
   IF AACS(General.AddOneLinerACS) THEN
     OneLiner_Add
   ELSE
     PauseScr(FALSE);
+END;
+
+{/}
+
+PROCEDURE OneLiners_Edit;
+VAR
+  Line: ARRAY[0..100] OF STRING[79]; { The OneLiners }
+  Counter,
+  RecNum, { Record number we're on }
+  RecOld, { Delete }
+  LineNum: Integer; { Line number we're on (0-20) }
+  W: Word; { Input }
+  UserTmp: UserRecordType; { Author information }
+
+PROCEDURE DrawList;
+VAR
+  Counter: Integer;
+BEGIN
+  ANSIG(1,2);
+  FOR Counter := 0 TO 20 DO
+    IF Line[Counter] <> '' THEN
+      BEGIN
+        IF RecNum = Counter THEN
+          Prt('^1')
+        ELSE
+          Prt('^0');
+        Print(PadLeftStr(Line[Counter],79));
+      END;
+END;
+
+PROCEDURE DrawUI;
+BEGIN
+  CLS;
+  ANSIG(1,1);
+  Print('^5 컴컴컴컴컴컴컴컴컴컴컴컴컴컴컴 ^4One-Liner Editor ^5컴컴컴컴컴컴컴컴컴컴컴컴컴[^4'#30'^5]�');
+  ANSIG(1,23);
+  Print('^5 컴컴컴컴컴컴컴컴컴컴컴컴컴컴컴컴컴컴컴컴컴컴컴컴컴컴컴컴컴컴컴컴컴컴컴컴컴[^4'#31'^5]�');
+  Print(Centre('^0<^1'#30#31'^0>Scroll (^1E^0)dit <^1DEL^0>Delete <^1ESC^0>Quit'));
+END;
+
+PROCEDURE UpdateArray;
+VAR
+  Counter: Integer;
+BEGIN
+  { Reset array }
+  FOR Counter := 0 TO 100 DO 
+    Line[Counter] := '';
+  { Repopulate array from data file }
+  FOR Counter := 0 TO FileSize(OneLinerListFile)-1 DO
+    BEGIN
+      Seek(OneLinerListFile,(Counter));
+      Read(OneLinerListFile,OneLineRec);
+      LoadURec(UserTmp,OneLineRec.UserID);
+      Line[Counter] := PadLeftStr('['+IntToStr(Counter)+'] "'+OneLineRec.OneLiner+'"',61)+PadLeftStr(' - '+UserTmp.Name,18);
+    END;
+END;
+
+BEGIN
+  Assign(OneLinerListFile,General.DataPath+'ONELINER.DAT');
+  Reset(OneLinerListFile);
+
+  { Check if there's any OneLiners to edit }
+  IF (FileSize(OneLinerListFile)=0) THEN
+    BEGIN
+      lRGLngStr(109,FALSE); { "No OneLiners" }
+      EXIT;
+    END;
+  
+  TempPause := FALSE;
+  ToggleWindow(FALSE);
+  
+  RecNum := 0;
+  LineNum := 0;
+
+  UpdateArray;
+  DrawUI;
+  DrawList;
+        
+  REPEAT
+    Cursor(FALSE);
+    W := GetKey; { Input }
+    IF (W = F_UP) AND (RecNum > 0) THEN
+      BEGIN
+        Dec(RecNum);
+        IF (LineNum > 0) THEN
+          BEGIN
+            Dec(LineNum);
+            { No page shift }
+            ANSIG(1,LineNum+3);
+            Print('^0'+Line[RecNum+1]);
+            ANSIG(1,LineNum+2);
+            Print('^1'+Line[RecNum]);
+          END
+        ELSE
+          BEGIN { Page shift }
+            ANSIG(1,2);
+            FOR Counter := RecNum TO RecNum+20 DO
+              BEGIN
+                IF RecNum = Counter THEN
+                  Prt('^1')
+                ELSE
+                  Prt('^0');
+                Print(PadLeftStr(Line[Counter],79));
+              END;
+          END;
+      END;
+    
+    IF (W = F_DOWN) AND (RecNum < FileSize(OneLinerListFile)-1) THEN
+      BEGIN
+        Inc(RecNum);
+        IF (LineNum < 20) THEN
+          BEGIN
+            Inc(LineNum);
+            { No page shift }
+            ANSIG(1,LineNum+1);
+            Print('^0'+Line[RecNum-1]);
+            ANSIG(1,LineNum+2);
+            Print('^1'+Line[RecNum]);
+          END
+        ELSE
+          BEGIN { Page shift }
+            ANSIG(1,2); { First entry }
+            FOR Counter := RecNum-20 TO RecNum DO
+              BEGIN
+                IF RecNum = Counter THEN
+                  Prt('^1')
+                ELSE
+                  Prt('^0');
+                Print(PadLeftStr(Line[Counter],79));
+              END;
+          END;
+      END;
+      
+    IF (W = 101{e}) OR (W = 69{E}) THEN
+      BEGIN { Edit the OneLiner }
+        Cursor(TRUE);
+        Seek(OneLinerListFile,RecNum);
+        Read(OneLinerListFile,OneLineRec);
+        ANSIG(1,24);
+        Clear_EOL;
+        InputString('',OneLineRec.OneLiner,(SizeOf(OneLineRec.OneLiner) - 1),[InterActiveEdit,NoInputField],Changed);
+        IF (Changed) THEN
+          BEGIN
+            Seek(OneLinerListFile,RecNum);
+            Write(OneLinerListFile,OneLineRec);
+            {}
+            UpdateArray;
+          END;
+        DrawUI;
+        DrawList;
+      END;
+      
+    IF (W = F_DEL) THEN
+      BEGIN { Delete the OneLiner }
+        ANSIG(1,24);
+        Clear_EOL;
+        IF PYNQ('Are you sure you want to delete it?',0,FALSE) THEN
+          BEGIN
+            Reset(OneLinerListFile);
+            IF (RecNum >= 0) AND (RecNum <= (FileSize(OneLinerListFile) - 2)) THEN
+              FOR Counter := RecNum TO (FileSize(OneLinerListFile) - 2) DO
+                BEGIN
+                  Seek(OneLinerListFile,(Counter + 1));
+                  Read(OneLinerListFile,OneLineRec);
+                  Seek(OneLinerListFile,Counter);
+                  Write(OneLinerListFile,OneLineRec);
+                END;
+            Seek(OneLinerListFile,(FileSize(OneLinerListFile) - 1));
+            Truncate(OneLinerListFile);
+            LastError := IOResult;
+            {}
+            LoadURec(UserTmp,OneLineRec.UserID); { Get user data }
+            SysOpLog('* Deleted OneLiner "'+OneLineRec.OneLiner+'" by '+UserTmp.Name);
+            {}
+            UpdateArray;
+          END;
+          
+        { Reset }
+        RecNum := 0;
+        LineNum := 0;
+		
+        DrawUI;
+        DrawList;         
+      END;
+  UNTIL (W=27{ESC}) OR (HangUp);
+  Close(OneLinerListFile);
+  TempPause := TRUE;
+  ToggleWindow(TRUE);
+  Cursor(TRUE);
 END;
 
 END.
