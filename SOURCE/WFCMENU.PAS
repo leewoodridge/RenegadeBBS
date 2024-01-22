@@ -1,4 +1,10 @@
 {$A+,B-,D+,E-,F+,I-,L+,N-,O+,R-,S+,V-}
+{
+12/29/2023 - Added WriteXY proc to eliminate all repetitive gotoxy & write cmds
+01/21/2024 - errors will flash red if 1+
+           - duplicate errors replaced with diskfree, will indicate red if less than minupload or minpost
+           - minor xy pos changes, added ver info to header
+}
 
 UNIT WFCMenu;
 
@@ -10,8 +16,8 @@ PROCEDURE WFCMenus;
 IMPLEMENTATION
 
 USES
-  Crt,
-  Dos,
+  CRT,
+  DOS,
   Boot,
   Bulletin,
   Common,
@@ -74,9 +80,9 @@ CONST
 
   WFC_LENGTH = 1153;
   WFC : ARRAY [1..1153] OF Char = (
-    #15,#17,#25,#22,'T','h','e',' ','R','e','n','e','g','a','d','e',' ',
-    'B','u','l','l','e','t','i','n',' ','B','o','a','r','d',' ','S','y',
-    's','t','e','m',#25,#22,#24,' ', #0,'Ú',#26,#16,'Ä', #9,'¿',' ', #0,
+    #15,#17,#25,#22,' ',' ',' ',' ',' ',' ',' ',' ',' ',' ',' ',' ',' ',
+    ' ',' ',' ',' ',' ',' ',' ',' ',' ',' ',' ',' ',' ',' ',' ',' ',' ',
+    ' ',' ',' ',' ',#25,#22,#24,' ', #0,'Ú',#26,#16,'Ä', #9,'¿',' ', #0,
     'Ú',#26,#16,'Ä', #9,'¿',' ', #0,'Ú',#26,#16,'Ä', #9,'¿',' ', #0,'Ú',
     #26,#15,'Ä', #9,'¿',' ',#24,' ', #0,'³',' ',' ',#10,'T','o','d','a',
     'y',#39,'s',' ','S','t','a','t','s',' ',' ', #9,'³',' ', #0,'³',' ',
@@ -93,7 +99,7 @@ CONST
     'd','e','r',#25, #9, #9,'³',' ',#24,' ', #0,'³',' ',#15,'E','m','a',
     'i','l',#25,#10, #9,'³',' ', #0,'³',' ',#15,'#',' ','U','L',#25,#11,
      #9,'³',' ', #0,'³',' ',#15,'#',' ','U','L',#25,#11, #9,'³',' ', #0,
-    '³',' ',#15,'E','r','r','o','r','s',#25, #8, #9,'³',' ',#24,' ', #0,
+    '³',' ',#15,'F','r','e','e',' ',' ',#25, #8, #9,'³',' ',#24,' ', #0,
     '³',' ',#15,'N','e','w','u','s','e','r','s',#25, #7, #9,'³',' ', #0,
     '³',' ',#15,'#',' ','D','L',#25,#11, #9,'³',' ', #0,'³',' ',#15,'#',
     ' ','D','L',#25,#11, #9,'³',' ', #0,'³',' ',#15,'M','a','i','l',#25,
@@ -142,7 +148,6 @@ CONST
     'N',#15,']','o','d','e',' ','l','i','s','t','i','n','g',' ',' ','[',
     #14,'Q',#15,']','u','i','t',' ','t','o',' ','D','O','S',' ',' ', #9,
     '³',' ',#24,' ', #0,'À', #9,#26,'K','Ä','Ù',' ',#24,#24);
-
 
   WFC0_LENGTH = 488;
   WFC0: ARRAY [1..488] OF Char = (
@@ -394,8 +399,15 @@ PROCEDURE WFCDraw;
 VAR
   HistoryFile: FILE OF HistoryRecordType;
   History: HistoryRecordType;
-  s: STRING[10];
+  S: STRING[10];
   L: LongInt;
+  
+  PROCEDURE WriteXY(X,Y: Byte; S: String); {LeeW: Added to remove redundancy} {WriteXY(X,Y,S);}
+  BEGIN
+    GoToXY(X,Y);
+    Write(S);
+  END;
+  
 BEGIN
   Window(1,1,MaxDisplayCols,MaxDisplayRows);
   LastWFCX := 1;
@@ -412,14 +424,11 @@ BEGIN
           IF (General.NetworkMode) THEN
             Update_Logo(WFCNET,ScreenAddr[(3*2)+(19*160)-162],WFCNET_LENGTH);
           LoadURec(ThisUser,1);
-          TextAttr := 31;
-          GoToXY(4,1);
-          Write(PadRightStr(TimeStr,8));
-          GoToXY(68,1);
-          Write(DateStr);
 
-        { GoToXY(59,1);
-          Write('V'+Build); }
+          TextAttr := 31;
+          WriteXY(3,1,PadRightStr(TimeStr,8));
+          WriteXY(23,1,'Renegade Bulletin Board System  V'+Build);
+          WriteXY(68,1,DateStr);
 
           Assign(HistoryFile,General.DataPath+'HISTORY.DAT');
           IF (NOT Exist(General.DataPath+'HISTORY.DAT')) THEN
@@ -438,7 +447,7 @@ BEGIN
                   Uploads := 0;
                   Downloads := 0;
                   UK := 0;
-                  Dk := 0;
+                  DK := 0;
                   FOR L := 0 TO 20 DO
                     UserBaud[L] := 0;
                 END;
@@ -454,98 +463,72 @@ BEGIN
           WITH History DO
             BEGIN
               TextAttr := 19;
-              GoToXY(14,04);
-              Write(PadRightInt(Callers,5));
-              GoToXY(14,05);
-              Write(PadRightInt(Posts,5));
-              GoToXY(14,06);
-              Write(PadRightInt(EMail,5));
-              GoToXY(14,07);
-              Write(PadRightInt(NewUsers,5));
-              GoToXY(14,08);
-              Write(PadRightInt(FeedBack,5));
-              GoToXY(14,09);
-              Write(PadRightInt(Uploads,5));
+              WriteXY(14,04,PadRightInt(Callers,5));
+              WriteXY(14,05,PadRightInt(Posts,5));
+              WriteXY(14,06,PadRightInt(EMail,5));
+              WriteXY(14,07,PadRightInt(NewUsers,5));
+              WriteXY(14,08,PadRightInt(FeedBack,5));
+              WriteXY(14,09,PadRightInt(Uploads,5));
               TextAttr := 31;
               S := ConvertBytes(UK * 1024,FALSE);
-              GoToXY(04,10);
-              Write(Copy(S,(Pos(' ',S) + 1),Length(S))+' UL');
+              WriteXY(04,10,Copy(S,(Pos(' ',S) + 1),Length(S))+' UL');
               TextAttr := 19;
-              GoToXY(14,10);
-              Write(PadRightStr(Copy(S,1,(Pos(' ',S) - 1)),5));
-              GoToXY(14,11);
-              Write(PadRightInt(Downloads,5));
-              TextAttr := 31;
+              WriteXY(14,10,PadRightStr(Copy(S,1,(Pos(' ',S) - 1)),5));
+              WriteXY(14,11,PadRightInt(Downloads,5));
+              TextAttr := 31; { White }
               S := ConvertBytes(DK * 1024,FALSE);
-              GoToXY(04,12);
-              Write(Copy(S,(Pos(' ',S) + 1),Length(S))+' DL');
+              WriteXY(04,12,Copy(S,(Pos(' ',S) + 1),Length(S))+' DL');
               TextAttr := 19;
-              GoToXY(14,12);
-              Write(PadRightStr(Copy(S,1,(Pos(' ',S) - 1)),5));
-              GoToXY(14,14);
-              Write(PadRightInt(Active,5));
-              GoToXY(14,15);
+              WriteXY(14,12,PadRightStr(Copy(S,1,(Pos(' ',S) - 1)),5));
+              WriteXY(14,14,PadRightInt(Active,5));
+              
               CASE OverlayLocation OF
-                0 : Write(' Disk');
-                1 : Write('  EMS');
-                2 : Write('  XMS');
+                0 : S := 'Disk';
+                1 : S := 'EMS';
+                2 : S := 'XMS';
               END;
-              GoToXY(14,13);
+              WriteXY(14,15,PadRightStr(S,5));
+              IF (Errors>0) THEN 
+                TextAttr := 156; { Blinking Red }
+              WriteXY(14,13,PadRightInt(Errors,5));
+              TextAttr := 19; { Cyan }
+              IF (General.DaysOnline = 0) THEN
+                Inc(General.DaysOnline);
+              Str(((General.TotalCalls + Callers) / General.DaysOnline):2:2,s);
+              WriteXY(34,04,PadRightStr(s,5));
+              Str(((General.TotalPosts + Posts) / General.DaysOnline):2:2,s);
+              WriteXY(34,05,PadRightStr(s,5));
+              Str(((General.TotalUloads + Uploads) / General.DaysOnline):2:2,s);
+              WriteXY(34,06,PadRightStr(s,5));
+              Str(((General.TotalDloads + Downloads) / General.DaysOnline):2:2,s);
+              WriteXY(34,07,PadRightStr(s,5));
+              Str(((General.TotalUsage + Active) / General.DaysOnline) / 14.0:2:2,s);
+              WriteXY(34,08,PadRightStr(s,4)+'%');
+              WriteXY(53,04,PadRightInt(General.CallerNum,6));
+              WriteXY(53,05,PadRightInt((General.TotalPosts + Posts),6));
+              WriteXY(53,06,PadRightInt((General.TotalUloads + Uploads),6));
+              WriteXY(53,07,PadRightInt((General.TotalDloads + Downloads),6));
+              WriteXY(53,08,PadRightInt(General.DaysOnline,6));
+              WriteXY(73,04,PadRightInt(ThisNode,5));
+              CASE Tasker OF
+                None  : S := 'DOS';
+                DV    : S := 'DV';
+                Win   : S := 'Win';
+                OS2   : S := 'OS/2';
+                Win32 : S := 'Win32';
+                DOS5N : S := 'DOS/N';
+              END;
+              WriteXY(73,05,PadRightStr(S,5));
               L := DiskKBFree(StartDir);
               IF (L < General.MinSpaceForUpload) OR (L < General.MinSpaceForPost) THEN
                 TextAttr := 156;
-             Write(PadRightInt(Errors,5));
-
-           { Write(PadRightStr(ConvertKB(L,FALSE),8));
-             TextAttr := 19; }
-
-              IF (General.DaysOnline = 0) THEN
-                Inc(General.DaysOnline);
-              GoToXY(34,04);
-              Str(((General.TotalCalls + Callers) / General.DaysOnline):2:2,s);
-              Write(PadRightStr(s,5));
-              GoToXY(34,05);
-              Str(((General.TotalPosts + Posts) / General.DaysOnline):2:2,s);
-              Write(PadRightStr(s,5));
-              GoToXY(34,06);
-              Str(((General.TotalUloads + Uploads) / General.DaysOnline):2:2,s);
-              Write(PadRightStr(s,5));
-              GoToXY(34,07);
-              Str(((General.TotalDloads + Downloads) / General.DaysOnline):2:2,s);
-              Write(PadRightStr(s,5));
-              GoToXY(34,08);
-              Str(((General.TotalUsage + Active) / General.DaysOnline) / 14.0:2:2,s);
-              Write(PadRightStr(s,4),'%');
-              GoToXY(53,04);
-              Write(PadRightInt(General.CallerNum,6));
-              GoToXY(53,05);
-              Write(PadRightInt((General.TotalPosts + Posts),6));
-              GoToXY(53,06);
-              Write(PadRightInt((General.TotalUloads + Uploads),6));
-              GoToXY(53,07);
-              Write(PadRightInt((General.TotalDloads + Downloads),6));
-              GoToXY(53,08);
-              Write(PadRightInt(General.DaysOnline,6));
-              GoToXY(73,04);
-              Write(PadRightInt(ThisNode,5));
-              GoToXY(73,05);
-              CASE Tasker OF
-                None  : Write('  DOS');
-                DV    : Write('   DV');
-                Win   : Write('  Win');
-                OS2   : Write(' OS/2');
-                Win32 : Write('Win32');
-                DOS5N : Write('DOS/N');
-              END;
-              GoToXY(73,06);
-              Write(PadRightInt(Errors,5));
+              WriteXY(70,06,PadRightStr(ConvertKB(L,FALSE),8));
+              TextAttr := 19; 
               IF (ThisUser.Waiting > 0) THEN
-                TextAttr := 156;
-              GoToXY(73,07);
-              Write(PadRightInt(ThisUser.Waiting,5));
-              TextAttr := 19;
-              GoToXY(73,08);
-              Write(PadRightInt(General.NumUsers,5));
+                TextAttr := 156; { Blinking Red }
+              WriteXY(73,07,PadRightInt(ThisUser.Waiting,5));
+              TextAttr := 19; { Cyan }
+              WriteXY(73,08,PadRightInt(General.NumUsers,5));
               IF (General.TotalUsage < 1) OR (General.DaysOnline < 1) THEN
                 UpdateGeneral;
               TextAttr := 7;
@@ -660,11 +643,11 @@ VAR
   PROCEDURE TakeOffHook(ShowIt: Boolean);
   BEGIN
     IF (NOT LocalIOOnly) THEN
-    BEGIN
-      DoPhoneOffHook(ShowIt);
-      PhoneOffHook := TRUE;
-      WFCMessage := 'Modem off hook';
-    END;
+      BEGIN
+        DoPhoneOffHook(ShowIt);
+        PhoneOffHook := TRUE;
+        WFCMessage := 'Modem off hook';
+      END;
   END;
 
   PROCEDURE BeepHim;
@@ -690,15 +673,6 @@ VAR
     IF (KeyPressed) THEN
       C := ReadKey;
     InitModem;
-  END;
-
-  PROCEDURE PackAllBases;
-  BEGIN
-    ClrScr;
-    TempPause := FALSE;
-    DoShowPackMessageAreas;
-    {SysOpLog('Message areas packed');}
-    WFCDraw;
   END;
 
   PROCEDURE ChkEvents;
@@ -765,9 +739,11 @@ VAR
               Write(EventFile,MemEventArray[EventNum]^);
               Close(EventFile);
               Cursor(FALSE);
+              
               SortFilesOnly := TRUE;
               Sort;
               SortFilesOnly := FALSE;
+              
               InitModem;
               WFCDraw;
             END
@@ -779,7 +755,12 @@ VAR
               Write(EventFile,MemEventArray[EventNum]^);
               Close(EventFile);
               Cursor(FALSE);
-              PackAllBases;
+              
+              ClrScr;
+              TempPause := FALSE;
+              DoShowPackMessageAreas;
+              WFCDraw;
+              
               InitModem;
               WFCDraw;
             END
@@ -791,7 +772,9 @@ VAR
               Write(EventFile,MemEventArray[EventNum]^);
               Close(EventFile);
               Cursor(FALSE);
+              
               CheckFilesBBS;
+              
               InitModem;
               WFCDraw;
             END;
@@ -895,9 +878,9 @@ BEGIN
       BEGIN
         LastMinute := Timer;
         IF (SysOpOn) AND NOT (BlankMenuNow) THEN
-        BEGIN
+        BEGIN {LeeW: Is this dupe?}
           TextAttr := 31;
-          GoToXY(4,1);
+          GoToXY(3,1);
           Write(PadRightStr(TimeStr,8));
           GoToXY(68,1);
           Write(DateStr);
@@ -943,7 +926,7 @@ BEGIN
       END
       ELSE
       BEGIN
-        Com_send(C);
+        Com_Send(C);
         WriteWFC(C);
       END;
       C := #0;
