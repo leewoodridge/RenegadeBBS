@@ -4052,7 +4052,7 @@ END;
 PROCEDURE Star(InString: AStr);
 BEGIN
   IF (OkANSI OR OkAvatar) THEN
-    Prompt('^2? ')
+    Prompt('^2■ ')  { ■ gets converted to ? if TP or edit.com is not used }
   ELSE
     Prompt('* ');
   IF (InString[Length(InString)] = #29) THEN
