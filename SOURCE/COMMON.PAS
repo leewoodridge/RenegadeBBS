@@ -43,8 +43,14 @@ Lee Woodridge
  02/20/2023 - Moved OneLiners record variables here from ONELINERS.PAS
  03/08/2023 - Added Cursor proc, toggles cursor display locally AND remotely, nested local CursorOn assembly code from myIO in
  03/09/2023 - Moved ShowColors from here to SysOp2J
+ 01/25/2024 - Removed LastWFCX,Y = UNUSED
+ 01/27/2024 - Added horizontal divider to LCmds if both parameters are '-'
 
  [NOTES]
+ - add star char to lang
+ - can we remove all references to #29 (group separator)?
+ - remove emulation checks other than ANSI
+ - remove cursor asm, replace with pascal cursoron,off
  - messing with ANSIG/PageLength ... check pagelength for wrong positioning
  - Clean up SetC/GetC
  - inputmessage linelen param should be 79??? or 80 ... is 78
@@ -67,7 +73,6 @@ CONST
   StrLen = 119;
 
 TYPE
-
   WindowRec = ARRAY[0..8000] OF Byte; { LeeW: Moved from MyIO }
   ScreenType = ARRAY [0..3999] OF Byte; { ^ }
 
@@ -279,7 +284,7 @@ CONST
   BadDLPath: Boolean = FALSE;             { Is the current download path invalid? }
   BadULPath: Boolean = FALSE;             { Is the current upload path invalid? }
   BeepEnd: Boolean = FALSE;               { Beep after caller logs off? }
-  FileAreaNameDisplayed: Boolean = FALSE; { Was file area name printed yet? }
+  FileAreaNameDisplayed: Boolean = FALSE; { Was file area header printed yet? }
   CFO: Boolean = FALSE;                   { is chat FILE open? }
   InChat: Boolean = FALSE;                { are we IN chat Mode? }
   ChatCall: Boolean = FALSE;              { is the chat call "noise" on? }
@@ -333,21 +338,20 @@ CONST
   ExtEventTime: Word = 0;                 { Number of minutes before external event }
   IsInvisible: Boolean = FALSE;           { Run IN invisible Mode? }
   SaveNAvail: Boolean = FALSE;            {  }
+  (*
   LastWFCX: Byte = 1;                     {  }
   LastWFCY: Byte = 1;                     {  }
+  *)
   ANSIDetected: Boolean = FALSE;          {  }
 
 VAR
-
   Wind: WindowRec; { LeeW: Moved from MyIO }
   MonitorType: Byte ABSOLUTE $0000:$0449;
   ScreenAddr: ScreenType ABSOLUTE $B800:$0000;
   ScreenSize: Integer;
   MaxDisplayRows,
   MaxDisplayCols: Byte; { ^ }
-
-
-
+  {}
   LangStringArray:                     { LeeW: Added - Strings to pass through the language file }
     ARRAY[0..9] OF STRING{[40]};
   MCIPosRecArray:                      { LeeW: Added - MCI positioning records "%00-09" }
@@ -732,7 +736,6 @@ PROCEDURE PrintF(FileName: PathStr); { Checks path formatting, and for ANSI if a
 PROCEDURE PrintFile(FileName: PathStr); { Checks if random and daily art files exist } {>}
 PROCEDURE PFL(FN: PathStr); { MAIN FILE PRINTING PROCEDURE }
 
-
 IMPLEMENTATION
 
 USES
@@ -871,12 +874,10 @@ BEGIN
       ToggleBack := TRUE;
       ToggleWindow(FALSE);
     END;
-
   IF (OkANSI) AND (ComPortSpeed>0) THEN
     SerialOut(#27+'['+IntToStr(Y)+';'+IntToStr(X)+'H');
   IF (WantOut) THEN
     GoToXY(X,Y);
-
   IF (ToggleBack) THEN
     ToggleWindow(TRUE);
 END;
@@ -908,7 +909,7 @@ BEGIN
   IF (NOT General.SysOpPWord) OR (InWFCMenu) OR (General.SysOpPW = '') THEN
     BEGIN
       CheckPW := TRUE;
-      Exit;
+      EXIT;
     END;
   CheckPW := FALSE;
 
@@ -1067,7 +1068,7 @@ END;
 
 PROCEDURE CheckHangup;
 BEGIN
-  Common4.checkhangup;
+  Common4.CheckHangup;
 END;
 
 PROCEDURE SerialOut(s: STRING);
@@ -1147,10 +1148,10 @@ BEGIN
   IF (IOResult <> 0) THEN
     Found := FALSE
   ELSE
-  BEGIN
-    ChDir(StartDir);
-    Found := TRUE;
-  END;
+    BEGIN
+      ChDir(StartDir);
+      Found := TRUE;
+    END;
   ExistDrive := Found;
 END;
 
@@ -1160,29 +1161,29 @@ VAR
 BEGIN
   Print(DisplayStr);
   IF (NOT Exist(OldFileName)) THEN
-  BEGIN
-    NL;
-    Print('"'+OldFileName+'" does not exist, can not rename file.');
-    ReNameOk := FALSE;
-  END
-  ELSE IF (Exist(NewFileName)) THEN
-  BEGIN
-    NL;
-    Print('"'+NewFileName+'" exists, file can not be renamed to "'+OldFileName+'".');
-    ReNameOk := FALSE;
-  END
-  ELSE
-  BEGIN
-    Assign(F,OldFileName);
-    ReName(F,NewFileName);
-    LastError := IOResult;
-    IF (LastError <> 0) THEN
     BEGIN
       NL;
-      Print('Error renaming file '+OldFileName+'.');
-      ReNameOK := FALSE;
+      Print('"'+OldFileName+'" does not exist, can not rename file.');
+      ReNameOk := FALSE;
+    END
+  ELSE IF (Exist(NewFileName)) THEN
+    BEGIN
+      NL;
+      Print('"'+NewFileName+'" exists, file can not be renamed to "'+OldFileName+'".');
+      ReNameOk := FALSE;
+    END
+  ELSE
+    BEGIN
+      Assign(F,OldFileName);
+      ReName(F,NewFileName);
+      LastError := IOResult;
+      IF (LastError <> 0) THEN
+        BEGIN
+          NL;
+          Print('Error renaming file '+OldFileName+'.');
+          ReNameOK := FALSE;
+        END;
     END;
-  END;
 END;
 
 FUNCTION GetFileSize(FileName: AStr): LongInt;
@@ -1191,7 +1192,7 @@ VAR
   FSize: LongInt;
 BEGIN
   FindFirst(FileName,AnyFile - Directory - VolumeID - DOS.Hidden - SysFile,DirInfo1);
-  IF (DosError <> 0) THEN
+  IF (DOSError <> 0) THEN
     FSize := -1
   ELSE
     FSize := DirInfo1.Size;
@@ -1204,13 +1205,13 @@ VAR
 BEGIN
   FileTime := 0;
   IF Exist(SQOutSp(FileName)) THEN
-  BEGIN
-    Assign(F,SQOutSp(FileName));
-    Reset(F);
-    GetFTime(F,FileTime);
-    Close(F);
-    LastError := IOResult;
-  END;
+    BEGIN
+      Assign(F,SQOutSp(FileName));
+      Reset(F);
+      GetFTime(F,FileTime);
+      Close(F);
+      LastError := IOResult;
+    END;
 END;
 
 PROCEDURE SetFileDateTime(CONST FileName: AStr; FileTime: LongInt);
@@ -1218,13 +1219,13 @@ VAR
   F: FILE;
 BEGIN
   IF Exist(SQOutSp(FileName)) THEN
-  BEGIN
-    Assign(F,SQOutSp(FileName));
-    Reset(F);
-    SetFTime(F,FileTime);
-    Close(F);
-    LastError := IOResult;
-  END;
+    BEGIN
+      Assign(F,SQOutSp(FileName));
+      Reset(F);
+      SetFTime(F,FileTime);
+      Close(F);
+      LastError := IOResult;
+    END;
 END;
 
 FUNCTION PHours(CONST DisplayStr: AStr; LoTime,HiTime: Integer): AStr;
@@ -1239,7 +1240,7 @@ END;
 FUNCTION lRGLngStr(StrNum: LongInt; PassValue: Boolean): AStr;
  {leew: passing value with true param only outputs last line -- look into this}
 VAR
-  b: Byte; { LeeW: Added - for counter }
+  B: Byte; { LeeW: Added - for counter }
   StrPointerFile: FILE OF StrPointerRec;
   StrPointer: StrPointerRec;
   RGStrFile: FILE;
@@ -1556,7 +1557,7 @@ END;
 
 FUNCTION ConvertBytes(BytesToConvert: LongInt; OneChar: Boolean): STRING;
 CONST
-  InByte = 1;
+  {InByte = 1;}
   InKilo = 1024;
   InMega = 1048576;
   InGiga = 1073741824;
@@ -1603,7 +1604,7 @@ END;
 
 FUNCTION ConvertKB(KBToConvert: LongInt; OneChar: Boolean): STRING;
 CONST
-  InKilo = 1;
+  {InKilo = 1;}
   InMega = 1024;
   InGiga = 1048576;
   InTera = 1073741824;
@@ -1655,13 +1656,14 @@ BEGIN
   IF (BlankMenuNow) THEN
     Exit;
   Window(23,11,78,15);
-  GotoXY(LastWFCX,LastWFCY);
+  GoToXY(1,1);
+  {GoToXY(LastWFCX,LastWFCY);}
   LastAttr := TextAttr;
   TextAttr := 7;
   Write(c);
   TextAttr := LastAttr;
-  LastWFCX := WhereX;
-  LastWFCY := WhereY;
+  {LastWFCX := WhereX;
+  LastWFCY := WhereY;}
   Window(1,1,MaxDisplayCols,MaxDisplayRows);
 END;
 
@@ -2122,10 +2124,18 @@ BEGIN
   PrintACR(s);
 END;
 
-PROCEDURE LCmds(Len,c: Byte; c1,c2: AStr);
+PROCEDURE LCmds(Len,C: Byte; C1,C2: AStr);
 VAR
-  s: AStr;
+  S: AStr;
 BEGIN
+  IF (C1[1] = '-') AND (C2[1] = '-') THEN { Divider }
+    BEGIN
+      FOR C := 0 TO (Len*2+2) DO
+        Prt(#196);
+      NL;
+      EXIT;
+    END;
+    {}
   s := Copy(c1,2,LennMCI(c1) - 1);
   IF (c2 <> '') THEN
     s := PadLeftStr(s,Len - 1);
@@ -2134,6 +2144,15 @@ BEGIN
     Prompt('^0(^' + IntToStr(c) + c2[1] + '^0)' + Copy(c2,2,LennMCI(c2) - 1));
   NL;
 END;
+
+{PROCEDURE LCmdsDiv(Len: Byte);
+VAR
+  B: Byte;
+BEGIN
+ FOR B := 0 TO (Len*2+2) DO
+   Prt(#196);
+ NL;
+END;}
 
 FUNCTION MsgSysOp: Boolean;
 BEGIN
@@ -3742,10 +3761,10 @@ BEGIN
   BEGIN
     Reset(NodeFile);
     IF (NodeNumber >= 1) AND (NodeNumber <= FileSize(NodeFile)) AND (IOResult = 0) THEN
-    BEGIN
-      Seek(NodeFile,(NodeNumber - 1));
-      Read(NodeFile,NodeR);
-    END;
+      BEGIN
+        Seek(NodeFile,(NodeNumber - 1));
+        Read(NodeFile,NodeR);
+      END;
     Close(NodeFile);
     LastError := IOResult;
   END;
@@ -4052,14 +4071,14 @@ END;
 PROCEDURE Star(InString: AStr);
 BEGIN
   IF (OkANSI OR OkAvatar) THEN
-    Prompt('^2■ ')  { ■ gets converted to ? if TP or edit.com is not used }
+    Prompt('^1'#254' ')
   ELSE
-    Prompt('* ');
+    Prompt(#254' ');
   IF (InString[Length(InString)] = #29) THEN
     Dec(InString[0])
   ELSE
     InString := InString + ^M^J;
-  Prompt('^1'+InString+'^0');
+  Prompt(InString);
 END;
 
 FUNCTION CTP(t,b: LongInt): STRING;

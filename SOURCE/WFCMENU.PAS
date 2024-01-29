@@ -413,8 +413,8 @@ VAR
   
 BEGIN
   Window(1,1,MaxDisplayCols,MaxDisplayRows);
-  LastWFCX := 1;
-  LastWFCY := 1;
+  {LastWFCX := 1;
+  LastWFCY := 1;}
   Cursor(FALSE);
   ClrScr;
   IF (AnswerBaud > 0) THEN

@@ -1,13 +1,14 @@
 {$A+,B-,D+,E-,F+,I-,L+,N-,O+,R-,S+,V-}
 {
-02/16/2023 - Aesthetic changes
-           - dl/ul data size now in most reasonable units, not always kB
- 03/09/2023 - Error messages now using Messages PROC
-
+ [DONE]
+ 02/16/2023 - Aesthetic changes
+            - DL/UL size now in most reasonable units, not always kB
+ 03/09/2023 - Error messages now using Messages procedure
+ 01/27/2024 - Indented
+ [TO·DO]
  - Add pagination
- - Finish indenting
 }
-UNIT SysOp5;
+UNIT SysOp5; { History Editor }
 
 INTERFACE
 
@@ -327,20 +328,19 @@ VAR
                 END;
           '?' : BEGIN
                   IF (NOT Editing) THEN
-                    LCmds(16,1,'Quit/Save','')
+                    Cmd1 := #0 {LCmds(16,1,'Quit/Save','')}
                   ELSE
                     BEGIN
                       NL;
-                      LCmds3(16,1,'[Previous Entry',']Next Entry',';Jump To Entry');
-                      LCmds3(16,1,'{First Entry','}Last Entry','Quit/Save');
+                      LCmds(17,1,'[Previous Record',']Next Record');
+                      LCmds(17,1,'{First Record','}Last Record');
+                      LCmds(17,1,';Jump To Record','')
                     END;
                 END;
         END;
       UNTIL (Pos(Cmd1,'Q[]{};') <> 0) OR (HangUp);
   END;
-
-{ ---------- INDENTED TO HERE ---------- }
-
+  
   PROCEDURE InsertHistoryRecord(TempHistory1: HistoryRecordType; Cmd1: Char; RecNumToInsertBefore: Integer);
   VAR
     DateToInsert,
@@ -354,68 +354,68 @@ VAR
     IF (NumHistoryDates = MaxHistoryDates) THEN
       Messages(5,MaxHistoryDates,'history dates')
     ELSE
-    BEGIN
-      LocateHistoryDate('%LFHistory date to insert before: ',TempHistory1,DateToInsertBefore,RecNumToInsertBefore,TRUE,TRUE);
-      IF (RecNumToInsertBefore >= 1) AND (RecNumToInsertBefore <= (NumHistoryDates + 1)) THEN
       BEGIN
-        LocateHistoryDate('%LFNew history date to insert: ',TempHistory1,DateToInsert,RecNum1,FALSE,TRUE);
-        IF (RecNum1 <> -1) THEN
-        BEGIN
-          Print('%LF^8Duplicate date entered!^0');
-          PauseScr(FALSE);
-        END
-        ELSE IF (DayNum(DateToInsert) > DayNum(DateStr)) THEN
-        BEGIN
-          Print('%LF^8Future dates can not be entered!^0');
-          PauseScr(FALSE);
-        END
-        ELSE
-        BEGIN
-          IF (DayNum(DateToInsert) > DayNum(DateToInsertBefore)) THEN
-            Inc(RecNumToInsertBefore);
-          Reset(HistoryFile);
-          InitHistoryVars(TempHistory1);
-          TempHistory1.Date := Date2PD(DateToInsert);
-          IF (RecNumToInsertBefore = 1) THEN
-            RecNum1 := 0
-          ELSE IF (RecNumToInsertBefore = NumHistoryDates) THEN
-            RecNum1 := (RecNumToInsertBefore - 1)
-          ELSE
-            RecNum1 := RecNumToInsertBefore;
-          REPEAT
-            OK := TRUE;
-            EditHistoryRecord(TempHistory1,TempHistory1,Cmd1,RecNum1,SaveRecNumToEdit,Changed,FALSE);
-            {CheckHistoryRecord(TempHistory1,1,1,Ok);}
-            IF (NOT OK) THEN
-              IF (NOT PYNQ('%LFContinue inserting history date? ',0,TRUE)) THEN
-                Abort := TRUE;
-          UNTIL (OK) OR (Abort) OR (HangUp);
-          IF (NOT Abort) AND (PYNQ('%LFIs this what you want? ',0,FALSE)) THEN
+        LocateHistoryDate('%LFHistory date to insert before: ',TempHistory1,DateToInsertBefore,RecNumToInsertBefore,TRUE,TRUE);
+        IF (RecNumToInsertBefore >= 1) AND (RecNumToInsertBefore <= (NumHistoryDates + 1)) THEN
           BEGIN
-            Print('%LF[> Inserting history record ...');
-            Seek(HistoryFile,FileSize(HistoryFile));
-            Write(HistoryFile,History);
-            Dec(RecNumToInsertBefore);
-            FOR RecNum := ((FileSize(HistoryFile) - 1) - 1) DOWNTO RecNumToInsertBefore DO
-            BEGIN
-              Seek(HistoryFile,RecNum);
-              Read(HistoryFile,History);
-              Seek(HistoryFile,(RecNum + 1));
-              Write(HistoryFile,History);
-            END;
-            FOR RecNum := RecNumToInsertBefore TO ((RecNumToInsertBefore + 1) - 1) DO
-            BEGIN
-              Seek(HistoryFile,RecNum);
-              Write(HistoryFile,TempHistory1);
-              Inc(NumHistoryDates);
-              SysOpLog('* Inserted history date: ^1'+PD2Date(TempHistory1.Date));
-            END;
+            LocateHistoryDate('%LFNew history date to insert: ',TempHistory1,DateToInsert,RecNum1,FALSE,TRUE);
+            IF (RecNum1 <> -1) THEN
+              BEGIN
+                Print('%LF^8Duplicate date entered!^0');
+                PauseScr(FALSE);
+              END
+            ELSE IF (DayNum(DateToInsert) > DayNum(DateStr)) THEN
+              BEGIN
+                Print('%LF^8Future dates can not be entered!^0');
+                PauseScr(FALSE);
+              END
+            ELSE
+              BEGIN
+                IF (DayNum(DateToInsert) > DayNum(DateToInsertBefore)) THEN
+                  Inc(RecNumToInsertBefore);
+                Reset(HistoryFile);
+                InitHistoryVars(TempHistory1);
+                TempHistory1.Date := Date2PD(DateToInsert);
+                IF (RecNumToInsertBefore = 1) THEN
+                  RecNum1 := 0
+                ELSE IF (RecNumToInsertBefore = NumHistoryDates) THEN
+                  RecNum1 := (RecNumToInsertBefore - 1)
+                ELSE
+                  RecNum1 := RecNumToInsertBefore;
+                REPEAT
+                  OK := TRUE;
+                  EditHistoryRecord(TempHistory1,TempHistory1,Cmd1,RecNum1,SaveRecNumToEdit,Changed,FALSE);
+                  {CheckHistoryRecord(TempHistory1,1,1,Ok);}
+                  IF (NOT OK) THEN
+                    IF (NOT PYNQ('%LFContinue inserting history date? ',0,TRUE)) THEN
+                      Abort := TRUE;
+                UNTIL (OK) OR (Abort) OR (HangUp);
+                IF (NOT Abort) AND (PYNQ('%LFIs this what you want? ',0,FALSE)) THEN
+                  BEGIN
+                    Print('%LF[> Inserting history record ...');
+                    Seek(HistoryFile,FileSize(HistoryFile));
+                    Write(HistoryFile,History);
+                    Dec(RecNumToInsertBefore);
+                    FOR RecNum := ((FileSize(HistoryFile) - 1) - 1) DOWNTO RecNumToInsertBefore DO
+                      BEGIN
+                        Seek(HistoryFile,RecNum);
+                        Read(HistoryFile,History);
+                        Seek(HistoryFile,(RecNum + 1));
+                        Write(HistoryFile,History);
+                      END;
+                    FOR RecNum := RecNumToInsertBefore TO ((RecNumToInsertBefore + 1) - 1) DO
+                      BEGIN
+                        Seek(HistoryFile,RecNum);
+                        Write(HistoryFile,TempHistory1);
+                        Inc(NumHistoryDates);
+                        SysOpLog('* Inserted history date: ^1'+PD2Date(TempHistory1.Date));
+                      END;
+                  END;
+                Close(HistoryFile);
+                LastError := IOResult;
+              END;
           END;
-          Close(HistoryFile);
-          LastError := IOResult;
-        END;
       END;
-    END;
   END;
 
   PROCEDURE ModifyHistoryRecord(TempHistory1: HistoryRecordType; Cmd1: Char; RecNumToEdit: Integer);
@@ -428,45 +428,45 @@ VAR
     IF (NumHistoryDates = 0) THEN
       Messages(4,0,'history dates')
     ELSE
-    BEGIN
-      LocateHistoryDate('%LFHistory date to modify: ',TempHistory1,DateToEdit,RecNumToEdit,TRUE,TRUE);
-      IF (RecNumToEdit >= 1) AND (RecNumToEdit <= NumHistoryDates) THEN
       BEGIN
-        SaveRecNumToEdit := -1;
-        Cmd1 := #0;
-        Reset(HistoryFile);
-        WHILE (Cmd1 <> 'Q') AND (NOT HangUp) DO
-        BEGIN
-          IF (SaveRecNumToEdit <> RecNumToEdit) THEN
+        LocateHistoryDate('%LFHistory date to modify: ',TempHistory1,DateToEdit,RecNumToEdit,TRUE,TRUE);
+        IF (RecNumToEdit >= 1) AND (RecNumToEdit <= NumHistoryDates) THEN
           BEGIN
-            Seek(HistoryFile,(RecNumToEdit - 1));
-            Read(HistoryFile,History);
-            SaveRecNumToEdit := RecNumToEdit;
-            Changed := FALSE;
+            SaveRecNumToEdit := -1;
+            Cmd1 := #0;
+            Reset(HistoryFile);
+            WHILE (Cmd1 <> 'Q') AND (NOT HangUp) DO
+              BEGIN
+                IF (SaveRecNumToEdit <> RecNumToEdit) THEN
+                  BEGIN
+                    Seek(HistoryFile,(RecNumToEdit - 1));
+                    Read(HistoryFile,History);
+                    SaveRecNumToEdit := RecNumToEdit;
+                    Changed := FALSE;
+                  END;
+                REPEAT
+                  Ok := TRUE;
+                  EditHistoryRecord(TempHistory1,History,Cmd1,RecNumToEdit,SaveRecNumToEdit,Changed,TRUE);
+                  {CheckHistoryRecord(History,1,1,Ok);}
+                  IF (NOT OK) THEN
+                    BEGIN
+                      PauseScr(FALSE);
+                      IF (RecNumToEdit <> SaveRecNumToEdit) THEN
+                        RecNumToEdit := SaveRecNumToEdit;
+                    END;
+                UNTIL (OK) OR (HangUp);
+                IF (Changed) THEN
+                  BEGIN
+                    Seek(HistoryFile,(SaveRecNumToEdit - 1));
+                    Write(HistoryFile,History);
+                    Changed := FALSE;
+                    SysOpLog('* Modified history date: ^1'+PD2Date(History.Date));
+                  END;
+              END;
+            Close(HistoryFile);
+            LastError := IOResult;
           END;
-          REPEAT
-            Ok := TRUE;
-            EditHistoryRecord(TempHistory1,History,Cmd1,RecNumToEdit,SaveRecNumToEdit,Changed,TRUE);
-            {CheckHistoryRecord(History,1,1,Ok);}
-            IF (NOT OK) THEN
-            BEGIN
-              PauseScr(FALSE);
-              IF (RecNumToEdit <> SaveRecNumToEdit) THEN
-                RecNumToEdit := SaveRecNumToEdit;
-            END;
-          UNTIL (OK) OR (HangUp);
-          IF (Changed) THEN
-          BEGIN
-            Seek(HistoryFile,(SaveRecNumToEdit - 1));
-            Write(HistoryFile,History);
-            Changed := FALSE;
-            SysOpLog('* Modified history date: ^1'+PD2Date(History.Date));
-          END;
-        END;
-        Close(HistoryFile);
-        LastError := IOResult;
       END;
-    END;
   END;
 
   PROCEDURE ListHistoryDates(VAR RecNumToList1: Integer);
@@ -479,7 +479,6 @@ VAR
     Abort := FALSE;
     Next := FALSE;
     CLS;
-    {ConfigHeader('History Editor',0,0);}
     PrintACR('^5ÚÄÄÄÄÄÄÄÄÂ^4Mins^5ÂÄÄÄÄÂ^4%^5ÄÄÄÂ^4New^5ÄÂ^4Time^5Â^4Pub^5ÄÂ^4Prv^5ÄÂ'+
              '^4Feed^5ÂÄÄÄÄÂ^4#^5ÄÄÄÂ^4xB^5ÄÄÄÄÂ^4#^5ÄÄÄÂ^4xB^5ÄÄÄÄ¿');
     PrintACR('^5À^4MM^5Ä^4DD^5Ä^4YY^5Á^4Actv^5Á^4Call^5Á^4Actv^5Á^4User^5Á^4User^5Á^4Post^5Á^4Post^5Á'+
@@ -489,37 +488,37 @@ VAR
     NumDone := 0;
     WHILE (NumDone < (PageLength - 6)) AND (RecNumToList1 >= 1) AND (RecNumToList1 <= NumHistoryDates)
           AND (NOT Abort) AND (NOT HangUp) DO
-    BEGIN
-      Seek(HistoryFile,(RecNumToList1 - 1));
-      Read(HistoryFile,History);
-      WITH History DO
       BEGIN
-        IF (Callers > 0) THEN
-          TempStr := PadRightInt(Active DIV Callers,4)
-        ELSE
-          TempStr := '   0';
-        PrintACR(' ^1'+AOnOff((RecNumToList1 = NumHistoryDates),'Today   ',ToDate8(PD2Date(Date)))+'^0'+
-                 ' '+PadRightInt(Active,4)+
-                 ' '+PadRightInt(Callers,4)+
-                 ' '+PadRightStr(SQOutSp(CTP(Active,1440)),4)+
-                 ' '+PadRightInt(NewUsers,4)+
-                 ' '+TempStr+ {use aonoff?}
-                 ' '+PadRightInt(Posts,4)+
-                 ' '+PadRightInt(EMail,4)+
-                 ' '+PadRightInt(FeedBack,4)+
-                 ' '+PadRightInt(Errors,4)+
-                 ' '+PadRightInt(Uploads,4)+
-                 ' '+PadRightStr(AOnOff(UK=0,'0',AllCaps(ConvertKB(UK,TRUE))),6)+
-                 ' '+PadRightInt(Downloads,4)+
-                 ' '+PadRightStr(AOnOff(UK=0,'0',AllCaps(ConvertKB(DK,TRUE))),6));
+        Seek(HistoryFile,(RecNumToList1 - 1));
+        Read(HistoryFile,History);
+        WITH History DO
+          BEGIN
+            IF (Callers > 0) THEN
+              TempStr := PadRightInt(Active DIV Callers,4)
+            ELSE
+              TempStr := '   0';
+            PrintACR(' ^1'+AOnOff((RecNumToList1 = NumHistoryDates),'Today   ',ToDate8(PD2Date(Date)))+'^0'+
+                     ' '+PadRightInt(Active,4)+
+                     ' '+PadRightInt(Callers,4)+
+                     ' '+PadRightStr(SQOutSp(CTP(Active,1440)),4)+
+                     ' '+PadRightInt(NewUsers,4)+
+                     ' '+TempStr+ {LeeW: Use AOnOff?}
+                     ' '+PadRightInt(Posts,4)+
+                     ' '+PadRightInt(EMail,4)+
+                     ' '+PadRightInt(FeedBack,4)+
+                     ' '+PadRightInt(Errors,4)+
+                     ' '+PadRightInt(Uploads,4)+
+                     ' '+PadRightStr(AOnOff(UK=0,'0',AllCaps(ConvertKB(UK,TRUE))),6)+
+                     ' '+PadRightInt(Downloads,4)+
+                     ' '+PadRightStr(AOnOff(UK=0,'0',AllCaps(ConvertKB(DK,TRUE))),6));
+          END;
+        Dec(RecNumToList1);
+        Inc(NumDone);
       END;
-      Dec(RecNumToList1);
-      Inc(NumDone);
-    END;
     Close(HistoryFile);
     LastError := IOResult;
     IF (NumHistoryDates = 0) THEN
-      Messages(4,0,'history dates'); { "No history dates exist!" }(*Print('*** No history dates defined ***');*)
+      Messages(4,0,'history dates'); { "No history dates exist!" }
   END;
 
 BEGIN
@@ -535,7 +534,7 @@ BEGIN
     IF (Cmd <> '?') THEN
       ListHistoryDates(RecNumToList);
     NL;
-    InputChar('History Editor [(^1?^2)Help,<^1CR^2>Page,(^1Q^2)uit]: ',Cmd,'QDIM?'^M,[CapAll]);
+    InputChar('History Editor [^1DIM^2,(^1?^2)Help,<^1CR^2>Page,(^1Q^2)uit]: ',Cmd,'QDIM?'^M,[CapAll]);
     CASE Cmd OF
       ^M  : IF (RecNumToList < 1) OR (RecNumToList > NumHistoryDates) THEN
               RecNumToList := NumHistoryDates;
@@ -544,8 +543,7 @@ BEGIN
       'M' : ModifyHistoryRecord(TempHistory,Cmd,RecNumToList);
       '?' : BEGIN
               NL;
-              LCmds(20,1,'Delete History Date','Insert History Date');
-              LCmds(20,1,'Modify History Date','Quit');
+              LCmds3(20,1,'Delete History Date','Insert History Date','Modify History Date');
             END;
     END;
     IF (Cmd <> ^M) THEN
