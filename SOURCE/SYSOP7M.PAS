@@ -3,6 +3,7 @@
  03/09/2023 - Aesthetic updates
             - Error messages now using Messages PROC
  01/20/2024 - Fixed prompt colors (there's probably more still...)
+ 01/29/2024 - Prompt,Help aesthetics
 }
 UNIT SysOp7M;
 
@@ -334,9 +335,9 @@ VAR
                       END;
                 '?' : BEGIN
                         NL;
-                        LCmds(19,1,'[ Previous Command','] Next Command');
-                        LCmds(19,1,'{ First Command','} Last Command');
-                        LCmds(19,1,'; Jump To Command','');
+                        LCmds(17,1,'[Previous Record',']Next Record');
+                        LCmds(17,1,'{First Record','}Last Record');
+                        LCmds(17,1,';Jump To Record','');
                       END;
               END;
             UNTIL (Pos(Cmd1,'Q[]{};') <> 0) OR (HangUp);

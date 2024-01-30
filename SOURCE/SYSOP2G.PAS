@@ -1,6 +1,7 @@
 {$A+,B-,D+,E-,F+,I-,L+,N-,O+,R-,S+,V-}
 {
  03/09/2023 - Error messages now using Messages PROC
+ 01/29/2024 - Prompt,Help aesthetics
 }
 UNIT SysOp2G;
 
@@ -660,9 +661,9 @@ VAR
                   }
                   BEGIN
                     NL;
-                    LCmds(18,1,'[ Previous Record','] Next Record');
-                    LCmds(18,1,'{ First Record','} Last Record');
-                    LCmds(18,1,'; Jump To Record',''{'Quit and save'});
+                    LCmds(17,1,'[Previous Record',']Next Record');
+                    LCmds(17,1,'{First Record','}Last Record');
+                    LCmds(17,1,';Jump To Record','');
                   END;
                 END;
         END;

@@ -2,6 +2,7 @@
 {
  03/09/2023 - Error messages now using Messages() procedure
  06/01/2023 - Aesthetics, Indentation
+ 01/29/2024 - Prompt,Help aesthetics
  
  [TO-DO]
   - Add position command
@@ -223,9 +224,9 @@ VAR
                   END;
           '?' : BEGIN
                   NL;
-                  LCmds(20,1,'[ Previous Archiver','] Next Archiver');
-                  LCmds(20,1,'{ First Archiver','} Last Archiver');
-                  LCmds(20,1,'; Jump To Archiver','');
+                  LCmds(17,1,'[Previous Record',']Next Record');
+                  LCmds(17,1,'{First Record','}Last Record');
+                  LCmds(17,1,';Jump To Record','');
                 END;
         END;
       UNTIL (Pos(Cmd1,'Q[]{};') <> 0) OR (HangUp);

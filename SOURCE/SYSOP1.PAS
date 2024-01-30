@@ -1,6 +1,7 @@
 {$A+,B-,D+,E-,F+,I-,L+,N-,O+,R-,S+,V-}
 {
  03/09/2023 - Error messages now using Messages PROC
+ 01/29/2024 - Prompt,Help aesthetics
 }
 UNIT SysOp1;
 
@@ -315,8 +316,8 @@ VAR
         IF (NOT Editing) THEN
           CmdStr := '!12345678'
         ELSE
-          CmdStr := '!12345678[]FJL';
-        InputChar('%LFModify menu [^1?^2=^1Help^2]: ',Cmd1,'Q?'+CmdStr+^M,[CapAll]);
+          CmdStr := '!12345678[]{};';
+        InputChar('%LFProtocol Editor [(^1?^2)Help,(^1Q^2)uit]: ',Cmd1,'Q?'+CmdStr+^M,[CapAll]);
         CASE Cmd1 OF
           '!' : BEGIN
                   REPEAT
@@ -566,19 +567,19 @@ VAR
                   Messages(3,0,'');
                   Cmd1 := #0;
                 END;
-          'F' : IF (RecNumToEdit <> 1) THEN
+          '{' : IF (RecNumToEdit <> 1) THEN
                   RecNumToEdit := 1
                 ELSE
                 BEGIN
                   Messages(2,0,'');
                   Cmd1 := #0;
                 END;
-          'J' : BEGIN
+          ';' : BEGIN
                   InputInteger('%LFJump to entry?',RecNumToEdit,[NumbersOnly],1,NumProtocols,Changed);
                   IF (RecNumToEdit < 1) OR (RecNumToEdit > NumProtocols) THEN
                     Cmd1 := #0;
                 END;
-          'L' : IF (RecNumToEdit <> NumProtocols) THEN
+          '}' : IF (RecNumToEdit <> NumProtocols) THEN
                   RecNumToEdit := NumProtocols
                 ELSE
                 BEGIN
@@ -586,19 +587,20 @@ VAR
                   Cmd1 := #0;
                 END;
           '?' : BEGIN
-                  Print('%LF^0<^1CR^0>Redisplay current screen');
-                  Print('^11^0-^18^0:Modify item');
+                  {Print('%LF^0<^1CR^0>Redisplay current screen');
+                  Print('^11^0-^18^0:Modify item');}
                   IF (NOT Editing) THEN
-                    LCmds(20,1,'Quit and save','')
+                    Cmd1 := #0{LCmds(20,1,'Quit and save','')}
                   ELSE
                   BEGIN
-                    LCmds(20,1,'[Back entry',']Forward entry');
-                    LCmds(20,1,'First entry in list','Jump to entry');
-                    LCmds(20,1,'Last entry in list','Quit and save');
+                    NL;
+                    LCmds(17,1,'[Previous Record',']Next Record');
+                    LCmds(17,1,'{First Record','}Last Record');
+                    LCmds(17,1,';Jump To Record','');
                   END;
                 END;
         END;
-      UNTIL (Pos(Cmd1,'Q[]FJL') <> 0) OR (HangUp);
+      UNTIL (Pos(Cmd1,'Q[]{};') <> 0) OR (HangUp);
   END;
 
   PROCEDURE InsertProtocol(TempProtocol1: ProtocolRecordType; RecNumToInsertBefore: Integer);
@@ -801,7 +803,6 @@ VAR
     LastError := IOResult;
     IF (NumProtocols = 0) THEN
     Messages(4,0,'protocols'); { "No protocols exist!" }
-      (*Print('*** No protocols defined ***'); {leew: messages!}*)
   END;
 
 BEGIN
@@ -812,7 +813,7 @@ BEGIN
   REPEAT
     IF (Cmd <> '?') THEN
       ListProtocols(RecNumToList);
-    InputChar('%LFProtocol Editor [^1DIMP^2,(^1?^2)Help,(^1Q^2)uit]: ',Cmd,'QDIMP?'^M,[CapAll]);
+    InputChar('%LFProtocol Editor [^1DIMP^2,(^1?^2)Help,<^1CR^2>Page,(^1Q^2)uit]: ',Cmd,'QDIMP?'^M,[CapAll]);
     CASE Cmd OF
       ^M  : IF (RecNumToList < 1) OR (RecNumToList > NumProtocols) THEN
               RecNumToList := 1;
@@ -822,7 +823,6 @@ BEGIN
       'P' : PositionProtocol(TempProtocol,RecNumToList);
       '?' : BEGIN
               NL;
-              Print('^0<^1CR^0>Next Screen / Refresh');
               LCmds(16,1,'Delete Protocol','Insert Protocol');
               LCmds(16,1,'Modify Protocol','Position Protocol');
             END;

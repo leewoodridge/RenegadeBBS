@@ -3,6 +3,7 @@
  10/21/2021 - Added desc to color scheme #s
  03/09/2023 - Nested ShowColors in ColorConfig proc
  03/09/2023 - Error messages now using Messages PROC
+ 01/29/2024 - Prompt,Help aesthetics
 }
 UNIT SysOp2J;
 
@@ -553,9 +554,9 @@ VAR
                 END;
           '?' : BEGIN
                   NL;
-                  LCmds(18,1,'[ Previous Record','] Next Record');
-                  LCmds(18,1,'{ First Record','} Last Record');
-                  LCmds(18,1,'; Jump To Record','');
+                  LCmds(17,1,'[Previous Record',']Next Record');
+                  LCmds(17,1,'{First Record','}Last Record');
+                  LCmds(17,1,';Jump To Record','');
                 END;
         END;
       UNTIL (Pos(Cmd1,'Q[]{};') <> 0) OR (HangUp);

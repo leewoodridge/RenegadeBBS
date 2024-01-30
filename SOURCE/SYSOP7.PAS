@@ -2,6 +2,8 @@
 {
  12/17/2021 - aesthetic changes
  03/09/2023 - Error messages now using Messages PROC
+ 01/29/2024 - Indented
+ 01/29/2024 - Prompt,Help aesthetics
 
 menu titles not saving if last line blank
 }
@@ -546,78 +548,75 @@ VAR
                               REPEAT
                                 InputChar('%LF^2Toggle which menu flag? ('+DisplayMenuFlags(MenuFlags,'1','2')+'^2)'+
                                 ' [(^1?^2)Help,<^1CR^2>Quit]: ',Cmd1,^M'CDTNPAF12345?',[CapAll]);
-
-{ -- LeeW: indented to here! --}
-
                                 CASE Cmd1 OF
-                            'C','D','T','N','P','A','F','1'..'5' :
+                                  'C','D','T','N','P','A','F','1'..'5' :
                                     ToggleMenuFlags(Cmd1,MenuFlags,Changed);
-                            '?' : BEGIN
-                                    NL;
-                                    LCmds(21,1,'Clear screen',         'Don''t center titles');
-                                    LCmds(21,1,'No menu prompt',       'Pause before display');
-                                    LCmds(21,1,'Auto Time display',    'Force line input');
-                                    LCmds(21,1,'Titles not displayed', '1 No ANS prompt');
-                                    LCmds(21,1,'2 No AVT prompt',      '3 No RIP prompt');
-                                    LCmds(21,1,'4 No Global disp',     '5 No global use');
-                                  END;
-                          END;
-                        UNTIL (Cmd1 = ^M) OR (HangUp);
-                        Cmd1 := #0;
-                      END;
-                '[' : IF (RecNumToModify > 1) THEN
-                        Dec(RecNumToModify)
-                      ELSE
-                      BEGIN
-                        Messages(2,0,'');
-                        Cmd1 := #0;
-                      END;
-                ']' : IF (RecNumToModify < NumMenus) THEN
-                        Inc(RecNumToModify)
-                      ELSE
-                      BEGIN
-                        Messages(3,0,'');
-                        Cmd1 := #0;
-                      END;
-                '{' : IF (RecNumToModify <> 1) THEN
-                        RecNumToModify := 1
-                      ELSE
-                      BEGIN
-                        Messages(2,0,'');
-                        Cmd1 := #0;
-                      END;
-                ';' : BEGIN
-                        InputInteger('%LFJump to entry?',RecNumToModify,[NumbersOnly],1,NumMenus,Changed);
-                        IF (RecNumToModify < 1) AND (RecNumToModify > NumMenus) THEN
-                          Cmd1 := #0;
-                      END;
-                '}' : IF (RecNumToModify <> NumMenus) THEN
-                        RecNumToModify := NumMenus
-                      ELSE
-                      BEGIN
-                        Messages(3,0,'');
-                        Cmd1 := #0;
-                      END;
-                '?' : BEGIN
-                        NL;
-                        LCmds(16,1,'[ Previous Menu','] Next Menu');
-                        LCmds(16,1,'{ First Menu','} Last Menu');
-                        LCmds(16,1,'; Jump To Menu','');
-                      END;
+                                  '?' : BEGIN
+                                          NL;
+                                          LCmds(21,1,'Clear screen',         'Don''t center titles');
+                                          LCmds(21,1,'No menu prompt',       'Pause before display');
+                                          LCmds(21,1,'Auto Time display',    'Force line input');
+                                          LCmds(21,1,'Titles not displayed', '1 No ANS prompt');
+                                          LCmds(21,1,'2 No AVT prompt',      '3 No RIP prompt');
+                                          LCmds(21,1,'4 No Global disp',     '5 No global use');
+                                        END;
+                                END;
+                              UNTIL (Cmd1 = ^M) OR (HangUp);
+                              Cmd1 := #0;
+                            END;
+                      '[' : IF (RecNumToModify > 1) THEN
+                              Dec(RecNumToModify)
+                            ELSE
+                              BEGIN
+                                Messages(2,0,'');
+                                Cmd1 := #0;
+                              END;
+                      ']' : IF (RecNumToModify < NumMenus) THEN
+                              Inc(RecNumToModify)
+                            ELSE
+                              BEGIN
+                                Messages(3,0,'');
+                                Cmd1 := #0;
+                              END;
+                      '{' : IF (RecNumToModify <> 1) THEN
+                              RecNumToModify := 1
+                            ELSE
+                              BEGIN
+                                Messages(2,0,'');
+                                Cmd1 := #0;
+                              END;
+                      ';' : BEGIN
+                              InputInteger('%LFJump to entry?',RecNumToModify,[NumbersOnly],1,NumMenus,Changed);
+                              IF (RecNumToModify < 1) AND (RecNumToModify > NumMenus) THEN
+                                Cmd1 := #0;
+                            END;
+                      '}' : IF (RecNumToModify <> NumMenus) THEN
+                              RecNumToModify := NumMenus
+                            ELSE
+                              BEGIN
+                                Messages(3,0,'');
+                                Cmd1 := #0;
+                              END;
+                      '?' : BEGIN
+                              NL;
+                              LCmds(17,1,'[Previous Record',']Next Record');
+                              LCmds(17,1,'{First Record','}Last Record');
+                              LCmds(17,1,';Jump To Record','');
+                            END;
+                    END;
+                  UNTIL (Pos(Cmd1,'QC[]FJL') <> 0) OR (HangUp);
+                IF (Changed) THEN
+                  BEGIN
+                    Seek(MenuFile,MenuRecNumArray[SaveRecNumToModify]);
+                    Write(MenuFile,MenuR);
+                    Changed := FALSE;
+                    SysOpLog('* Modified menu: ^1'+Menur.LDesc[1]);
+                  END;
               END;
-            UNTIL (Pos(Cmd1,'QC[]FJL') <> 0) OR (HangUp);
-          IF (Changed) THEN
-          BEGIN
-            Seek(MenuFile,MenuRecNumArray[SaveRecNumToModify]);
-            Write(MenuFile,MenuR);
-            Changed := FALSE;
-            SysOpLog('* Modified menu: ^1'+Menur.LDesc[1]);
+            Close(MenuFile);
+            LastError := IOResult;
           END;
-        END;
-        Close(MenuFile);
-        LastError := IOResult;
       END;
-    END;
   END;
 
 BEGIN
@@ -628,11 +627,11 @@ BEGIN
   Cmd := #0;
   REPEAT
     IF (Cmd <> '?') THEN
-    begin
-    configheader('Menu Editor',0,0);
-      DisplayMenus(RecNumToList,TRUE);
-      end;
-    InputChar('%LF^2Menu Editor [^1DIM^2,(^1?^2)Help,(^1Q^2)uit]: ',Cmd,'QDIM?'^M,[CapAll]);
+      BEGIN
+        ConfigHeader('Menu Editor',0,0);
+        DisplayMenus(RecNumToList,TRUE);
+      END;
+    InputChar('%LF^2Menu Editor [^1DIM^2,(^1?^2)Help,<^1CR^2>Page,(^1Q^2)uit]: ',Cmd,'QDIM?'^M,[CapAll]);
     CASE Cmd OF
       ^M  : IF (RecNumToList < 1) OR (RecNumToList > NumMenus) THEN
               RecNumToList := 1;
@@ -641,9 +640,7 @@ BEGIN
       'M' : ModifyMenu;
       '?' : BEGIN
               NL;
-              Print('^0<^1CR^0>Refresh/Next Page');
               LCmds3(12,1,'Delete Menu','Insert Menu','Modify Menu');
-              {LCmds(12,1,'Modify Menu','');}
             END;
     END;
     IF (CMD <> ^M) THEN
@@ -653,19 +650,19 @@ BEGIN
   LastError := IOResult;
   LoadMenuPointers;
   IF (UserOn) THEN
-  BEGIN
-    SaveCurMenu := CurMenu;
-    NumCmds := 0;
-    GlobalCmds := 0;
-    IF (General.GlobalMenu > 0) THEN
     BEGIN
-      CurMenu := General.GlobalMenu;
+      SaveCurMenu := CurMenu;
+      NumCmds := 0;
+      GlobalCmds := 0;
+      IF (General.GlobalMenu > 0) THEN
+        BEGIN
+          CurMenu := General.GlobalMenu;
+          LoadMenu;
+          GlobalCmds := NumCmds;
+        END;
+      CurMenu := SaveCurMenu;
       LoadMenu;
-      GlobalCmds := NumCmds;
     END;
-    CurMenu := SaveCurMenu;
-    LoadMenu;
-  END;
 END;
 
 END.

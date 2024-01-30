@@ -6,6 +6,7 @@
  01/25/2024 - Aesthetics (prompts,help,headers)
  01/27/2024 - Added question to topic choice editor
             - Indented
+ 01/29/2024 - Prompt,Help aesthetics
 }
 UNIT SysOp10; { Voting Editor }
 
@@ -210,9 +211,9 @@ VAR
                       END;
               '?' : BEGIN
                       NL;
-                      LCmds(20,1,'[Previous Record',']Next Record');
-                      LCmds(20,1,'{First Record','}Last Record');
-                      LCmds(20,1,';Jump To Record','');
+                      LCmds(17,1,'[Previous Record',']Next Record');
+                      LCmds(17,1,'{First Record','}Last Record');
+                      LCmds(17,1,';Jump To Record','');
                     END;
             END;
           UNTIL (Cmd1 = 'Q') OR (HangUp);
@@ -465,9 +466,9 @@ VAR
                 ELSE
                   BEGIN
                     NL;
-                    LCmds(20,1,'[Previous Record',']Next Record');
-                    LCmds(20,1,'{First Record','}Last Record');
-                    LCmds(20,1,';Jump To Record','');
+                    LCmds(17,1,'[Previous Record',']Next Record');
+                    LCmds(17,1,'{First Record','}Last Record');
+                    LCmds(17,1,';Jump To Record','');
                   END;
         END;
       UNTIL (Pos(Cmd1,'Q[]{};') <> 0) OR (HangUp);

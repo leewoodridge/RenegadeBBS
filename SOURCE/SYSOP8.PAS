@@ -455,7 +455,7 @@ VAR
           IF (NOT Editing) THEN
             CmdStr := 'ABCDEGHIKNOSTUVW'
           ELSE
-            CmdStr := 'ABCDEGHIKNOSTUVW[]FJL';
+            CmdStr := 'ABCDEGHIKNOSTUVW[]{};';
           IF (MAType IN [1,2]) THEN
             CmdStr := CmdStr + 'MP';
           IF (MAType IN [1..3]) THEN
@@ -737,19 +737,19 @@ VAR
                   Messages(3,0,'');
                   Cmd1 := #0;
                 END;
-          'F' : IF (RecNumToEdit <> 1) THEN
+          '{' : IF (RecNumToEdit <> 1) THEN
                   RecNumToEdit := 1
                 ELSE
                 BEGIN
                   Messages(2,0,'');
                   Cmd1 := #0;
                 END;
-          'J' : BEGIN
+          ';' : BEGIN
                   InputInteger('%LFJump to entry?',RecNumToEdit,[NumbersOnly],1,NumMsgAreas,Changed);
                   IF (RecNumToEdit < 1) OR (RecNumToEdit > NumMsgAreas) THEN
                     Cmd1 := #0;
                 END;
-          'L' : IF (RecNumToEdit <> NumMsgAreas) THEN
+          '}' : IF (RecNumToEdit <> NumMsgAreas) THEN
                   RecNumToEdit := NumMsgAreas
                 ELSE
                 BEGIN
@@ -760,19 +760,19 @@ VAR
                   {
                   Print('%LF^0<^1CR^0>Redisplay current screen');
                   Print('^1A^0-^1E^0,^1G^0-^1I^0,^1K^0,^1M^0-^1P^0,^1R^0-^1W^0:Modify item');
-                  IF (NOT Editing) THEN
-                    LCmds(20,3,'Quit and save','')
-                  ELSE
                   }
+                  IF (NOT Editing) THEN
+                    Cmd1 := #0 {LCmds(20,3,'Quit and save','')}
+                  ELSE
                   BEGIN
                     NL;
-                    LCmds(16,1,'[Previous Entry',']Next Entry');
-                    LCmds(16,1,'First Entry','Last Entry');
-                    LCmds(16,1,'Jump To Entry','Quit');
+                    LCmds(17,1,'[Previous Record',']Next Record');
+                    LCmds(17,1,'{First Record','}Last Record');
+                    LCmds(17,1,';Jump To Record','');
                   END;
                 END;
         END;
-      UNTIL (Pos(Cmd1,'Q[]FJL') <> 0) OR (HangUp);
+      UNTIL (Pos(Cmd1,'Q[]{};') <> 0) OR (HangUp);
   END;
 
   PROCEDURE InsertMsgArea(TempMemMsgArea1: MessageAreaRecordType; Cmd1: Char; RecNumToInsertBefore: Integer);
@@ -1163,7 +1163,7 @@ BEGIN
     IF (Cmd <> '?') THEN
       ListMsgAreas(RecNumToList);
     NL;
-    InputChar('^2Message Area Editor [^1CDIMPRTX^2,(^1?^2)Help,(^1Q^2)uit]: ',Cmd,'QCDIMPRTX^?'^M,[CapAll]);
+    InputChar('^2Message Area Editor [^1CDIMPRTX^2,(^1?^2)Help,<^1CR^2>Page,(^1Q^2)uit]: ',Cmd,'QCDIMPRTX^?'^M,[CapAll]);
     CASE Cmd OF
       ^M  : IF (RecNumToList < 0) OR (RecNumToList > NumMsgAreas) THEN
               RecNumToList := 0;
@@ -1196,14 +1196,15 @@ BEGIN
             END;
       '^' : ResetMsgAreaColors;
       '?' : BEGIN
-              Print('%LF^0<^1CR^0>Next screen or redisplay current screen');
-              Print('^0(^1?^0)Help/First message area');
-              LCmds(22,1,'Change message storage drive','');
+              NL;
+              {Print('%LF^0<^1CR^0>Next screen or redisplay current screen');
+              Print('^0(^1?^0)Help/First message area');}
               LCmds(22,1,'Delete message area','Insert message area');
               LCmds(22,1,'Modify message area','Position message area');
-              LCmds(22,1,'Quit','Renumber QWK index');
-              LCmds(22,1,'Toggle display format','XDefault configuration');
-              LCmds(22,1,'^Reset base colors','');
+              LCmds(22,1,'-','-');
+              LCmds(22,1,'Renumber QWK index','Toggle display format');
+              LCmds(22,1,'XDefault configuration','^Reset base colors');
+              LCmds(22,1,'Change message storage drive','');
             END;
     END;
     IF (Cmd <> ^M) THEN

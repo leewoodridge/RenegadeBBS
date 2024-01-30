@@ -1,6 +1,8 @@
 {$A+,B-,D+,E-,F+,I-,L+,N-,O+,R-,S+,V-}
 {
 change info showed in list... no warn, maybe
+ 01/29/2024 - Indenting....
+ 01/29/2024 - Prompt,Help aesthetics
 }
 UNIT SysOp6;
 
@@ -206,9 +208,9 @@ VAR
             Abort := FALSE;
             Next := FALSE;
             IF (Editing) THEN
-              ConfigHeader('Editing Event #'+IntToStr(RecNumToEdit)+' Of '+IntToStr(NumEvents),0,0)
+              ConfigHeader('Editing Event',RecNumToEdit,NumEvents)
             ELSE
-              ConfigHeader('Inserting Event #'+IntToStr(RecNumToEdit)+' Of '+IntToStr(NumEvents + 1),0,0);
+              ConfigHeader('Inserting Event',RecNumToEdit,NumEvents+1);
             PrintACR('^0(^1A^0) Event Type            : ^1'+AOnOff(EventIsExternal IN EFlags,'External','Internal'));
             PrintACR('^0(^1B^0) Description           : ^1'+EventDescription);
             PrintACR('^0(^1C^0) Active                : ^1'+AOnOff(EventIsActive IN EFlags,'Active','Inactive'));
@@ -288,7 +290,7 @@ VAR
           END;
         NL;
         InputChar('^2Modify '+AOnOff(EventIsExternal IN EFlags,'External','Internal')+' Event [(^1?^2)Help,(^1Q^2)uit]: ',
-              Cmd1,'QABCDEGHIKMN'+OneKCmds+'[]FJL?'^M,[CapAll]);
+              Cmd1,'QABCDEGHIKMN'+OneKCmds+'[]{};?'^M,[CapAll]);
         CASE Cmd1 OF
           'A' : ToggleEFlagS('A',EFlags,Changed);  { External/Internal }
           'B' : InputString('%LFNew description: ',EventDescription,30,[InterActiveEdit],Changed);
@@ -711,19 +713,19 @@ VAR
                   Messages(3,0,'');
                   Cmd1 := #0;
                 END;
-          'F' : IF (RecNumToEdit <> 1) THEN
+          '{' : IF (RecNumToEdit <> 1) THEN
                   RecNumToEdit := 1
                 ELSE
                 BEGIN
                   Messages(2,0,'');
                   Cmd1 := #0;
                 END;
-          'J' : BEGIN
+          ';' : BEGIN
                   InputInteger('%LFJump to entry?',RecNumToEdit,[NumbersOnly],1,NumEvents,Changed);
                   IF (RecNumToEdit < 1) OR (RecNumToEdit > NumEvents) THEN
                     Cmd1 := #0;
                 END;
-          'L' : IF (RecNumToEdit <> NumEvents) THEN
+          '}' : IF (RecNumToEdit <> NumEvents) THEN
                   RecNumToEdit := NumEvents
                 ELSE
                 BEGIN
@@ -732,12 +734,12 @@ VAR
                 END;
           '?' : BEGIN
                   NL;
-                  LCmds(20,1,'[ Previous Entry','] Next Entry');
-                  LCmds(20,1,'First Entry','Last Entry');
-                  LCmds(20,1,'Jump To Entry','');
+                  LCmds(17,1,'[Previous Record',']Next Record');
+                  LCmds(17,1,'{First Record','}Last Record');
+                  LCmds(17,1,';Jump To Record','');
                 END;
         END;
-      UNTIL (Pos(Cmd1,'Q[]FJL') <> 0) OR (HangUp);
+      UNTIL (Pos(Cmd1,'Q[]{};') <> 0) OR (HangUp);
   END;
 
   PROCEDURE InsertEvent(TempEvent1: EventRecordType; Cmd1: Char; RecNumToInsertBefore: Integer);
@@ -750,52 +752,52 @@ VAR
     IF (NumEvents = MaxEvents) THEN
       Messages(5,MaxEvents,'events')
     ELSE
-    BEGIN
-      RecNumToInsertBefore := -1;
-      InputInteger('%LFEvent to insert before?',RecNumToInsertBefore,[NumbersOnly],1,(NumEvents + 1),Changed);
-      IF (RecNumToInsertBefore >= 1) AND (RecNumToInsertBefore <= (NumEvents + 1)) THEN
       BEGIN
-        Reset(EventFile);
-        InitEventVars(TempEvent1);
-        IF (RecNumToInsertBefore = 1) THEN
-          RecNumToEdit := 1
-        ELSE IF (RecNumToInsertBefore = (NumEvents + 1)) THEN
-          RecNumToEdit := (NumEvents + 1)
-        ELSE
-          RecNumToEdit := RecNumToInsertBefore;
-        REPEAT
-          OK := TRUE;
-          EditEvent(TempEvent1,TempEvent1,Cmd1,RecNumToEdit,Changed,FALSE);
-          CheckEvent(TempEvent1,1,1,Ok);
-          IF (NOT OK) THEN
-            IF (NOT PYNQ('%LFContinue inserting event? ',0,TRUE)) THEN
-              Abort := TRUE;
-        UNTIL (OK) OR (Abort) OR (HangUp);
-        IF (NOT Abort) AND (PYNQ('%LFIs this what you want? ',0,FALSE)) THEN
-        BEGIN
-          Print('%LF[> Inserting event record ...');
-          Seek(EventFile,FileSize(EventFile));
-          Write(EventFile,Event);
-          Dec(RecNumToInsertBefore);
-          FOR RecNum := ((FileSize(EventFile) - 1) - 1) DOWNTO RecNumToInsertBefore DO
+        RecNumToInsertBefore := -1;
+        InputInteger('%LFEvent to insert before?',RecNumToInsertBefore,[NumbersOnly],1,(NumEvents + 1),Changed);
+        IF (RecNumToInsertBefore >= 1) AND (RecNumToInsertBefore <= (NumEvents + 1)) THEN
           BEGIN
-            Seek(EventFile,RecNum);
-            Read(EventFile,Event);
-            Seek(EventFile,(RecNum + 1));
-            Write(EventFile,Event);
+            Reset(EventFile);
+            InitEventVars(TempEvent1);
+            IF (RecNumToInsertBefore = 1) THEN
+              RecNumToEdit := 1
+            ELSE IF (RecNumToInsertBefore = (NumEvents + 1)) THEN
+              RecNumToEdit := (NumEvents + 1)
+            ELSE
+              RecNumToEdit := RecNumToInsertBefore;
+            REPEAT
+              OK := TRUE;
+              EditEvent(TempEvent1,TempEvent1,Cmd1,RecNumToEdit,Changed,FALSE);
+              CheckEvent(TempEvent1,1,1,Ok);
+              IF (NOT OK) THEN
+                IF (NOT PYNQ('%LFContinue inserting event? ',0,TRUE)) THEN
+                  Abort := TRUE;
+            UNTIL (OK) OR (Abort) OR (HangUp);
+            IF (NOT Abort) AND (PYNQ('%LFIs this what you want? ',0,FALSE)) THEN
+              BEGIN
+                Print('%LF[> Inserting event record ...');
+                Seek(EventFile,FileSize(EventFile));
+                Write(EventFile,Event);
+                Dec(RecNumToInsertBefore);
+                FOR RecNum := ((FileSize(EventFile) - 1) - 1) DOWNTO RecNumToInsertBefore DO
+                  BEGIN
+                    Seek(EventFile,RecNum);
+                    Read(EventFile,Event);
+                    Seek(EventFile,(RecNum + 1));
+                    Write(EventFile,Event);
+                  END;
+                FOR RecNum := RecNumToInsertBefore TO ((RecNumToInsertBefore + 1) - 1) DO
+                  BEGIN
+                    Seek(EventFile,RecNum);
+                    Write(EventFile,TempEvent1);
+                    Inc(NumEvents);
+                    SysOpLog('* Inserted event: ^1'+TempEvent1.EventDescription);
+                  END;
+              END;
+            Close(EventFile);
+            LastError := IOResult;
           END;
-          FOR RecNum := RecNumToInsertBefore TO ((RecNumToInsertBefore + 1) - 1) DO
-          BEGIN
-            Seek(EventFile,RecNum);
-            Write(EventFile,TempEvent1);
-            Inc(NumEvents);
-            SysOpLog('* Inserted event: ^1'+TempEvent1.EventDescription);
-          END;
-        END;
-        Close(EventFile);
-        LastError := IOResult;
       END;
-    END;
   END;
 
   PROCEDURE ModifyEvent(TempEvent1: EventRecordType; Cmd1: Char; RecNumToEdit: Integer);
@@ -807,46 +809,46 @@ VAR
     IF (NumEvents = 0) THEN
       Messages(4,0,'events')
     ELSE
-    BEGIN
-      RecNumToEdit := -1;
-      InputInteger('%LF^2Modify which event?',RecNumToEdit,[NumbersOnly],1,NumEvents,Changed);
-      IF (RecNumToEdit >= 1) AND (RecNumToEdit <= NumEvents) THEN
       BEGIN
-        SaveRecNumToEdit := -1;
-        Cmd1 := #0;
-        Reset(EventFile);
-        WHILE (Cmd1 <> 'Q') AND (NOT HangUp) DO
-        BEGIN
-          IF (SaveRecNumToEdit <> RecNumToEdit) THEN
+        RecNumToEdit := -1;
+        InputInteger('%LF^2Modify which event?',RecNumToEdit,[NumbersOnly],1,NumEvents,Changed);
+        IF (RecNumToEdit >= 1) AND (RecNumToEdit <= NumEvents) THEN
           BEGIN
-            Seek(EventFile,(RecNumToEdit - 1));
-            Read(EventFile,Event);
-            SaveRecNumToEdit := RecNumToEdit;
-            Changed := FALSE;
+            SaveRecNumToEdit := -1;
+            Cmd1 := #0;
+            Reset(EventFile);
+            WHILE (Cmd1 <> 'Q') AND (NOT HangUp) DO
+              BEGIN
+                IF (SaveRecNumToEdit <> RecNumToEdit) THEN
+                  BEGIN
+                    Seek(EventFile,(RecNumToEdit - 1));
+                    Read(EventFile,Event);
+                    SaveRecNumToEdit := RecNumToEdit;
+                    Changed := FALSE;
+                  END;
+                REPEAT
+                  Ok := TRUE;
+                  EditEvent(TempEvent1,Event,Cmd1,RecNumToEdit,Changed,TRUE);
+                  CheckEvent(Event,1,1,Ok);
+                  IF (NOT OK) THEN
+                    BEGIN
+                      PauseScr(FALSE);
+                      IF (RecNumToEdit <> SaveRecNumToEdit) THEN
+                        RecNumToEdit := SaveRecNumToEdit;
+                    END;
+                UNTIL (Ok) OR (HangUp);
+                IF (Changed) THEN
+                  BEGIN
+                    Seek(EventFile,(SaveRecNumToEdit - 1));
+                    Write(EventFile,Event);
+                    Changed := FALSE;
+                    SysOpLog('* Modified event: ^1'+Event.EventDescription);
+                  END;
+              END;
+            Close(EventFile);
+            LastError := IOResult;
           END;
-          REPEAT
-            Ok := TRUE;
-            EditEvent(TempEvent1,Event,Cmd1,RecNumToEdit,Changed,TRUE);
-            CheckEvent(Event,1,1,Ok);
-            IF (NOT OK) THEN
-            BEGIN
-              PauseScr(FALSE);
-              IF (RecNumToEdit <> SaveRecNumToEdit) THEN
-                RecNumToEdit := SaveRecNumToEdit;
-            END;
-          UNTIL (Ok) OR (HangUp);
-          IF (Changed) THEN
-          BEGIN
-            Seek(EventFile,(SaveRecNumToEdit - 1));
-            Write(EventFile,Event);
-            Changed := FALSE;
-            SysOpLog('* Modified event: ^1'+Event.EventDescription);
-          END;
-        END;
-        Close(EventFile);
-        LastError := IOResult;
       END;
-    END;
   END;
 
   PROCEDURE PositionEvent(TempEvent1: EventRecordType; RecNumToPosition: Integer);
@@ -951,7 +953,7 @@ BEGIN
     IF (Cmd <> '?') THEN
       ListEvents(RecNumToList);
     NL;
-    InputChar('^2Event Editor [^1DIMP^2,(^1?^2)Help,(^1Q^2)uit]: ',Cmd,'QDIMP?'^M,[CapAll]);
+    InputChar('^2Event Editor [^1DIMP^2,(^1?^2)Help,<^1CR^2>Page,(^1Q^2)uit]: ',Cmd,'QDIMP?'^M,[CapAll]);
     CASE Cmd OF
       ^M  : IF (RecNumToList < 1) OR (RecNumToList > NumEvents) THEN
               RecNumToList := 1;
@@ -961,7 +963,6 @@ BEGIN
       'P' : PositionEvent(TempEvent,RecNumToList);
       '?' : BEGIN
               NL;
-              Print('^0<^1CR^0>Next Page / Refresh');
               LCmds(13,1,'Delete Event','Insert Event');
               LCmds(13,1,'Modify Event','Position Event');
             END;
@@ -973,11 +974,11 @@ BEGIN
   NumEvents := 0;
   Reset(EventFile);
   WHILE NOT EOF(EventFile) DO
-  BEGIN
-    Inc(NumEvents);
-    New(MemEventArray[NumEvents]);
-    Read(EventFile,MemEventArray[NumEvents]^);
-  END;
+    BEGIN
+      Inc(NumEvents);
+      New(MemEventArray[NumEvents]);
+      Read(EventFile,MemEventArray[NumEvents]^);
+    END;
   Close(EventFile);
   LastError := IOResult;
 END;

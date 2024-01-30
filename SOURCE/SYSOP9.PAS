@@ -19,6 +19,7 @@
      - 't' to toggle display is now working again
      - 03/09/2023 error messages now using messages proc
      - aesthetic changes
+ 01/29/2024 - Prompt,Help aesthetics
     [TO DO]
      - aesthetics
      - test fa list longer than 1 page for pagination
@@ -516,9 +517,9 @@ VAR
                 END;
           '?' : BEGIN
                   NL;
-                  LCmds(18,1,'[ Previous Record','] Next Record');
-                  LCmds(18,1,'{ First Record','} Last Record');
-                  LCmds(18,1,'; Jump To Record','');
+                  LCmds(17,1,'[Previous Record',']Next Record');
+                  LCmds(17,1,'{First Record','}Last Record');
+                  LCmds(17,1,';Jump To Record','');
                 END;
         END;
       UNTIL (Pos(Cmd1,'Q[]{};') <> 0) OR (HangUp);
@@ -840,7 +841,7 @@ BEGIN
     IF (Cmd <> '?') THEN
       ListFileAreas(RecNumToList,MCIVars);
     NL;
-    InputChar('^2File Area Editor [^1CDIMPT^2,(^1?^2)Help,(^1Q^2)uit]: ',Cmd,'QCDIMPT?'^M,[CapAll]);
+    InputChar('^2File Area Editor [^1CDIMPT^2,(^1?^2)Help,<^1CR^2>Page,(^1Q^2)uit]: ',Cmd,'QCDIMPT?'^M,[CapAll]);
     CASE Cmd OF
       ^M  : IF (RecNumToList < 1) OR (RecNumToList > NumFileAreas) THEN
               RecNumToList := 1;
@@ -851,11 +852,13 @@ BEGIN
       'P' : PositionFileArea(TempMemFileArea,MCIVars);
       'T' : DisplayType := ((DisplayType MOD 2) + 1);
       '?' : BEGIN
-              Print('%LF<CR>Next screen or redisplay current screen');
+              NL;
+              {Print('%LF<CR>Next screen or redisplay current screen');}
               LCmds(23,1,'D Delete File Area',     'I Insert File Area');
               LCmds(23,1,'M Modify File Area',     'P Position File Area');
+              LCmds(23,1,'-','-');
               LCmds(23,1,'C Change Storage Drive', 'T Toggle Display Format');
-              LCmds(23,1,'Q Quit',                 '');
+              {LCmds(23,1,'Q Quit',                 '');}
             END;
     END;
     IF (Cmd <> ^M) THEN

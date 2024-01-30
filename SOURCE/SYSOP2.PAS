@@ -34,8 +34,7 @@ USES
   SysOp2M, { New User Toggles }
   SysOp2N, { SysOp Macros }
   SysOp2O; { GetSecRange }
-
-
+ 
   PROCEDURE ConfigHeader(s: STRING; b1,b2: BYTE);
   VAR
     PageNum: STRING[3];
@@ -47,7 +46,6 @@ USES
     UNTIL WhereX = ThisUser.LineLen-(6+Length(IntToStr(b1))+Length(IntToStr(b2)));
     IF (b1<>0) AND (b2<>0) THEN
       BEGIN
-
         Print('^5'+#243+' ^4'+IntToStr(b1)+'^5/^4'+IntToStr(b2)+'^5 '+#242#196);
       END
     ELSE

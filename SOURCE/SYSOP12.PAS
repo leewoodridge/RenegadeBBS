@@ -1,7 +1,8 @@
 {$A+,B-,D+,E-,F+,I-,L+,N-,O+,R-,S+,V-}
 {
-12/15/2021 Conference editor aesthetics
-02/24/2022 Change conference strings added to lang
+ 12/15/2021 Conference editor aesthetics
+ 02/24/2022 Change conference strings added to lang
+ 01/29/2024 - Prompt,Help aesthetics
 }
 UNIT SysOp12; { Conference stuff }
 
@@ -294,12 +295,10 @@ VAR
         BEGIN
           Abort := FALSE;
           Next := FALSE;
-          {CLS;}
           IF (Editing) THEN
-            ConfigHeader('Editing Conference Record #'+IntToStr(RecNumToEdit)+' Of '+IntToStr(NumConfKeys),0,0)
+            ConfigHeader('Editing Conference Record',RecNumToEdit,NumConfKeys)
           ELSE
-            ConfigHeader('Inserting Conference Record #'+IntToStr(RecNumToEdit)+' Of '+IntToStr(NumConfKeys + 1),0,0);
-          {NL;}
+            ConfigHeader('Inserting Conference Record',RecNumToEdit,NumConfKeys+1);
           PrintACR('^0(^1A^0) Key         : ^1'+Key);
           PrintACR('^0(^1B^0) Description : ^1'+Name);
           PrintACR('^0(^1C^0) ACS         : ^1'+AOnOff(ACS = '','[NONE]',ACS));
@@ -307,7 +306,7 @@ VAR
         IF (NOT Editing) THEN
           CmdStr := 'ABC'
         ELSE
-          CmdStr := 'ABC[]FJL';
+          CmdStr := 'ABC[]{};';
         InputChar('%LF^2Modify Conference [(^1?^2)Help,(^1Q^2)uit]: ',Cmd1,'Q?'+CmdStr+^M,[CapAll]);
         CASE Cmd1 OF
           'A' : BEGIN
@@ -337,19 +336,19 @@ VAR
                   Messages(3,0,'');
                   Cmd1 := #0;
                 END;
-          'F' : IF (RecNumToEdit <> 1) THEN
+          '{' : IF (RecNumToEdit <> 1) THEN
                   RecNumToEdit := 1
                 ELSE
                 BEGIN
                   Messages(2,0,'');
                   Cmd1 := #0;
                 END;
-          'J' : BEGIN
+          ';' : BEGIN
                   InputInteger('%LFJump to entry',RecNumToEdit,[NumbersOnly],1,NumConfKeys,Changed);
                   IF (RecNumToEdit < 1) OR (RecNumToEdit > NumConfKeys) THEN
                     Cmd1 := #0;
                 END;
-          'L' : IF (RecNumToEdit <> NumConfKeys) THEN
+          '}' : IF (RecNumToEdit <> NumConfKeys) THEN
                   RecNumToEdit := NumConfKeys
                 ELSE
                 BEGIN
@@ -357,19 +356,20 @@ VAR
                   Cmd1 := #0;
                 END;
           '?' : BEGIN
-                  Print('%LF^0<^1CR^0>Redisplay current screen');
-                  Print('^1A^0-^1C^0:Modify item');
+                  {Print('%LF^0<^1CR^0>Redisplay current screen');
+                  Print('^1A^0-^1C^0:Modify item');}
                   IF (NOT Editing) THEN
-                    LCmds(20,1,'Quit and save','')
+                    Cmd1 := #0 {LCmds(20,1,'Quit and save','')}
                   ELSE
                   BEGIN
-                    LCmds(20,1,'[Back entry',']Forward entry');
-                    LCmds(20,1,'First entry in list','Jump to entry');
-                    LCmds(20,1,'Last entry in list','Quit and save');
+                    NL;
+                    LCmds(17,1,'[Previous Record',']Next Record');
+                    LCmds(17,1,'{First Record','}Last Record');
+                    LCmds(17,1,';Jump To Record','');
                   END;
                 END;
         END;
-      UNTIL (Pos(Cmd1,'Q[]FJL') <> 0) OR (HangUp);
+      UNTIL (Pos(Cmd1,'Q[]{};') <> 0) OR (HangUp);
   END;
 
   PROCEDURE InsertConference(TempConference1: ConferenceRecordType; Cmd1: Char; RecNumToInsertBefore: Integer);
@@ -556,14 +556,15 @@ BEGIN
         ConfigHeader('Conference Editor',0,0);
         DisplayConferenceRecords(RecNumToList,TRUE);
       END;
-    InputChar('%LF^2Conference Editor [^1DIMP^2,(^1?^2)Help,(^1Q^2)uit]: ',Cmd,'QDIMP?'^M,[CapAll]);
+    InputChar('%LF^2Conference Editor [^1DIMP^2,(^1?^2)Help,<^1CR^2>Page,(^1Q^2)uit]: ',Cmd,'QDIMP?'^M,[CapAll]);
     CASE Cmd OF
       'D' : DeleteConference(TempConference,RecNumToList);
       'I' : InsertConference(TempConference,Cmd,RecNumToList);
       'M' : ModifyConference(TempConference,Cmd,RecNumToList);
       'P' : PositionConference(TempConference,RecNumToList);
       '?' : BEGIN
-              Print('%LF^0<^1CR^0>Next Page / Refresh');
+              NL;
+              {Print('%LF^0<^1CR^0>Next Page / Refresh');}
               {Print('^0(^1?^0)Help');}
               LCmds(18,1,'Delete Conference','Insert Conference');
               LCmds(18,1,'Modify Conference','Position Conference');

@@ -128,7 +128,7 @@ BEGIN
   General.WindowOn := SaveWindowOn;
   LastScreenSwap := (Timer - 5);
   lStatus_Screen(General.CurWindow,'',FALSE,s);
-
+  
   GoToXY(SaveX,SaveY);
 END;
 
@@ -136,8 +136,8 @@ PROCEDURE ExecBatch(VAR Ok: Boolean;     { result                     }
                     Dir: AStr;           { directory takes place in   }
                     BatLine: AStr;       { .BAT file line to execute  }
                     OkLevel: Integer;    { DOS errorlevel for success }
-                    VAR RCode: Integer;     { errorlevel returned }
-                    Windowed: Boolean);  { Windowed? }
+                    VAR RCode: Integer;  { errorlevel returned		  }
+                    Windowed: Boolean);  { Windowed? 				  }
 VAR
   BatchFile: Text;
   SaveDir: AStr;

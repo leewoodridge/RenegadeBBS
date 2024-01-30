@@ -108,10 +108,7 @@ BEGIN
   FillChar(IEMSIRec,SizeOf(IEMSIRec),0);
   IF (ComPortSpeed = 0) OR (NOT General.UseIEMSI) THEN
     Exit;
-  (* Should this be Prompt ???
-  Write('Attempting IEMSI negotiation ... ');
-  *)
-  Write(lRGLngStr(131,TRUE));
+  Write(lRGLngStr(131,TRUE)); (* Should this be Prompt ??? Write('Attempting IEMSI negotiation ... '); *)
   FillChar(Buffer,SizeOf(Buffer),0);
   T1 := Timer;
   T2 := Timer;
@@ -877,10 +874,7 @@ BEGIN
   BEGIN
     PrintF('ACSEA'+IntToStr(EventNum));
     IF (NoFile) THEN
-      (*
-      Print('Restricted: Only certain users allowed online at this time.');
-      *)
-      lRGLngStr(116,FALSE);
+      lRGLngStr(116,FALSE); (*Print('Restricted: Only certain users allowed online at this time.');*)
   END;
   IF (NOT GotName) THEN
     TryIEMSILogon;
@@ -919,10 +913,7 @@ BEGIN
         BEGIN
           PrintF('LOGERR');
           IF (NoFile) THEN
-            (*
-            Print('Name not found in user list.');
-            *)
-            lRGLngStr(118,FALSE);
+            lRGLngStr(118,FALSE); (*Print('Name not found in user list.');*)
           IF NOT (General.ShuttleLog) AND (NOT General.ClosedSystem) THEN
             IF PYNQ(lRGLngStr(182,TRUE){FString.LogonAsNew},0,FALSE) THEN
               UserNum := -1;
@@ -1036,10 +1027,7 @@ BEGIN
   BEGIN
     PrintF('NONODE');
     IF (NoFile) THEN
-      (*
-      Print('You don''t have the required ACS to logon to this node!');
-      *)
-      lRGLngStr(120,FALSE);
+      lRGLngStr(120,FALSE); (*Print('You don''t have the required ACS to logon to this node!');*)
     SysOpLog(ThisUser.Name+': Attempt to logon node '+IntToStr(ThisNode)+' without access.');
     HangUp := TRUE;
   END;
@@ -1047,10 +1035,7 @@ BEGIN
   BEGIN
     PrintF(ThisUser.LockedFile);
     IF (NoFile) THEN
-      (*
-      Print('You have been locked out of the BBS by the SysOp.');
-      *)
-      lRGLngStr(121,FALSE);
+      lRGLngStr(121,FALSE); (*Print('You have been locked out of the BBS by the SysOp.');*)
     SysOpLog(ThisUser.Name+': Attempt to access system when locked out^8 <--');
     HangUp := TRUE;
   END;
@@ -1062,10 +1047,7 @@ BEGIN
     BEGIN
       PrintF('NOCREDTS');
       IF (NoFile) THEN
-        (*
-        Print('You have insufficient credits for online time.');
-        *)
-        lRGLngStr(124,FALSE);
+        lRGLngStr(124,FALSE); (*Print('You have insufficient credits for online time.');*)
       SysOpLog(ThisUser.Name+': insufficient credits for logon.');
       IF (General.CreditFreeTime < 1) THEN
         HangUp := TRUE
@@ -1080,10 +1062,7 @@ BEGIN
     BEGIN
       PrintF('2MANYCAL');
       IF (NoFile) THEN
-        (*
-        Print('You can only log on once per day.');
-        *)
-        lRGLngStr(125,FALSE);
+        lRGLngStr(125,FALSE); (*Print('You can only log on once per day.');*)
       TooMuch := TRUE;
     END
     ELSE IF ((ThisUser.OnToday >= General.CallAllow[ThisUser.SL])  AND
@@ -1091,9 +1070,7 @@ BEGIN
     BEGIN
       PrintF('2MANYCAL');
       IF (NoFile) THEN
-        (*
-        Print('You can only log on '+IntToStr(General.CallAllow[ThisUser.SL])+' times per day.');
-        *)
+        (*Print('You can only log on '+IntToStr(General.CallAllow[ThisUser.SL])+' times per day.');*)
         lRGLngStr(126,FALSE);
       TooMuch := TRUE;
     END
@@ -1101,16 +1078,12 @@ BEGIN
     BEGIN
       PrintF('NOTLEFTA');
       IF (NoFile) THEN
-        (*
-        Prompt('You can only log on for '+IntToStr(General.TimeAllow[ThisUser.SL])+' minutes per day.');
-        *)
+        (*Prompt('You can only log on for '+IntToStr(General.TimeAllow[ThisUser.SL])+' minutes per day.');*)
         lRGLngStr(127,FALSE);
       TooMuch := TRUE;
       IF (ThisUser.TimeBank > 0) THEN
       BEGIN
-        (*
-        Print('^1However, you have '+IntToStr(ThisUser.TimeBank)+' minutes left in your Time Bank.');
-        *)
+        (*Print('^1However, you have '+IntToStr(ThisUser.TimeBank)+' minutes left in your Time Bank.');*)
         lRGLngStr(128,FALSE);
         IF PYNQ(lRGLngStr(188,TRUE){'Withdraw from Time Bank? '},0,TRUE) THEN
         BEGIN
@@ -1123,9 +1096,7 @@ BEGIN
               ThisUser.TimeBankAdd := 0;
             Dec(ThisUser.TimeBank,Lng);
             Inc(ThisUser.TLToday,Lng);
-            (*
-            Print('^1In your account: ^1'+IntToStr(ThisUser.TimeBank)+'^1   Time left online: ^1'+Formattedtime(NSL));
-            *)
+            (*Print('^1In your account: ^1'+IntToStr(ThisUser.TimeBank)+'^1   Time left online: ^1'+Formattedtime(NSL));*)
             lRGLngStr(129,FALSE);
             SysOpLog('TimeBank: Withdrew '+ IntToStr(Lng)+' minutes at logon.');
           END;
@@ -1133,10 +1104,7 @@ BEGIN
         IF (NSL >= 0) THEN
           TooMuch := FALSE
         ELSE
-          (*
-          Print('Hanging up.');
-          *)
-          lRGLngStr(130,FALSE);
+          lRGLngStr(130,FALSE); (*Print('Hanging up.');*)
       END;
     END;
     IF (TooMuch) THEN
@@ -1167,9 +1135,7 @@ BEGIN
     END;
     UserOn := TRUE;
     Update_Screen;
-    (*
-    Update_Node('Logged on',TRUE);
-    *)
+    (*Update_Node('Logged on',TRUE);*)
     InitTrapFile;
     UserOn := FALSE;
     CLS;

@@ -55,7 +55,6 @@ Lee Woodridge
  - Clean up SetC/GetC
  - inputmessage linelen param should be 79??? or 80 ... is 78
  [TODO]
- - record navigation [previous,]next,{first,}last,;jump
  - use messages for common stuff, first last, none etc
 *)
 UNIT Common;
@@ -547,7 +546,6 @@ VAR
   (* LastCommand: STRING[255];  { Last command and parameter ("CMD;PARAM") - LeeW: Added 03/23/2022 } *)
 
 {UNSORTED}
-
 PROCEDURE Update_Logo(VAR Addr1,Addr2; BlkLen: Integer); { LeeW: Moved from MyIO}
 PROCEDURE SaveScreen(VAR Wind: WindowRec);
 PROCEDURE RemoveWindow(VAR Wind: WindowRec); {^}
