@@ -7,7 +7,7 @@ TODO: add user flag to force password change next logon
 02/20/2023 - Moved OneLiners record info here from ONELINERS.PAS
 }
 CONST
-  Build = '1.30';
+  Build = '1.35';
 
 {$IFDEF MSDOS}
   OS = '/DOS';
