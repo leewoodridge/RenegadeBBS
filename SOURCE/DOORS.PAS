@@ -728,6 +728,11 @@ BEGIN
             lStatus_Screen(100,'Outputting CALLINFO.BBS ...',FALSE,Answer);
             Write_CallInfo_BBS(UseRealName);
           END;
+    'X' : BEGIN
+            lStatus_Screen(100,'Outputting CALLINFO.BBS ...',FALSE,Answer);
+            Write_DorInfo1_Def(UseRealName);
+            Write_Door_Sys(UseRealName);
+          END;
   END;
   IF (Answer = '') THEN
     Exit;
