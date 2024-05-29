@@ -709,7 +709,7 @@ BEGIN
             NoCmd := TRUE;
           END;
     'D' : CASE Cmd[2] OF
-            'P','C','D','G','S','W','-','3' :
+            'P','C','D','G','S','W','-','3','X' :
                   DoDoorFunc(Cmd[2],MenuOption);
           ELSE
             NoCmd := TRUE;
