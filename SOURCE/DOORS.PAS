@@ -729,7 +729,7 @@ BEGIN
             Write_CallInfo_BBS(UseRealName);
           END;
     'X' : BEGIN
-            lStatus_Screen(100,'Outputting CALLINFO.BBS ...',FALSE,Answer);
+            lStatus_Screen(100,'Outputting ALL Door Files ...',FALSE,Answer);
             Write_DorInfo1_Def(UseRealName);
             Write_Door_Sys(UseRealName);
             Write_SFDoors_Dat(UseRealName);
