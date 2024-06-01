@@ -732,6 +732,11 @@ BEGIN
             lStatus_Screen(100,'Outputting CALLINFO.BBS ...',FALSE,Answer);
             Write_DorInfo1_Def(UseRealName);
             Write_Door_Sys(UseRealName);
+            Write_SFDoors_Dat(UseRealName);
+            Write_CallInfo_BBS(UseRealName);
+            Write_Chain_Txt(UseRealName);
+            Write_PCBoard_Sys(UseRealName);
+            Write_Door32_Sys(UseRealName);
           END;
   END;
   IF (Answer = '') THEN
