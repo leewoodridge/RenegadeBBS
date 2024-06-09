@@ -337,10 +337,10 @@ CONST
   ExtEventTime: Word = 0;                 { Number of minutes before external event }
   IsInvisible: Boolean = FALSE;           { Run IN invisible Mode? }
   SaveNAvail: Boolean = FALSE;            {  }
-  (*
-  LastWFCX: Byte = 1;                     {  }
-  LastWFCY: Byte = 1;                     {  }
-  *)
+  
+  LastWFCX: Byte = 1;                     { DO NOT REMOVE OR WILL CAUSE COMPORT ISSUES }
+  LastWFCY: Byte = 1;                     { Exo - 06/08/2024 }
+  
   ANSIDetected: Boolean = FALSE;          {  }
 
 VAR
