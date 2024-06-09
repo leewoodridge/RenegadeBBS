@@ -860,7 +860,7 @@ BEGIN
     Print('%LFAborted.');
     Exit;
   END;
-  SYSOPLOG('Searched For: '+SearchString); (Exo 4/27/24)
+  SYSOPLOG('Searched For: '+SearchString); {Exo 4/27/24}
   Abort := FALSE;
   Next := FALSE;
   InitFArray(FArray);
