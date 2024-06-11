@@ -1655,13 +1655,13 @@ BEGIN
     Exit;
   Window(23,11,78,15);
   GoToXY(1,1);
-  {GoToXY(LastWFCX,LastWFCY);}
+  GoToXY(LastWFCX,LastWFCY);
   LastAttr := TextAttr;
   TextAttr := 7;
   Write(c);
   TextAttr := LastAttr;
-  {LastWFCX := WhereX;
-  LastWFCY := WhereY;}
+  LastWFCX := WhereX;
+  LastWFCY := WhereY;
   Window(1,1,MaxDisplayCols,MaxDisplayRows);
 END;
 
