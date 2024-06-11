@@ -338,8 +338,8 @@ CONST
   IsInvisible: Boolean = FALSE;           { Run IN invisible Mode? }
   SaveNAvail: Boolean = FALSE;            {  }
   
-  LastWFCX: Byte = 1;                     { DO NOT REMOVE OR WILL CAUSE COMPORT ISSUES }
-  LastWFCY: Byte = 1;                     { Exo - 06/08/2024 }
+  LastWFCX: Byte = 1;                     {  }
+  LastWFCY: Byte = 1;                     {  }
   
   ANSIDetected: Boolean = FALSE;          {  }
 
@@ -362,6 +362,7 @@ VAR
   LightBarFirstCmd: Boolean;           {  }
   Telnet: Boolean;                     {  }
   HangUpTelnet: Boolean;               {  }
+  HangUpTelnetKick: Boolean;           {Kick back to DOS after hangup}
   DatFilePath: STRING[40];             { Path of RENEGADE.DAT }
   Interrupt14: Pointer;                { far ptr TO interrupt 14 }
   Ticks: LongInt ABSOLUTE $0040:$006C; {  }
@@ -652,6 +653,7 @@ PROCEDURE DTR(Status: Boolean);
 PROCEDURE DoPhoneHangUp(ShowIt: Boolean);
 PROCEDURE DoPhoneOffHook(ShowIt: Boolean);
 PROCEDURE DoTelnetHangUp(ShowIt: Boolean);
+PROCEDURE DoTelnetHangUpKick(ShowIt: Boolean);
 PROCEDURE SerialOut(s: STRING);
 { Logging stuff }
 PROCEDURE SL1(s: AStr); { Write entry to SysOp log }
@@ -1655,13 +1657,13 @@ BEGIN
     Exit;
   Window(23,11,78,15);
   GoToXY(1,1);
-  {GoToXY(LastWFCX,LastWFCY);}
+  GoToXY(LastWFCX,LastWFCY);
   LastAttr := TextAttr;
   TextAttr := 7;
   Write(c);
   TextAttr := LastAttr;
-  {LastWFCX := WhereX;
-  LastWFCY := WhereY;}
+  LastWFCX := WhereX;
+  LastWFCY := WhereY;
   Window(1,1,MaxDisplayCols,MaxDisplayRows);
 END;
 
@@ -2796,6 +2798,7 @@ BEGIN
           IF (NoFile) THEN
             lRGLngStr(242,FALSE); { Timeout message }
           HangUp := TRUE;
+          HangUpTelnetKick := TRUE;
           SysOpLog('Inactivity timeout at '+TimeStr); {LeeW: Add how long?}
         END;
         IF (General.TimeOutBell <> - 1) AND ((TempTimer - LastKeyHit) > (General.TimeOutBell * 60)) AND
@@ -4127,6 +4130,32 @@ BEGIN
   END;
 END;
 
+PROCEDURE DoTelnetHangUpKick(ShowIt: Boolean);
+BEGIN
+  IF (NOT LocalIOOnly) THEN
+    BEGIN
+      IF (ShowIt) AND (InWFCMenu) AND (NOT BlankMenuNow) THEN {LeeW: Added InWFCMenu}
+        BEGIN
+          TextColor(15);
+          TextBackGround(1);
+          GotoXY(32,17);
+          Prt('Hanging up node..');
+        END;
+      Com_Flush_Recv;
+      DTR(FALSE);
+      QuitAfterDone:=True;
+    END;
+  IF (ShowIt) AND (InWFCMenu) AND (SysOpOn) AND (NOT BlankMenuNow) THEN {LeeW: Added InWFCMenu}
+    BEGIN
+      TextColor(15);
+      TextBackGround(1);
+      GoToXY(1,17);
+      ClrEOL;
+    END;
+END;
+
+
+
 PROCEDURE DoTelnetHangUp(ShowIt: Boolean);
 BEGIN
   IF (NOT LocalIOOnly) THEN
@@ -4140,6 +4169,7 @@ BEGIN
         END;
       Com_Flush_Recv;
       DTR(FALSE);
+      HangUp:=True;
     END;
   IF (ShowIt) AND (InWFCMenu) AND (SysOpOn) AND (NOT BlankMenuNow) THEN {LeeW: Added InWFCMenu}
     BEGIN
