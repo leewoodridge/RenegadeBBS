@@ -64,6 +64,7 @@ INTERFACE
 USES
   CRT,
   DOS,
+  MYIO,
   TimeFunc;
 
 {$I RECORDS.INC}
@@ -338,8 +339,8 @@ CONST
   IsInvisible: Boolean = FALSE;           { Run IN invisible Mode? }
   SaveNAvail: Boolean = FALSE;            {  }
   
-  LastWFCX: Byte = 1;                     { DO NOT REMOVE OR WILL CAUSE COMPORT ISSUES }
-  LastWFCY: Byte = 1;                     { Exo - 06/08/2024 }
+  LastWFCX: Byte = 1;                     {  }
+  LastWFCY: Byte = 1;                     {  }
   
   ANSIDetected: Boolean = FALSE;          {  }
 
@@ -611,7 +612,7 @@ FUNCTION OkAvatar: Boolean; { Does user support Avatar terminal emulation? }
 FUNCTION OkRIP: Boolean; { Does user support RIP graphics? }
 FUNCTION OkVT100: Boolean; { Does user support VT-100 terminal emulation? }
 { ANSI procedures }
-PROCEDURE Cursor(Show: Boolean); { Control cursor display }
+{PROCEDURE Cursor(B: Boolean); { Control cursor display }
 PROCEDURE BackErase(Len: Byte);
 PROCEDURE Clear_EOL; { ANSI Clear to end of line }
 PROCEDURE ANSIG(X,Y: Byte); { ANSI go to position }
@@ -824,35 +825,18 @@ BEGIN
   Common3.InputPath(S,DirPath,CreateDir,AllowExit,Changed);
 END;
 
-PROCEDURE Cursor(Show: Boolean);
-
-  PROCEDURE CursorASM(B: Boolean); Assembler;
-  ASM
-    CMP B, 1
-    JE @ON
-    MOV CH, 9
-    MOV CL, 0
-    JMP @GO
-    @ON:
-    MOV CH, 6
-    MOV CL, 7
-    @GO:
-    MOV AH,1
-    INT 10H
-  END;
-
-BEGIN
+{BEGIN
   IF (OkANSI) THEN
-    IF (Show) THEN
+    IF myio.cursor THEN
       SerialOut(#27'[?25h')
     ELSE
       SerialOut(#27'[?25l');
   IF (WantOut) THEN
-    IF (Show) THEN
-      CursorASM(TRUE)
+    IF (b) THEN
+      Cursor(TRUE)
     ELSE
-      CursorASM(FALSE);
-END;
+      Cursor(FALSE);
+END;}
 
 PROCEDURE Clear_EOL;
 BEGIN

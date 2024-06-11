@@ -312,7 +312,7 @@ BEGIN
   SecondRow := (FirstRow + 1);
   TextAttr := 120;
   LastScreenSwap := 0;
-  Cursor(FALSE);
+  myio.Cursor(FALSE);
   Clear_Status_Box;
   IF (WhichScreen < 99) THEN
     General.CurWindow := WhichScreen;
@@ -521,7 +521,7 @@ BEGIN
     Window(1,3,MaxDisplayCols,MaxDisplayRows)
   ELSE
     Window(1,1,MaxDisplayCols,MaxDisplayRows - 2);
-  Cursor(TRUE);
+  myio.Cursor(TRUE);
   IF (NOT SaveWindowOn) THEN
     ToggleWindow(FALSE);
   GoToXY(SaveWhereX,SaveWhereY);
@@ -590,11 +590,11 @@ BEGIN
         119 : BEGIN { CTRL-HOME }
                 SaveScreen(Wind);
                 Update_Logo(SYSKEY,ScreenAddr[0],SYSKEY_LENGTH);
-                Cursor(FALSE);
+                myio.Cursor(FALSE);
                 C := ReadKey;
                 IF (C = #0) THEN
                   C := ReadKey;
-                Cursor(TRUE);
+                myio.Cursor(TRUE);
                 RemoveWindow(Wind);
                 GoToXY(SaveWhereX,SaveWhereY);
                 Update_Screen;
@@ -838,12 +838,12 @@ BEGIN
                   Window(1,1,MaxDisplayCols,MaxDisplayRows);
                   ClrScr;
                   WantOut := FALSE;
-                  Cursor(FALSE);
+                  myio.Cursor(FALSE);
                 END
               ELSE
                 BEGIN
                   WantOut := TRUE;
-                  Cursor(TRUE);
+                  myio.Cursor(TRUE);
                   WriteLn('Local display on.');
                   Update_Screen;
                 END;
@@ -1465,7 +1465,7 @@ END;
       END;
     Write(' ');
     TextBackGround(0);
-    Cursor(i IN [1..4]);
+    myio.Cursor(i IN [1..4]);
     IF (b) THEN
       BEGIN
         GoToXY(26,12);
@@ -1489,7 +1489,7 @@ END;
   VAR
     Counter: Byte;
   BEGIN
-    Cursor(FALSE);
+    myio.Cursor(FALSE);
     TextColor(Scheme.Color[5]); { Border Color }
     Box(1,18,6,68,13);
     Window(19,7,67,12);
@@ -1669,7 +1669,7 @@ BEGIN
     UNTIL (Done);
     GoToXY(SaveWhereX,SaveWhereY);
     TextAttr := SaveTextAttr;
-    Cursor(TRUE);
+    myio.Cursor(TRUE);
     NewCompTables;
     SaveURec(ThisUser,UserNum);
 END;

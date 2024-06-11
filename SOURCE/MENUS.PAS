@@ -403,7 +403,7 @@ BEGIN
 
     UNTIL ((GotCmd) OR (HangUp));
 
-    Cursor(TRUE);
+    myio.Cursor(TRUE);
 
     UserColor(0);
 

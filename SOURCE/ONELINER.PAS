@@ -374,7 +374,7 @@ BEGIN { OneLiners_Edit }
   DrawList;
         
   REPEAT
-    Cursor(FALSE);
+    myio.Cursor(FALSE);
     W := GetKey; { Input }
     IF (W = F_DOWN) AND (RecNum > 0) THEN
       BEGIN
@@ -430,7 +430,7 @@ BEGIN { OneLiners_Edit }
       
     IF (W = 101{e}) OR (W = 69{E}) THEN
       BEGIN { Edit the OneLiner }
-        Cursor(TRUE);
+        myio.Cursor(TRUE);
         Seek(OneLinerListFile,RecNum);
         Read(OneLinerListFile,OneLineRec);
         ANSIG(1,24);
@@ -492,7 +492,7 @@ BEGIN { OneLiners_Edit }
   Close(OneLinerListFile);
   TempPause := TRUE;
   ToggleWindow(TRUE);
-  Cursor(TRUE);
+  myio.Cursor(TRUE);
 END;
 
 END.
