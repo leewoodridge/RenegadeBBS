@@ -225,11 +225,6 @@ BEGIN
                 FileBBSOnly := TRUE;
                 LocalIOOnly := TRUE;
               END;
-        'K' : BEGIN
-                Telnet := TRUE;
-                HangUpTelnetKick := True;
-                QuitAfterDone :=TRUE;
-              END;
         'T' : BEGIN
                 IF (SC(ParamStr(Counter),3) <> 'C') THEN
                   HangUpTelnet := TRUE;
@@ -495,8 +490,6 @@ BEGIN
   IF (NeedToHangUp) THEN
     BEGIN
       Write(' - Disconnecting ... ');
-      If (HangUpTelnetKicK) THEN
-        DoTelnetHangUpKick(TRUE);
       IF (HangUpTelnet) THEN
         DoTelnetHangUp(TRUE);
       IF (NOT HangUpTelnet) THEN
