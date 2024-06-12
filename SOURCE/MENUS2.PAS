@@ -80,6 +80,7 @@ BEGIN
           ELSE
             SysOpLog('FallBack #'+IntToStr(FallBackMenu)+' is MISSING - Hung user up.');
           HangUp := TRUE;
+		  If (HangUpKick) THEN QuitAfterDone:=TRUE;
         END;
     END;
   IF (FoundMenu) THEN

@@ -71,6 +71,7 @@ USES
 
 CONST
   NeedToHangUp: Boolean = FALSE;
+
 VAR
   ExitSave: Pointer;
   GeneralF: FILE OF GeneralRecordType;
@@ -152,6 +153,7 @@ VAR
 BEGIN
   Reliable := FALSE;
   Telnet := FALSE;
+  HangUpKick := FALSE;
   CallerIDNumber := '';
   Counter := 0;
   WHILE (Counter < ParamCount) DO
@@ -169,8 +171,8 @@ BEGIN
                   WriteLn('บ            ๚ LOADING ๚               บ               ๚ EXIT ๚               บ');
                   WriteLn('บอออออออออออออออออออออออออออออออออออออออออออออออออออออออออออออออออออออออออออออบ');
                   WriteLn('บ  -L  : Logon Locally to Renegade     บ  -Q  : Exit to DOS After Hangup      บ');
-                  WriteLn('บ                                      บ  -X# : Log User Off in # Minutes     บ');
-                  WriteLn('บ  -N# : Specify Which Node # to Load  บ -EE# : Critical Errorlevel           บ');
+                  WriteLn('บ  -N# : Specify Which Node # to Load  บ  -X# : Log User Off in # Minutes     บ');
+                  WriteLn('บ  -K  : Quit to DOS on ALL Logoffs    บ -EE# : Critical Errorlevel           บ');
                   WriteLn('บ  -T  : If Using Net2BBS              บ -EN# : Normal Errorlevel             บ');
                   WriteLn('บ  -TC : If Using NetSerial or COM/IP  บออออออออออออออออออออออออออออออออออออออบ');
                   WriteLn('บ  -B# : Force Baudrate #####          บ               ๚ QWK ๚                บ');
@@ -187,7 +189,12 @@ BEGIN
                           {---------------------------------------|----------------------------------------} {80 CHARS}
                   Halt;
                 END;
-        {'5' : TextMode(259);}
+        'K' : BEGIN
+                IF (SC(ParamStr(Counter),3) <> 'C') THEN
+                  HangUpTelnet := TRUE;
+                Telnet := TRUE;
+                HangUpKick := TRUE;
+              END;
         'B' : AnswerBaud := StrToInt(Copy(ParamStr(Counter),3,255));
         'C' : Reliable := (Pos(AllCaps(Liner.Reliable),AllCaps(ParamStr(Counter))) > 0);
         'D' : OvrUseEms := FALSE;

@@ -485,6 +485,7 @@ BEGIN
                 BEGIN
                   lRGLngStr(275,FALSE); {"Exceeded maximum number of retries. Disconnecting."}
                   HangUp := TRUE;
+				  If (HangUpKick) THEN QuitAfterDone:=TRUE;
                 END;
             UNTIL (UnVotedTopics = 0) OR (HangUp);
           END
