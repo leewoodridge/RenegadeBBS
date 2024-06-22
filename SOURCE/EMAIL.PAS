@@ -1038,7 +1038,7 @@ BEGIN
         ReadMsg(MsgNum,MsgNum,MaxMsgs);
       END;
       NL;
-      Prt('Private messages sent [^5?^4=^5Help^4]: ');
+      Prt('^2Private messages sent [^1?^2=^1Help^2]: ');
       IF (CoSysOp) THEN
         InputChar('',Cmd,'Q-ADENX?'^M,[CapAll])
       ELSE

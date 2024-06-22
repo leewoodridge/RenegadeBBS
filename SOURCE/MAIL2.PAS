@@ -374,7 +374,7 @@ BEGIN
               BEGIN
                 REPEAT
                   NL;
-                  Prt('Message editing [^1?^2=^1Help^2]: ');
+                  Prt('^2Message editing [^1?^2=^1Help^2]: ');
                   IF (MsgSysOp) THEN
                     InputChar('',Cmd1,'QADEFOPRSTV?'^M,[CapAll])
                   ELSE
