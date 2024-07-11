@@ -473,7 +473,7 @@ BEGIN
     InputString('Enter name of intended receiver ',SysOpName,36,[InteractiveEdit,CapWords],Changed);
     IF (SysOpName = '') THEN
       Exit;
-    IF (Pos('@',SysOpName) > 0) THEN
+    {IF (Pos('@',SysOpName) > 0) THEN
       IF (PYNQ('Is this an Internet message? ',0,FALSE)) THEN
       BEGIN
         Internet := TRUE;
@@ -484,9 +484,9 @@ BEGIN
         Fee := 0;
         Exit;
       END
-      ELSE
+      ELSE}
         NL;
-    IF NOT GetNewAddr('Enter network address (^1Z^2:^1N^2/^1N^2.^1P^2 format): ',30,Zone,Net,Node,Point) THEN
+    IF NOT GetNewAddr('^2Enter network address (^1Z^2:^1N^2/^1N^2.^1P^2 format): ',30,Zone,Net,Node,Point) THEN
       Exit;
     Exit;
   END;
@@ -523,8 +523,9 @@ BEGIN
   { Print('Enter a name, a Fidonet address, or an Internet address.');
     Prt(':');
     InputDefault(s,s,36,[],TRUE); } {LeeW: Changed--checkthis}
-    InputString('Enter a name, a FidoNet address, or an Internet address',s,36,[InteractiveEdit],Changed); {CapWords???}
-    IF (s = '') THEN
+    InputString('^2Enter network address (^1Z^2:^1N^2/^1N^2.^1P^2 format): ',s,20,[InteractiveEdit],Changed);
+    Print('');
+	IF (s = '') THEN
       Break;
     IF (Pos('/',s) > 0) THEN
     BEGIN
@@ -549,19 +550,20 @@ BEGIN
       Close(DataFile);
       WITH Dat DO
       BEGIN
-        Print('^0System: '+BName+' ('+IntToStr(Zone)+':'+IntToStr(Net)+'/'+IntToStr(Node)+')');
-        Print('SysOp : '+SName);
-        Print('Phone : '+Phone);
-        Print('Where : '+CName);
-        Print('Cost  : '+IntToStr(MsgFee)+' credits');
-      END;
       NL;
+	    Print('^2System Name|11: ^1'+BName+' |08(|15'+IntToStr(Zone)+':'+IntToStr(Net)+'/'+IntToStr(Node)+'|08)^1');
+        Print(' ^2SysOp Name|11: ^1'+SName);
+		NL;
+        {Print('|03Phone : |11'+Phone);
+        Print('|03Where : |11'+CName);
+        Print('|04Cost  |12: |14'+IntToStr(MsgFee)+' |15credits');}
+      END;
       IF (Dat.MsgFee > (ThisUser.lCredit - ThisUser.Debit)) THEN
       BEGIN
         Print('You do not have enough credit to netmail this Node!');
         s := '';
       END
-      ELSE IF PYNQ('Is this correct? ',0,FALSE) THEN
+      ELSE IF PYNQ('Is this correct?',0,FALSE) THEN
       BEGIN
         SysOpName := Dat.Sname;
         Zone := Dat.Zone;
@@ -573,7 +575,7 @@ BEGIN
       ELSE
         s := '';
     END
-    ELSE IF (Pos('@',s) > 0) THEN
+{    ELSE IF (Pos('@',s) > 0) THEN
       IF (NOT PYNQ('Is this an Internet message? ',0,FALSE)) THEN
       BEGIN
         Print('That name is not in the nodelist!'^M^J);
@@ -588,7 +590,7 @@ BEGIN
         Node := General.Aka[20].Node;
         Point := General.Aka[20].Point;
         Fee := 0;
-      END
+      END;}
       ELSE
       BEGIN
         Print('That name is not in the nodelist!'^M^J);
@@ -601,7 +603,8 @@ BEGIN
     Print('Enter name of intended receiver.');
     Prt(':');
     InputDefault(SysOpName,SysOpName,36,[CapWords],FALSE); }
-    InputString('Enter name of intended receiver ',SysOpName,36,[InteractiveEdit,CapWords],Changed);
+	NL;
+    InputString('^2Enter name of intended receiver: ',SysOpName,36,[InteractiveEdit,CapWords],Changed);
     IF (SysOpName = '') THEN
       Exit;
   END;

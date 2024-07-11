@@ -92,7 +92,7 @@ BEGIN
           'I' : BEGIN
                   REPEAT
                     Print('%LF^0Netmail Attributes: ^1'+NetMail_Attr(NetAttribute)+'^0');
-                    InputChar('%LFToggle Attributes [^1CHIKLP^2,(^1?^2)Help,(^1Q^2)uit]: ',Cmd,'QPCKHIL?',[CapAll]);
+                    InputChar('%LF^2Toggle Attributes [^1CHIKLP^2,(^1?^2)Help,(^1Q^2)uit]: ',Cmd,'QPCKHIL?',[CapAll]);
                     CASE Cmd OF
                       'C','H','I','K','L','P' :
                             ToggleNetAttrS(Cmd,NetAttribute);
@@ -106,7 +106,7 @@ BEGIN
                   UNTIL (Cmd = 'Q') OR (HangUp);
                   Cmd := #0;
                 END;
-          'J' : GetNewAddr('%LFEnter new UUCP Gate Address (^1Z^2:^1N^2/^1N^2.^1P^2 format): ',30,
+          'J' : GetNewAddr('%LF^2Enter new UUCP Gate Address (^1Z^2:^1N^2/^1N^2.^1P^2 format): ',30,
                            AKA[20].Zone,
                            AKA[20].Net,
                            AKA[20].Node,
