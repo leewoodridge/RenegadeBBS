@@ -355,9 +355,9 @@ VAR
         PassWord := Copy(Pack,(PhoneLen + 1),PasswordLen);
         Move(Pack[PhoneLen + PasswordLen + 1],Pack[1],PackLen);
         UnPk(Pack,UnPack,PackLen);
-        BName := Caps(Copy(UnPack,1,BNameLen));
-        SName := Caps(Copy(Unpack,(BNameLen + 1),SNameLen));
-        CName := Caps(Copy(UnPack,BNameLen + SNameLen + 1,CNameLen));
+        BName := AllCaps(Copy(UnPack,1,BNameLen));
+        SName := AllCaps(Copy(Unpack,(BNameLen + 1),SNameLen));
+        CName := AllCaps(Copy(UnPack,BNameLen + SNameLen + 1,CNameLen));
         BaudRate := Baud;
         RecSize := (PhoneLen + PassWordLen + PackLen) + 22;
       END;
@@ -568,7 +568,7 @@ BEGIN
         SysOpName := Dat.Sname;
         Zone := Dat.Zone;
         Net := Dat.Net;
-    Node := Dat.Node;
+        Node := Dat.Node;
         Point := 0;
         Fee := Dat.MsgFee;
       END
