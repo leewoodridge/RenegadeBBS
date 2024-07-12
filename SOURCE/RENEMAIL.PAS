@@ -1,93 +1,217 @@
-{$M 49152,0,65536}
+PROGRAM Renemail;
+
 {$A+,I-,E-,F+}
 
-PROGRAM ReneMail;
+(* {A+,B-,D-,E-,F+,G+,N-,R-,S-,V-,I-} *)
 
-USES
-  Crt,
-  Dos,
-  TimeFunc;
+uses crt, dos, timefunc;
 
 {$I RECORDS.INC}
 
-CONST
-  Activity_Log: Boolean = FALSE;
-  NetMailOnly: Boolean = FALSE;
-  IsNetMail: Boolean = FALSE;
-  FastPurge: Boolean = TRUE;
-  Process_NetMail: Boolean = TRUE;
-  Purge_NetMail: Boolean = TRUE;
-  Absolute_Scan: Boolean = FALSE;
-  Ignore_1Msg: Boolean = TRUE;
-  Toss_Mail: Boolean = FALSE;
-  Scan_Mail: Boolean = FALSE;
-  Purge_Dir: Boolean = FALSE;
+type
+  fidorecord = record
+    FromUserName : string[35];
+    ToUserName   : string[35];
+    Subject      : string[71];
+    DateTime     : string[19];
+    TimesRead    : word;
+    DestNode     : word;
+    OrigNode     : word;
+    Cost         : word;
+    OrigNet      : word;
+    DestNet      : word;
+    Filler       : array[1..8] of char;
+    Replyto      : word;
+    Attribute    : word;
+    NextReply    : word;
+  end;
 
-TYPE
-  FidoRecordType = RECORD
-    FromUserName: STRING[35];
-    ToUserName: STRING[35];
-    Subject: STRING[71];
-    DateTime: STRING[19];
-    TimesRead: Word;
-    DestNode: Word;
-    OrigNode: Word;
-    Cost: Word;
-    OrigNet: Word;
-    DestNet: Word;
-    Filler: ARRAY[1..8] OF Char;
-    ReplyTo: Word;
-    Attribute: Word;
-    NextReply: Word;
-  END;
+var
+   
+    Lasterror :integer;
+    header : fidorecord;
+    dt : datetime;
+    msgtfile : file;
+    hiwaterf : file of longint;
+    statusf : file of generalrecordtype;
+    statusr : generalrecordtype;
+    boardf : file of MessageAreaRecordType;
+    boardr : MessageAreaRecordType;
+    msghdrf : file of mheaderrec;
+    msghdr : mheaderrec;
+    msgtxtf : file;
+    uf : file of UserRecordType;
+    user : UserRecordType;
+    sf : file of UserIDXRec;
+    toi, fromi, subjecti, datetime : string;
+    i, j, lines, board, textsize,
+    msglength, msgpointer : integer;
+    msgnumber,highest,fi,lowest : longint;
+    c : char;
+    Year, Month, MDay, WDay, attribute : Word;
+    ispm : boolean;
+    dirinfo : searchrec;
+    s, s3,startdir, nos, datapath, msgpath, netmailpath : string [81];
+    msgtxt : string [255];
+    buffer : array [1..32767] of char;
+    fcb : array [1..37] of char;
+    regs : registers;
+    x : byte;
 
-  BufferArrayType = ARRAY[1..32767] OF Char;
+const
+  netmailonly : boolean = FALSE;
+  isnetmail : boolean = FALSE;
+  fastpurge : boolean = TRUE;
+  process_netmail : boolean = TRUE;
+  purge_netmail : boolean = TRUE;
+  absolute_scan : boolean = FALSE;
+  ignore_1msg : boolean = TRUE;
 
-VAR
-  FCB: ARRAY[1..37] OF Char;
+function Usename(b:byte; s:astr):string;
+begin
+  case b of
+    1,
+    2:s:='Anonymous';
+    3:s:='Abby';
+    4:s:='Problemed Person';
+  end;
+  Usename:=s;
+end;
 
-  BufferArray: BufferArrayType;
+function existdir(fn:string):boolean;
+var dirinfo:searchrec;
+begin
+  while (fn[length(fn)] = '\') do
+    dec(fn[0]);
+  findfirst(fn,anyfile,dirinfo);
+  existdir:=(doserror=0) and (dirinfo.attr and $10=$10);
+end;
 
-  GeneralFile: FILE OF GeneralRecordType;
+function StrPas(Str: String): String; assembler;
+asm
+	PUSH	DS
+	CLD
+	LES	DI,Str
+	MOV	CX,0FFFFH
+	XOR	AL,AL
+	REPNE	SCASB
+	NOT	CX
+	DEC	CX
+	LDS	SI,Str
+	LES	DI,@Result
+	MOV	AL,CL
+	STOSB
+	REP	MOVSB
+	POP	DS
+end;
 
-  UserFile: FILE OF UserRecordType;
+function stripname(s:astr):astr;
+var
+  n:integer;
+begin
+  n := length(s);
+  while (n > 0) and (pos(s[n],':\/') = 0) do
+    dec(n);
+  delete(s,1,n);
+  stripname := s;
+end;
 
-  MessageAreaFile: FILE OF MessageAreaRecordType;
+function allcaps (const s : string) : string;
+var
+  q : integer;
+begin
+  allcaps [0] := s [0];
+  for q := 1 to length (s) do
+    allcaps [q] := upcase (s [q]);
+end;
 
-  IndexFile: FILE OF UserIDXRec;
+function caps (s : string) : string;
+var
+  i : integer;
+begin
+  for i := 1 to length (s) do
+    if (s [i] in ['A'..'Z']) then
+       s [i] := chr (ord (s [i]) + 32);
 
-  RGMsgHdrFile: FILE OF MHeaderRec;
+  for i := 1 to length (s) do
+    if (not (s [i] in ['A'..'Z', 'a'..'z', chr (39) ]) ) then
+      if (s [i + 1] in ['a'..'z']) then
+         s [i + 1] := upcase (s [i + 1]);
+  s [1] := upcase (s [1]);
+  caps := s;
+end;
 
-  RGMsgTxtFile: FILE;
+function searchuser(Uname:string): word;
+var
+  Current:integer;
+  Done:boolean;
+  IndexR:useridxrec;
+begin
+  reset(sf);
+  if (IOResult > 0) then
+    exit;
 
-  FidoFile: FILE;
+  Uname := Allcaps(UName);
 
-  HiWaterF: FILE OF Word;
+  Current := 0;
+  Done := FALSE;
 
-  General: GeneralRecordType;
+  if (filesize(sf) > 0) then
+    repeat
+      seek(sf, Current);
+      read(sf, IndexR);
+      if (Uname < IndexR.Name) then
+        Current := IndexR.Left
+      else
+        if (Uname > IndexR.Name) then
+          Current := IndexR.Right
+        else
+          Done := TRUE;
+    until (Current = -1) or (Done);
 
-  User: UserRecordType;
+  close(sf);
 
-  MemMsgArea: MessageAreaRecordType;
+  if (Done) and not (IndexR.Deleted) then
+    SearchUser := IndexR.Number
+  else
+    SearchUser := 0;
 
-  IndexR: UserIDXRec;
+  Lasterror := IOResult;
+end;
 
-  RGMsgHdr: MHeaderRec;
+function stripcolor (o : string) : string;
+var i,j : byte;
+    s : string;
+begin
+  i := 0;
+  s := '';
+  while (i < length (o) ) do begin
+    inc (i);
+    case o [i] of
+     #128..#255:if (mafilter in boardr.maflags) then
+                  s := s + chr(ord(o[i]) and 128)
+                else
+                  s := s + o[i];
+     '^' : if o [i + 1] in [#0..#9, '0'..'9'] then
+              inc (i) else s := s + '^';
+     '|' : if (mafilter in boardr.maflags) and (o[i + 1] in ['0'..'9']) then
+              begin
+                j:=0;
+                while (o [i + 1] in ['0'..'9']) and (i <= length (o) )
+                  and (j<=2) do begin
+                    inc (i);
+                    inc (j)
+                  end
+              end
+           else
+              s := s + '|'
+      else s := s + o [i];
+    end;
+  end;
+  stripcolor := s;
+end;
 
-  FidoMsgHdr: FidoRecordType;
 
-  Regs: Registers;
-
-  DirInfo: SearchRec;
-
-  TempParamStr,
-  StartDir: STRING;
-
-  LastError,
-  ParamCounter,
-  MsgArea: Integer;
-
-  ParamFound: Boolean;
 
 FUNCTION IntToString(L: LongInt): STRING;
 VAR
@@ -178,16 +302,31 @@ END;
 PROCEDURE DisplayHelp(FColor,Bcolor: Byte);
 BEGIN
 FColor:=7;
-WriteStrXY('Commands:  -T  Toss incoming messages',22,2,FColor,Black);
-  WriteStrXY('-P  Purge echomail dirs',33,3,FColor,Black);
-  WriteStrXY('-S  Scan outbound messages',33,4,FColor,Black);
-  WriteStrXY('Options:       -A  Absolute Scan',22,6,FColor,Black);
-  WriteStrXY('-D  Do not delete netmail',37,7,FColor,Black);
-  WriteStrXY('-F  No fast purge',37,8,FColor,Black);
-  WriteStrXY('-I  Import 1.MSG',37,9,FColor,Black);
-  WriteStrXY('-L  Activity logging',37,10,FColor,Black);
-  WriteStrXY('-N  No netmail',37,11,FColor,Black);
-  WriteStrXY('-O  Only netmail',37,12,FColor,Black);
+  WriteStrXY('Commands:',16,2,White,Black);
+  WriteStrXY('-T  ',27,2,14,Black);
+  WriteStrXY('Toss Incoming Messages',31,2,FColor,Black);
+  WriteStrXY('-R  ',27,3,14,Black);
+  WriteStrXY('Toss & Purge Messages At The Same Time',31,3,FColor,Black);
+  WriteStrXY('-S  ',27,4,14,Black);
+  WriteStrXY('Scan For Outbound Messages',31,4,FColor,Black);
+  WriteStrXY('-P  ',27,5,14,Black);
+  WriteStrXY('Purge EchoMail Directories',31,5,FColor,Black);
+  WriteStrXY('-X  ',27,6,14,Black);
+  WriteStrXY('Export [database] Messages To [path]',31,6,FColor,Black);
+  WriteStrXY('       (ex: RENEMAIL -X METGEN D:\TEMP)',27,7,08,Black);
+  WriteStrXY('Options:',16,9,White,Black);
+  WriteStrXY('-A  ',31,9,14,Black);
+  WriteStrXY('Absolute Scan Of ALL Message Areas',35,9,FColor,Black);
+  WriteStrXY('-D  ',31,10,14,Black);
+  WriteStrXY('Do NOT Delete Netmail',35,10,FColor,Black);
+  WriteStrXY('-F  ',31,11,14,Black);
+  WriteStrXY('Do NOT Use Fast Message Purging',35,11,FColor,Black);
+  WriteStrXY('-I  ',31,12,14,Black);
+  WriteStrXY('Import 1.MSG',35,12,FColor,Black);
+  WriteStrXY('-N  ',31,13,14,Black);
+  WriteStrXY('Do NOT Import Netmail',35,13,FColor,Black);
+  WriteStrXY('-O  ',31,14,14,Black);
+  WriteStrXY('Import ONLY Netmail',35,14,FColor,Black);
   GoToXY(1,1);
 END;
 
@@ -212,1940 +351,814 @@ BEGIN
   DisplayHelp(White,Black);
   Window(1,1,80,25);
   GoToXY(X,Y);
-  TextColor(14);
+  TextColor(12);
   TextBackGround(Black);
   Write(S);
   GotoXY(1,25);
   Halt(HaltNum);
 END;
 
-PROCEDURE LogActivity(ActivityMsg: STRING);
-VAR
-  ActivityFile: Text;
-BEGIN
-  IF (Activity_Log) THEN
-  BEGIN
-    Assign(ActivityFile,General.LogsPath+'RENEMAIL.LOG');
-    {$I-} Append(ActivityFile); {$I+}
-    LastError := IOResult;
-    IF (LastError <> 0) THEN
-    BEGIN
-      {$I-} ReWrite(ActivityFile); {$I+}
-      LastError := IOResult;
-      IF (LastError <> 0) THEN
-        ErrorStrXY('Unable to create RENEMAIL.LOG.',12,23,Red + 128,Black);
-    END;
-    {$I-} Write(ActivityFile,ActivityMsg); {$I+}
-    LastError := IOResult;
-    IF (LastError <> 0) THEN
-      ErrorStrXY('Unable to write to RENEMAIL.LOG.',12,23,Red + 128,Black);
-    {$I-} Close(ActivityFile); {$I+}
-    LastError := IOResult;
-    IF (LastError <> 0) THEN
-      ErrorStrXY('Unable to close RENEMAIL.LOG.',12,23,Red + 128,Black);
-  END;
-END;
-
-PROCEDURE LogError(ErrMsg: STRING);
-VAR
-  ErrorFile: Text;
-BEGIN
-  Assign(ErrorFile,General.LogsPath+'RENEMAIL.ERR');
-  {$I-} Append(ErrorFile); {$I+}
-  LastError := IOResult;
-  IF (LastError <> 0) THEN
-  BEGIN
-    {$I-} ReWrite(ErrorFile); {$I+}
-    LastError := IOResult;
-    IF (LastError <> 0) THEN
-      ErrorStrXY('Unable to create RENEMAIL.ERR.',12,23,Red + 128,Black);
-  END;
-  {$I-} WriteLn(ErrorFile,ToDate8(DateStr)+' '+TimeStr+': '+ErrMsg); {$I+}
-  LastError := IOResult;
-  IF (LastError <> 0) THEN
-    ErrorStrXY('Unable to write to RENEMAIL.ERR.',12,23,Red + 128,Black);
-  {$I-} Close(ErrorFile); {$I+}
-  LastError := IOResult;
-  IF (LastError <> 0) THEN
-    ErrorStrXY('Unable to close RENEMAIL.ERR.',12,23,Red + 128,Black);
-END;
-
-FUNCTION SC(S: STRING; I: Integer): Char;
-BEGIN
-  SC := UpCase(S[I]);
-END;
-
-FUNCTION Hex(L: LongInt; B: Byte): STRING;
-CONST
-  HC: ARRAY[0..15] OF Char = '0123456789ABCDEF';
-VAR
-  One,
-  Two,
-  Three,
-  Four: Byte;
-BEGIN
-  One := (L AND $000000FF);
-  Two := ((L AND $0000FF00) SHR 8);
-  Three := ((L AND $00FF0000) SHR 16);
-  Four := ((L AND $FF000000) SHR 24);
-  Hex[0] := Chr(B);
-  IF (B = 4) THEN
-  BEGIN
-    Hex[1] := HC[Two SHR 4];
-    Hex[2] := HC[Two AND $F];
-    Hex[3] := HC[One SHR 4];
-    Hex[4] := HC[One AND $F];
-  END
-  ELSE
-  BEGIN
-    Hex[8] := HC[One AND $F];
-    Hex[7] := HC[One SHR 4];
-    Hex[6] := HC[Two AND $F];
-    Hex[5] := HC[Two SHR 4];
-    Hex[4] := HC[Three AND $F];
-    Hex[3] := HC[Three SHR 4];
-    Hex[2] := HC[Four AND $F];
-    Hex[1] := HC[Four SHR 4];
-  END;
-END;
-
-FUNCTION SQOutSp(S: STRING): STRING;
-BEGIN
-  WHILE (Pos(' ',S) > 0) DO
-    Delete(S,Pos(' ',S),1);
-  SQOutSp := S;
-END;
-
-FUNCTION BSlash(S: STRING; B: Boolean): STRING;
-BEGIN
-  IF (B) THEN
-  BEGIN
-    WHILE (Copy(S,(Length(S) - 1),2) = '\\') DO
-      S := Copy(S,1,(Length(S) - 2));
-    IF (Copy(S,Length(S),1) <> '\') THEN
-      S := S + '\';
-  END
-  ELSE
-    WHILE (S[Length(S)] = '\') DO
-      Dec(S[0]);
-  BSlash := S;
-END;
-
-FUNCTION ExistDir(Dir: STRING): Boolean;
-BEGIN
-  WHILE (Dir[Length(Dir)] = '\') DO
-    Dec(Dir[0]);
-  FindFirst(Dir,AnyFile,DirInfo);
-  ExistDir := (DOSError = 0) AND (DirInfo.Attr AND $10 = $10);
-END;
-
-FUNCTION ExistFile(FileName: STRING): Boolean;
-BEGIN
-  FindFirst(SQOutSp(FileNAme),AnyFile,DirInfo);
-  ExistFile := (DOSError = 0);
-END;
-
-(*
-PROCEDURE MakeDir(Dir: STRING);
-VAR
-  Counter: Integer;
-BEGIN
-  Dir := BSlash(Dir,TRUE);
-  IF (Length(Dir) > 3) AND (NOT ExistDir(Dir)) THEN
-  BEGIN
-    Counter := 2;
-    WHILE (Counter <= Length(Dir)) DO
-    BEGIN
-      IF (Dir[Counter] = '\') THEN
-        IF (Dir[Counter - 1] <> ':') THEN
-          IF (NOT ExistDir(Copy(Dir,1,(Counter - 1)))) THEN
-          BEGIN
-            MkDir(Copy(Dir,1,(Counter - 1)));
-            LastError := IOResult;
-            IF (LastError <> 0) THEN
-            BEGIN
-              WriteLn('Error creating message path: '+Copy(Dir,1,(Counter - 1)));
-              LogError(Copy(Dir,1,(Counter - 1))+'/ ');
-              Halt(1);
-            END;
-          END;
-      Inc(Counter);
-    END;
-  END;
-END;
-*)
-
-FUNCTION AOnOff(B: Boolean; S1,S2: STRING): STRING; ASSEMBLER;
-ASM
-  PUSH ds
-  Test b, 1
-  JZ   @@1
-  LDS  si, s1
-  JMP  @@2
-  @@1:   LDS  si, s2
-  @@2:   LES  di, @Result
-  XOR  Ch, Ch
-  MOV  cl, Byte ptr ds:[si]
-  MOV  Byte ptr es:[di], cl
-  Inc  di
-  Inc  si
-  CLD
-  REP  MOVSB
-  POP  ds
-END;
-
-FUNCTION StripName(S: STRING): STRING;
-VAR
-  Counter: Integer;
-BEGIN
-  Counter := Length(S);
-  WHILE (Counter > 0) AND (Pos(S[Counter],':\/') = 0) DO
-    Dec(Counter);
-  Delete(S,1,Counter);
-  StripName := S;
-END;
-
-FUNCTION AllCaps(S: STRING): STRING;
-VAR
-  Counter: Integer;
-BEGIN
-  AllCaps[0] := s[0];
-  FOR Counter := 1 TO Length(S) DO
-    AllCaps[Counter] := UpCase(S[Counter]);
-END;
-
-FUNCTION Caps(S: STRING): STRING;
-VAR
-  Counter: Integer;
-BEGIN
-  FOR Counter := 1 TO Length(s) DO
-    IF (S[Counter] IN ['A'..'Z']) THEN
-       S[Counter] := Chr(Ord(S[Counter]) + 32);
-  FOR Counter := 1 TO Length(S) DO
-    IF (NOT (S[Counter] IN ['A'..'Z','a'..'z',Chr(39)])) THEN
-      IF (S[Counter + 1] IN ['a'..'z']) THEN
-         S[Counter + 1] := UpCase(S[Counter + 1]);
-  S[1] := UpCase(S[1]);
-  Caps := S;
-END;
-
-FUNCTION StrToInt(S: STRING): LongInt;
-VAR
-  I: Integer;
-  L: LongInt;
-BEGIN
- Val(S,L,I);
- IF (I <> 0) THEN
- BEGIN
-   S[0] := Chr(I - 1);
-   Val(S,L,I)
-  END;
-  StrToInt := L;
-  IF (S = '') THEN
-    StrToInt := 0;
-END;
-
-FUNCTION IntToStr(L: LongInt): STRING;
-VAR
-  S: STRING;
-BEGIN
-  Str(L,S);
-  IntToStr := S;
-END;
-
-FUNCTION PadRightStr(S: STRING; Len: Byte): STRING;
-VAR
-  X,
-  Counter: Byte;
-BEGIN
-  X := Length(S);
-  FOR Counter := X TO (Len - 1) DO
-    S := ' ' + S;
-  PadRightStr := S;
-END;
-
-FUNCTION StripColor(MAFlags: MAFlagSet; InStr: STRING): STRING;
-VAR
-  OutStr: STRING;
-  Counter,
-  Counter1: Byte;
-BEGIN
-  Counter := 0;
-  OutStr := '';
-  WHILE (Counter < Length(InStr)) DO
-  BEGIN
-    Inc(Counter);
-    CASE InStr[Counter] OF
-      #128..#255 :
-            IF (MAFilter IN MAFlags) THEN
-              OutStr := OutStr + Chr(Ord(InStr[Counter]) AND 128)
-            ELSE
-              OutStr := OutStr + InStr[Counter];
-      '^' : IF InStr[Counter + 1] IN [#0..#9,'0'..'9'] THEN
-              Inc(Counter)
-            ELSE
-              OutStr := OutStr + '^';
-      '|' : IF (MAFilter IN MAFlags) AND (InStr[Counter + 1] IN ['0'..'9']) THEN
-            BEGIN
-              Counter1 := 0;
-              WHILE (InStr[Counter + 1] IN ['0'..'9']) AND (Counter <= Length(InStr)) AND (Counter1 <= 2) DO
-              BEGIN
-                Inc(Counter);
-                Inc(Counter1)
-              END
-            END
-            ELSE
-              OutStr := OutStr + '|'
-      ELSE
-        OutStr := OutStr + InStr[Counter];
-    END;
-  END;
-  StripColor := OutStr;
-END;
-
-FUNCTION UseName(B: Byte; S: STRING): STRING;
-BEGIN
-  CASE b OF
-    1,2
-      : S := 'Anonymous';
-    3 : S := 'Abby';
-    4 : S := 'Problemed Person';
-  END;
-  UseName := S;
-END;
-
-FUNCTION SearchUser(GenDataPath: STRING; Uname: STRING): Integer;
-VAR
-  Current: Integer;
-  Done: Boolean;
-BEGIN
-  Assign(IndexFile,GenDataPath+'USERS.IDX');
-  {$I-} Reset(IndexFile); {$I+}
-  LastError := IOResult;
-  IF (LastError <> 0) THEN
-  BEGIN
-    TextColor(Red);
-    WriteLn('Unable to open USERS.IDX.');
-    TextColor(LightGray);
-    LogError(GenDataPath+'USERS.IDX/Open File Error - '+IntToStr(LastError)+' (Proc: SearchUser)');
-    Exit;
-  END;
-  Uname := AllCaps(UName);
-  Current := 0;
-  Done := FALSE;
-  IF (FileSize(IndexFile) > 0) THEN
-    REPEAT
-      {$I-} Seek(IndexFile,Current); {$I+}
-      LastError := IOResult;
-      IF (LastError <> 0) THEN
-      BEGIN
-        TextColor(Red);
-        WriteLn('Unable to seek record in USERS.IDX.');
-        TextColor(LightGray);
-        LogError(GenDataPath+'USERS.IDX/Seek Record '+IntTostr(Current)+' Error - '+IntToStr(LastError)+' (Proc: SearchUser)');
-        Exit;
-      END;
-      {$I-} Read(IndexFile,IndexR); {$I+}
-      LastError := IOResult;
-      IF (LastError <> 0) THEN
-      BEGIN
-        TextColor(Red);
-        WriteLn('Unable to read record from USERS.IDX.');
-        TextColor(LightGray);
-        LogError(GenDataPath+'USERS.IDX/Read Record '+IntTostr(Current)+' Error - '+IntToStr(LastError)+' (Proc: SearchUser)');
-        Exit;
-      END;
-      IF (Uname < IndexR.Name) THEN
-        Current := IndexR.Left
-      ELSE IF (Uname > IndexR.Name) THEN
-        Current := IndexR.Right
-      ELSE
-        Done := TRUE;
-    UNTIL (Current = -1) OR (Done);
-  {$I-} Close(IndexFile); {$I+}
-  LastError := IOResult;
-  IF (LastError <> 0) THEN
-  BEGIN
-    TextColor(Red);
-    WriteLn('Unable to close USERS.IDX.');
-    TextColor(LightGray);
-    LogError(GenDataPath+'USERS.IDX/Close File Error - '+IntToStr(LastError)+' (Proc: SearchUser)');
-    Exit;
-  END;
-  IF (Done) AND (NOT IndexR.Deleted) THEN
-    SearchUser := IndexR.Number
-  ELSE
-    SearchUser := 0;
-END;
-
-PROCEDURE GetGeneral(VAR General1: GeneralRecordType);
-BEGIN
-  Assign(GeneralFile,'RENEGADE.DAT');
-  {$I-} Reset(GeneralFile); {$I+}
-  LastError := IOResult;
-  IF (LastError <> 0) THEN
-  BEGIN
-    LogError('RENEGADE.DAT/Open File Error - '+IntToStr(LastError)+' (Proc: GetGeneral)');
-    HaltErrorStrXY('Unable to open RENEGADE.DAT!',12,23,Red + 128,Black,1);
-  END;
-  {$I-} Seek(GeneralFile,0); {$I+}
-  LastError := IOResult;
-  IF (LastError <> 0) THEN
-  BEGIN
-    LogError('RENEGADE.DAT/Seek Record 0 Error - '+IntToStr(LastError)+' (Proc: GetGeneral)');
-    HaltErrorStrXY('Unable to seek record in RENEGADE.DAT!',12,23,Red + 128,Black,1);
-  END;
-  {$I-} Read(GeneralFile,General1); {$I+}
-  LastError := IOResult;
-  IF (LastError <> 0) THEN
-  BEGIN
-    LogError('RENEGADE.DAT/Read Record 0 Error - '+IntToStr(LastError)+' (Proc: GetGeneral)');
-    HaltErrorStrXY('Unable to read record from RENEGADE.DAT!',12,23,Red + 128,Black,1);
-  END;
-  {$I-} Close(GeneralFile); {$I+}
-  LastError := IOResult;
-  IF (LastError <> 0) THEN
-  BEGIN
-    LogError('RENEGADE.DAT/Close File Error - '+IntToStr(LastError)+' (Proc: GetGeneral)');
-    HaltErrorStrXY('Unable to close RENEGADE.DAT!',12,23,Red + 128,Black,1);
-  END;
-END;
-
-PROCEDURE GeneralPaths(General1: GeneralRecordType);
-BEGIN
-  IF (NOT ExistDir(General1.DataPath)) THEN
-  BEGIN
-    LogError(General1.DataPath+'/Data Path - "Invalid" (Proc: GeneralPaths)');
-    HaltErrorStrXY('The system configuration data path is invalid!',12,23,Red + 128,Black,1);
-  END;
-  IF (NOT ExistDir(General1.NetMailPath)) THEN
-  BEGIN
-    LogError(General1.NetMailPath+'/NetMail Path - "Invalid" (Proc: GeneralPaths)');
-    HaltErrorStrXY('The system configuration netmail path is invalid!',12,23,Red + 128,Black,1);
-  END;
-  IF (NOT ExistDir(General1.MsgPath)) THEN
-  BEGIN
-    LogError(General1.MsgPath+'/Message Path - "Invalid" (Proc: GeneralPaths)');
-    HaltErrorStrXY('The system configuration message path is invalid!',12,23,Red + 128,Black,1);
-  END;
-  IF (NOT ExistDir(General1.LogsPath)) THEN
-  BEGIN
-    LogError(General1.LogsPath+'/Log Path - "Invalid" (Proc: GeneralPaths)');
-    HaltErrorStrXY('The system configuration log path is invalid!',12,23,Red + 128,Black,1);
-  END;
-END;
-
-PROCEDURE GeneralFiles(General1: GeneralRecordType);
-BEGIN
-  IF (NOT ExistFile(General1.DataPath+'USERS.DAT')) THEN
-  BEGIN
-    LogError(General1.DataPath+'USERS.DAT/File - "Missing" (Proc: GeneralFiles)');
-    HaltErrorStrXY('Unable to locate USERS.DAT!',12,23,Red + 128,Black,1);
-  END;
-  IF (NOT ExistFile(General1.DataPath+'USERS.IDX')) THEN
-  BEGIN
-    LogError(General1.DataPath+'USERS.IDX/File - "Missing" (Proc: GeneralFiles)');
-    HaltErrorStrXY('Unable to locate USERS.IDX!',12,23,Red + 128,Black,1);
-  END;
-  IF (NOT ExistFile(General1.DataPath+'MBASES.DAT')) THEN
-  BEGIN
-    LogError(General1.DataPath+'MBASES.DAT/File - "Missing" (Proc: GeneralFiles)');
-    HaltErrorStrXY('Unable to locate MBASES.DAT!',12,23,Red + 128,Black,1);
-  END;
-END;
-
-(*
-PROCEDURE MessageFile(General1: GeneralRecordType);
-VAR
-  MArea: Integer;
-BEGIN
-  Assign(MessageAreaFile,General1.DataPath+'MBASES.DAT');
-  {$I-} Reset(MessageAreaFile); {$I+}
-  LastError := IOResult;
-  IF (LastError <> 0) THEN
-  BEGIN
-    TextColor(Red);
-    WriteLn('Unable to open MBASES.DAT.');
-    TextColor(LightGray);
-    LogError(General1.DataPath+'MBASES.DAT/Open File Error - '+IntToStr(LastError)+' (Proc: MessageFile)');
-    Halt(1);
-  END;
-  MArea := 1;
-  WHILE (MArea <= (FileSize(MessageAreaFile))) DO
-  BEGIN
-    {$I-} Seek(MessageAreaFile,(MArea - 1)); {$I+}
-    LastError := IOResult;
-    IF (LastError <> 0) THEN
-    BEGIN
-      TextColor(Red);
-      WriteLn('Unable to seek record in MBASES.DAT.');
-      TextColor(LightGray);
-      LogError(General1.DataPath+'MBASES.DAT/Seek Record '+IntToStr(MArea - 1)+' Error - '+IntToStr(LastError)+
-               ' (Proc: MessageFile)');
-      Halt(1);
-    END;
-    {$I-} Read(MessageAreaFile,MemMsgArea); {$I+}
-    LastError := IOResult;
-    IF (LastError <> 0) THEN
-    BEGIN
-      TextColor(Red);
-      WriteLn('Unable to read record from MBASES.DAT.');
-      TextColor(LightGray);
-      LogError(General1.DataPath+'MBASES.DAT/Read Record '+IntToStr(MArea - 1)+' Error - '+IntToStr(LastError)+
-               ' (Proc: MessageFile)');
-      Halt(1);
-    END;
-    IF (MemMsgArea.MAType = 1) THEN
-    BEGIN
-      IF (NOT ExistDir(MemMsgArea.MsgPath)) THEN
-
-    END;
-    Inc(MArea);
-  END;
-  {$I-} Close(MessageAreaFile); {$I+}
-  LastError := IOResult;
-  IF (LastError <> 0) THEN
-  BEGIN
-    TextColor(Red);
-    WriteLn('Unable to close MBASES.DAT.');
-    TextColor(LightGray);
-    LogError(General1.DataPath+'MBASES.DAT/Close File Error - '+IntToStr(LastError)+' (Proc: MessageFile)');
-    Halt(1);
-  END;
-END;
-*)
-
-PROCEDURE GetMsgLst(MemMsgPath: STRING; VAR LowMsg,HighMsg: Word);
-VAR
-  FidoMsgNum,
-  HiWater: Word;
-BEGIN
-  HiWater := 1;
-  IF (NOT IsNetMail) THEN
-  BEGIN
-    Assign(HiWaterF,MemMsgPath+'HI_WATER.MRK');
-    {$I- } Reset(HiWaterF); {$I+}
-    LastError := IOResult;
-    IF (LastError <> 0) THEN
-    BEGIN
-      {$I-} ReWrite(HiWaterF); {$I+}
-      LastError := IOResult;
-      IF (LastError <> 0) THEN
-      BEGIN
-        TextColor(Red);
-        WriteLn('Unable to create '+MemMsgPath+'HI_WATER.MRK.');
-        TextColor(LightGray);
-        LogError(MemMsgPath+'HI_WATER.MRK/ReWrite File Error - '+IntToStr(LastError)+' (Proc: GetMsgList)');
-        Exit;
-      END;
-      {$I-} Write(HiWaterF,HiWater); {$I+}
-      LastError := IOResult;
-      IF (LastError <> 0) THEN
-      BEGIN
-        TextColor(Red);
-        WriteLn('Unable to write record to '+MemMsgPath+'HI_WATER.MRK.');
-        TextColor(LightGray);
-        LogError(MemMsgPath+'HI_WATER.MRK/Write Record 0 Error - '+IntToStr(LastError)+' (Proc: GetMsgList)');
-        Exit;
-      END;
-    END
-    ELSE
-    BEGIN
-      {$I-} Read(HiWaterF,HiWater); {$I+}
-      LastError := IOResult;
-      IF (LastError <> 0) THEN
-      BEGIN
-        TextColor(Red);
-        WriteLn('Unable to read record from '+MemMsgPath+'HI_WATER.MRK.');
-        TextColor(LightGray);
-        LogError(MemMsgPath+'HI_WATER.MRK/Read Record 0 Error - '+IntToStr(LastError)+' (Proc: GetMsgList)');
-        Exit;
-      END;
-      FindFirst(MemMsgPath+IntToStr(HiWater)+'.MSG',0,DirInfo);
-      IF (DOSError <> 0) THEN
-        HiWater := 1;
-    END;
-    {$I-} Close(HiWaterF); {$I+}
-    LastError := IOResult;
-    IF (LastError <> 0) THEN
-    BEGIN
-      TextColor(Red);
-      WriteLn('Unable to close '+MemMsgPath+'HI_WATER.MRK.');
-      TextColor(LightGray);
-      LogError(MemMsgPath+'HI_WATER.MRK/Close File Error - '+IntToStr(LastError)+' (Proc: GetMsgList)');
-      Exit;
-    END;
-  END;
-  HighMsg := 1;
-  LowMsg := 65535;
-  FindFirst(MemMsgPath+'*.MSG',0,DirInfo);
-  WHILE (DOSError = 0) DO
-  BEGIN
-    FidoMsgNum := StrToInt(DirInfo.Name);
-    IF (FidoMsgNum < LowMsg) THEN
-      LowMsg := FidoMsgNum;
-    IF (FidoMsgNum > HighMsg) THEN
-      HighMsg := FidoMsgNum;
-    FindNext(DirInfo);
-  END;
-  IF (HiWater <= HighMsg) THEN
-    IF (HiWater > 1) THEN
-      LowMsg := (HiWater + 1);
-  IF (Ignore_1Msg) THEN
-    IF (LowMsg = 1) AND (HighMsg > 1) THEN
-      LowMsg := 2;
-END;
-
-PROCEDURE UpdateHiWater(MemMsgPath: STRING; HighWater: Word);
-BEGIN
-  Assign(HiWaterF,MemMsgPath+'HI_WATER.MRK');
-  {$I-} ReWrite(HiWaterF); {$I+}
-  LastError := IOResult;
-  IF (LastError <> 0) THEN
-  BEGIN
-    TextColor(Red);
-    WriteLn('Unable to create '+MemMsgPath+'HI_WATER.MRK.');
-    TextColor(LightGray);
-    LogError(MemMsgPath+'HI_WATER.MRK/ReWrite File Error - '+IntToStr(LastError)+' (Proc: UpdateHiWater)');
-    Exit;
-  END;
-  {$I-} Write(HiWaterF,HighWater); {$I+}
-  LastError := IOResult;
-  IF (LastError <> 0) THEN
-  BEGIN
-    TextColor(Red);
-    WriteLn('Unable to write record to '+MemMsgPath+'HI_WATER.MRK.');
-    TextColor(LightGray);
-    LogError(MemMsgPath+'HI_WATER.MRK/Write Record 0 Error - '+IntToStr(LastError)+' (Proc: UpdateHiWater)');
-    Exit;
-  END;
-  {$I-} Close(HiWaterF); {$I+}
-  LastError := IOResult;
-  IF (LastError <> 0) THEN
-  BEGIN
-    TextColor(Red);
-    WriteLn('Unable to close '+MemMsgPath+'HI_WATER.MRK.');
-    TextColor(LightGray);
-    LogError(MemMsgPath+'HI_WATER.MRK/Close File Error - '+IntToStr(LastError)+' (Proc: UpdateHiWater)');
-    Exit;
-  END;
-END;
-
-PROCEDURE PurgeDir(MemMsgPath: STRING);
-VAR
-  TotalMsgsProcessed: Word;
-  Purged: Boolean;
-BEGIN
-  TotalMsgsProcessed := 0;
-  IF (FastPurge) THEN
-  BEGIN
-    Randomize;
-    FillChar(FCB,SizeOf(FCB),' ');
-    FCB[1] := Chr(Ord(StartDir[1]) - 64);
-    FCB[2] := '*';
-    FCB[10] := 'M';
-    FCB[11] := 'S';
-    FCB[12] := 'G';
-    ChDir(Copy(MemMsgPath,1,Length(MemMsgPath) - 1));
-    IF (IOResult <> 0) THEN
-      Exit;
-    IF (MemMsgPath[2] = ':') THEN
-      FCB[1] := Chr(Ord(MemMsgPath[1]) - 64)
-    ELSE
-      FCB[1] := Chr(Ord(StartDir[1]) - 64);
-    Regs.DS := Seg(FCB);
-    Regs.DX := Ofs(FCB);
-    Regs.AX := $1300;
-    MSDOS(Regs);
-    Purged := (Lo(Regs.AX) = 0);
-  END
-  ELSE
-  BEGIN
-    Purged := TRUE;
-    FindFirst(MemMsgPath+'*.MSG',0,DirInfo);
-    IF (DOSError <> 0) THEN
-      Purged := FALSE
-    ELSE
-    BEGIN
-      WHILE (DOSError = 0) DO
-      BEGIN
-        Assign(FidoFile,MemMsgPath+DirInfo.Name);
-        {$I-} Erase(FidoFile); {$I+}
-        LastError := IOResult;
-        IF (LastError <> 0) THEN
-        BEGIN
-          TextColor(Red);
-          WriteLn('Unable to erase '+MemMsgPath+DirInfo.Name);
-          TextColor(LightGray);
-          LogError(MemMsgPath+DirInfo.Name+'/Erase File Error - '+IntToStr(LastError)+
-                   ' (Proc: PurgeDir)');
-        END;
-        FindNext(DirInfo);
-        Inc(TotalMsgsProcessed);
-      END;
-    END;
-  END;
-  IF (NOT Purged) THEN
-  BEGIN
-    LogActivity('No Messages!'^M^J);
-    Write('No messages!')
-  END
-  ELSE
-  BEGIN
-    IF (FastPurge) THEN
-    BEGIN
-      LogActivity('Fast purged!'^M^J);
-      Write('Fast purged!');
-    END
-    ELSE
-    BEGIN
-      LogActivity(IntToStr(TotalMsgsProcessed)+' purged!'^M^J);
-      Write(IntToStr(TotalMsgsProcessed)+' purged!');
-    END;
-  END;
-  UpdateHiWater(MemMsgPath,1);
-END;
-
-PROCEDURE UpdateMailWaiting(GenDataPath: STRING; UserNum: Integer);
-BEGIN
-  Assign(UserFile,GenDataPath+'USERS.DAT');
-  {$I-} Reset(UserFile); {$I+}
-  LastError := IOResult;
-  IF (LastError <> 0) THEN
-  BEGIN
-    TextColor(Red);
-    WriteLn('Unable to open '+GenDataPath+'USERS.DAT.');
-    TextColor(LightGray);
-    LogError(GenDataPath+'USERS.DAT/Open File Error - '+IntToStr(LastError)+' (Proc: UpdateMailWaiting)');
-    Exit;
-  END;
-  {$I-} Seek(UserFile,UserNum); {$I+}
-  LastError := IOResult;
-  IF (LastError <> 0) THEN
-  BEGIN
-    TextColor(Red);
-    WriteLn('Unable to seek record in '+GenDataPath+'USERS.DAT.');
-    TextColor(LightGray);
-    LogError(GenDataPath+'USERS.DAT/Seek Record '+IntToStr(UserNum)+' Error - '+IntToStr(LastError)+
-             ' (Proc: UpdateMailWaiting)');
-    Exit;
-  END;
-  {$I-} Read(UserFile,User); {$I+}
-  LastError := IOResult;
-  IF (LastError <> 0) THEN
-  BEGIN
-    TextColor(Red);
-    WriteLn('Unable to read record from '+GenDataPath+'USERS.DAT.');
-    TextColor(LightGray);
-    LogError(GenDataPath+'USERS.DAT/Read Record '+IntToStr(UserNum)+' Error - '+IntToStr(LastError)+
-             ' (Proc: UpdateMailWaiting)');
-    Exit;
-  END;
-  Inc(User.Waiting);
-  {$I-} Seek(UserFile,UserNum); {$I+}
-  LastError := IOResult;
-  IF (LastError <> 0) THEN
-  BEGIN
-    TextColor(Red);
-    WriteLn('Unable to seek record in '+GenDataPath+'USERS.DAT.');
-    TextColor(LightGray);
-    LogError(GenDataPath+'USERS.DAT/Seek Record '+IntToStr(UserNum)+' Error - '+IntToStr(LastError)+
-             ' (Proc: UpdateMailWaiting)');
-    Exit;
-  END;
-  {$I-} Write(UserFile,User); {$I+}
-  LastError := IOResult;
-  IF (LastError <> 0) THEN
-  BEGIN
-    TextColor(Red);
-    WriteLn('Unable to write record to '+GenDataPath+'USERS.DAT.');
-    TextColor(LightGray);
-    LogError(GenDataPath+'USERS.DAT/Write Record '+IntToStr(UserNum)+' Error - '+IntToStr(LastError)+
-             ' (Proc: UpdateMailWaiting)');
-    Exit;
-  END;
-  {$I-} Close(UserFile); {$I+}
-  LastError := IOResult;
-  IF (LastError <> 0) THEN
-  BEGIN
-    TextColor(Red);
-    WriteLn('Unable to close '+GenDataPath+'USERS.DAT.');
-    TextColor(LightGray);
-    LogError(GenDataPath+'USERS.DAT/Close File Error - '+IntToStr(LastError)+' (Proc: UpdateMailWaiting)');
-    Exit;
-  END;
-END;
-
-PROCEDURE InitRGMsgHdrVars(VAR RGMsgHdr: MHeaderRec);
-VAR
-  Counter: Integer;
-BEGIN
-  WITH RGMsgHdr DO
-  BEGIN
-    WITH From DO
-    BEGIN
-      Anon := 0;
-      UserNum := 0;
-      A1S := '';
-      Real := '';
-      Name := '';
-      Zone := 0;
-      Net := 0;
-      Node := 0;
-      Point := 0;
-    END;
-    WITH MTO DO
-    BEGIN
-      Anon := 0;
-      UserNum := 0;
-      A1S := '';
-      Real := '';
-      Name := '';
-      Zone := 0;
-      Net := 0;
-      Node := 0;
-      Point := 0;
-    END;
-    Pointer := -1;
-    TextSize := 0;
-    ReplyTo := 0;
-    Date := GetPackDateTime;
-    GetDayOfWeek(DayOfWeek);
-    Status := [];
-    Replies := 0;
-    Subject := '';
-    OriginDate := '';
-    FileAttached := 0;
-    NetAttribute := [];
-    FOR Counter := 1 TO 2 DO
-      Res[Counter] := 0;
-  END;
-END;
-
-FUNCTION ReadFidoMsg(General1: GeneralRecordType;
-                 VAR RGMsgHdr: MHeaderRec;
-                 FidoMsgNum: Word;
-                 MemMsgPath: STRING;
-                 VAR MsgLength: Integer): Boolean;
-VAR
-  FidoTxt: STRING[81];
-  BufSize,
-  Counter: Integer;
-  MsgRead: Boolean;
-BEGIN
-  MsgRead := FALSE;
-
-  IF (NOT ExistFile(MemMsgPath+IntToStr(FidoMsgNum)+'.MSG')) THEN
-  BEGIN
-    ReadFidoMsg := MsgRead;
-    Exit;
-  END;
-
-  Assign(FidoFile,MemMsgPath+IntToStr(FidoMsgNum)+'.MSG');
-  {$I-} Reset(FidoFile,1); {$I+}
-  IF (IOResult <> 0) THEN
-  BEGIN
-    LogError(MemMsgPath+IntToStr(FidoMsgNum)+'.MSG/Open File Error (Proc: ReadFidoMsg)');
-    ErrorStrXY('Unable to open '+MemMsgPath+IntToStr(FidoMsgNum)+'.MSG',12,23,Red + 128,Black);
-  END
-  ELSE
-  BEGIN
-
-    IF (FileSize(FidoFile) < SizeOf(FidoMsgHdr)) THEN
-    BEGIN
-      LogError(MemMsgPath+IntToStr(FidoMsgNum)+'.MSG/Truncated File Error (Proc: ReadFidoMsg)');
-      ErrorStrXY('Truncated file '+MemMsgPath+IntToStr(FidoMsgNum)+'.MSG',12,23,Red + 128,Black);
-    END
-    ELSE
-    BEGIN
-      {$I-} BlockRead(FidoFile,FidoMsgHdr,SizeOf(FidoMsgHdr)); {$I+}
-      LastError := IOResult;
-      IF (LastError <> 0) THEN
-      BEGIN
-        LogError(MemMsgPath+IntToStr(FidoMsgNum)+'.MSG/Block Read Header Error - '+IntToStr(LastError)+
-                 ' (Proc: ReadFidoMsg)');
-        ErrorStrXY('Unable to block read header from '+MemMsgPath+IntToStr(FidoMsgNum)+'.MSG',12,23,Red + 128,Black);
-      END;
-
-      InitRGMsgHdrVars(RGMsgHdr);
-
-      IF ((FidoMsgHdr.Attribute AND 16) = 16) THEN
-        RGMsgHdr.FileAttached := 1;
-
-      FidoTxt := FidoMsgHdr.FromUserName[0];
-
-      FidoTxt := FidoTxt + Copy(FidoMsgHdr.FromUserName,1,((Pos(#0,FidoMsgHdr.FromUserName) - 1)));
-
-      FidoTxt := Caps(FidoTxt);
-
-      RGMsgHdr.From.A1S := FidoTxt;
-      RGMsgHdr.From.Real := FidoTxt;
-      RGMsgHdr.From.Name := FidoTxt;
-
-      FidoTxt := FidoMsgHdr.ToUserName[0];
-
-      FidoTxt := FidoTxt + Copy(FidoMsgHdr.ToUserName,1,((Pos(#0,FidoMsgHdr.ToUserName) - 1)));
-
-      FidoTxt := Caps(FidoTxt);
-
-      RGMsgHdr.MTO.A1S := FidoTxt;
-      RGMsgHdr.MTO.Real := FidoTxt;
-      RGMsgHdr.MTO.Name := FidoTxt;
-
-      FidoTxt := FidoMsgHdr.Subject[0];
-
-      FidoTxt := FidoTxt + Copy(FidoMsgHdr.Subject,1,((Pos(#0,FidoMsgHdr.Subject) - 1)));
-
-      RGMsgHdr.Subject := FidoTxt;
-
-      FidoTxt := FidoMsgHdr.DateTIme[0];
-
-      FidoTxt := FidoTxt + Copy(FidoMsgHdr.DateTime,1,((Pos(#0,FidoMsgHdr.DateTime) - 1)));
-
-      RGMsgHdr.OriginDate := FidoTxt;
-
-      RGMsgHdr.Status := [Sent];
-
-      IF (FidoMsgHdr.Attribute AND 1 = 1) THEN
-        Include(RGMsgHdr.Status,Prvt);
-
-      MsgRead := TRUE;
-
-      IF (IsNetMail) THEN
-      BEGIN
-        MsgRead := FALSE;
-        RGMsgHdr.From.Node := FidoMsgHdr.OrigNode;
-        RGMsgHdr.From.Net := FidoMsgHdr.OrigNet;
-        RGMsgHdr.MTO.Node := FidoMsgHdr.DestNode;
-        RGMsgHdr.MTO.Net := FidoMsgHdr.DestNet;
-        RGMsgHdr.From.Point := 0;
-        RGMsgHdr.MTO.Point := 0;
-        RGMsgHdr.From.Zone := 0;
-        RGMsgHdr.MTO.Zone := 0;
-        IF (FidoMsgHdr.Attribute AND 256 = 0) AND (FidoMsgHdr.Attribute AND 4 = 0) THEN
-          FOR Counter := 0 TO 19 DO
-            IF (RGMsgHdr.MTO.Node = General1.AKA[Counter].Node) AND (RGMsgHdr.MTO.Net = General1.AKA[Counter].Net) THEN
-            BEGIN
-              RGMsgHdr.MTO.Zone := General1.AKA[Counter].Zone;
-              RGMsgHdr.From.Zone := General1.AKA[Counter].Zone;
-              MsgRead := TRUE;
-            END;
-        IF (NOT MsgRead) THEN
-        BEGIN
-{          LogError(MemMsgPath+IntToStr(FidoMsgNum)+'.MSG/Unknown Zone Error (Proc: ReadFidoMsg)');
-          ErrorStrXY('Unknown zone '+MemMsgPath+IntToStr(FidoMsgNum)+'.MSG',12,23,Red + 128,Black);
-}        END;
-      END;
-
-      IF (MsgRead) THEN
-      BEGIN
-
-        IF (FileSize(FidoFile) - 190) <= SizeOf(BufferArray) THEN
-          BufSize := (FileSize(FidoFile) - 190)
-        ELSE
-          BufSize := SizeOf(BufferArray);
-
-        {$I-} BlockRead(FidoFile,BufferArray,BufSize,MsgLength); {$I+}
-        LastError := IOResult;
-        IF (LastError <> 0) THEN
-        BEGIN
-          LogError(MemMsgPath+IntToStr(FidoMsgNum)+'.MSG/Block Read Text Error - '+IntToStr(LastError)+
-                   ' (Proc: ReadFidoMsg)');
-          ErrorStrXY('Unable to block read text from '+MemMsgPath+IntToStr(FidoMsgNum)+'.MSG',12,23,Red + 128,Black);
-          MsgRead := FALSE;
-        END;
-      END;
-    END;
-    IF (IsNetMail) THEN
-      IF (MsgRead) AND (Purge_NetMail) THEN
-      BEGIN
-        {$I-} Close(FidoFile); {$I+}
-        LastError := IOResult;
-        IF (LastError <> 0) THEN
-        BEGIN
-          LogError(MemMsgPath+IntToStr(FidoMsgNum)+'.MSG/Close File Error - '+IntToStr(LastError)+
-                   ' (Proc: ReadFidoMsg)');
-          ErrorStrXY('Unable to close '+MemMsgPath+IntToStr(FidoMsgNum)+'.MSG',12,23,Red + 128,Black);
-        END;
-        {$I-} Erase(FidoFile); {$I+}
-        LastError := IOResult;
-        IF (LastError <> 0) THEN
-        BEGIN
-          LogError(MemMsgPath+IntToStr(FidoMsgNum)+'.MSG/Erase File Error - '+IntToStr(LastError)+
-                   ' (Proc: ReadFidoMsg)');
-          ErrorStrXY('Unable to erase '+MemMsgPath+IntToStr(FidoMsgNum)+'.MSG',12,23,Red + 128,Black);
-        END;
-      END
-      ELSE IF (MsgRead) THEN
-      BEGIN
-        FidoMsgHdr.Attribute := 260;
-        {$I-} Seek(FidoFile,0); {$I+}
-        LastError := IOResult;
-        IF (LastError <> 0) THEN
-        BEGIN
-          LogError(MemMsgPath+IntToStr(FidoMsgNum)+'.MSG/Seek Record 0 Error - '+IntToStr(LastError)+
-                   ' (Proc: ReadFidoMsg)');
-          ErrorStrXY('Unable to seek record in '+MemMsgPath+IntToStr(FidoMsgNum)+'.MSG',12,23,Red + 128,Black);
-        END;
-        {$I-} BlockWrite(FidoFile,FidoMsgHdr,SizeOf(FidoMsgHdr)); {$I+}
-        LastError := IOResult;
-        IF (LastError <> 0) THEN
-        BEGIN
-          LogError(MemMsgPath+IntToStr(FidoMsgNum)+'.MSG/Block Write Header Error - '+IntToStr(LastError)+
-                   ' (Proc: ReadFidoMsg)');
-          ErrorStrXY('Unable to block write header to '+MemMsgPath+IntToStr(FidoMsgNum)+'.MSG',12,23,Red + 128,Black);
-        END;
-      END;
-    IF (NOT (IsNetMail AND MsgRead AND Purge_NetMail)) THEN
-    BEGIN
-      {$I-} Close(FidoFile); {$I+}
-      LastError := IOResult;
-      IF (LastError <> 0) THEN
-      BEGIN
-        LogError(MemMsgPath+IntToStr(FidoMsgNum)+'.MSG/Close File Error - '+IntToStr(LastError)+
-                 ' (Proc: ReadFidoMsg)');
-        ErrorStrXY('Unable to close '+MemMsgPath+IntToStr(FidoMsgNum)+'.MSG',12,23,Red + 128,Black);
-      END;
-    END;
-  END;
-  ReadFidoMsg := MsgRead;
-END;
-
-PROCEDURE Toss(General1: GeneralRecordType; MemMsgArea1: MessageAreaRecordType);
-VAR
-  MsgTxt: STRING[255];
-  FidoTxt: STRING[81];
-  AddressStr: STRING[20];
-  C: Char;
-  Counter,
-  Counter1,
-  MsgPointer,
-  MsgLength: Integer;
-  LowMsg,
-  HighMsg,
-  FidoMsgNum,
-  TotalMsgsProcessed: Word;
-  FirstTime: Boolean;
-BEGIN
-
-  FirstTime := TRUE;
-
-  TotalMsgsProcessed := 0;
-
-  GetMsgLst(MemMsgArea1.MsgPath,LowMsg,HighMsg);
-
-  IF (IsNetMail) AND (HighMsg > 1) THEN
-    LowMsg := 1;
-
-  IF (LowMsg <= HighMsg) AND ((HighMsg > 1) OR (IsNetMail)) THEN
-  BEGIN
-
-    Assign(RGMsgHdrFile,General1.MsgPath+MemMsgArea1.FileName+'.HDR');
-    {$I-} Reset(RGMsgHdrFile); {$I+}
-    LastError := IOResult;
-    IF (LastError <> 0) THEN
-    BEGIN
-      {$I-} ReWrite(RGMsgHdrFile); {$I+}
-      LastError := IOResult;
-      IF (IOResult <> 0) THEN
-      BEGIN
-        TextColor(Red);
-        WriteLn('Unable to create '+General1.MsgPath+MemMsgArea1.FileName+'.HDR.');
-        TextColor(LightGray);
-        LogError(General1.MsgPath+MemMsgArea1.FileName+'.HDR/ReWrite File Error - '+IntToStr(LastError)+' (Proc: Toss)');
-        Exit;
-      END;
-    END;
-
-    Assign(RGMsgTxtFile,General1.MsgPath+MemMsgArea1.FileName+'.DAT');
-    {$I-} Reset(RGMsgTxtFile,1); {$I+}
-    LastError := IOResult;
-    IF (IOResult <> 0) THEN
-    BEGIN
-      {$I-} ReWrite(RGMsgTxtFile); {$I+}
-      LastError := IOResult;
-      IF (IOResult <> 0) THEN
-      BEGIN
-        TextColor(Red);
-        WriteLn('Unable to create '+General1.MsgPath+MemMsgArea1.FileName+'.DAT.');
-        TextColor(LightGray);
-        LogError(General1.MsgPath+MemMsgArea1.FileName+'.DAT/ReWrite File Error - '+IntToStr(LastError)+' (Proc: Toss)');
-        Exit;
-      END;
-    END;
-
-    {$I-} Seek(RGMsgHdrFile,FileSize(RGMsgHdrFile)); {$I+}
-    LastError := IOResult;
-    IF (IOResult <> 0) THEN
-    BEGIN
-      TextColor(Red);
-      WriteLn('Unable to seek record in '+General1.MsgPath+MemMsgArea1.FileName+'.HDR.');
-      TextColor(LightGray);
-      LogError(General1.MsgPath+MemMsgArea1.FileName+'.HDR/Seek End Of File Error - '+IntToStr(LastError)+' (Proc: Toss)');
-      Exit;
-    END;
-
-    {$I-} Seek(RGMsgTxtFile,FileSize(RGMsgTxtFile)); {$I+}
-    LastError := IOResult;
-    IF (IOResult <> 0) THEN
-    BEGIN
-      TextColor(Red);
-      WriteLn('Unable to seek record in '+General1.MsgPath+MemMsgArea1.FileName+'.DAT.');
-      TextColor(LightGray);
-      LogError(General1.MsgPath+MemMsgArea1.FileName+'.DAT/Seek End Of File Error - '+IntToStr(LastError)+' (Proc: Toss)');
-      Exit;
-    END;
-
-    FOR FidoMsgNum := LowMsg TO HighMsg DO
-    BEGIN
-
-      TextColor(LightCyan);
-      TextBackGround(Black);
-      Write(PadRightStr(IntToStr(FidoMsgNum),5));
-
-      IF ReadFidoMsg(General1,RGMsgHdr,FidoMsgNum,MemMsgArea1.MsgPath,MsgLength) THEN
-      BEGIN
-
-        IF (FirstTime) THEN
-        BEGIN
-          LogActivity(^M^J);
-          FirstTime := FALSE;
-        END;
-        LogActivity(^M^J);
-        LogActivity('Processing: '+IntToStr(FidoMsgNum)+'.MSG'^M^J);
-        LogActivity(^M^J);
-        LogActivity('From   : '+RGMsgHdr.From.Name+^M^J);
-        LogActivity('To     : '+RGMsgHdr.MTO.Name+^M^J);
-        LogActivity('Subject: '+RGMsgHdr.Subject+^M^J);
-        LogActivity('Date   : '+RGMsgHdr.OriginDate+^M^J);
-
-        Inc(RGMsgHdr.Date);
-
-        RGMsgHdr.Pointer := (FileSize(RGMsgTxtFile) + 1);
-
-        RGMsgHdr.TextSize := 0;
-
-        FidoTxt := '';
-
-        MsgPointer := 0;
-        WHILE (MsgPointer < MsgLength) DO
-        BEGIN
-
-          MsgTxt := FidoTxt;
-          REPEAT
-            Inc(MsgPointer);
-            C := BufferArray[MsgPointer];
-            IF (NOT (C IN [#0,#10,#13,#141])) THEN
-              IF (Length(MsgTxt) < 255) THEN
-              BEGIN
-                Inc(MsgTxt[0]);
-                MsgTxt[Length(MsgTxt)] := C;
-              END;
-          UNTIL ((FidoTxt = #13) OR (C IN [#13,#141]) OR ((Length(MsgTxt) > 79) AND (Pos(#27,MsgTxt) = 0))
-                OR (Length(MsgTxt) = 254) OR (MsgPointer >= MsgLength));
-
-          IF (Length(MsgTxt) = 254) THEN
-            MsgTxt := MsgTxt + #29;
-
-          Counter := Pos(#1'INTL ',MsgTxt);
-          IF (Counter > 0) THEN
-          BEGIN
-            Inc(Counter,6);
-            FOR Counter1 := 1 TO 8 DO
-            BEGIN
-              AddressStr := '';
-              WHILE (MsgTxt[Counter] IN ['0'..'9']) AND (Counter <= Length(MsgTxt)) DO
-              BEGIN
-                AddressStr := AddressStr + MsgTxt[Counter];
-                Inc(Counter);
-              END;
-              CASE Counter1 OF
-                1 : RGMsgHdr.MTO.Zone := StrToInt(AddressStr);
-                2 : RGMsgHdr.MTO.Net := StrToInt(AddressStr);
-                3 : RGMsgHdr.MTO.Node := StrToInt(AddressStr);
-                4 : RGMsgHdr.MTO.Point := StrToInt(AddressStr);
-                5 : RGMsgHdr.From.Zone := StrToInt(AddressStr);
-                6 : RGMsgHdr.From.Net := StrToInt(AddressStr);
-                7 : RGMsgHdr.From.Node := StrToInt(AddressStr);
-                8 : RGMsgHdr.From.Point := StrToInt(AddressStr);
-              END;
-              IF (Counter1 = 3) AND (MsgTxt[Counter] <> '.') THEN
-                Inc(Counter1);
-              IF (Counter1 = 7) AND (MsgTxt[Counter] <> '.') THEN
-                Break;
-              Inc(Counter);
-            END;
-            LogActivity('INTL   : '+IntToStr(RGMsgHdr.MTO.Zone)+
-                                ':'+IntToStr(RGMsgHdr.MTO.Net)+
-                                '/'+IntToStr(RGMsgHdr.MTO.Node)+
-                                ' '+
-                                ' '+IntToStr(RGMsgHdr.From.Zone)+
-                                ':'+IntToStr(RGMsgHdr.From.Net)+
-                                '/'+IntToStr(RGMsgHdr.From.Node)+^M^J);
-          END;
-
-          IF (Length(MsgTxt) > 79) THEN
-          BEGIN
-            Counter := Length(MsgTxt);
-            WHILE (MsgTxt[Counter] = ' ') AND (Counter > 1) DO
-              Dec(Counter);
-            WHILE (Counter > 65) AND (MsgTxt[Counter] <> ' ') DO
-              Dec(Counter);
-            FidoTxt[0] := Chr(Length(MsgTxt) - Counter);
-            Move(MsgTxt[Counter + 1],FidoTxt[1],(Length(MsgTxt) - Counter));
-            MsgTxt[0] := Chr(Counter - 1);
-          END
-          ELSE
-            FidoTxt := '';
-
-          IF ((MsgTxt[1] = #1) AND (MASkludge IN MemMsgArea1.MAFlags)) OR
-             ((Pos('SEEN-BY',MsgTxt) > 0) AND (MASSeenby IN MemMsgArea1.MAFlags)) OR
-             ((Pos('* Origin:',MsgTxt) > 0) AND (MASOrigin IN MemMsgArea1.MAFlags)) THEN
-            MsgTxt := ''
-          ELSE
-          BEGIN
-            Inc(RGMsgHdr.TextSize,(Length(MsgTxt) + 1));
-
-            {$I-} BlockWrite(RGMsgTxtFile,MsgTxt,(Length(MsgTxt) + 1)); {$I+}
-            LastError := IOResult;
-            IF (LastError <> 0) THEN
-            BEGIN
-              TextColor(Red);
-              WriteLn('Unable to block write text to '+General1.MsgPath+MemMsgArea1.FileName+'.DAT.');
-              TextColor(LightGray);
-              LogError(General1.MsgPath+MemMsgArea1.FileName+'.DAT/Block Write Text Error - '+IntToStr(LastError)+
-                       ' (Proc: Toss)');
-              Exit;
-            END;
-          END;
-
-        END;
-
-        IF (IsNetMail) THEN
-        BEGIN
-          Include(RGMsgHdr.Status,NetMail);
-          RGMsgHdr.MTO.UserNum := SearchUser(General1.DataPath,RGMsgHdr.MTO.A1S);
-          IF (RGMsgHdr.MTO.UserNum = 0) THEN
-            RGMsgHdr.MTO.UserNum := 1;
-          UpdateMailWaiting(General1.DataPath,RGMsgHdr.MTO.UserNum);
-        END;
-
-        {$I-} Write(RGMsgHdrFile,RGMsgHdr); {$I+}
-        LastError := IOResult;
-        IF (LastError <> 0) THEN
-        BEGIN
-          TextColor(Red);
-          WriteLn('Unable to write record to '+General1.MsgPath+MemMsgArea1.FileName+'.HDR.');
-          TextColor(LightGray);
-          LogError(General1.MsgPath+MemMsgArea1.FileName+'.HDR/Write End Of File Error - '+IntToStr(LastError)+
-                   ' (Proc: Toss)');
-          Exit;
-        END;
-
-        Inc(TotalMsgsProcessed);
-
-      END;
-
-      IF (FidoMsgNum < HighMsg) THEN
-        Write(#8#8#8#8#8);
-
-    END;
-
-    {$I-} Close(RGMsgHdrFile); {$I+}
-    LastError := IOResult;
-    IF (IOResult <> 0) THEN
-    BEGIN
-      TextColor(Red);
-      WriteLn('Unable to close '+General1.MsgPath+MemMsgArea1.FileName+'.HDR.');
-      TextColor(LightGray);
-      LogError(General1.MsgPath+MemMsgArea1.FileName+'.HDR/Close File Error - '+IntToStr(LastError)+' (Proc: Toss)');
-      Exit;
-    END;
-
-    {$I-} Close(RGMsgTxtFile); {$I+}
-    LastError := IOResult;
-    IF (IOResult <> 0) THEN
-    BEGIN
-      TextColor(Red);
-      WriteLn('Unable to close '+General1.MsgPath+MemMsgArea1.FileName+'.DAT.');
-      TextColor(LightGray);
-      LogError(General1.MsgPath+MemMsgArea1.FileName+'.DAT/Close File Error - '+IntToStr(LastError)+' (Proc: Toss)');
-      Exit;
-    END;
-
-    IF (NOT IsNetMail) THEN
-      UpdateHiWater(MemMsgArea1.MsgPath,HighMsg);
-
-  END
-  ELSE
-    Write('No messages!');
-
-  IF (TotalMsgsProcessed = 0) THEN
-    LogActivity('No Messages!'^M^J)
-  ELSE
-  BEGIN
-    LogActivity(^M^J);
-    LogActivity('Total processed: '+IntToStr(TotalMsgsProcessed)+^M^J);
-    LogActivity(^M^J);
-  END;
-END;
-
-PROCEDURE Scan(General1: GeneralRecordType; MemMsgArea1: MessageAreaRecordType);
-VAR
-  DT: DateTime;
-  FidoTxt: STRING[81];
-  MsgLength: Integer;
-  LowMsg,
-  HighMsg,
-  RGMsgNum,
-  FidoMsgNum,
-  HighestWritten,
-  TotalMsgsProcessed: Word;
-  Scanned,
-  FirstTime: Boolean;
-BEGIN
-
-  Scanned := FALSE;
-
-  TotalMsgsProcessed := 0;
-
-  FirstTime := TRUE;
-
-  GetMsgLst(MemMsgArea1.MsgPath,LowMsg,HighMsg);
-
-  FidoMsgNum := HighMsg;
-
-  Assign(RGMsgHdrFile,General1.MsgPath+MemMsgArea1.FileName+'.HDR');
-  {$I-} Reset(RGMsgHdrFile); {$I+}
-  LastError := IOResult;
-  IF (LastError <> 0) THEN
-  BEGIN
-    TextColor(Red);
-    WriteLn('Unable to open '+General1.MsgPath+MemMsgArea1.FileName+'.HDR.');
-    TextColor(LightGray);
-    LogError(General1.MsgPath+MemMsgArea1.FileName+'.HDR/Open File Error - '+IntToStr(LastError)+' (Proc: Scan)');
-    Exit;
-  END;
-
-  Assign(RGMsgTxtFile,General1.MsgPath+MemMsgArea1.FileName+'.DAT');
-  {$I-} Reset(RGMsgTxtFile,1); {$I+}
-  LastError := IOResult;
-  IF (LastError <> 0) THEN
-  BEGIN
-    TextColor(Red);
-    WriteLn('Unable to open '+General1.MsgPath+MemMsgArea1.FileName+'.DAT.');
-    TextColor(LightGray);
-    LogError(General1.MsgPath+MemMsgArea1.FileName+'.DAT/Open File Error - '+IntToStr(LastError)+' (Proc: Scan)');
-    Exit;
-  END;
-
-  FOR RGMsgNum := 1 TO FileSize(RGMsgHdrFile) DO
-  BEGIN
-
-    {$I-} Seek(RGMsgHdrFile,(RGMsgNum - 1)); {$I+}
-    LastError := IOResult;
-    IF (LastError <> 0) THEN
-    BEGIN
-      TextColor(Red);
-      WriteLn('Unable to seek record in '+General1.MsgPath+MemMsgArea1.FileName+'.HDR.');
-      TextColor(LightGray);
-      LogError(General1.MsgPath+MemMsgArea1.FileName+'.HDR/Seek Record '+IntToStr(RGMsgNum - 1)+' Error - '
-               +IntToStr(LastError)+' (Proc: Scan)');
-      Exit;
-    END;
-
-    {$I-} Read(RGMsgHdrFile,RGMsgHdr); {$I+}
-    LastError := IOResult;
-    IF (LastError <> 0) THEN
-    BEGIN
-      TextColor(Red);
-      WriteLn('Unable to read record from '+General1.MsgPath+MemMsgArea1.FileName+'.HDR.');
-      TextColor(LightGray);
-      LogError(General1.MsgPath+MemMsgArea1.FileName+'.HDR/Read Record '+IntToStr(RGMsgNum - 1)+' Error - '
-               +IntToStr(LastError)+' (Proc: Scan)');
-      Exit;
-    END;
-
-    IF (NOT (Sent IN RGMsgHdr.Status)) AND
-       (NOT (MDeleted IN RGMsgHdr.Status)) AND
-       (NOT (UnValidated IN RGMsgHdr.Status)) AND
-       (NOT (IsNetMail AND (NOT (NetMail IN RGMsgHdr.Status)))) THEN
-    BEGIN
-
-      Inc(FidoMsgNum);
-
-      Assign(FidoFile,MemMsgArea1.MsgPath+IntToStr(FidoMsgNum)+'.MSG');
-      {$I-} ReWrite(FidoFile,1); {$I+}
-      LastError := IOResult;
-      IF (LastError <> 0) THEN
-      BEGIN
-        TextColor(Red);
-        WriteLn('Unable to create '+MemMsgArea1.MsgPath+IntToStr(FidoMsgNum)+'.MSG.');
-        TextColor(LightGray);
-        LogError(MemMsgArea1.MsgPath+IntToStr(FidoMsgNum)+'.MSG/Rewrite File Error - '+IntToStr(LastError)+' (Proc: Scan)');
-        Exit;
-      END;
-
-      TextColor(LightCyan);
-      TextBackGround(Black);
-      Write(PadRightStr(IntToStr(RGMsgNum),5));
-
-      Include(RGMsgHdr.Status,Sent);
-
-      IF (IsNetMail) THEN
-        Include(RGMsgHdr.Status,MDeleted);
-
-      {$I-} Seek(RGMsgHdrFile,(RGMsgNum - 1)); {$I+}
-      LastError := IOResult;
-      IF (LastError <> 0) THEN
-      BEGIN
-        TextColor(Red);
-        WriteLn('Unable to seek record in '+General1.MsgPath+MemMsgArea1.FileName+'.HDR.');
-        TextColor(LightGray);
-        LogError(General1.MsgPath+MemMsgArea1.FileName+'.HDR/Seek Record '+IntToStr(RGMsgNum - 1)+
-                 ' Error - '+IntToStr(LastError)+' (Proc: Scan)');
-        Exit;
-      END;
-
-      {$I-} Write(RGMsgHdrFile,RGMsgHdr); {$I+}
-      LastError := IOResult;
-      IF (LastError <> 0) THEN
-      BEGIN
-        TextColor(Red);
-        WriteLn('Unable to write record to '+General1.MsgPath+MemMsgArea1.FileName+'.HDR.');
-        TextColor(LightGray);
-        LogError(General1.MsgPath+MemMsgArea1.FileName+'.HDR/Write Record '+IntToStr(RGMsgNum - 1)+
-                 ' Error - '+IntToStr(LastError)+' (Proc: Scan)');
-        Exit;
-      END;
-
-      FillChar(FidoMsgHdr,SizeOf(FidoMsgHdr),#0);
-
-      IF (FirstTime) THEN
-      BEGIN
-        LogActivity(^M^J);
-        FirstTime := FALSE;
-      END;
-      LogActivity(^M^J);
-      LogActivity('Processing: '+IntToStr(FidoMsgNum)+'.MSG'^M^J);
-      LogActivity(^M^J);
-
-      FidoTxt := UseName(RGMsgHdr.From.Anon,
-                 AOnOff((MARealName IN MemMsgArea1.MAFlags),
-                 Caps(RGMsgHdr.From.Real),
-                 Caps(RGMsgHdr.From.A1S)));
-      Move(FidoTxt[1],FidoMsgHdr.FromUserName[0],Length(FidoTxt));
-
-      LogActivity('From   : '+FidoTxt+^M^J);
-
-      FidoTxt := UseName(RGMsgHdr.MTO.Anon,
-                 AOnOff((MARealName IN MemMsgArea1.MAFlags),
-                 Caps(RGMsgHdr.MTO.Real),
-                 Caps(RGMsgHdr.MTO.A1S)));
-      Move(FidoTxt[1],FidoMsgHdr.ToUserName[0],Length(FidoTxt));
-
-      LogActivity('To     : '+FidoTxt+^M^J);
-
-      FidoTxt := StripColor(MemMsgArea1.MAFlags,RGMsgHdr.Subject);
-      IF (NOT IsNetMail) AND (RGMsgHdr.FileAttached > 0) THEN
-        FidoTxt := StripName(FidoTxt);
-      Move(FidoTxt[1],FidoMsgHdr.Subject[0],Length(FidoTxt));
-
-     LogActivity('Subject: '+FidoTxt+^M^J);
-
-      PackToDate(DT,RGMsgHdr.Date);
-      FidoTxt := ZeroPad(IntToStr(DT.Day))+
-                ' '+Copy(MonthString[DT.Month],1,3)+
-                ' '+Copy(IntToStr(DT.Year),3,2)+
-                '  '+ZeroPad(IntToStr(DT.Hour))+
-                ':'+ZeroPad(IntToStr(DT.Min))+
-                ':'+ZeroPad(IntToStr(DT.Sec));
-      Move(FidoTxt[1],FidoMsgHdr.DateTime[0],Length(FidoTxt));
-
-      LogActivity('Date   : '+FidoTxt+^M^J);
-
-      IF (IsNetMail) THEN
-      BEGIN
-        FidoMsgHdr.OrigNet := RGMsgHdr.From.Net;
-        FidoMsgHdr.OrigNode := RGMsgHdr.From.Node;
-        FidoMsgHdr.DestNet := RGMsgHdr.MTO.Net;
-        FidoMsgHdr.DestNode := RGMsgHdr.MTO.Node;
-
-        LogActivity('Origin : '+IntToStr(FidoMsgHdr.OrigNet)+
-                            '/'+IntToStr(FidoMsgHdr.OrigNode)+^M^J);
-
-        LogActivity('Destin : '+IntToStr(FidoMsgHdr.DestNet)+
-                            '/'+IntToStr(FidoMsgHdr.DestNode)+^M^J);
-      END
-      ELSE
-      BEGIN
-        FidoMsgHdr.OrigNet := General1.AKA[MemMsgArea1.AKA].Net;
-        FidoMsgHdr.OrigNode := General1.AKA[MemMsgArea1.AKA].Node;
-        FidoMsgHdr.DestNet := 0;
-        FidoMsgHdr.DestNode := 0;
-
-        LogActivity('Origin : '+IntToStr(General1.AKA[MemMsgArea1.AKA].Net)+
-                            '/'+IntToStr(General1.AKA[MemMsgArea1.AKA].Node)+^M^J);
-
-      END;
-
-      IF (IsNetMail) THEN
-        FidoMsgHdr.Attribute := Word(RGMsgHdr.NetAttribute)
-      ELSE IF (Prvt IN RGMsgHdr.Status) THEN
-        FidoMsgHdr.Attribute := 257
-      ELSE
-        FidoMsgHdr.Attribute := 256;
-
-      IF (RGMsgHdr.FileAttached > 0) THEN
-        FidoMsgHdr.Attribute := (FidoMsgHdr.Attribute + 16);
-
-      {$I-} BlockWrite(FidoFile,FidoMsgHdr,SizeOf(FidoMsgHdr)); {$I+}
-      LastError := IOResult;
-      IF (LastError <> 0) THEN
-      BEGIN
-        TextColor(Red);
-        WriteLn('Unable to block write header '+MemMsgArea1.MsgPath+IntToStr(FidoMsgNum)+'.MSG');
-        TextColor(LightGray);
-        LogError(MemMsgArea1.MsgPath+IntToStr(FidoMsgNum)+'.MSG/Block Write Header Error - '+IntToStr(LastError)+
-                 ' (Proc: Scan)');
-        Exit;
-      END;
-
-      {$I-} Seek(RGMsgTxtFile,(RGMsgHdr.Pointer - 1)); {$I+}
-      LastError := IOResult;
-      IF (LastError <> 0) THEN
-      BEGIN
-        TextColor(Red);
-        WriteLn('Unable to seek text in '+MemMsgArea1.MsgPath+IntToStr(FidoMsgNum)+'.MSG');
-        TextColor(LightGray);
-        LogError(MemMsgArea1.MsgPath+IntToStr(FidoMsgNum)+'.MSG/Seek Text Error - '+IntToStr(LastError)+
-                 ' (Proc: Scan)');
-        Exit;
-      END;
-
-      IF (IsNetMail) THEN
-      BEGIN
-
-        LogActivity('INTL   : '+IntToStr(RGMsgHdr.MTO.Zone)+
-                            ':'+IntToStr(RGMsgHdr.MTO.Net)+
-                            '/'+IntToStr(RGMsgHdr.MTO.Node)+
-                            ' '+
-                            ' '+IntToStr(RGMsgHdr.From.Zone)+
-                            ':'+IntToStr(RGMsgHdr.From.Net)+
-                            '/'+IntToStr(RGMsgHdr.From.Node)+^M^J);
-
-        FidoTxt := #1'INTL '+IntToStr(RGMsgHdr.MTO.Zone)+
-                        ':'+IntToStr(RGMsgHdr.MTO.Net)+
-                        '/'+IntToStr(RGMsgHdr.MTO.Node)+
-                        ' '+IntToStr(RGMsgHdr.From.Zone)+
-                        ':'+IntToStr(RGMsgHdr.From.Net)+
-                        '/'+IntToStr(RGMsgHdr.From.Node)+#13;
-
-        {$I-} BlockWrite(FidoFile,FidoTxt[1],Length(FidoTxt)); {$I+}
-        LastError := IOResult;
-        IF (LastError <> 0) THEN
-        BEGIN
-          TextColor(Red);
-          WriteLn('Unable to block write text to '+MemMsgArea1.MsgPath+IntToStr(FidoMsgNum)+'.MSG');
-          TextColor(LightGray);
-          LogError(MemMsgArea1.MsgPath+IntToStr(FidoMsgNum)+'.MSG/Block Write Text Error - '+IntToStr(LastError)+
-                   ' (Proc: Scan)');
-          Exit;
-        END;
-
-        IF (RGMsgHdr.MTO.Point > 0) THEN
-        BEGIN
-          LogActivity('TOPT   : '+IntToStr(RGMsgHdr.MTO.Point)+^M^J);
-
-          FidoTxt := #1'TOPT '+IntToStr(RGMsgHdr.MTO.Point)+#13;
-
-          {$I-} BlockWrite(FidoFile,FidoTxt[1],Length(FidoTxt)); {$I+}
-          LastError := IOResult;
-          IF (LastError <> 0) THEN
-          BEGIN
-            TextColor(Red);
-            WriteLn('Unable to block write text to '+MemMsgArea1.MsgPath+IntToStr(FidoMsgNum)+'.MSG');
-            TextColor(LightGray);
-            LogError(MemMsgArea1.MsgPath+IntToStr(FidoMsgNum)+'.MSG/Block Write Text Error - '+IntToStr(LastError)+
-                     ' (Proc: Scan)');
-            Exit;
-          END;
-
-        END;
-
-        IF (RGMsgHdr.From.Point > 0) THEN
-        BEGIN
-          LogActivity('FMPT   : '+IntToStr(RGMsgHdr.From.Point)+^M^J);
-
-          FidoTxt := #1'FMPT '+IntToStr(RGMsgHdr.From.Point)+#13;
-
-          {$I-} BlockWrite(FidoFile,FidoTxt[1],Length(FidoTxt)); {$I+}
-          LastError := IOResult;
-          IF (LastError <> 0) THEN
-          BEGIN
-            TextColor(Red);
-            WriteLn('Unable to block write text to '+MemMsgArea1.MsgPath+IntToStr(FidoMsgNum)+'.MSG');
-            TextColor(LightGray);
-            LogError(MemMsgArea1.MsgPath+IntToStr(FidoMsgNum)+'.MSG/Block Write Text Error - '+IntToStr(LastError)+
-                     ' (Proc: Scan)');
-            Exit;
-          END;
-
-        END;
-
-        FidoTxt := #1'MSGID: '+IntToStr(RGMsgHdr.From.Zone)+
-                           ':'+IntToStr(RGMsgHdr.From.Net)+
-                           '/'+IntToStr(RGMsgHdr.From.Node)+
-                           ' '+Hex(Random($FFFF),4)+Hex(Random($FFFF),4);
-        IF (RGMsgHdr.From.Point > 0) THEN
-          FidoTxt := FidoTxt +'.'+IntToStr(RGMsgHdr.From.Point);
-
-        FidoTxt := FidoTxt + #13;
-
-        {$I-} BlockWrite(FidoFile,FidoTxt[1],Length(FidoTxt)); {$I+}
-        LastError := IOResult;
-        IF (LastError <> 0) THEN
-        BEGIN
-          TextColor(Red);
-          WriteLn('Unable to block write text to '+MemMsgArea1.MsgPath+IntToStr(FidoMsgNum)+'.MSG');
-          TextColor(LightGray);
-          LogError(MemMsgArea1.MsgPath+IntToStr(FidoMsgNum)+'.MSG/Block Write Text Error - '+IntToStr(LastError)+
-                   ' (Proc: Scan)');
-          Exit;
-        END;
-
-      END;
-
-      MsgLength := 0;
-
-      IF (RGMsgHdr.TextSize > 0) THEN
-        REPEAT
-
-          {$I-} BlockRead(RGMsgTxtFile,FidoTxt[0],1); {$I+}
-          LastError := IOResult;
-          IF (LastError <> 0) THEN
-          BEGIN
-            TextColor(Red);
-            WriteLn('Unable to block read text from '+MemMsgArea1.MsgPath+IntToStr(FidoMsgNum)+'.MSG');
-            TextColor(LightGray);
-            LogError(MemMsgArea1.MsgPath+IntToStr(FidoMsgNum)+'.MSG/Block Read Text Error - '+IntToStr(LastError)+
-                     ' (Proc: Scan)');
-            Exit;
-          END;
-
-          {$I-} BlockRead(RGMsgTxtFile,FidoTxt[1],Ord(FidoTxt[0])); {$I+}
-          LastError := IOResult;
-          IF (LastError <> 0) THEN
-          BEGIN
-            TextColor(Red);
-            WriteLn('Unable to block read text from '+MemMsgArea1.MsgPath+IntToStr(FidoMsgNum)+'.MSG');
-            TextColor(LightGray);
-            LogError(MemMsgArea1.MsgPath+IntToStr(FidoMsgNum)+'.MSG/Block Read Text Error - '+IntToStr(LastError)+
-                     ' (Proc: Scan)');
-            Exit;
-          END;
-
-          Inc(MsgLength,(Length(FidoTxt) + 1));
-
-          WHILE (Pos(#0,FidoTxt) > 0) DO
-            Delete(FidoTxt,Pos(#0,FidoTxt),1);
-
-          IF (FidoTxt[Length(FidoTxt)] = #29) THEN
-            Dec(FidoTxt[0])
-
-          (* NOTE: Should this be (Pos(#27,FidoTxt) <> 0) *)
-
-          ELSE IF (Pos(#27,FidoTxt) = 0) THEN
-            FidoTxt := StripColor(MemMsgArea1.MAFlags,FidoTxt);
-
-          FidoTxt := FidoTxt + #13;
-          IF Length(FidoTxt) < 81 THEN
-          {$I-} BlockWrite(FidoFile,FidoTxt[1],Length(FidoTxt)); {$I+}
-          LastError := IOResult;
-          IF (LastError <> 0) THEN
-          BEGIN
-            TextColor(Red);
-            WriteLn('Unable to block write text to '+MemMsgArea1.MsgPath+IntToStr(FidoMsgNum)+'.MSG');
-            TextColor(LightGray);
-            LogError(MemMsgArea1.MsgPath+IntToStr(FidoMsgNum)+'.MSG/Block Write Text Error - '+IntToStr(LastError)+
-                     ' (Proc: Scan)');
-            Exit;
-          END;
-
-        UNTIL (MsgLength >= RGMsgHdr.TextSize);
-
-      {$I-} Close(FidoFile); {$I+}
-      LastError := IOResult;
-      IF (LastError <> 0) THEN
-      BEGIN
-        TextColor(Red);
-        WriteLn('Unable to close '+MemMsgArea1.MsgPath+IntToStr(FidoMsgNum)+'.MSG.');
-        TextColor(LightGray);
-        LogError(MemMsgArea1.MsgPath+IntToStr(FidoMsgNum)+'.MSG/Close File Error - '+IntToStr(LastError)+' (Proc: Scan)');
-        Exit;
-      END;
-
-      Write(#8#8#8#8#8);
-
-      Scanned := TRUE;
-
-      Inc(TotalMsgsProcessed);
-    END;
-
-    HighestWritten := FidoMsgNum;
-
-  END;
-
-  IF (NOT IsNetMail) THEN
-    UpdateHiWater(MemMsgArea1.MsgPath,HighestWritten);
-
-  {$I-} Close(RGMsgHdrFile); {$I+}
-  LastError := IOResult;
-  IF (LastError <> 0) THEN
-  BEGIN
-    TextColor(Red);
-    WriteLn('Unable to close '+General1.MsgPath+MemMsgArea1.FileName+'.HDR.');
-    TextColor(LightGray);
-    LogError(General1.MsgPath+MemMsgArea1.FileName+'.HDR/Close File Error - '+IntToStr(LastError)+' (Proc: Scan)');
-    Exit;
-  END;
-
-  {$I-} Close(RGMsgTxtFile); {$I+}
-  LastError := IOResult;
-  IF (LastError <> 0) THEN
-  BEGIN
-    TextColor(Red);
-    WriteLn('Unable to close '+General1.MsgPath+MemMsgArea1.FileName+'.DAT.');
-    TextColor(LightGray);
-    LogError(General1.MsgPath+MemMsgArea1.FileName+'.DAT/Close File Error - '+IntToStr(LastError)+' (Proc: Scan)');
-    Exit;
-  END;
-
-  IF (NOT Scanned) THEN
-  BEGIN
-    LogActivity('No Messages!'^M^J);
-    Write('No messages!');
-  END
-  ELSE
-  BEGIN
-    LogActivity(^M^J);
-    LogActivity('Total processed: '+IntToStr(TotalMsgsProcessed)+^M^J);
-    LogActivity(^M^J);
-  END;
-
-END;
-
-BEGIN
-  DisplayMain(White,Black);
-
-  IF (ParamCount = 0) THEN
-    HaltErrorStrXY('No command line parameters specified!',12,23,Red + 128,Black,1);
-
-  TempParamStr := '';
-  ParamFound := FALSE;
-  ParamCounter := 1;
-  WHILE (ParamCounter <= ParamCount) DO
-  BEGIN
-    IF (SC(ParamStr(ParamCounter),1) = '-') THEN
-    BEGIN
-      CASE SC(ParamStr(ParamCounter),2) OF
-        'A' : Absolute_Scan := TRUE;
-        'D' : Purge_NetMail := FALSE;
-        'F' : FastPurge := FALSE;
-        'I' : Ignore_1Msg := FALSE;
-        'L' : Activity_Log := TRUE;
-        'N' : Process_NetMail := FALSE;
-        'O' : NetMailOnly := TRUE;
-        'P' : BEGIN
-                Purge_Dir := TRUE;
-                ParamFound := TRUE;
-              END;
-        'S' : BEGIN
-                Scan_Mail := TRUE;
-                ParamFound := TRUE;
-              END;
-        'T' : BEGIN
-                Toss_Mail := TRUE;
-                ParamFound := TRUE;
-              END;
-      END;
-      TempParamStr := TempParamStr + AllCaps(ParamStr(ParamCounter))+' ';
-    END;
-    Inc(ParamCounter);
-  END;
-
-  Dec(TempParamStr[0]);
-
-  IF (NOT ParamFound) THEN
-    HaltErrorStrXY('Valid commands are -T, -P, -S, (With or without options)',12,23,Red,Black,1);
-
-  GetDir(0,StartDir);
-
-  FileMode := 66;
-
-  GetGeneral(General);
-
-  GeneralPaths(General);
-
-  GeneralFiles(General);
-
-  LogActivity(^M^J);
-  LogActivity(ToDate8(DateStr)+' '+TimeStr+': Renemail initiated with '+TempParamStr+' parameter(s).'^M^J);
-  LogActivity(^M^J);
-
-  IF (Process_NetMail) AND (Toss_Mail) OR (Scan_Mail) THEN
-  BEGIN
-    IsNetMail := TRUE;
-    MemMsgArea.MsgPath := General.NetMailPath;
-    MemMsgArea.FileName := 'EMAIL';
-    MemMsgArea.MAFlags := [MASkludge];
-    IF (Toss_Mail) THEN
-    BEGIN
-      LogActivity(' Tossing:  NETMAIL - ');
-      TextColor(3);
-      Write(' Tossing: ');
-      TextColor(14);
-      Write(' NETMAIL - ');
-      Toss(General,MemMsgArea);
-      WriteLn;
-    END;
-    IF (Scan_Mail) THEN
-    BEGIN
-      LogActivity('Scanning:  NETMAIL - ');
-      TextColor(3);
-      Write('Scanning: ');
-      TextColor(14);
-      Write(' NETMAIL - ');
-      TextColor(11);
-      Scan(General,MemMsgArea);
-      WriteLn;
-    END;
-    IsNetMail := FALSE;
-  END;
-
-  IF (NOT NetMailOnly) THEN
-  BEGIN
-    IF (Toss_Mail) OR (Purge_Dir) OR (Scan_Mail) THEN
-    BEGIN
-      Assign(MessageAreaFile,General.DataPath+'MBASES.DAT');
-      {$I-} Reset(MessageAreaFile); {$I+}
-      LastError := IOResult;
-      IF (LastError <> 0) THEN
-      BEGIN
-        LogError(General.DataPath+'MBASES.DAT/Open File Error - '+IntToStr(LastError)+' (Proc: Main)');
-        HaltErrorStrXY('Unable to open '+General.DataPath+'MBASES.DAT!',12,23,Red + 128,Black,1);
-      END;
-      MsgArea := 1;
-      WHILE (MsgArea <= FileSize(MessageAreaFile)) DO
-      BEGIN
-        {$I-} Seek(MessageAreaFile,(MsgArea - 1)); {$I+}
-        LastError := IOResult;
-        IF (LastError <> 0) THEN
-        BEGIN
-          TextColor(Red);
-          WriteLn('Unable to seek record in '+General.DataPath+'MBASES.DAT');
-          TextColor(LightGray);
-          LogError(General.DataPath+'MBASES.DAT/Seek Record '+IntToStr(MsgArea - 1)+' Error - '+IntToStr(LastError)+
-                   ' (Proc: Main)');
-          Exit;
-        END;
-        {$I-} Read(MessageAreaFile,MemMsgArea); {$I+}
-        LastError := IOResult;
-        IF (LastError <> 0) THEN
-        BEGIN
-          TextColor(Red);
-          WriteLn('Unable to read record from '+General.DataPath+'MBASES.DAT');
-          TextColor(LightGray);
-          LogError(General.DataPath+'MBASES.DAT/Read Record '+IntToStr(MsgArea - 1)+' Error - '+IntToStr(LastError)+
-                   ' (Proc: Main)');
-          Exit;
-        END;
-        IF (MemMsgArea.MAType = 1) AND (NOT Scan_Mail OR (Absolute_Scan OR (MAScanOut IN MemMsgArea.MAFlags))) THEN
-        BEGIN
-          IF (Toss_Mail) THEN
-          BEGIN
-            LogActivity(' Tossing: '+PadRightStr(MemMsgArea.FileName,8)+' - ');
-            TextColor(3);
-            Write(' Tossing: ');
-            TextColor(14);
-            Write(PadRightStr(MemMsgArea.FileName,8)+' - ');
-            TextColor(11);
-            Toss(General,MemMsgArea);
-            WriteLn;
-          END;
-          IF (Purge_Dir) THEN
-          BEGIN
-            LogActivity(' Purging: '+PadRightStr(MemMsgArea.FileName,8)+' - ');
-            TextColor(3);
-            Write(' Purging: ');
-            TextColor(14);
-            Write(PadRightStr(MemMsgArea.FileName,8)+' - ');
-            TextColor(11);
-            PurgeDir(MemMsgArea.MsgPath);
-            WriteLn;
-          END;
-          IF (Scan_Mail) THEN
-          BEGIN
-            LogActivity('Scanning: '+PadRightStr(MemMsgArea.FileName,8)+' - ');
-            TextColor(3);
-            Write('Scanning: ');
-            TextColor(14);
-            Write(PadRightStr(MemMsgArea.FileName,8)+' - ');
-            TextColor(11);
-            Scan(General,MemMsgArea);
-            WriteLn;
-          END;
-          IF (Scan_Mail) AND (MAScanOut IN MemMsgArea.MAFlags) THEN
-          BEGIN
-            {$I-} Seek(MessageAreaFile,(MsgArea - 1)); {$I+}
-            LastError := IOResult;
-            IF (LastError <> 0) THEN
-            BEGIN
-              TextColor(Red);
-              WriteLn('Unable to seek record in '+General.DataPath+'MBASES.DAT');
-              TextColor(LightGray);
-              LogError(General.DataPath+'MBASES.DAT/Seek Record '+IntToStr(MsgArea - 1)+' Error - '+IntToStr(LastError)+
-                       ' (Proc: Main)');
-              Exit;
-            END;
-            Exclude(MemMsgArea.MAFlags,MAScanOut);
-            {$I-} Write(MessageAreaFile,MemMsgArea); {$I+}
-            LastError := IOResult;
-            IF (LastError <> 0) THEN
-            BEGIN
-              TextColor(Red);
-              WriteLn('Unable to write record to '+General.DataPath+'MBASES.DAT');
-              TextColor(LightGray);
-              LogError(General.DataPath+'MBASES.DAT/Write Record '+IntToStr(MsgArea - 1)+' Error - '+IntToStr(LastError)+
-                       ' (Proc: Main)');
-              Exit;
-            END;
-          END;
-        END;
-        Inc(MsgArea);
-      END;
-      {$I-} Close(MessageAreaFile); {$I+}
-      LastError := IOResult;
-      IF (LastError <> 0) THEN
-      BEGIN
-        TextColor(Red);
-        WriteLn('Unable to close '+General.DataPath+'MBASES.DAT');
-        TextColor(LightGray);
-        LogError(General.DataPath+'MBASES.DAT/Close File Error - '+IntToStr(LastError)+' (Proc: Main)');
-        Exit;
-      END;
-    END;
-  END;
-
-  LogActivity(^M^J);
-  LogActivity(ToDate8(DateStr)+' '+TimeStr+': Renemail completed with '+TempParamStr+' parameter(s).'^M^J);
-
-  ChDir(StartDir);
-
-  Window(1,1,80,25);
-
-  GoToXY(1,25);
-
-END.
 
 
+
+procedure aborterror(const s:string);
+begin
+  writeln(s);
+  halt(2);
+end;
+
+  function value (s : string) : longint;
+  var i : longint;
+  j : integer;
+  begin
+   val (s, i, j);
+   if (j <> 0) then begin
+      s[0]:=chr(j-1);
+      val (s, i, j)
+    end;
+    value := i;
+    if (s = '') then value := 0;
+  end;
+
+  function cstr (i : longint) : string;
+  var c : string [16];
+  begin
+    str (i, c);
+    cstr := c;
+  end;
+
+  procedure getmsglst (const dir : string);
+  var hiwater : longint;
+  begin
+      hiwater := 1;
+      if not isnetmail then
+        begin
+          assign (hiwaterf, dir + 'HI_WATER.MRK');
+          reset (hiwaterf);
+          if ioresult <> 0 then
+            begin
+               rewrite (hiwaterf);
+               write (hiwaterf, hiwater);
+               if ioresult <> 0 then
+                 aborterror('error creating ' + dir + '\HI_WATER.MRK');
+            end
+          else
+            begin
+              read (hiwaterf, hiwater);
+              i := ioresult;
+              findfirst (dir + cstr (hiwater) + '.MSG', 0, dirinfo);
+              if doserror <> 0 then hiwater := 1;
+            end;
+            close (hiwaterf);
+        end;
+      findfirst (dir + '*.MSG', 0, dirinfo);
+      highest := 1;
+      lowest := 999999;
+      while doserror = 0 do
+        begin
+          fi := value (dirinfo.name);
+          if fi < lowest then lowest := fi;
+          if fi > highest then highest := fi;
+          findnext (dirinfo);
+        end;
+
+      if hiwater <= highest then
+        if hiwater > 1 then
+          lowest := hiwater + 1;
+
+      if (ignore_1msg) then
+        if (lowest = 1) and (highest > 1) then
+          lowest := 2;
+    Lasterror := IOResult;
+  end;
+
+  procedure getpaths;
+
+     procedure badpath(const s:string);
+     begin
+       writeln('The ',s,' path is bad.  Please correct it.');
+       halt;
+     end;
+
+  begin
+    s := fsearch ('RENEGADE.DAT', getenv ('PATH') );
+    assign (statusf, s);
+    reset (statusf);
+    if (ioresult <> 0) or (s = '') then
+      begin
+        writeln ('RENEGADE.DAT must be in the current directory or the path.');
+        halt (1);
+      end;
+    read (statusf, statusr);
+    datapath := statusr.datapath;
+    if not (existdir(datapath)) then
+      badpath('DATA');
+    netmailpath := statusr.netmailpath;
+    if not (existdir(netmailpath)) then
+      badpath('NETMAIL');
+    msgpath := statusr.msgpath;
+    if not (existdir(msgpath)) then
+      badpath('MSGS');
+    close (statusf);
+    if ioresult <> 0 then
+      aborterror('error reading from RENEGADE.DAT');
+  end;
+
+  procedure updatehiwater (const dir:string; x:longint);
+  begin
+     assign (hiwaterf, dir + 'HI_WATER.MRK');
+     rewrite (hiwaterf);
+     write (hiwaterf, x);
+     close (hiwaterf);
+     i := ioresult;
+  end;
+
+  procedure purgedir (const dir : string);
+  var purged : boolean;
+  begin
+{$IFDEF MSDOS}
+    if fastpurge then
+      begin
+        chdir (copy (dir, 1, length (dir) - 1) );
+        if (IOResult <> 0) then
+          exit;
+        if (dir[2] = ':') then
+          fcb [1] := chr(ord(dir[1]) - 64)
+        else
+          fcb [1] := chr(ord(startdir[1]) - 64);
+        regs.ds := seg (fcb);
+        regs.dx := ofs (fcb);
+        regs.ax := $1300;
+        msdos (regs);
+        purged := (lo (regs.ax) = 0);
+      end
+    else
+      begin
+{$ENDIF}
+        purged := TRUE;
+        findfirst (dir + '*.MSG', 0, dirinfo);
+        if doserror <> 0 then
+          purged := FALSE
+        else
+          while doserror = 0 do
+            begin
+              assign (hiwaterf, dir + dirinfo.name);
+              erase (hiwaterf);
+              i := ioresult;
+              findnext (dirinfo);
+             end;
+{$IFDEF MSDOS}
+      end;
+{$ENDIF}
+      if not purged then write ('No messages')
+         else write ('Purged');
+      updatehiwater (dir, 1);
+  end;
+
+  function readmsg (x:longint ; const dir:string) : boolean;
+  var
+    q : boolean;
+  begin
+    assign (msgtfile, dir + cstr (x) + '.MSG');
+    reset (msgtfile, 1);
+    q := FALSE;
+    if ioresult = 0 then
+      begin
+        if filesize (msgtfile) >= sizeof(header) then
+          begin
+          blockread (msgtfile, header, sizeof(header));
+
+          s := StrPas(Header.FromUserName);
+
+          if ((header.attribute and 16) = 16) then
+            MsgHdr.fileattached := 1;
+
+          MsgHdr.from.a1s := s;
+          MsgHdr.from.real := s;
+          MsgHdr.from.name := s;
+
+          s := StrPas(Header.ToUserName);
+
+          MsgHdr.mto.a1s := s;
+          MsgHdr.mto.real := s;
+          MsgHdr.mto.name := s;
+
+          MsgHdr.Subject := StrPas(Header.Subject);
+
+          MsgHdr.OriginDate := StrPas(Header.DateTime);
+
+          q := TRUE;
+
+          if (Header.Attribute and 1 = 1) then
+            msghdr.status := [Sent, Prvt]
+          else
+            msghdr.status := [Sent];
+
+          if isnetmail then
+            begin
+              q:=FALSE;
+              msghdr.from.node := Header.OrigNode;
+              msghdr.from.net := Header.OrigNet;
+              msghdr.mto.node := Header.DestNode;
+              msghdr.mto.net := Header.DestNet;
+              msghdr.from.point := 0;
+              msghdr.mto.point := 0;
+              msghdr.from.zone := 0;
+              msghdr.mto.zone := 0;
+              if (Header.Attribute and 256 = 0) and
+                 (Header.Attribute and 4 = 0) then
+                for i := 0 to 19 do
+                    if (msghdr.mto.node = statusr.aka[i].node) and
+                       (msghdr.mto.net = statusr.aka[i].net) then
+                        begin
+                          msghdr.mto.zone := statusr.aka[i].zone;
+                          msghdr.from.zone := statusr.aka[i].zone;
+                          q := TRUE;
+                        end;
+            end;
+
+        if q then
+          begin
+            if (filesize(msgtfile) - 190) <= sizeof(buffer) then
+              x := filesize(msgtfile) - 190
+            else
+              x := sizeof(buffer);
+            blockread (msgtfile, buffer, x, msglength);
+            msgpointer := 0;
+            nos := '';
+            while (msgpointer < msglength) do begin
+              msgtxt := nos;
+              repeat
+               inc (msgpointer);
+               c := buffer [msgpointer];
+               if not (c in [#0, #10, #13, #141]) then
+                 if (length(msgtxt) < 255) then  {msgtxt := msgtxt + c;}
+                  begin
+                   inc(msgtxt[0]);
+                   msgtxt[length(msgtxt)] := c;
+                  end;
+              until (
+                    (nos = #13) or (c in [#13,#141])
+                    or
+                    ((length(msgtxt) > 79) and (pos(#27, msgtxt) = 0))
+                    or
+                    (length(msgtxt) = 254)
+                    or
+                    (msgpointer >= msglength)
+                    );
+                    if length (msgtxt) = 254 then
+                       msgtxt := msgtxt + #29;
+                    i := pos('TOPT ', msgtxt);
+                    if i>0 then q:=false;
+              end;
+          end;
+       end;
+       if isnetmail then
+         if q and purge_netmail then
+            begin
+              close (msgtfile);
+              erase (msgtfile)
+            end
+         else if q then
+           begin
+             Header.Attribute := 260;
+             seek (msgtfile, 0);
+             blockwrite (msgtfile, header, sizeof(Header));
+           end;
+       if not (isnetmail and q and purge_netmail) then
+        begin
+         close(msgtfile);
+         if (pos ('-R', allcaps (paramstr (1) ) ) > 0) then erase(msgtfile);
+        end;
+
+    end;
+    readmsg := q;
+    i := ioresult;
+  end;
+
+  procedure nextboard(Scanning:boolean);
+  var
+    GoodBoard,s4:boolean;
+    eelog : text;
+
+  begin
+    if board = 0 then
+      begin
+        i := ioresult;
+        assign (boardf, datapath + 'MBASES.DAT');
+        reset (boardf);
+        i := ioresult;
+        if i <> 0 then
+          begin
+            writeln (i,':Problem accessing ' + datapath + 'MBASES.DAT. Please fix.');
+            halt (1);
+          end;
+      end;
+
+    if board = filesize (boardf) then
+      begin
+        board := 32767;
+        exit;
+      end;
+
+    boardr.matype := 0;  boardr.maflags := []; GoodBoard := FALSE;
+
+    s4 := false;
+    while not GoodBoard and (board < filesize(boardf)) do
+      begin
+        read (boardf, boardr);
+     GoodBoard := (boardr.matype = 1) and
+                  (not scanning or (absolute_scan or (mascanout in boardr.maflags)));
+
+    if pos ('-X', allcaps (paramstr (1) ) ) >0 then
+     begin
+       GoodBoard := (boardr.matype = 1) and
+                    (boardr.filename=allcaps(paramstr(2)));
+     end;
+    inc(board);
+
+      end;
+
+    if (not GoodBoard) then
+      board := 32767
+    else
+      if scanning and (mascanout in boardr.maflags) then
+        begin
+          seek(boardf, board - 1);
+          boardr.maflags := boardr.maflags - [mascanout];
+          write(boardf, boardr);
+        end;
+
+  end;
+
+  procedure toss;
+  var i,j:word;
+      z:string [20];
+      istossed:boolean;
+      left, right, gap, oldgap : integer;
+  begin
+       istossed:=false;
+       msghdr.from.anon := 0;
+       msghdr.from.usernum := 0;
+       msghdr.mto.anon := 0;
+       msghdr.mto.usernum := 0;
+       msghdr.replyto := 0;
+       msghdr.replies := 0;
+       msghdr.fileattached := 0;
+
+       getdayofweek (msghdr.dayofweek);
+       msghdr.date := getpackdatetime;
+       getmsglst (boardr.msgpath);
+       if isnetmail and (highest > 1) then lowest := 1;
+
+       if (lowest <= highest) and ((highest > 1) or isnetmail) then begin
+
+          assign (msghdrf, msgpath + boardr.filename + '.HDR');
+          reset (msghdrf);
+          if (ioresult = 2) then rewrite (msghdrf);
+
+          assign (msgtxtf, msgpath + boardr.filename + '.DAT');
+          reset (msgtxtf, 1);
+          if (ioresult = 2) then rewrite (msgtxtf, 1);
+
+          seek (msghdrf, filesize (msghdrf) );
+          seek (msgtxtf, filesize (msgtxtf) );
+
+          if ioresult <> 0 then
+            aborterror('error accessing ' + msgpath + boardr.filename + '.*');
+
+          for msgnumber := lowest to highest do begin
+              write (msgnumber : 7);
+              if readmsg (msgnumber, boardr.msgpath) then
+                with msghdr do begin
+                  inc (date);
+                  pointer := filesize (msgtxtf) + 1;
+                  textsize := 0;
+                  msgpointer := 0;
+                  nos := '';
+                  while (msgpointer < msglength) do begin
+                    msgtxt := nos;
+                    repeat
+                      inc (msgpointer);
+                      c := buffer [msgpointer];
+                      if not (c in [#0, #10, #13, #141]) then
+                        if (length(msgtxt) < 255) then  {msgtxt := msgtxt + c;}
+                          begin
+                            inc(msgtxt[0]);
+                            msgtxt[length(msgtxt)] := c;
+                          end;
+                    until (
+                          (nos = #13) or (c in [#13,#141])
+                          or
+                          ((length(msgtxt) > 79) and (pos(#27, msgtxt) = 0))
+                          or
+                          (length(msgtxt) = 254)
+                          or
+                          (msgpointer >= msglength)
+                          );
+
+                    if length (msgtxt) = 254 then
+                       msgtxt := msgtxt + #29;
+
+                    i := pos('INTL ', msgtxt);
+                    if (i > 0) then
+                      begin
+                        inc(i, 6);
+                        for j := 1 to 8 do
+                          begin
+                            z := '';
+                            while (msgtxt[i] in ['0'..'9']) and (i <= length(msgtxt)) do
+                              begin
+                                z := z + msgtxt[i];
+                                inc(i);
+                              end;
+                            case j of
+                              1:msghdr.mto.zone := value(z);
+                              2:msghdr.mto.net := value(z);
+                              3:msghdr.mto.node := value(z);
+                              4:msghdr.mto.point := value(z);
+                              5:msghdr.from.zone := value(z);
+                              6:msghdr.from.net := value(z);
+                              7:msghdr.from.node := value(z);
+                              8:msghdr.from.point := value(z);
+                            end;
+                            if (j = 3) and (msgtxt[i] <> '.') then
+                              inc(j);
+                            if (j = 7) and (msgtxt[i] <> '.') then
+                              break;
+                            inc(i);
+                          end;
+                      end;
+                    i := pos('FMPT ', msgtxt);
+                    if (i > 0) then
+                      begin
+                        inc(i, 6);
+                        z := '';
+                        while (msgtxt[i] in ['0'..'9']) and (i <= length(msgtxt)) do
+                         begin
+                          z := z + msgtxt[i];
+                          inc(i);
+                         end;
+                        msghdr.from.point := value(z);
+                      end;
+
+                    if (length (msgtxt) > 79) then
+                      begin
+                        i := length (msgtxt);
+                        while (msgtxt [i] = ' ') and (i > 1) do
+                          dec (i);
+                        while (i > 65) and (msgtxt [i] <> ' ') do
+                          dec (i);
+
+                        nos[0] := chr(length(msgtxt) - i);
+                        move(msgtxt[i + 1], nos[1], length(msgtxt) - i);
+                        msgtxt[0] := chr(i - 1);
+
+                      end
+                    else
+                      nos := '';
+
+                    if ( (msgtxt [1] = #1) and (maskludge in boardr.maflags) ) or
+                       ( (pos ('SEEN-BY', msgtxt) > 0) and (masseenby in boardr.maflags) ) or
+                       ( (pos ('* Origin:', msgtxt) > 0) and (masorigin in boardr.maflags) ) then
+                       msgtxt := ''
+                    else begin
+                       inc (msghdr.textsize, length (msgtxt) + 1);
+                       blockwrite (msgtxtf, msgtxt, length (msgtxt) + 1);
+                    end;
+                  end;
+                  if isnetmail then begin
+                     istossed:=true;
+                     msghdr.status := msghdr.status + [netmail];
+                     msghdr.mto.usernum := SearchUser(msghdr.mto.a1s);
+                     if msghdr.mto.usernum = 0 then
+                       msghdr.mto.usernum := 1;
+                     seek (uf, msghdr.mto.usernum);
+                     read (uf, user);
+                     inc (user.waiting);
+                     seek (uf, msghdr.mto.usernum);
+                     write (uf, user);
+                  end;
+                  write (msghdrf, msghdr);
+                end;
+              if msgnumber < highest then write (#8#8#8#8#8#8#8);
+              i := ioresult;
+          end;
+          close (msghdrf);
+          close (msgtxtf);
+          if not isnetmail then
+           updatehiwater (boardr.msgpath, highest)
+           else
+           begin
+            if istossed then
+             begin
+               assign(msgtxtf,'renemail.net');
+               rewrite(msgtxtf);
+               close(msgtxtf);
+             end;
+           end;   
+       end else write ('No messages');
+    Lasterror := IOResult;
+  end;
+
+  procedure scan;
+  var rgmsgnumber : longint;
+      highestwritten : longint;
+      rescan : longint;
+      db : text;
+      zero : string;
+      AnsiOn,
+      scanned : boolean;
+  begin
+       AnsiOn := FALSE;
+       scanned := FALSE;
+       getmsglst (boardr.msgpath);
+       msgnumber := highest;
+       if (not existdir(boardr.msgpath)) then
+         begin
+           writeln('WARNING: Cannot access ', boardr.msgpath);
+           exit;
+         end;
+
+       assign (msghdrf, msgpath + boardr.filename + '.HDR');
+       reset (msghdrf);
+       if ioresult <> 0 then exit;
+
+       assign (msgtxtf, msgpath + boardr.filename + '.DAT');
+       reset (msgtxtf, 1);
+       if ioresult <> 0 then begin close (msghdrf); exit; end;
+
+       rescan:=0;
+       for rgmsgnumber := 1 to filesize (msghdrf) do begin
+           seek (msghdrf, rgmsgnumber - 1);
+           read (msghdrf, msghdr);
+           if (not (sent in msghdr.status) and (ioresult = 0) and
+              not (mdeleted in msghdr.status) and
+              not (isnetmail and not (netmail in msghdr.status)) and
+              not (unvalidated in msghdr.status) and
+              (pos ('-X', allcaps (paramstr (1) ) ) = 0)) or
+              ((ioresult = 0) and
+              not (mdeleted in msghdr.status) and
+              not (unvalidated in msghdr.status) and
+              (pos ('-X', allcaps (paramstr (1) ) ) > 0)) then
+              begin
+              scanned := TRUE;
+              inc (msgnumber);
+              if (pos ('-X', allcaps (paramstr (1) ) ) > 0) then
+              begin
+                zero:='';
+                assign (msgtfile, paramstr(3)+'\' + zero+cstr (msgnumber) + '.MSG');
+                rescan:=rescan+1;
+              end
+              else
+                assign (msgtfile, boardr.msgpath + cstr (msgnumber) + '.MSG');
+              rewrite (msgtfile, 1);
+              write (rgmsgnumber : 7);
+
+              msghdr.status := msghdr.status + [sent];
+
+              if isnetmail then
+                msghdr.status := msghdr.status + [mdeleted];
+
+              seek (msghdrf, rgmsgnumber - 1);
+              if (pos ('-X', allcaps (paramstr (1) ) ) = 0) then
+               write (msghdrf, msghdr);
+
+              if (marealname in boardr.maflags) then
+                s := caps (msghdr.from.real)
+              else
+                s := caps (msghdr.from.a1s);
+
+              s := usename(msghdr.from.anon, s);
+
+              fillchar(Header,sizeof(Header),#0);
+
+              move(s[1],Header.FromUserName[0],length(s));
+
+              if (marealname in boardr.maflags) then
+                s := caps (msghdr.mto.real)
+              else
+                s := caps (msghdr.mto.a1s);
+
+              s := usename(msghdr.mto.anon, s);
+
+              move(s[1],Header.ToUserName[0],length(s));
+
+              MsgHdr.Subject := stripcolor(MsgHdr.Subject);
+
+              if (not isnetmail) and (msghdr.fileattached > 0) then
+                MsgHdr.Subject := StripName(MsgHdr.Subject);
+
+              move(MsgHdr.Subject[1],Header.Subject[0],length(MsgHdr.Subject));
+
+              packtodate (dt, msghdr.date);
+              with dt do begin
+               s := cstr (day);
+                if length (s) < 2 then s := '0' + s;
+               s := s + ' ' + copy ('JanFebMarAprMayJunJulAugSepOctNovDec', (month - 1) * 3 + 1, 3) + ' ';
+               s := s + copy (cstr (year), 3, 2) + '  ';
+               nos := cstr (hour);
+               if length (nos) < 2 then nos := '0' + nos;
+               s := s + nos + ':';
+               nos := cstr (min);
+               if length (nos) < 2 then nos := '0' + nos;
+               s := s + nos + ':';
+               nos := cstr (sec);
+              end;
+              if length (nos) < 2 then nos := '0' + nos;
+              s := s + nos;
+
+              move(s[1],Header.DateTime[0],length(s));
+
+              if isnetmail then begin
+                 Header.OrigNet := msghdr.from.net;
+                 Header.OrigNode := msghdr.from.node;
+                 Header.DestNet := msghdr.mto.net;
+                 Header.DestNode := msghdr.mto.node;
+              end else begin
+                 Header.OrigNet := statusr.aka [boardr.aka].net;
+                 Header.OrigNode := statusr.aka [boardr.aka].node;
+                 Header.DestNet := 0;
+                 Header.DestNode := 0;
+              end;
+
+              if isnetmail then
+                Header.Attribute := word(msghdr.netattribute)
+                {word(statusr.netattribute)}
+              else
+                if (prvt in msghdr.status) then
+                  Header.Attribute := 257
+                else
+                  Header.Attribute := 256;
+
+              if (msghdr.fileattached > 0) then
+                Header.Attribute := Header.Attribute + 16;
+
+              blockwrite (msgtfile, header, sizeof(Header));
+              seek (msgtxtf, msghdr.pointer - 1);
+
+              if isnetmail then
+               begin
+                s := #1'INTL ' + cstr (msghdr.mto.zone) + ':' + cstr (msghdr.mto.net) + '/' + cstr (msghdr.mto.node);
+                s := s + ' ' + cstr (msghdr.from.zone) + ':' + cstr (msghdr.from.net) + '/' + cstr (msghdr.from.node);
+                s := s + #13;
+                blockwrite (msgtfile, s [1], length (s) );
+                if msghdr.mto.point >0 then
+                  begin
+                    s := #1'TOPT ' + cstr(msghdr.mto.point)+ #13;
+                    blockwrite (msgtfile, s [1], length (s) );
+                  end;
+                if msghdr.from.point > 0 then
+                  begin
+                    s := #1'FMPT ' + cstr(msghdr.from.point) + #13;
+                    blockwrite (msgtfile, s [1], length (s) );
+                  end;
+               end;
+
+              j := 0;
+              if (msghdr.textsize) > 0 then
+              repeat
+                blockread (msgtxtf, s [0], 1);
+                blockread (msgtxtf, s [1], ord (s [0]) );
+                inc (j, length (s) + 1);
+                while pos(#0,s) > 0 do
+                  delete(s,pos(#0,s),1);
+                if s [length (s) ] = #29 then
+                  dec(s[0])
+                else
+                  if pos (#27, s) = 0 then
+                    s := stripcolor(s)
+                  else
+                    AnsiOn := TRUE;
+                s := s + #13;
+                if length(s)<81 then
+                 blockwrite (msgtfile, s [1], length (s) );
+              until (j >= msghdr.textsize) or (j>16383);
+              close (msgtfile);
+              write (#8#8#8#8#8#8#8);
+           end;
+           highestwritten := msgnumber;
+       end;
+       i := ioresult;
+
+       if not isnetmail and scanned and
+         (pos ('-X', allcaps (paramstr (1) ) ) = 0) then
+         begin
+           updatehiwater (boardr.msgpath, highestwritten);
+         end;
+       close (msghdrf);
+       close (msgtxtf);
+       if not scanned then write ('No messages');
+    Lasterror := IOResult;
+  end;
+
+begin
+  Randomize;
+  getdir (0, startdir);
+  for x := 1 to 37 do
+     fcb [x] := ' ';
+  fcb [1] := chr (ord (startdir [1]) - 64);
+  fcb [2] := '*';
+  fcb [10] := 'M';
+  fcb [11] := 'S';
+  fcb [12] := 'G';
+  filemode := 66;
+  msghdr.from.zone := 0;
+  msghdr.from.point := 0;
+  GetDate(Year,Month,MDay,WDay);
+  clrscr;
+
+  if paramstr (1) = '' then
+    begin
+DisplayMain(White,Black);
+DisplayHelp(White,Black);
+  if paramstr (1) = '' then
+    HaltErrorStrXY('No Command Line Parameters Specified!',12,23,Red + 128,Black,1);
+   end;
+  assign (sf,'RENEMAIL.!!!');
+  if ioresult=0 then
+   begin
+     rewrite(sf);
+     close(sf);
+   end;
+  for i := 1 to paramcount do
+      if (pos ('-N', allcaps (paramstr (i) ) ) > 0) or
+         (pos ('-X', allcaps (paramstr (i) ) ) > 0) then
+         process_netmail := FALSE
+      else
+         if pos ('-F', allcaps (paramstr (i) ) ) > 0 then
+            fastpurge := FALSE
+         else
+            if pos ('-D', allcaps (paramstr (i) ) ) > 0 then
+               purge_netmail := FALSE
+            else
+              if pos ('-B', allcaps (paramstr (i) ) ) > 0 then
+                 directvideo := FALSE
+              else
+                if pos ('-O', allcaps (paramstr (i) ) ) > 0 then
+                   netmailonly := TRUE
+                else
+                  if pos ('-A', allcaps (paramstr (i) ) ) > 0 then
+                     absolute_scan := TRUE
+                  else
+                    if pos ('-I', allcaps (paramstr (i) ) ) > 0 then
+                       ignore_1msg := FALSE;
+  board := 0;
+  getpaths;
+
+  if process_netmail then
+    begin
+       boardr.msgpath := netmailpath;
+       boardr.filename := 'EMAIL';
+       boardr.maflags := [maskludge];
+       assign (uf, datapath + 'users.dat');
+       reset (uf);
+       if ioresult <> 0 then
+         aborterror('Cannot find users.dat in your DATA directory');
+       assign (sf, datapath + 'users.idx');
+       reset (sf);
+       if ioresult <> 0 then
+         aborterror('Cannot find users.idx in your DATA directory');
+
+       isnetmail := TRUE;
+       textcolor (3);
+       write ('Processing: ');
+       textcolor (14);
+       write (' NETMAIL - ');
+       textcolor (11);
+       if pos ('-T', allcaps (paramstr (1) ) ) > 0 then toss;
+       if pos ('-R', allcaps (paramstr (1) ) ) > 0 then toss;
+       if pos ('-S', allcaps (paramstr (1) ) ) > 0 then scan;
+       if pos ('-X', allcaps (paramstr (1) ) ) > 0 then scan;
+       close (uf);
+       close (sf);
+       Lasterror := IOResult;
+       writeln;
+       isnetmail := FALSE;
+    end;
+
+  if netmailonly then halt;
+
+  while board <> 32767 do begin
+       if (pos ('-S', allcaps (paramstr (1) ) ) > 0) then
+           nextboard(true)
+        else
+           nextboard(false);
+       if board <> 32767 then begin
+       textcolor (3);
+       write ('Processing: ');
+       textcolor (14);
+       write (boardr.filename : 8, ' - ');
+       textcolor (11);
+       if pos ('-P', allcaps (paramstr (1) ) ) > 0 then purgedir (boardr.msgpath)
+          else if (pos ('-T', allcaps (paramstr (1) ) ) > 0) or
+                  (pos ('-R', allcaps (paramstr (1) ) ) > 0) then toss
+          else if (pos ('-S', allcaps (paramstr (1) ) ) > 0) or
+                  (pos ('-X', allcaps (paramstr (1) ) ) > 0) then scan;
+        writeln;
+    end else close (boardf)
+  end;
+  chdir (startdir);
+  assign(sf,'RENEMAIL.!!!');
+  erase (sf);
+end.
