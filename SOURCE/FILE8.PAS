@@ -480,11 +480,11 @@ BEGIN
               NL;
               Print('^1Download statistics (Totals):^0');
               NL;
-              Star('File name         : ^1'+SQOutSp(FileInfo.FileName));
-              Star('File size         : ^1'+ConvertBytes({Totals.BytesDL}FileInfo.FileSize,FALSE));
-              Star('File point(s)     : ^1'+FormatNumber({Totals.PointsDL}FileInfo.FilePoints));
-              Star(AOnOff(ProtocolNumber = -1,'View time         ','Download time     ')+': ^1'+FormattedTime(TransferTime));
-              Star('Transfer rate     : ^1'+FormatNumber(GetCPS(FileInfo.FileSize,Transfertime))+' cps');
+              Star('^0File name         : ^1'+SQOutSp(FileInfo.FileName));
+              Star('^0File size         : ^1'+ConvertBytes({Totals.BytesDL}FileInfo.FileSize,FALSE));
+              Star('^0File point(s)     : ^1'+FormatNumber({Totals.PointsDL}FileInfo.FilePoints));
+              Star(AOnOff(ProtocolNumber = -1,'View time         ','^0Download time     ')+': ^1'+FormattedTime(TransferTime));
+              Star('^0Transfer rate     : ^1'+FormatNumber(GetCPS(FileInfo.FileSize,Transfertime))+' cps');
 
               SysOpLog('^1 - Totals:'+
                        ' '+FormatNumber({Totals.FilesDL}1)+' '+Plural('file',{Totals.FilesDL}1)+
@@ -497,9 +497,9 @@ BEGIN
               NL;
               Print('^1Download statistics (Charges):^0');
               NL;
-              Star('File(s)           : ^1'+FormatNumber({Totals.FilesDLRatio}1));
-              Star('File size         : ^1'+ConvertBytes({Totals.BytesDLRatio}FileInfo.FileSize,FALSE));
-              Star('File point(s)     : ^1'+FormatNumber({Totals.PointsDLRatio}FileInfo.FilePoints));
+              Star('^0File(s)           : ^1'+FormatNumber({Totals.FilesDLRatio}1));
+              Star('^0File size         : ^1'+ConvertBytes({Totals.BytesDLRatio}FileInfo.FileSize,FALSE));
+              Star('^0File point(s)     : ^1'+FormatNumber({Totals.PointsDLRatio}FileInfo.FilePoints));
 
               SysOpLog('^1 - Charges:'+
                        ' '+FormatNumber({Totals.FilesDLRatio}1)+' '+Plural('file',{Totals.FilesDLRatio}1)+
