@@ -548,6 +548,7 @@ VAR
   (* LastCommand: STRING[255];  { Last command and parameter ("CMD;PARAM") - LeeW: Added 03/23/2022 } *)
 
 {UNSORTED}
+PROCEDURE RGN;
 PROCEDURE Update_Logo(VAR Addr1,Addr2; BlkLen: Integer); { LeeW: Moved from MyIO}
 PROCEDURE SaveScreen(VAR Wind: WindowRec);
 PROCEDURE RemoveWindow(VAR Wind: WindowRec); {^}
@@ -4781,4 +4782,81 @@ BEGIN
   UNTIL (Ticks > CheckMS);
 END;
 }
-END.
+
+Procedure RGN; {8/04/24 - atreyu, tweaks into rg internal exo}
+VAR
+
+nr : NodeRecordType;
+gr : GeneralRecordType;
+g : file of GeneralRecordType;
+f : file of NodeRecordType;
+x : longint;
+
+function value (s : string) : longint;
+var i : longint;
+j : integer;
+begin
+ val (s, i, j);
+ if (j <> 0) then
+  begin
+   s[0]:=chr(j-1);
+   val (s, i, j)
+  end;
+ value := i;
+ if (s = '') then value := 0;
+end;
+
+begin
+  writeln;
+  if (paramstr(2)<>'') then
+   begin
+     assign(g,'RENEGADE.DAT');
+     reset(g);
+     if ioresult=0 then
+      begin
+        read(g,gr);
+        close(g);
+        writeln('Updating '+gr.datapath+'MULTNODE.DAT');
+        assign(f, gr.datapath+'MULTNODE.DAT');
+        rewrite(f);
+        if ioresult=0 then
+         begin                          
+          nr.user:=1;
+          if (paramstr(4)>'') then nr.username:=paramstr(4);
+          nr.citystate:='';
+          nr.sex:='M';
+          nr.age:=2024-1970;
+          nr.logontime:=0;
+          (* nr.activity:=255; *)
+          if (paramstr(5)>'') then nr.activitydesc:=paramstr(5);
+          if (paramstr(6)>'') then nr.activitydesc:=nr.activitydesc+' '+paramstr(6);
+          if (paramstr(7)>'') then nr.activitydesc:=nr.activitydesc+' '+paramstr(7);
+          if (paramstr(3)='on') or (paramstr(3)='ON') or
+             (paramstr(3)='y') or (paramstr(3)='Y') then
+           nr.status := nr.status + [NActive]
+          else
+           nr.status := nr.status - [NActive];
+          x:=value(paramstr(2));
+          if (x>0) then seek(f,x-1);
+          write(f,nr);
+          close(f);
+         end
+         else
+          writeln('Error manipulating MULTNODE.DAT');
+      end
+      else
+       writeln('Error opening RENEGADE.DAT');
+   end
+   else
+   begin
+    writeln('Usage: Renegade -R [Node number] [ON or OFF] [Username w/NO spaces] [Activity]');
+    writeln;
+    writeln('ie. Renegade -R 5 ON UserName Doing something');
+    writeln('    Renegade -R 5 OFF');
+    writeln;
+   end;
+end;
+end.
+
+
+

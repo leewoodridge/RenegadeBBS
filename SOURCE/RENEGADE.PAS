@@ -189,12 +189,6 @@ BEGIN
                           {---------------------------------------|----------------------------------------} {80 CHARS}
                   Halt;
                 END;
-        'K' : BEGIN
-                IF (SC(ParamStr(Counter),3) <> 'C') THEN
-                  HangUpTelnet := TRUE;
-                Telnet := TRUE;
-                HangUpKick := TRUE;
-              END;
         'B' : AnswerBaud := StrToInt(Copy(ParamStr(Counter),3,255));
         'C' : Reliable := (Pos(AllCaps(Liner.Reliable),AllCaps(ParamStr(Counter))) > 0);
         'D' : OvrUseEms := FALSE;
@@ -206,12 +200,22 @@ BEGIN
                   'N' : ExitNormal := StrToInt(Copy(d,4,(Length(d) - 3)));
                 END;
               END;
+        'F' : BEGIN
+                FileBBSOnly := TRUE;
+                LocalIOOnly := TRUE;
+              END;
         'H' : SockHandle := Copy(ParamStr(Counter),3,255);
         'I' : BEGIN
                 CASE SC(ParamStr(Counter),3) OF
                  'D' : CallerIDNumber := Copy(ParamStr(Counter),4,255);
                  'P' : CallerIDNumber := Copy(ParamStr(Counter),4,255);
                END;
+              END;
+        'K' : BEGIN
+                IF (SC(ParamStr(Counter),3) <> 'C') THEN
+                  HangUpTelnet := TRUE;
+                Telnet := TRUE;
+                HangUpKick := TRUE;
               END;
         'L' : LocalIOOnly := TRUE;
         'M' : BEGIN
@@ -224,12 +228,12 @@ BEGIN
                 LocalIOOnly := TRUE;
               END;
         'Q' : QuitAfterDone := TRUE;
+        'R' : BEGIN
+               RGN;
+               HALT;
+              END;
         'S' : BEGIN
                 SortFilesOnly := TRUE;
-                LocalIOOnly := TRUE;
-              END;
-        'F' : BEGIN
-                FileBBSOnly := TRUE;
                 LocalIOOnly := TRUE;
               END;
         'T' : BEGIN
