@@ -181,7 +181,7 @@ BEGIN
     LastError := IOResult;
     IF (LastError > 0) THEN
     BEGIN
-      SysOpLog('FBASES.DAT/Open Error - '+IntToStr(LastError)+' (Procedure: LoadFileArea - '+IntToStr(FArea)+')');
+      {SysOpLog('FBASES.DAT/Open Error - '+IntToStr(LastError)+' (Procedure: LoadFileArea - '+IntToStr(FArea)+')');}
       Exit;
     END;
   END;
@@ -189,14 +189,14 @@ BEGIN
   LastError := IOResult;
   IF (LastError > 0) THEN
   BEGIN
-    SysOpLog('FBASES.DAT/Seek Error - '+IntToStr(LastError)+' (Procedure: LoadFileArea - '+IntToStr(FArea)+')');
+    {SysOpLog('FBASES.DAT/Seek Error - '+IntToStr(LastError)+' (Procedure: LoadFileArea - '+IntToStr(FArea)+')');}
     Exit;
   END;
   Read(FileAreaFile,MemFileArea);
   LastError := IOResult;
   IF (LastError > 0) THEN
   BEGIN
-    SysOpLog('FBASES.DAT/Read Error - '+IntToStr(LastError)+' (Procedure: LoadFileArea - '+IntToStr(FArea)+')');
+    {SysOpLog('FBASES.DAT/Read Error - '+IntToStr(LastError)+' (Procedure: LoadFileArea - '+IntToStr(FArea)+')');}
     Exit;
   END
   ELSE
@@ -207,7 +207,7 @@ BEGIN
     LastError := IOResult;
     IF (LastError > 0) THEN
     BEGIN
-      SysOpLog('FBASES.DAT/Close Error - '+IntToStr(LastError)+' (Procedure: LoadFileArea - '+IntToStr(FArea)+')');
+      {SysOpLog('FBASES.DAT/Close Error - '+IntToStr(LastError)+' (Procedure: LoadFileArea - '+IntToStr(FArea)+')');}
       Exit;
     END;
   END;
