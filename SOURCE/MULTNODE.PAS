@@ -436,7 +436,7 @@ VAR
       IF (NodeR.Room = Chan) AND (NodeR.GroupChat) THEN
         Inc(People);
     END;
-    IF (People = 0) THEN
+    IF (People <> 0) THEN
     BEGIN
       NL;
       IF (Room.Moderator >= 0) THEN
