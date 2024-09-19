@@ -1,0 +1,8 @@
+*.BAK
+*.$$$
+*.swp
+*.iml
+*.DSK
+.idea
+.DS_Store
+OUT/

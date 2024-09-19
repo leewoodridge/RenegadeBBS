@@ -1230,6 +1230,7 @@ VAR
   RGStrFile: FILE;
   S: STRING;
   TotLoad: LongInt;
+  Res: Word; { Result of loading a block, used for checking string exists. }
 BEGIN
   Assign(StrPointerFile,General.TextPath+'RGLNGPR.DAT');
   Reset(StrPointerFile);
@@ -1240,10 +1241,35 @@ BEGIN
   TotLoad := 0;
   Assign(RGStrFile,General.TextPath+'RGLNGTX.DAT');
   Reset(RGStrFile,1);
+
+  IF StrPointer.Pointer-1 >= FileSize(RGStrFile) THEN
+  BEGIN
+       Writeln('Detected bad RGLNG string ', StrNum);
+       Writeln('Attempted to read ', StrPointer.Pointer-1,
+               ' for file of size ', FileSize(RGStrFile));
+       Halt(1);
+  END;
+
   Seek(RGStrFile,(StrPointer.Pointer - 1));
   REPEAT
-    BlockRead(RGStrFile,S[0],1);
-    BlockRead(RGStrFile,S[1],Ord(S[0]));
+    BlockRead(RGStrFile,S[0],1, Res);
+    { Find out if we read the expected number of records }
+    IF Res <> 1 THEN
+    BEGIN
+       Writeln('Unable to read RGLngStr #', StrNum, ' Bad # of records');
+       Halt(1);
+    END;
+
+    BlockRead(RGStrFile,S[1],Ord(S[0]), Res);
+
+    { Check expected read number of records again }
+    IF Res <> Ord(S[0]) THEN
+    BEGIN
+       Writeln('Unable to read records for RGLngStr #', StrNum);
+       Delay(1000);
+       Halt(1);
+    END;
+
     Inc(TotLoad,(Length(S) + 1));
     { -- }
     CASE StrNum OF
