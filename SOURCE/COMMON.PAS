@@ -1266,7 +1266,6 @@ BEGIN
     IF Res <> Ord(S[0]) THEN
     BEGIN
        Writeln('Unable to read records for RGLngStr #', StrNum);
-       Delay(1000);
        Halt(1);
     END;
 
