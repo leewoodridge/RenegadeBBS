@@ -869,7 +869,7 @@ BEGIN
     IF (InputStr = '?') THEN
       ListBatchDLFiles;
     NL;
-    Prt('File to remove? (^11^2-^1'+IntToStr(NumBatchDLFiles)+'^2) [^1?^2=^1List^2,^1<CR>^2=^1Quit^2]: ');
+    Prt('^2File to remove? (^11^2-^1'+IntToStr(NumBatchDLFiles)+'^2) [^1?^2=^1List^2,^1<CR>^2=^1Quit^2]: ');
     MPL(Length(IntToStr(NumBatchDLFiles)));
     ScanInput(InputStr,^M'?');
     FileNumToRemove := StrToInt(InputStr);
