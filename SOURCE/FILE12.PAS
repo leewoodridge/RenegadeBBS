@@ -58,9 +58,10 @@ VAR
 BEGIN
   IF (NumBatchULFiles = 0) THEN
   BEGIN
-    NL;
-    Print('The batch upload queue is empty.');
-    Exit;
+    {NL;
+    Print('The batch upload queue is empty.');}
+    lRGLngStr(286,FALSE);
+    	Exit;
   END;
   REPEAT
     NL;
@@ -82,9 +83,10 @@ VAR
 BEGIN
   IF (NumBatchULFiles = 0) THEN
   BEGIN
-    NL;
-    Print('The batch upload queue is empty.');
-    Exit;
+    {NL;
+    Print('The batch upload queue is empty.');}
+    lRGLngStr(286,FALSE);   
+	Exit;
   END;
   Abort := FALSE;
   Next := FALSE;
@@ -145,9 +147,10 @@ VAR
 BEGIN
   IF (NumBatchULFiles = 0) THEN
   BEGIN
-    NL;
-    Print('The batch upload queue is empty.');
-    Exit;
+    {NL;
+    Print('The batch upload queue is empty.');}
+    lRGLngStr(286,FALSE);
+	    Exit;
   END;
   InputStr := '?';
   REPEAT
@@ -242,8 +245,9 @@ BEGIN
         END
         ELSE
         BEGIN
-          NL;
-          Print('The batch upload queue is now empty.');
+          {NL;
+          Print('The batch upload queue is now empty.');}
+		  lRGLngStr(286,FALSE);
           SysOpLog('Cleared the batch upload queue.');
         END;
       END;
@@ -262,8 +266,9 @@ VAR
 BEGIN
   IF (NumBatchULFiles = 0) THEN
   BEGIN
-    NL;
-    Print('The batch upload queue is empty.');
+    {NL;
+    Print('The batch upload queue is empty.');}
+	lRGLngStr(286,FALSE);
     Exit;
   END;
   NL;
@@ -333,8 +338,9 @@ BEGIN
     END;
     Close(BatchULFile);
     LastError := IOResult;
-    NL;
-    Print('The batch upload queue is now empty.');
+    {NL;
+    Print('The batch upload queue is now empty.');}
+	lRGLngStr(286,FALSE);
     SysOpLog('Cleared the batch upload queue.');
   END;
 END;

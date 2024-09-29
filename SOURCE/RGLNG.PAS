@@ -691,6 +691,10 @@ BEGIN
                 RgStrNum := 284
               ELSE IF (S = 'MULTINODE_UNAVAILABLE') THEN
                 RgStrNum := 285
+              ELSE IF (S = 'BATCH_UP_EMPTY') THEN
+                RgStrNum := 286
+              ELSE IF (S = 'BATCH_DL_EMPTY') THEN
+                RgStrNum := 287
                 {// END OF COMB }
                 (*
               ELSE IF (S = '') THEN

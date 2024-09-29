@@ -63,9 +63,10 @@ VAR
 BEGIN
   IF (NumBatchDLFiles = 0) THEN
   BEGIN
-    NL;
-    Print('The batch download queue is empty');
-    Exit;
+    {NL;
+    Print('The batch download queue is empty');}
+    lRGLngStr(287,FALSE);
+	Exit;
   END;
   REPEAT
     NL;
@@ -367,8 +368,9 @@ VAR
 BEGIN
   IF (NumBatchDLFiles = 0) THEN
   BEGIN
-    NL;
-    Print('The batch download queue is empty.');
+   { NL;
+    Print('The batch download queue is empty.');}
+    lRGLngStr(287,FALSE);
     Exit;
   END;
 
@@ -804,8 +806,9 @@ VAR
 BEGIN
   IF (NumBatchDLFiles = 0) THEN
   BEGIN
-    NL;
-    Print('The batch download queue is empty.');
+   { NL;
+    Print('The batch download queue is empty.');}
+	lRGLngStr(287,FALSE);
     Exit;
   END;
   Abort := FALSE;
@@ -856,9 +859,10 @@ VAR
 BEGIN
   IF (NumBatchDLFiles = 0) THEN
   BEGIN
-    NL;
-    Print('The batch download queue is empty.');
-    Exit;
+    {NL;
+    Print('The batch download queue is empty.');}
+    lRGLngStr(287,FALSE);
+	    Exit;
   END;
   InputStr := '?';
   REPEAT
@@ -930,8 +934,9 @@ BEGIN
           BatchDLTime := 0;
           BatchDLSize := 0;
           BatchDLPoints := 0;
-          NL;
-          Print('The batch download queue is now empty.');
+          {NL;
+          Print('The batch download queue is now empty.');}
+		  lRGLngStr(287,FALSE);
           SysOpLog('Cleared the batch download queue.');
         END;
       END;
@@ -945,8 +950,9 @@ VAR
 BEGIN
   IF (NumBatchDLFiles = 0) THEN
   BEGIN
-    NL;
-    Print('The batch download queue is empty.');
+    {NL;
+    Print('The batch download queue is empty.');}
+	lRGLngStr(287,FALSE);
     Exit;
   END;
   NL;
@@ -988,8 +994,9 @@ BEGIN
     BatchDLTime := 0;
     BatchDLSize := 0;
     BatchDLPoints := 0;
-    NL;
-    Print('The batch download queue is now empty.');
+    {NL;
+    Print('The batch download queue is now empty.');}
+	lRGLngStr(287,FALSE);
     SysOpLog('Cleared the batch download queue.');
   END;
 END;
