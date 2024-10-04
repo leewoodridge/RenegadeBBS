@@ -313,7 +313,7 @@ CONST
   RoomNumber: Integer = 0;                { Room OF teleconference }
   NewMenuToLoad: Boolean = FALSE;         { menu command returns TRUE IF new menu TO load }
   OvrUseEMS: Boolean = TRUE;              { Use EMS for overlay? }
-  OverlayLocation: Byte = 0;              { 0=Normal(Disk?), 1=EMS, 2=XMS }
+  OverlayLocation: Byte = 1;              { 0=Normal(Disk?), 1=EMS, 2=XMS }
   OutCom: Boolean = FALSE;                { Are we outputting to com? }
   DirFileopen1: Boolean = TRUE;           { whether DirFile has been opened before }
   ExtFileOpen1: Boolean = TRUE;           {  }

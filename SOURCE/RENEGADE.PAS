@@ -71,6 +71,7 @@ USES
 
 CONST
   NeedToHangUp: Boolean = FALSE;
+  OvrMaxSize=65536;
 
 VAR
   ExitSave: Pointer;
@@ -80,6 +81,10 @@ VAR
   S: Astr;
   Counter: Byte;
   Counter1: Integer;
+
+Procedure OvrInitXMS; External;
+{$L OVERXMS.OBJ }
+
 
 PROCEDURE ErrorHandle;
 VAR
@@ -320,6 +325,9 @@ BEGIN
         BEGIN
           Write(' - Attempting to load overlays ('+FormatNumber(OvrGetBuf)+' Bytes) into EMS memory ... ');
           OvrInitEMS;
+  ovrsetbuf(ovrmaxsize);
+  ovrsetretry(ovrmaxsize div 3);
+
           IF (OvrResult = OvrOK) THEN
             BEGIN
               WriteLn('Done!');
