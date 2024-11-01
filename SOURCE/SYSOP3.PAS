@@ -473,7 +473,7 @@ VAR
     DisplaySearchOptions;
     REPEAT
       NL;
-      Prt('Change [^1?^2=^1Help^2]: ');
+      Prt('^2Change [^1?^2=^1Help^2]: ');
       InputChar('',Cmd1,'Q0123456789AGPKNCLTU?'^M,[CapAll]);
       NL;
       CASE Cmd1 OF
@@ -528,7 +528,7 @@ VAR
               END;
         '4' : BEGIN
                 REPEAT
-                  Prt('Toggle which AR flag? ('+DisplayARFlags(F_AR,'5','4')+'^2) [^1?^2=^1Help^2,^1<CR>^2=^1Quit^2]: ');
+                  Prt('^2Toggle which AR flag? ('+DisplayARFlags(F_AR,'5','4')+'^2) [^1?^2=^1Help^2,^1<CR>^2=^1Quit^2]: ');
                   InputChar('',Cmd1,^M'ABCDEFGHIJKLMNOPQRSTUVWXYZ?',[CapAll]);
                   IF (Cmd1 = '?') THEN
                     PrintF('ARFLAGS')
@@ -539,7 +539,7 @@ VAR
               END;
         '5' : BEGIN
                 REPEAT
-                  Prt('Toggle which AC flag? ['+DisplayACFlags(F_AC,'5','4')+'] [?]Help: ');
+                  Prt('^2Toggle which AC flag? ['+DisplayACFlags(F_AC,'5','4')+'] [?]Help: ');
                   InputChar('',Cmd1,^M'LCVUA*PEKM1234?',[CapAll]);
                   IF (Cmd1 = '?') THEN
                     PrintF('ACFLAGS')
@@ -552,7 +552,7 @@ VAR
                 REPEAT
                   Print('^2Current flags: ^1'+Find_FS);
                   NL;
-                  Prt('Toggle which status flag? (^1?^2=^1Help^2): ');
+                  Prt('^2Toggle which status flag? (^1?^2=^1Help^2): ');
                   InputChar('',Cmd1,'QACDLST? '^M,[CapAll]);
                   CASE Cmd1 OF
                     'A' : FSF := FS_Alert;
@@ -1319,7 +1319,7 @@ BEGIN
                         END;
                   'N' : BEGIN
                           REPEAT
-                            Prt('Toggle which AR flag? ('+DisplayARFlags(User.ARFlags,'5','4')+'^2)'+
+                            Prt('^2Toggle which AR flag? ('+DisplayARFlags(User.ARFlags,'5','4')+'^2)'+
                                 ' [^1*^2=^1All^2,^1?^2=^1Help^2,^1<CR>^2=^1Quit^2]: ');
                             InputChar('',Cmd,^M'ABCDEFGHIJKLMNOPQRSTUVWXYZ*?',[CapAll]);
                             IF (Cmd = '?') THEN
@@ -1345,7 +1345,7 @@ BEGIN
                         END;
                   'O' : BEGIN
                           REPEAT
-                            Prt('Toggle which AC flag? ('+DisplayACFlags(User.ACFlags,'5','4')+'^2)'+
+                            Prt('^2Toggle which AC flag? ('+DisplayACFlags(User.ACFlags,'5','4')+'^2)'+
                                 ' [^1?^2=^1Help^2,^1<CR>^2=^1Quit^2]: ');
                             InputChar('',Cmd,^M'LCVUA*PEKM1234?',[CapAll]);
                             IF (Cmd = '?') THEN
