@@ -881,7 +881,7 @@ BEGIN
   CLS;
   Print(Centre(VerLine(1)));
   Print(Centre(VerLine(2)));
-  {Print(Centre(VerLine(3)));}
+  Print(Centre(VerLine(3)));
   PrintF('PRELOGON');
   IF (ACSUser) THEN
   BEGIN

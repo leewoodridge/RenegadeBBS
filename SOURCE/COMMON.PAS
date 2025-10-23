@@ -3549,8 +3549,9 @@ VAR
 BEGIN
   GetDate(Year,Month,MDay,WDay);
   CASE B OF
-    1 : VerLine := '^0Renegade Bulletin Board System, Version ^1'+General.Version;
-    2 : VerLine := '^0Copyright (c) 1991-'+IntToStr(Year)+' The Renegade Development Team';
+    1 : VerLine := '|11R|03enegade |11B|03ulletin |11B|03oard |11S|03ystem|11, |08v|15'+General.Version;
+    2 : VerLine := '|11C|03opyright |11(|03c|11) 1991-'+IntToStr(Year)+' |14The Renegade Development Team';
+    3 : Verline := '|13Updates |05- |13http|05://|13www|05.|13rgbbs|05.|13info';
   END;
 END;
 
