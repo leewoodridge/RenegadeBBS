@@ -9,6 +9,8 @@ uses crt, dos, timefunc;
 {$I RECORDS.INC}
 
 type
+  Multitasker = (None, DesqView, Windows, OS2); (* Nick *)
+
   fidorecord = record
     FromUserName : string[35];
     ToUserName   : string[35];
@@ -59,6 +61,7 @@ var
     x : byte;
 
 const
+  Tasker:Multitasker = None; (* Nick *)
   netmailonly : boolean = FALSE;
   isnetmail : boolean = FALSE;
   fastpurge : boolean = TRUE;
@@ -66,6 +69,33 @@ const
   purge_netmail : boolean = TRUE;
   absolute_scan : boolean = FALSE;
   ignore_1msg : boolean = TRUE;
+
+procedure slice;
+begin
+  case Tasker of
+    None: asm
+            int 28h
+          end;
+    DesqView: asm
+                mov ax, 1000h
+                int 15h
+              end;
+    Windows: asm
+               int 28h
+               mov ax, 1680h
+               int 2Fh
+             end;
+    OS2: asm
+           push dx
+           xor dx, dx
+           mov ax, 0
+           sti
+           hlt
+           db 035h, 0Cah
+           pop dx
+         end;
+  end;
+end;
 
 function Usename(b:byte; s:astr):string;
 begin
@@ -158,6 +188,7 @@ begin
 
   if (filesize(sf) > 0) then
     repeat
+      slice; (* Nick *)
       seek(sf, Current);
       read(sf, IndexR);
       if (Uname < IndexR.Name) then
@@ -728,6 +759,7 @@ end;
             aborterror('error accessing ' + msgpath + boardr.filename + '.*');
 
           for msgnumber := lowest to highest do begin
+              slice; (* Nick *)
               write (msgnumber : 7);
               if readmsg (msgnumber, boardr.msgpath) then
                 with msghdr do begin
@@ -855,6 +887,7 @@ end;
                assign(msgtxtf,'renemail.net');
                rewrite(msgtxtf);
                close(msgtxtf);
+               erase(msgtxtf);
              end;
            end;   
        end else write ('No messages');
@@ -902,6 +935,7 @@ end;
               not (unvalidated in msghdr.status) and
               (pos ('-X', allcaps (paramstr (1) ) ) > 0)) then
               begin
+              slice; (* Nick *)
               scanned := TRUE;
               inc (msgnumber);
               if (pos ('-X', allcaps (paramstr (1) ) ) > 0) then
@@ -1053,6 +1087,30 @@ end;
   end;
 
 begin
+  (* Nick start *)
+  regs.AX := $2B01;
+  regs.CX := $4445;  { DE }
+  regs.DX := $5351;  { SQ }
+  Intr($21,regs);
+  if regs.AL <> $FF then
+    Tasker := DesqView
+  else
+    begin
+      regs.AX := $1600;
+      Intr($2F,regs);
+      if not (regs.AL in [$00,$01,$80,$FF]) then
+        Tasker := Windows
+      else
+        begin
+          regs.AX := $3001;
+          intr($21,regs);
+          if (regs.AL > 10) then
+            Tasker := OS2;
+        end;
+    end;
+  Tasker:=Windows; (* Remove this forced-windows timeslice setting *)
+  (* Nick end *)
+
   Randomize;
   getdir (0, startdir);
   for x := 1 to 37 do
@@ -1140,6 +1198,7 @@ DisplayHelp(White,Black);
   if netmailonly then halt;
 
   while board <> 32767 do begin
+       slice; (* Nick *)
        if (pos ('-S', allcaps (paramstr (1) ) ) > 0) then
            nextboard(true)
         else
