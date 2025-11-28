@@ -3,7 +3,9 @@ Copyright (c) 1991-2025 The Renegade Development Team ─ Cott Lang, Patrick Spe
 #
 
 PLEASE DO NOT UPDATE THIS LOCATION and visit http://github.com/Renegade-Exodus/Renegade for the current codebase.
+
 PLEASE DO NOT UPDATE THIS LOCATION and visit http://github.com/Renegade-Exodus/Renegade for the current codebase.
+
 PLEASE DO NOT UPDATE THIS LOCATION and visit http://github.com/Renegade-Exodus/Renegade for the current codebase.
 
 
@@ -20,5 +22,6 @@ Last release I made was in Sept. 2024, and I made a few minor changes since I re
 ** If anyone wishes to contribute, please feel free to do so! **
 
 -snip-
+
 
 
